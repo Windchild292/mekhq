@@ -780,6 +780,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void setFullName() {
+        if (StringUtil.isNullOrEmpty(givenName)) {
+            fullName = "NoGivenName";
+        }
+
         if (isClanner()) {
             if (bloodname.length() > 0) {
                 fullName = givenName + " " + bloodname;
@@ -820,15 +824,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
         //
         // Then, the full name is set
         String space = " ";
-        String[] name = n.split(space);
+        String[] name = n.split("\\s+"); // this splits on a regex of 1 or more spaces
 
         if (isClanner()) {
             int i = 0;
             givenName = name[i];
             for (i = 1; i < name.length - 1; i++) {
-                if (!name[i].equals(space)) {
-                    givenName += space + name[i];
-                }
+                givenName += space + name[i];
             }
 
             if (!(!StringUtil.isNullOrEmpty(getBloodname()) && getBloodname().equals(name[i]))) {
@@ -845,25 +847,15 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 surname = name[1];
             } else if (name.length == 3) {
                 givenName = name[0];
-                if (name[1].equals(space)) {
-                    surname = name[2];
-                } else {
-                    surname = name[1] + space + name[2];
-                }
+                surname = name[1] + space + name[2];
             } else if (name.length > 3) {
                 int i = 0;
                 givenName = name[i];
                 for (i = 1; i < name.length - 2; i++) {
-                    if (!name[i].equals(space)) {
-                        givenName += space + name[i];
-                    }
+                    givenName += space + name[i];
                 }
 
-                if (name[i].equals(space)) {
-                    surname = name[i + 1];
-                } else {
-                    surname = name[i] + space + name[i + 1];
-                }
+                surname = name[i] + space + name[i + 1];
             }
         }
 
