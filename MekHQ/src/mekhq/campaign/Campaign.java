@@ -1319,6 +1319,7 @@ public class Campaign implements Serializable, ITechManager {
     //endregion Person Creation
 
     //region Personnel Recruitment
+
     /**
      *
      * @param p         the person being added
@@ -1353,6 +1354,7 @@ public class Campaign implements Serializable, ITechManager {
         if (p == null) {
             return false;
         }
+      
         // Only pay if option set, they weren't GM added, and they aren't a dependent, prisoner or bondsman
         if (getCampaignOptions().payForRecruitment() && !dependent && !gmAdd && !prisoner) {
             if (!getFinances().debit(p.getSalary().multipliedBy(2), Transaction.C_SALARY,
@@ -1400,7 +1402,7 @@ public class Campaign implements Serializable, ITechManager {
                 ServiceLogger.joined(p, getDate(), getName(), rankEntry);
             }
         }
-
+      
         // Add their recruitment date if using track time in service
         if (getCampaignOptions().getUseTimeInService() && !prisoner && !dependent) {
             GregorianCalendar recruitmentDate = (GregorianCalendar) getCalendar().clone();
