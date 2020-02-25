@@ -585,6 +585,10 @@ public class Utilities {
         Objects.requireNonNull(u.getEntity(), "Unit needs to have a valid Entity attached");
         Crew oldCrew = u.getEntity().getCrew();
 
+        MekHQ.getLogger().warning(Utilities.class, "genRandomCrewWithCombinedSkill",
+                "Unit " + u.getFluffName() + " with a crew capacity of " + u.getCrew().size() +
+                " a slot count of " + oldCrew.getSlotCount() + " and a crew need of " + u.getTotalCrewNeeds());
+
         int averageGunnery;
         int averagePiloting;
         List<Person> drivers = new ArrayList<>();

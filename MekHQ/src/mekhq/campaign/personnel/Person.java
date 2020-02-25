@@ -782,24 +782,24 @@ public class Person implements Serializable, MekHqXmlSerializable {
     public void setFullName() {
         if (StringUtil.isNullOrEmpty(givenName)) {
             fullName = "NoGivenName";
-        }
-
-        if (isClanner()) {
-            if (bloodname.length() > 0) {
-                fullName = givenName + " " + bloodname;
-            } else {
-                fullName = givenName;
-            }
         } else {
-            if (!StringUtil.isNullOrEmpty(surname)) {
-                fullName = givenName + " " + surname;
+            if (isClanner()) {
+                if (!StringUtil.isNullOrEmpty(bloodname)) {
+                    fullName = givenName + " " + bloodname;
+                } else {
+                    fullName = givenName;
+                }
             } else {
-                fullName = givenName;
+                if (!StringUtil.isNullOrEmpty(surname)) {
+                    fullName = givenName + " " + surname;
+                } else {
+                    fullName = givenName;
+                }
             }
-        }
 
-        if (!StringUtil.isNullOrEmpty(honorific)) {
-            fullName += " " + honorific;
+            if (!StringUtil.isNullOrEmpty(honorific)) {
+                fullName += " " + honorific;
+            }
         }
     }
 
