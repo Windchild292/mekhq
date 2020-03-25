@@ -61,12 +61,54 @@ public class ExampleEvent extends AbstractExampleEvent {
 
     //region Process
     /**
-     * @see AbstractRandomEvent#process() for more information
-     */    @Override
-    public void process() {
+     * @see AbstractRandomEvent#process(int) for more information
+     */
+    @Override
+    public void process(int optionIndex) {
         logProcessEvent();
 
-        // TODO : Windchild Add dialog opening
+        switch (optionIndex) {
+            case 0:
+                // You would implement your logic for case 0 below, instead of the logger statement
+                MekHQ.getLogger().info(getClass(), "process",
+                        eventName + ": " + "Option " + randomEventOptions[optionIndex]
+                                + ", at index 0 selected.");
+                break;
+            case 1:
+                // You would implement your logic for case 1 below, instead of the logger statement
+                MekHQ.getLogger().info(getClass(), "process",
+                        eventName + ": " + "Option " + randomEventOptions[optionIndex]
+                                + ", at index 1 selected.");
+                break;
+            case 2:
+                // You would implement your logic for case 2 below, instead of the logger statement
+                MekHQ.getLogger().info(getClass(), "process",
+                        eventName + ": " + "Option " + randomEventOptions[optionIndex]
+                                + ", at index 2 selected.");
+                break;
+            case 3:
+                // You would implement your logic for case 3 below, instead of the logger statement
+                MekHQ.getLogger().info(getClass(), "process",
+                        eventName + ": " + "Option " + randomEventOptions[optionIndex]
+                                + ", at index 3 selected.");
+                break;
+            case 4:
+                // You would implement your logic for case 4 below, instead of the logger statement
+                MekHQ.getLogger().info(getClass(), "process",
+                        eventName + ": " + "Option " + randomEventOptions[optionIndex]
+                                + ", at index 4 selected.");
+                break;
+            case ERROR_INDEX:
+                MekHQ.getLogger().error(getClass(), "process",
+                        "Cannot process the random event " + eventName
+                                + "with a selected index of " + ERROR_INDEX);
+                break;
+            default:
+                MekHQ.getLogger().warning(getClass(), "process",
+                        "Unknown index " + optionIndex + ". Cannot process the event "
+                                + eventName);
+                break;
+        }
     }
     //endregion Process
 }

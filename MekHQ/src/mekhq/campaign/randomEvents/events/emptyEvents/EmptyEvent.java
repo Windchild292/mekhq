@@ -51,19 +51,17 @@ public class EmptyEvent extends AbstractEmptyEvent {
 
     //region Process
     /**
-     * This writes an error to the logs, and then opens the dialog displaying the localized error to the user
-     * @see AbstractRandomEvent#process() for more information
+     * This writes an error to the logs
+     * @see AbstractRandomEvent#process(int) for more information
      */
     @Override
-    public void process() {
+    public void process(int optionIndex) {
         logProcessEvent();
 
         MekHQ.getLogger().error(getClass(), "process",
                 "An Empty Event was generated. This is likely the result of an error. " +
                         "Please open a ticket on the GitHub including your .cnpx file and this log " +
                         "file, and we will try to fix the issue.");
-
-        // TODO : Windchild Add dialog opening
     }
     //endregion Process
 }

@@ -43,6 +43,9 @@ public abstract class AbstractRandomEvent {
 
     // Debugging
     private static final boolean logProcessEvent = true;
+
+    // Constants
+    public static final int ERROR_INDEX = -1;
     //endregion Variable Declarations
 
     //region Constructors
@@ -80,8 +83,9 @@ public abstract class AbstractRandomEvent {
     //region Process
     /**
      * This is used to process the random event
+     * @param optionIndex the index of the selected option, or ERROR_INDEX if no option was selected
      */
-    public abstract void process();
+    public abstract void process(int optionIndex);
 
     /**
      * This is used to debug

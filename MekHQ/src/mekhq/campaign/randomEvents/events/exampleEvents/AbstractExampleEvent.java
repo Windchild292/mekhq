@@ -60,9 +60,9 @@ public abstract class AbstractExampleEvent extends AbstractRandomEvent {
     //region Process
     /**
      * This is being overridden for readability
-     * @see AbstractRandomEvent#process() for more information
+     * @see AbstractRandomEvent#process(int) for more information
      */
     @Override
-    public abstract void process();
+    public abstract void process(int optionIndex);
     //endregion Process
 }
