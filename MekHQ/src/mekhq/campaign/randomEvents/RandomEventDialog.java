@@ -18,21 +18,5 @@
  */
 package mekhq.campaign.randomEvents;
 
-import mekhq.MekHQ;
-
-public class EmptyEvent extends RandomEvent {
-    //region Constructors
-    public EmptyEvent() {
-        super();
-    }
-    //endregion Constructors
-
-    //region Process
-    @Override
-    public void process() {
-        MekHQ.getLogger().error(getClass(), "process",
-                "An Empty Event was generated. This is likely the result of an error, "
-                + "please open a ticket on the GitHub including your .cnpx file and this log file.");
-    }
-    //endregion Process
+public class RandomEventDialog {
 }

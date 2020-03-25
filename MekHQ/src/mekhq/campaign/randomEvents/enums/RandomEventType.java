@@ -45,7 +45,11 @@ public enum RandomEventType {
      */
     NOTHING,
     /**
-     * This is used for the Empty and Example events, and should NEVER be used elsewhere
+     * This is used for the Empty event, and should NEVER be used elsewhere
      */
-    EMPTY
+    EMPTY,
+    /**
+     * This is used for the Example event, and should NEVER be used outside of examples
+     */
+    EXAMPLE
 }

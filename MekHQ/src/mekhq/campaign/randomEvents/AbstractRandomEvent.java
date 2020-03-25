@@ -18,31 +18,79 @@
  */
 package mekhq.campaign.randomEvents;
 
+import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.randomEvents.enums.RandomEventType;
 
+import java.util.ResourceBundle;
+
 public abstract class AbstractRandomEvent {
     //region Variable Declarations
+    // Event Information
     protected String eventName;
     protected Campaign campaign;
     protected RandomEventType type;
+    protected int eventWeight; //this is the weighting for generating the specific random event
+
+    // Dialog Text
+    protected String randomEventDescription;
+    protected String[] randomEventOptions;
+
+    // Localization Map
+    protected static ResourceBundle resourceMap = ResourceBundle.getBundle(
+            "mekhq.resources.RandomEvent", new EncodeControl());
+
+    // Debugging
+    private static final boolean logProcessEvent = true;
     //endregion Variable Declarations
 
     //region Constructors
-    protected AbstractRandomEvent(String name, Campaign campaign, RandomEventType type) {
+    protected AbstractRandomEvent(String name) {
+        this(name, null);
+    }
+
+    protected AbstractRandomEvent(String name, Campaign campaign) {
         this.eventName = name;
         this.campaign = campaign;
-        this.type = type;
+        initializeRandomEventType();
+        initializeRandomEventWeight();
+        initializeDescriptionAndOptions();
     }
     //endregion Constructors
 
+    //region Initialisation Methods
+    /**
+     * This is used to ensure that the RandomEventType is overwritten for each category of event
+     */
+    protected abstract void initializeRandomEventType();
+
+    /**
+     * This is used to ensure that every random event initializes their weight
+     */
+    protected abstract void initializeRandomEventWeight();
+
+    /**
+     * This is used to ensure that every random event initializes their description and options for
+     * the dialog
+     */
+    protected abstract void initializeDescriptionAndOptions();
+    //endregion Initialisation Methods
+
     //region Process
+    /**
+     * This is used to process the random event
+     */
     public abstract void process();
 
+    /**
+     * This is used to debug
+     */
     protected void logProcessEvent() {
-        MekHQ.getLogger().info(getClass(), "process",
-                "Processing random event named " + eventName);
+        if (logProcessEvent) {
+            MekHQ.getLogger().info(getClass(), "process",
+                    "Processing random event named " + eventName);
+        }
     }
     //endregion Process
 }
