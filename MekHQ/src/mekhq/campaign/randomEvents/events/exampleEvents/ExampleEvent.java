@@ -24,12 +24,11 @@ import mekhq.campaign.randomEvents.AbstractRandomEvent;
 
 public class ExampleEvent extends AbstractExampleEvent {
     //region Constructors
-    // The following are the list of potential constructors for Random Events
-    protected ExampleEvent() {
+    public ExampleEvent() {
         super(resourceMap.getString("ExampleEvent.name"));
     }
 
-    protected ExampleEvent(Campaign campaign) {
+    public ExampleEvent(Campaign campaign) {
         super(resourceMap.getString("ExampleEvent.name"), campaign);
     }
     //endregion Constructors
