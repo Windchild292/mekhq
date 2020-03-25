@@ -80,6 +80,36 @@ public abstract class AbstractRandomEvent {
     protected abstract void initializeDescriptionAndOptions();
     //endregion Initialisation Methods
 
+    //region Getters/Setters
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Campaign campaign) {
+        this.campaign = campaign;
+    }
+
+    public RandomEventType getType() {
+        return type;
+    }
+
+    public int getEventWeight() {
+        return eventWeight;
+    }
+
+    public void setEventWeight(int eventWeight) {
+        this.eventWeight = eventWeight;
+    }
+    //endregion Getters/Setters
+
     //region Generation
     /**
      * This is used to determine if the event is viable or not for the campaign the event is being
