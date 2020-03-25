@@ -49,7 +49,7 @@ public class EmptyEvent extends AbstractEmptyEvent {
     }
     //endregion Initialisation Methods
 
-    //region Process
+    //region Processing
     /**
      * This writes an error to the logs
      * @see AbstractRandomEvent#process(int) for more information
@@ -63,5 +63,5 @@ public class EmptyEvent extends AbstractEmptyEvent {
                         "Please open a ticket on the GitHub including your .cnpx file and this log " +
                         "file, and we will try to fix the issue.");
     }
-    //endregion Process
+    //endregion Processing
 }

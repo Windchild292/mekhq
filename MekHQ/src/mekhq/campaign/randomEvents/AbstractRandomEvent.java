@@ -80,7 +80,7 @@ public abstract class AbstractRandomEvent {
     protected abstract void initializeDescriptionAndOptions();
     //endregion Initialisation Methods
 
-    //region Process
+    //region Processing
     /**
      * This is used to process the random event
      * @param optionIndex the index of the selected option, or ERROR_INDEX if no option was selected
@@ -96,5 +96,5 @@ public abstract class AbstractRandomEvent {
                     "Processing random event named " + eventName);
         }
     }
-    //endregion Process
+    //endregion Processing
 }

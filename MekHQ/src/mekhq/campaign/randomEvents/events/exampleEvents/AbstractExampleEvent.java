@@ -57,12 +57,12 @@ public abstract class AbstractExampleEvent extends AbstractRandomEvent {
     protected abstract void initializeDescriptionAndOptions();
     //endregion Initialisation Methods
 
-    //region Process
+    //region Processing
     /**
      * This is being overridden for readability
      * @see AbstractRandomEvent#process(int) for more information
      */
     @Override
     public abstract void process(int optionIndex);
-    //endregion Process
+    //endregion Processing
 }

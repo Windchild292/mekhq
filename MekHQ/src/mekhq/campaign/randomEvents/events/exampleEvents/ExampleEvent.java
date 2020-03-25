@@ -59,7 +59,7 @@ public class ExampleEvent extends AbstractExampleEvent {
     }
     //endregion Initialisation Methods
 
-    //region Process
+    //region Processing
     /**
      * @see AbstractRandomEvent#process(int) for more information
      */
@@ -110,5 +110,5 @@ public class ExampleEvent extends AbstractExampleEvent {
                 break;
         }
     }
-    //endregion Process
+    //endregion Processing
 }
