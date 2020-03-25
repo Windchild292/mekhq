@@ -29,7 +29,7 @@ public abstract class AbstractRandomEvent {
     //region Variable Declarations
     // Event Information
     protected String eventName;
-    protected Campaign campaign;
+    protected static Campaign campaign;
     protected RandomEventType type;
     protected int eventWeight; //this is the weighting for generating the specific random event
 
@@ -55,7 +55,7 @@ public abstract class AbstractRandomEvent {
 
     protected AbstractRandomEvent(String name, Campaign campaign) {
         this.eventName = name;
-        this.campaign = campaign;
+        setCampaign(campaign);
         initializeRandomEventType();
         initializeRandomEventWeight();
         initializeDescriptionAndOptions();
@@ -93,8 +93,8 @@ public abstract class AbstractRandomEvent {
         return campaign;
     }
 
-    public void setCampaign(Campaign campaign) {
-        this.campaign = campaign;
+    public static void setCampaign(Campaign c) {
+        campaign = c;
     }
 
     public RandomEventType getType() {

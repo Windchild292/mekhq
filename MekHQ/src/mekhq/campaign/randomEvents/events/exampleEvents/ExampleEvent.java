@@ -64,7 +64,7 @@ public class ExampleEvent extends AbstractExampleEvent {
      */
     @Override
     public boolean isViable() {
-        return campaign != null;
+        return true;
     }
     //endregion Generation
 
