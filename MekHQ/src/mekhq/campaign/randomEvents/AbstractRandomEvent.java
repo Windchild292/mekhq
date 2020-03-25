@@ -80,6 +80,14 @@ public abstract class AbstractRandomEvent {
     protected abstract void initializeDescriptionAndOptions();
     //endregion Initialisation Methods
 
+    //region Generation
+    /**
+     * This is used to determine if the event is viable or not for the campaign the event is being
+     * generated for
+     */
+    public abstract boolean isViable();
+    //endregion Generation
+
     //region Processing
     /**
      * This is used to process the random event

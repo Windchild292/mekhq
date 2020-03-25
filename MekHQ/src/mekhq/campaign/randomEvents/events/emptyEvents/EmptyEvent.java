@@ -49,6 +49,17 @@ public class EmptyEvent extends AbstractEmptyEvent {
     }
     //endregion Initialisation Methods
 
+    //region Generation
+    /**
+     * This event is always viable, but is only used as an error condition
+     * @see AbstractRandomEvent#isViable() for more information
+     */
+    @Override
+    public boolean isViable() {
+        return true;
+    }
+    //endregion Generation
+
     //region Processing
     /**
      * This writes an error to the logs

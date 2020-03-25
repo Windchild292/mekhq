@@ -59,6 +59,16 @@ public class ExampleEvent extends AbstractExampleEvent {
     }
     //endregion Initialisation Methods
 
+    //region Generation
+    /**
+     * @see AbstractRandomEvent#isViable() for more information
+     */
+    @Override
+    public boolean isViable() {
+        return campaign != null;
+    }
+    //endregion Generation
+
     //region Processing
     /**
      * @see AbstractRandomEvent#process(int) for more information

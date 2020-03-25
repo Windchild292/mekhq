@@ -19,4 +19,5 @@
 package mekhq.campaign.randomEvents.generators;
 
 public class RandomEventGenerator extends AbstractRandomEventGenerator {
+    // TODO : implement getInstance() style of generation, and ensure it is thread safe
 }

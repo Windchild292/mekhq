@@ -52,6 +52,15 @@ public abstract class AbstractEmptyEvent extends AbstractRandomEvent {
     protected abstract void initializeDescriptionAndOptions();
     //endregion Initialisation Methods
 
+    //region Generation
+    /**
+     * This is being overridden for readability
+     * @see AbstractRandomEvent#isViable() for more information
+     */
+    @Override
+    public abstract boolean isViable();
+    //endregion Generation
+
     //region Processing
     /**
      * This is being overridden for readability
