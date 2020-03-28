@@ -76,6 +76,11 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.ExtraData;
 import mekhq.campaign.log.LogEntry;
 import mekhq.campaign.force.Force;
+import mekhq.campaign.personnel.enums.BodyLocation;
+import mekhq.campaign.personnel.Injury;
+import mekhq.campaign.personnel.enums.InjuryLevel;
+import mekhq.campaign.personnel.InjuryType;
+import mekhq.campaign.personnel.Person;
 
 public class MedicalViewDialog extends JDialog {
     private static final long serialVersionUID = 6178230374580087883L;

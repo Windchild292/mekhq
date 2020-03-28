@@ -307,6 +307,7 @@ public class CampaignOptions implements Serializable {
     private boolean trackUnitFatigue;
     private boolean customRetirementMods;
     private boolean foundersNeverRetire;
+    private boolean dependentsNeverLeave;
     private boolean trackOriginalUnit;
     private boolean mercSizeLimited;
     private String[] rats = {"Xotl", "Total Warfare"};
@@ -607,6 +608,7 @@ public class CampaignOptions implements Serializable {
         retirementRolls = true;
         customRetirementMods = false;
         foundersNeverRetire = false;
+        dependentsNeverLeave = false;
         trackUnitFatigue = false;
         trackOriginalUnit = false;
         mercSizeLimited = false;
@@ -2349,19 +2351,27 @@ public class CampaignOptions implements Serializable {
 		return customRetirementMods;
 	}
 
-	public boolean getFoundersNeverRetire() {
-		return foundersNeverRetire;
-	}
+    public void setCustomRetirementMods(boolean mods) {
+        customRetirementMods = mods;
+    }
 
-	public void setCustomRetirementMods(boolean mods) {
-		customRetirementMods = mods;
+    public boolean getFoundersNeverRetire() {
+		return foundersNeverRetire;
 	}
 
 	public void setFoundersNeverRetire(boolean mods) {
         foundersNeverRetire = mods;
 	}
 
-	public boolean getTrackOriginalUnit() {
+    public boolean getDependentsNeverLeave() {
+        return dependentsNeverLeave;
+    }
+
+    public void setDependentsNeverLeave(boolean b) {
+        dependentsNeverLeave = b;
+    }
+
+    public boolean getTrackOriginalUnit() {
 		return trackOriginalUnit;
 	}
 
@@ -2879,6 +2889,7 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "retirementRolls", retirementRolls);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "customRetirementMods", customRetirementMods);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "foundersNeverRetire", foundersNeverRetire);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "dependentsNeverLeave", dependentsNeverLeave);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "trackUnitFatigue", trackUnitFatigue);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "mercSizeLimited", mercSizeLimited);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "trackOriginalUnit", trackOriginalUnit);
@@ -3402,6 +3413,8 @@ public class CampaignOptions implements Serializable {
                 retVal.customRetirementMods = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("foundersNeverRetire")) {
                 retVal.foundersNeverRetire = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("dependentsNeverLeave")) {
+                retVal.dependentsNeverLeave = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("trackUnitFatigue")) {
                 retVal.trackUnitFatigue = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("trackOriginalUnit")) {

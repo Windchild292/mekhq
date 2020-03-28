@@ -115,6 +115,18 @@ import mekhq.campaign.parts.StructuralIntegrity;
 import mekhq.campaign.parts.equipment.AmmoBin;
 import mekhq.campaign.parts.equipment.EquipmentPart;
 import mekhq.campaign.parts.equipment.MissingEquipmentPart;
+import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
+import mekhq.campaign.personnel.Ancestors;
+import mekhq.campaign.personnel.Bloodname;
+import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
+import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.PersonnelOptions;
+import mekhq.campaign.personnel.Rank;
+import mekhq.campaign.personnel.Ranks;
+import mekhq.campaign.personnel.RetirementDefectionTracker;
+import mekhq.campaign.personnel.Skill;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.SpecialAbility;
 import mekhq.campaign.rating.CampaignOpsReputation;
 import mekhq.campaign.rating.FieldManualMercRevDragoonsRating;
 import mekhq.campaign.rating.IUnitRating;
@@ -3422,9 +3434,11 @@ public class Campaign implements Serializable, ITechManager {
             if (roll > 12)
                 roll = 12;
             int change = numPersonnel * (roll - 5) / 100;
-            while (change < 0 && dependents.size() > 0) {
-                removePerson(Utilities.getRandomItem(dependents).getId());
-                change++;
+            if ((change < 0) && !getCampaignOptions().getDependentsNeverLeave()) {
+                while ((change < 0) && (dependents.size() > 0)) {
+                    removePerson(Utilities.getRandomItem(dependents).getId());
+                    change++;
+                }
             }
             for (int i = 0; i < change; i++) {
                 Person p = newDependent(Person.T_ASTECH, false);
