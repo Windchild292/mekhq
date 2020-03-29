@@ -43,6 +43,7 @@ import javax.swing.table.TableColumn;
 import mekhq.MekHqXmlUtil;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.FormerSpouse;
+import mekhq.campaign.personnel.enums.GenderDescriptors;
 import org.joda.time.DateTime;
 
 import megamek.common.Crew;
@@ -631,7 +632,7 @@ public class PersonViewPanel extends ScrollablePanel {
         pnlInfo.add(lblGender1, gridBagConstraints);
 
         lblGender2.setName("lblGender2"); // NOI18N
-        lblGender2.setText(person.getGenderString(Person.GENDER_DESCRIPTOR.MALE_FEMALE));
+        lblGender2.setText(person.getGenderString(GenderDescriptors.MALE_FEMALE));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = firsty;

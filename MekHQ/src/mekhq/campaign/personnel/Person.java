@@ -20,6 +20,7 @@
  */
 package mekhq.campaign.personnel;
 
+import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -35,6 +36,9 @@ import megamek.common.util.WeightedMap;
 import mekhq.campaign.*;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.log.*;
+import mekhq.campaign.personnel.enums.BodyLocation;
+import mekhq.campaign.personnel.enums.GenderDescriptors;
+import mekhq.campaign.personnel.enums.ModifierValue;
 import org.joda.time.DateTime;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -105,15 +109,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     public static final int S_KIA = 2;
     public static final int S_MIA = 3;
     public static final int S_NUM = 4;
-
-    public enum GENDER_DESCRIPTOR {
-        MALE_FEMALE,
-        HE_SHE,
-        HIM_HER,
-        HIS_HER,
-        HIS_HERS,
-        BOY_GIRL
-    }
 
     // Prisoners, Bondsmen, and Normal Personnel
     public static final int PRISONER_NOT = 0;
@@ -327,6 +322,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
     protected int overtimeLeft;
     protected int nTasks;
     protected boolean engineer;
+    public static final int PRIMARY_ROLE_SUPPORT_TIME = 480;
+    public static final int PRIMARY_ROLE_OVERTIME_SUPPORT_TIME = 240;
+    public static final int SECONDARY_ROLE_SUPPORT_TIME = 240;
+    public static final int SECONDARY_ROLE_OVERTIME_SUPPORT_TIME = 120;
 
     //region Advanced Medical
     private List<Injury> injuries;
@@ -481,7 +480,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         originalUnitTech = TECH_IS1;
         originalUnitId = null;
         acquisitions = 0;
-        extraData = null;
+        extraData = new ExtraData();
 
         // Initialize Data based on these settings
         setFullName();
@@ -593,11 +592,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     //region Text Getters
     //TODO : Rename and Localize region
-    public String getGenderString(GENDER_DESCRIPTOR variant) {
+    public String getGenderString(GenderDescriptors variant) {
         return getGenderString(gender, variant);
     }
 
-    public static String getGenderString(int gender, GENDER_DESCRIPTOR variant) {
+    public static String getGenderString(int gender, GenderDescriptors variant) {
         switch (variant) {
             case MALE_FEMALE: {
                 switch (gender) {
@@ -983,7 +982,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             case (T_NONE):
                 return "None";
             case (T_MECHWARRIOR):
-                return "Mechwarrior";
+                return "MechWarrior";
             case (T_GVEE_DRIVER):
                 return "Vehicle Driver";
             case (T_NVEE_DRIVER):
@@ -995,9 +994,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
             case (T_CONV_PILOT):
                 return "Conventional Aircraft Pilot";
             case (T_AERO_PILOT):
-                return "Aero Pilot";
+                return "Aerospace Pilot";
             case (T_PROTO_PILOT):
-                return "Proto Pilot";
+                return "ProtoMech Pilot";
             case (T_BA):
                 if (clan) {
                     return "Elemental";
@@ -1063,6 +1062,64 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public String getSecondaryRoleDesc() {
         return getRoleDesc(secondaryRole, campaign.getFaction().isClan());
+    }
+
+    public static int getRoleMnemonic(int type) {
+        // The following characters are unused:
+        // J, K, Q, X, Z
+        switch (type) {
+            case T_MECHWARRIOR:
+                return KeyEvent.VK_M;
+            case T_GVEE_DRIVER:
+                return KeyEvent.VK_V;
+            case T_NVEE_DRIVER:
+                return KeyEvent.VK_N;
+            case T_VEE_GUNNER:
+                return KeyEvent.VK_G;
+            case T_AERO_PILOT:
+                return KeyEvent.VK_A;
+            case T_PROTO_PILOT:
+                return KeyEvent.VK_P;
+            case T_CONV_PILOT:
+                return KeyEvent.VK_F;
+            case T_BA:
+                return KeyEvent.VK_B;
+            case T_INFANTRY:
+                return KeyEvent.VK_S;
+            case T_SPACE_PILOT:
+                return KeyEvent.VK_I;
+            case T_SPACE_CREW:
+                return KeyEvent.VK_W;
+            case T_SPACE_GUNNER:
+                return KeyEvent.VK_U;
+            case T_NAVIGATOR:
+                return KeyEvent.VK_Y;
+            case T_MECH_TECH:
+                return KeyEvent.VK_T;
+            case T_MECHANIC:
+                return KeyEvent.VK_E;
+            case T_AERO_TECH:
+                return KeyEvent.VK_O;
+            case T_DOCTOR:
+                return KeyEvent.VK_D;
+            case T_ADMIN_COM:
+                return KeyEvent.VK_C;
+            case T_ADMIN_LOG:
+                return KeyEvent.VK_L;
+            case T_ADMIN_TRA:
+                return KeyEvent.VK_R;
+            case T_ADMIN_HR:
+                return KeyEvent.VK_H;
+            case T_VTOL_PILOT:
+            case T_BA_TECH:
+            case T_ASTECH:
+            case T_MEDIC:
+            case T_LAM_PILOT:
+            case T_VEHICLE_CREW:
+            case T_NONE:
+            default:
+                return KeyEvent.VK_UNDEFINED;
+        }
     }
 
     public boolean canPerformRole(int role) {
@@ -1283,9 +1340,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         setDueDate(tCal);
 
         int size = PREGNANCY_SIZE.getAsInt();
-        if (extraData == null) {
-            extraData = new ExtraData();
-        }
         extraData.set(PREGNANCY_CHILDREN_DATA, size);
         extraData.set(PREGNANCY_FATHER_DATA, (hasSpouse()) ? getSpouseId().toString() : null);
 
@@ -1335,7 +1389,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             baby.setAncestorsId(ancId);
 
             campaign.addReport(String.format("%s has given birth to %s, a baby %s!", getHyperlinkedName(),
-                    baby.getHyperlinkedName(), baby.getGenderString(GENDER_DESCRIPTOR.BOY_GIRL)));
+                    baby.getHyperlinkedName(), baby.getGenderString(GenderDescriptors.BOY_GIRL)));
             if (campaign.getCampaignOptions().logConception()) {
                 MedicalLogger.deliveredBaby(this, baby, campaign.getDate());
                 if (fatherId != null) {
@@ -2135,7 +2189,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     + acquisitions
                     + "</acquisitions>");
         }
-        if (extraData != null) {
+        if (!extraData.isEmpty()) {
             extraData.writeToXml(pw1);
         }
         pw1.println(MekHqXmlUtil.indentStr(indent) + "</person>");
@@ -2249,6 +2303,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                     retVal.dueDate = (GregorianCalendar) GregorianCalendar.getInstance();
                     retVal.dueDate.setTime(df.parse(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("expectedDueDate")) {
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    retVal.expectedDueDate = (GregorianCalendar) GregorianCalendar.getInstance();
+                    retVal.expectedDueDate.setTime(df.parse(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("teamId")) {
                     retVal.teamId = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("portraitCategory")) {
@@ -2475,6 +2533,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
             retVal.setFullName(); // this sets the name based on the loaded values
 
+            if (version.isLowerThan("0.47.5") && (retVal.getExpectedDueDate() == null)
+                    && (retVal.getDueDate() != null)) {
+                retVal.setExpectedDueDate((GregorianCalendar) retVal.getDueDate().clone());
+            }
+
             if (version.getMajorVersion() == 0 && version.getMinorVersion() < 2 && version.getSnapshot() < 13) {
                 if (retVal.primaryRole > T_INFANTRY) {
                     retVal.primaryRole += 4;
@@ -2628,13 +2691,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
         }
 
         //if salary is negative, then use the standard amounts
-        Money primaryBase = campaign.getCampaignOptions().getBaseSalary(getPrimaryRole());
+        Money primaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getPrimaryRole());
         primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(false)));
         if (hasSkill(SkillType.S_ANTI_MECH) && (getPrimaryRole() == T_INFANTRY || getPrimaryRole() == T_BA)) {
             primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
         }
 
-        Money secondaryBase = campaign.getCampaignOptions().getBaseSalary(getSecondaryRole()).dividedBy(2);
+        Money secondaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getSecondaryRole()).dividedBy(2);
         secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(true)));
         if (hasSkill(SkillType.S_ANTI_MECH) && (getSecondaryRole() == T_INFANTRY || getSecondaryRole() == T_BA)) {
             secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
@@ -3742,13 +3805,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void resetMinutesLeft() {
-        if (isTechPrimary() || getPrimaryRole() == T_DOCTOR) {
-            this.minutesLeft = 480;
-            this.overtimeLeft = 240;
+        if (isTechPrimary() || (getPrimaryRole() == T_DOCTOR)) {
+            this.minutesLeft = PRIMARY_ROLE_SUPPORT_TIME;
+            this.overtimeLeft = PRIMARY_ROLE_OVERTIME_SUPPORT_TIME;
         }
-        if (isTechSecondary() || getSecondaryRole() == T_DOCTOR) {
-            this.minutesLeft = 240;
-            this.overtimeLeft = 240;
+        if (isTechSecondary() || (getSecondaryRole() == T_DOCTOR)) {
+            this.minutesLeft = SECONDARY_ROLE_SUPPORT_TIME;
+            this.overtimeLeft = SECONDARY_ROLE_OVERTIME_SUPPORT_TIME;
         }
     }
 
@@ -3964,16 +4027,14 @@ public class Person implements Serializable, MekHqXmlSerializable {
         else {
             toReturn.append("><b>");
         }
-        toReturn.append(getFullName());
-        toReturn.append(String.format("</b> (%d XP)<br/>", getXp()));
+        toReturn.append(getFullTitle()).append("</b><br/>");
 
         boolean first = true;
         for (String skillName : DISPLAYED_SKILL_LEVELS) {
             Skill skill = getSkill(skillName);
             if (null == skill) {
                 continue;
-            }
-            else if (!first) {
+            } else if (!first) {
                 toReturn.append("; ");
             }
 
@@ -3982,8 +4043,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
             first = false;
         }
 
-        toReturn.append("<br/>");
-        toReturn.append(String.format("%d minutes left", getMinutesLeft()));
+        toReturn.append(String.format(" (%d XP)<br/>", getXp()))
+                .append(String.format("%d minutes left", getMinutesLeft()));
         if (overtimeAllowed) {
             toReturn.append(String.format(" + (%d overtime)", getOvertimeLeft()));
         }
@@ -4186,11 +4247,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public int getPilotingInjuryMod() {
-        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), Modifier.Value.PILOTING);
+        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), ModifierValue.PILOTING);
     }
 
     public int getGunneryInjuryMod() {
-        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), Modifier.Value.GUNNERY);
+        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), ModifierValue.GUNNERY);
     }
 
     /**
