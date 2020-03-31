@@ -422,7 +422,6 @@ public class StaticChecks {
             }
         }
         return true;
-
     }
     //endregion C3
 
