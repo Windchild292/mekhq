@@ -473,7 +473,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         originalUnitTech = TECH_IS1;
         originalUnitId = null;
         acquisitions = 0;
-        extraData = null;
+        extraData = new ExtraData();
 
         // Initialize Data based on these settings
         setFullName();
@@ -1296,9 +1296,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         setDueDate(tCal);
 
         int size = PREGNANCY_SIZE.getAsInt();
-        if (extraData == null) {
-            extraData = new ExtraData();
-        }
         extraData.set(PREGNANCY_CHILDREN_DATA, size);
         extraData.set(PREGNANCY_FATHER_DATA, (hasSpouse()) ? getSpouseId().toString() : null);
 
@@ -2167,8 +2164,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     + acquisitions
                     + "</acquisitions>");
         }
-        // TODO : the following should also check if it is empty, and output should be formatted properly
-        if (extraData != null) {
+        if (!extraData.isEmpty()) {
             extraData.writeToXml(pw1);
             pw1.println(); // end the line to improve the formatting
         }
@@ -2274,6 +2270,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("dueDate")) {
                     retVal.dueDate = (GregorianCalendar) GregorianCalendar.getInstance();
                     retVal.dueDate.setTime(df.parse(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("expectedDueDate")) {
+                    retVal.expectedDueDate = (GregorianCalendar) GregorianCalendar.getInstance();
+                    retVal.expectedDueDate.setTime(df.parse(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("portraitCategory")) {
                     retVal.setPortraitCategory(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("portraitFile")) {
@@ -2626,6 +2625,16 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 }
                 valueChanged = true;
             }
+        } else if (wn2.getNodeName().equalsIgnoreCase("expectedDueDate")) {
+            if (version.isLowerThan("0.47.6")) {
+                try {
+                    retVal.expectedDueDate = (GregorianCalendar) GregorianCalendar.getInstance();
+                    retVal.expectedDueDate.setTime(df.parse(wn2.getTextContent().trim()));
+                } catch (Exception e) {
+                    MekHQ.getLogger().error(Person.class, METHOD_NAME, e);
+                }
+                valueChanged = true;
+            }
         } else if (wn2.getNodeName().equalsIgnoreCase("birthday")) {
             if (version.isLowerThan("0.47.6")) {
                 try {
@@ -2779,6 +2788,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @param version the version number of the file being migrated
      */
     private static void migrateFieldsOnLoad(Person retVal, Campaign campaign, Version version) {
+        if (version.isLowerThan("0.47.5") && (retVal.getExpectedDueDate() == null)
+                && (retVal.getDueDate() != null)) {
+            retVal.setExpectedDueDate((GregorianCalendar) retVal.getDueDate().clone());
+        }
+
         if ((version.getMajorVersion() == 0) && (version.getMinorVersion() == 3) && (version.getSnapshot() < 1)) {
             //adjust for conventional fighter pilots
             if ((retVal.primaryRole == T_CONV_PILOT) && retVal.hasSkill(SkillType.S_PILOT_SPACE)
@@ -2875,13 +2889,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
         }
 
         //if salary is negative, then use the standard amounts
-        Money primaryBase = campaign.getCampaignOptions().getBaseSalary(getPrimaryRole());
+        Money primaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getPrimaryRole());
         primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(false)));
         if (hasSkill(SkillType.S_ANTI_MECH) && (getPrimaryRole() == T_INFANTRY || getPrimaryRole() == T_BA)) {
             primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
         }
 
-        Money secondaryBase = campaign.getCampaignOptions().getBaseSalary(getSecondaryRole()).dividedBy(2);
+        Money secondaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getSecondaryRole()).dividedBy(2);
         secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(true)));
         if (hasSkill(SkillType.S_ANTI_MECH) && (getSecondaryRole() == T_INFANTRY || getSecondaryRole() == T_BA)) {
             secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
