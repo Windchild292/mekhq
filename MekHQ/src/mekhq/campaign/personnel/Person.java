@@ -1539,21 +1539,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
     //endregion Divorce
 
-    //region Deaths
-    public void died() {
-        /*
-        ServiceLogger.kia(person, getDate());
-        // set the date of death
-        person.setDateOfDeath((GregorianCalendar) calendar.clone());
-        // Don't forget to tell the spouse
-        if (person.hasSpouse()) {
-            person.divorce(getCampaignOptions().getKeepMarriedNameUponSpouseDeath()
-                    ? Person.OPT_KEEP_SURNAME : Person.OPT_SPOUSE_CHANGE_SURNAME);
-        }
-         */
-    }
-    //endregion Deaths
-
     public boolean isFemale() {
         return gender == Crew.G_FEMALE;
     }
