@@ -3501,7 +3501,11 @@ public class Campaign implements Serializable, ITechManager {
             }
 
             // Random Death
-
+            if (getCampaignOptions().useRandomDeaths()) {
+                if (RandomDeathUtil.randomDeath(p)) {
+                    continue;
+                }
+            }
             // Random Marriages
             if (getCampaignOptions().useRandomMarriages()) {
                 p.randomMarriage();
