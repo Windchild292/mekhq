@@ -2,6 +2,7 @@
  * Person.java
  *
  * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved
  *
  * This file is part of MekHQ.
  *
@@ -369,8 +370,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         OTHER_RANSOM_VALUES.put(SkillType.EXP_ELITE, Money.of(50000));
     }
 
-    private final static String dateDisplayFormat = "yyyy-MM-dd";
-    private final static String dateSaveFormat = "yyyy-MM-dd";  //DO NOT USE FOR DISPLAY FORMATS
+    private final static String DATE_DISPLAY_FORMAT = "yyyy-MM-dd";
+    private final static String DATE_SAVE_FORMAT = "yyyy-MM-dd";  //DO NOT USE FOR DISPLAY FORMATS
 
     //region Reverse Compatibility
     private int oldUnitId = -1;
@@ -1101,7 +1102,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         if (getRecruitment() == null) {
             return null;
         } else {
-            return getRecruitment().format(DateTimeFormatter.ofPattern(dateDisplayFormat));
+            return getRecruitment().format(DateTimeFormatter.ofPattern(DATE_DISPLAY_FORMAT));
         }
     }
 
@@ -1750,13 +1751,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
         if (dueDate != null) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                     + "<dueDate>"
-                    + dueDate.format(DateTimeFormatter.ofPattern(dateSaveFormat))
+                    + dueDate.format(DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT))
                     + "</dueDate>");
         }
         if (expectedDueDate != null) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                     + "<expectedDueDate>"
-                    + expectedDueDate.format(DateTimeFormatter.ofPattern(dateSaveFormat))
+                    + expectedDueDate.format(DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT))
                     + "</expectedDueDate>");
         }
         if (!portraitCategory.equals(Crew.ROOT_PORTRAIT)) {
@@ -1884,19 +1885,19 @@ public class Person implements Serializable, MekHqXmlSerializable {
         if (birthday != null) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                     + "<birthday>"
-                    + birthday.format(DateTimeFormatter.ofPattern(dateSaveFormat))
+                    + birthday.format(DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT))
                     + "</birthday>");
         }
         if (null != dateOfDeath) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                     + "<deathday>"
-                    + dateOfDeath.format(DateTimeFormatter.ofPattern(dateSaveFormat))
+                    + dateOfDeath.format(DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT))
                     + "</deathday>");
         }
         if (null != recruitment) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                     + "<recruitment>"
-                    + recruitment.format(DateTimeFormatter.ofPattern(dateSaveFormat))
+                    + recruitment.format(DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT))
                     + "</recruitment>");
         }
         for (Skill skill : skills.getSkills()) {
@@ -2110,7 +2111,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
                     } else {
                         retVal.dueDate = LocalDate.parse(wn2.getTextContent().trim(),
-                                DateTimeFormatter.ofPattern(dateSaveFormat));
+                                DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT));
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("expectedDueDate")) {
                     if (version.isLowerThan("0.47.6")) {
@@ -2121,7 +2122,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
                     } else {
                         retVal.expectedDueDate = LocalDate.parse(wn2.getTextContent().trim(),
-                                DateTimeFormatter.ofPattern(dateSaveFormat));
+                                DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT));
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("teamId")) {
                     retVal.teamId = Integer.parseInt(wn2.getTextContent());
@@ -2212,7 +2213,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
                     } else {
                         retVal.birthday = LocalDate.parse(wn2.getTextContent().trim(),
-                                DateTimeFormatter.ofPattern(dateSaveFormat));
+                                DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT));
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("deathday")) {
                     if (version.isLowerThan("0.47.6")) {
@@ -2223,7 +2224,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
                     } else {
                         retVal.dateOfDeath = LocalDate.parse(wn2.getTextContent().trim(),
-                                DateTimeFormatter.ofPattern(dateSaveFormat));
+                                DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT));
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("recruitment")) {
                     if (version.isLowerThan("0.47.6")) {
@@ -2234,7 +2235,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
                     } else {
                         retVal.recruitment = LocalDate.parse(wn2.getTextContent().trim(),
-                                DateTimeFormatter.ofPattern(dateSaveFormat));
+                                DateTimeFormatter.ofPattern(DATE_SAVE_FORMAT));
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("advantages")) {
                     advantages = wn2.getTextContent();
