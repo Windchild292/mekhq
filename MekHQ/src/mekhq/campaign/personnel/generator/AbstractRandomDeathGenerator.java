@@ -20,7 +20,10 @@ package mekhq.campaign.personnel.generator;
 
 import megamek.common.Compute;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.personnel.Injury;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.enums.AgeRange;
+import mekhq.campaign.personnel.enums.InjuryLevel;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.RandomDeathRandomizationType;
 
@@ -36,35 +39,36 @@ public abstract class AbstractRandomDeathGenerator {
     public abstract boolean randomDeath(int age, int gender);
 
     public PersonnelStatus getCause(Person person, Campaign campaign) {
-        // First, we check if the person is pregnant
-        if (person.isPregnant()) {
-            if (campaign.getCampaignOptions().useUnofficialProcreation()) {
-                int pregnancyWeek = person.getPregnancyWeek(campaign.getLocalDate());
-                double babyBornChance;
-                if (pregnancyWeek > 35) {
-                    babyBornChance = 1;
-                } else if (pregnancyWeek > 29) {
-                    babyBornChance = 0.95;
-                } else if (pregnancyWeek > 25) {
-                    babyBornChance = 0.9;
-                } else if (pregnancyWeek == 25) {
-                    babyBornChance = 0.8; // TODO : Windchild make me an option
-                } else if (pregnancyWeek == 24) {
-                    babyBornChance = 0.5; // TODO : Windchild make me an option
-                } else if (pregnancyWeek == 23) {
-                    babyBornChance = 0.25; // TODO : Windchild make me an option
-                } else {
-                    babyBornChance = 0;
-                }
-
-                if (Compute.randomFloat() < babyBornChance) {
-                    person.birth();
-                }
+        if (person.isPregnant() && person.getPregnancyWeek(campaign.getLocalDate()) > 22) {
+            return PersonnelStatus.PREGNANCY_COMPLICATIONS;
+        } else if (AgeRange.determineAgeRange(person.getAge(campaign.getLocalDate())) == AgeRange.ELDER) {
+            // First, we need to see if they succumb to a disease or injury
+            PersonnelStatus status = determineIfInjuriesCausedTheDeath(person);
+            if (status != null) {
+                return status;
             }
 
-            return PersonnelStatus.PREGNANCY_COMPLICATIONS;
+            // otherwise, they are claimed by old age
+            return PersonnelStatus.OLD_AGE;
+        } else if (person.hasInjuries(false)) {
+            PersonnelStatus status = determineIfInjuriesCausedTheDeath(person);
+            if (status != null) {
+                return status;
+            }
         }
 
         return PersonnelStatus.NATURAL_CAUSES;
+    }
+
+    private PersonnelStatus determineIfInjuriesCausedTheDeath(Person person) {
+        for (Injury injury : person.getInjuries()) {
+            InjuryLevel level = injury.getLevel();
+            if ((level == InjuryLevel.DEADLY) || (level == InjuryLevel.MAJOR)) {
+                // TODO : add diseases
+                return PersonnelStatus.WOUNDS;
+            }
+        }
+
+        return null;
     }
 }

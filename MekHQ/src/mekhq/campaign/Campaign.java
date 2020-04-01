@@ -5999,6 +5999,34 @@ public class Campaign implements Serializable, ITechManager {
 
     public void changeStatus(Person person, PersonnelStatus status) {
         Unit u = getUnit(person.getUnitId());
+
+        if (status == PersonnelStatus.PREGNANCY_COMPLICATIONS) {
+            // The child might be able to be born, albeit into a world without their mother
+            if (getCampaignOptions().useUnofficialProcreation()) {
+                int pregnancyWeek = person.getPregnancyWeek(getLocalDate());
+                double babyBornChance;
+                if (pregnancyWeek > 35) {
+                    babyBornChance = 1;
+                } else if (pregnancyWeek > 29) {
+                    babyBornChance = 0.95;
+                } else if (pregnancyWeek > 25) {
+                    babyBornChance = 0.9;
+                } else if (pregnancyWeek == 25) {
+                    babyBornChance = 0.8; // TODO : Windchild make me an option
+                } else if (pregnancyWeek == 24) {
+                    babyBornChance = 0.5; // TODO : Windchild make me an option
+                } else if (pregnancyWeek == 23) {
+                    babyBornChance = 0.25; // TODO : Windchild make me an option
+                } else {
+                    babyBornChance = 0;
+                }
+
+                if (Compute.randomFloat() < babyBornChance) {
+                    person.birth();
+                }
+            }
+        }
+
         if (status == PersonnelStatus.KIA) {
             ServiceLogger.kia(person, getDate());
             // set the date of death
