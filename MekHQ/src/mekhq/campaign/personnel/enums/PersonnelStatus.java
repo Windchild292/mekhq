@@ -27,7 +27,12 @@ public enum PersonnelStatus {
     ACTIVE("PersonnelStatus.ACTIVE.text"),
     RETIRED("PersonnelStatus.RETIRED.text"),
     KIA("PersonnelStatus.KIA.text"),
-    MIA("PersonnelStatus.MIA.text");
+    MIA("PersonnelStatus.MIA.text"),
+    NATURAL_CAUSES("PersonnelStatus.NATURAL_CAUSES.text"),
+    WOUNDS("PersonnelStatus.WOUNDS.text"),
+    DISEASE("PersonnelStatus.DISEASE.text"),
+    OLD_AGE("PersonnelStatus.OLD_AGE.text"),
+    PREGNANCY_COMPLICATIONS("PersonnelStatus.PREGNANCY_COMPLICATIONS.text");
     //endregion Enum Declarations
 
     //region Variable Declarations
@@ -47,5 +52,20 @@ public enum PersonnelStatus {
      */
     public String getStatusName() {
         return statusName;
+    }
+
+    /**
+     * @return true if a person is dead, otherwise false
+     */
+    public boolean isDead() {
+        return (this == KIA) || (this == NATURAL_CAUSES) || (this == WOUNDS) || (this == DISEASE)
+                || (this == OLD_AGE);
+    }
+
+    /**
+     * @return true if a person is dead or MIA, otherwise false
+     */
+    public boolean isDeadOrMIA() {
+        return isDead() || (this == MIA);
     }
 }
