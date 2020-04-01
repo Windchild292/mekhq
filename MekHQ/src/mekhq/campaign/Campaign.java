@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -39,8 +40,7 @@ import mekhq.campaign.finances.*;
 import mekhq.campaign.log.*;
 import mekhq.campaign.personnel.*;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
-import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
-import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
+import mekhq.campaign.personnel.generator.*;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
 import org.joda.time.DateTime;
@@ -3494,7 +3494,22 @@ public class Campaign implements Serializable, ITechManager {
 
             // Random Death
             if (getCampaignOptions().useRandomDeaths()) {
-                if (RandomDeathUtil.randomDeath(p)) {
+                AbstractRandomDeathGenerator randomDeathGenerator;
+                switch (getCampaignOptions().getRandomDeathUtilType()) {
+                    case ERA_WEIGHTED:
+                    case FACTION_WEIGHTED:
+                    case ERA_FACTION_WEIGHTED:
+                    case GENERAL_WEIGHTED:
+                        MekHQ.getLogger().warning(getClass(), "processNewDayPersonnel",
+                                "RandomDeath: Util Type " + getCampaignOptions().getRandomDeathUtilType()
+                                        + "is not currently supported. Using the standard util type instead.");
+                    case STANDARD:
+                    default:
+                        randomDeathGenerator = new SixthOrderDifferentialRandomDeathGenerator();
+                        break;
+                }
+                if (randomDeathGenerator.randomDeath(p.getAge(getCalendar()), p.getGender())) {
+                    changeStatus(p, randomDeathGenerator.getCause(p, this));
                     continue;
                 }
             }

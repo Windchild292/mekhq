@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
@@ -1172,6 +1173,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public void setExpectedDueDate(GregorianCalendar expectedDueDate) {
         this.expectedDueDate = expectedDueDate;
+    }
+
+    public int getPregnancyWeek(LocalDate today) {
+
     }
 
     public boolean isPregnant() {
