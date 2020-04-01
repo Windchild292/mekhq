@@ -18,7 +18,6 @@
  */
 package mekhq.campaign.personnel.generator;
 
-import megamek.common.Compute;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Injury;
 import mekhq.campaign.personnel.Person;

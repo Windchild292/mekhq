@@ -62,7 +62,7 @@ public class SixthOrderDifferentialRandomDeathGenerator extends AbstractRandomDe
             }
         }
 
-        MekHQ.getLogger().info(getClass(), "randomDeath",
+        MekHQ.getLogger().warning(getClass(), "randomDeath",
                 "The odds of randomly dying were calculated to be " + chance + " for a "
                         + (gender == Crew.G_FEMALE ? "female" : "male") + " person");
 
