@@ -28,6 +28,7 @@ import java.util.List;
 
 import mekhq.campaign.finances.Money;
 
+import mekhq.campaign.personnel.enums.RandomDeathRandomizationType;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -143,14 +144,23 @@ public class CampaignOptions implements Serializable {
     public static final int PARENTS_CHILDREN_SIBLINGS = 0;
     public static final int GRANDPARENTS_GRANDCHILDREN = 1;
     public static final int AUNTS_UNCLES_COUSINS = 2;
-    private boolean useRandomDeaths;
-    private boolean keepMarriedNameUponSpouseDeath;
     //salary
     private double salaryCommissionMultiplier;
     private double salaryEnlistedMultiplier;
     private double salaryAntiMekMultiplier;
     private double[] salaryXpMultiplier;
     private Money[] salaryTypeBase;
+    //Deaths
+    private boolean useRandomDeaths;
+    private RandomDeathRandomizationType randomDeathUtilType;
+    private double[] randomDeathMaleMValues;
+    private double[] randomDeathMaleNValues;
+    private double[] randomDeathFemaleMValues;
+    private double[] randomDeathFemaleNValues;
+    private boolean enableTeenRandomDeaths;
+    private boolean enableChildRandomDeaths;
+    private boolean enableInfantRandomDeaths;
+    private boolean keepMarriedNameUponSpouseDeath;
     //endregion Personnel Tab
 
     //personnel market related
@@ -524,8 +534,6 @@ public class CampaignOptions implements Serializable {
         babySurnameStyle = BABY_SURNAME_MINE;
         useParentage = false;
         displayFamilyLevel = PARENTS_CHILDREN_SIBLINGS;
-        useRandomDeaths = true;
-        keepMarriedNameUponSpouseDeath = true;
         //Salary
         salaryAntiMekMultiplier = 1.5;
         salaryEnlistedMultiplier = 1.0;
@@ -565,6 +573,45 @@ public class CampaignOptions implements Serializable {
         salaryTypeBase[Person.T_PROTO_PILOT] = Money.of(960);
         salaryTypeBase[Person.T_LAM_PILOT] = Money.of(1500);
         salaryTypeBase[Person.T_VEHICLE_CREW] = Money.of(900);
+        //Deaths
+        useRandomDeaths = true;
+        randomDeathUtilType = RandomDeathRandomizationType.STANDARD;
+        randomDeathMaleMValues = new double[7];
+        randomDeathMaleNValues = new double[7];
+        randomDeathMaleMValues[6] = 7;
+        randomDeathMaleNValues[6] = -12;
+        randomDeathMaleMValues[5] = -2;
+        randomDeathMaleNValues[5] = -9;
+        randomDeathMaleMValues[4] = 2;
+        randomDeathMaleNValues[4] = -7;
+        randomDeathMaleMValues[3] = -7;
+        randomDeathMaleNValues[3] = -6;
+        randomDeathMaleMValues[2] = 2;
+        randomDeathMaleNValues[2] = -4;
+        randomDeathMaleNValues[1] = -1.5;
+        randomDeathMaleNValues[1] = -3;
+        randomDeathMaleMValues[0] = 4.1;
+        randomDeathMaleNValues[0] = -3;
+        randomDeathFemaleMValues = new double[7];
+        randomDeathFemaleNValues = new double[7];
+        randomDeathFemaleMValues[6] = 7;
+        randomDeathFemaleNValues[6] = -12;
+        randomDeathFemaleMValues[5] = -2;
+        randomDeathFemaleNValues[5] = -9;
+        randomDeathFemaleMValues[4] = 2;
+        randomDeathFemaleNValues[4] = -7;
+        randomDeathFemaleMValues[3] = -7;
+        randomDeathFemaleNValues[3] = -6;
+        randomDeathFemaleMValues[2] = 1;
+        randomDeathFemaleNValues[2] = -4;
+        randomDeathFemaleMValues[1] = -1.3;
+        randomDeathFemaleNValues[1] = -3;
+        randomDeathFemaleMValues[0] = 3.4;
+        randomDeathFemaleNValues[0] = -3;
+        enableTeenRandomDeaths = false;
+        enableChildRandomDeaths = false;
+        enableInfantRandomDeaths = false;
+        keepMarriedNameUponSpouseDeath = true;
         //endregion Personnel Tab
 
         //region Personnel Market Tab
@@ -1169,36 +1216,6 @@ public class CampaignOptions implements Serializable {
     public void setDisplayFamilyLevel(int b) {
         displayFamilyLevel = b;
     }
-
-    /**
-     * TODO : Finish implementing me
-     * @return whether or not to use random deaths
-     */
-    public boolean useRandomDeaths() {
-        return useRandomDeaths;
-    }
-
-    /**
-     * TODO : Finish implementing me
-     * @param b whether or not to use random deaths
-     */
-    public void setUseRandomDeaths(boolean b) {
-        useRandomDeaths = b;
-    }
-
-    /**
-     * @return whether to keep ones married name upon spouse death or not
-     */
-    public boolean getKeepMarriedNameUponSpouseDeath() {
-        return keepMarriedNameUponSpouseDeath;
-    }
-
-    /**
-     * @param b whether to keep ones married name upon spouse death or not
-     */
-    public void setKeepMarriedNameUponSpouseDeath(boolean b) {
-        keepMarriedNameUponSpouseDeath = b;
-    }
     //endregion family
 
     //region salary
@@ -1263,6 +1280,102 @@ public class CampaignOptions implements Serializable {
         this.salaryTypeBase[type] = Money.of(base);
     }
     //endregion salary
+
+    //region Deaths
+    /**
+     * @return whether or not to use random deaths
+     */
+    public boolean useRandomDeaths() {
+        return useRandomDeaths;
+    }
+
+    /**
+     * @param b whether or not to use random deaths
+     */
+    public void setUseRandomDeaths(boolean b) {
+        useRandomDeaths = b;
+    }
+
+    /**
+     * @return the type of random death util to use
+     */
+    public RandomDeathRandomizationType getRandomDeathUtilType() {
+        return randomDeathUtilType;
+    }
+
+    /**
+     * @param b the type of random death util to use
+     */
+    public void setRandomDeathUtil(RandomDeathRandomizationType b) {
+        this.randomDeathUtilType = b;
+    }
+
+    public double[] getRandomDeathMaleMValues() {
+        return randomDeathMaleMValues;
+    }
+    public double getRandomDeathMaleMValue(int pos) {
+        return randomDeathMaleMValues[pos];
+    }
+
+    public double[] getRandomDeathMaleNValues() {
+        return randomDeathMaleNValues;
+    }
+    public double getRandomDeathMaleNValue(int pos) {
+        return randomDeathMaleNValues[pos];
+    }
+
+    public double[] getRandomDeathFemaleMValues() {
+        return randomDeathFemaleMValues;
+    }
+    public double getRandomDeathFemaleMValue(int pos) {
+        return randomDeathFemaleMValues[pos];
+    }
+
+    public double[] getRandomDeathFemaleNValues() {
+        return randomDeathFemaleNValues;
+    }
+    public double getRandomDeathFemaleNValue(int pos) {
+        return randomDeathFemaleNValues[pos];
+    }
+
+    public boolean teenDeathsEnabled() {
+        return enableTeenRandomDeaths;
+    }
+
+    public void setEnableTeenRandomDeaths(boolean b) {
+        enableTeenRandomDeaths = b;
+    }
+
+    public boolean childDeathsEnabled() {
+        return enableChildRandomDeaths;
+    }
+
+    public void setEnableChildRandomDeaths(boolean b) {
+        enableChildRandomDeaths = b;
+    }
+
+    public boolean infantDeathsEnabled() {
+        return enableInfantRandomDeaths;
+    }
+
+    public void setEnableInfantRandomDeaths(boolean b) {
+        this.enableInfantRandomDeaths = b;
+    }
+
+    /**
+     * @return whether to keep ones married name upon spouse death or not
+     */
+    public boolean getKeepMarriedNameUponSpouseDeath() {
+        return keepMarriedNameUponSpouseDeath;
+    }
+
+    /**
+     * @param b whether to keep ones married name upon spouse death or not
+     */
+    public void setKeepMarriedNameUponSpouseDeath(boolean b) {
+        keepMarriedNameUponSpouseDeath = b;
+    }
+    //endregion Deaths
     //endregion Personnel Tab
 
     /**
@@ -2806,7 +2919,8 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useRandomHitsForVees", useRandomHitsForVees);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "minimumHitsForVees", minimumHitsForVees);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "maxAcquisitions", maxAcquisitions);
-        //region family
+        //region Personnel
+        //region Family
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "minimumMarriageAge", minimumMarriageAge);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "checkMutualAncestorsDepth", checkMutualAncestorsDepth);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useRandomMarriages", useRandomMarriages);
@@ -2827,9 +2941,42 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "babySurnameStyle", babySurnameStyle);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useParentage", useParentage);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "displayFamilyLevel", displayFamilyLevel);
+        //endregion Family
+        //region Salary
+        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
+                + "<salaryTypeBase>"
+                + Utilities.printMoneyArray(salaryTypeBase)
+                + "</salaryTypeBase>");
+        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
+                + "<salaryXpMultiplier>"
+                + StringUtils.join(salaryXpMultiplier, ',')
+                + "</salaryXpMultiplier>");
+        //endregion Salary
+        //region Death
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useRandomDeaths", useRandomDeaths);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useRandomDeaths", randomDeathUtilType.name());
+        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
+                + "<randomDeathMaleMValues>"
+                + StringUtils.join(randomDeathMaleMValues, ',')
+                + "</randomDeathMaleMValues>");
+        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
+                + "<randomDeathMaleNValues>"
+                + StringUtils.join(randomDeathMaleNValues, ',')
+                + "</randomDeathMaleNValues>");
+        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
+                + "<randomDeathFemaleMValues>"
+                + StringUtils.join(randomDeathFemaleMValues, ',')
+                + "</randomDeathFemaleMValues>");
+        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
+                + "<randomDeathFemaleNValues>"
+                + StringUtils.join(randomDeathFemaleNValues, ',')
+                + "</randomDeathFemaleNValues>");
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enableTeenRandomDeaths", enableTeenRandomDeaths);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enableChildRandomDeaths", enableChildRandomDeaths);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enableInfantRandomDeaths", enableInfantRandomDeaths);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "keepMarriedNameUponSpouseDeath", keepMarriedNameUponSpouseDeath);
-        //endregion family
+        //endregion Death
+        //endregion Personnel
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useTransfers", useTransfers);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useTimeInService", useTimeInService);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "capturePrisoners", capturePrisoners);
@@ -2945,15 +3092,6 @@ public class CampaignOptions implements Serializable {
                 + "<planetOutputAcquisitionBonus>"
                 + StringUtils.join(planetOutputAcquisitionBonus, ',')
                 + "</planetOutputAcquisitionBonus>");
-
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<salaryTypeBase>"
-                    + Utilities.printMoneyArray(salaryTypeBase)
-                    + "</salaryTypeBase>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<salaryXpMultiplier>"
-                    + StringUtils.join(salaryXpMultiplier, ',')
-                    + "</salaryXpMultiplier>");
 
 
         // cannot use StringUtils.join for a boolean array, so we are using this instead
@@ -3261,6 +3399,7 @@ public class CampaignOptions implements Serializable {
                 retVal.minimumHitsForVees = Integer.parseInt(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("maxAcquisitions")) {
                 retVal.maxAcquisitions = Integer.parseInt(wn2.getTextContent().trim());
+            //region Personnel
             //region Family
             } else if (wn2.getNodeName().equalsIgnoreCase("minimumMarriageAge")) {
                 retVal.minimumMarriageAge = Integer.parseInt(wn2.getTextContent().trim());
@@ -3299,11 +3438,57 @@ public class CampaignOptions implements Serializable {
                 retVal.useParentage = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("displayFamilyLevel")) {
                 retVal.displayFamilyLevel = Integer.parseInt(wn2.getTextContent().trim());
+            //endregion Family
+            //region Salary
+            } else if (wn2.getNodeName().equalsIgnoreCase("salaryCommissionMultiplier")) {
+                retVal.salaryCommissionMultiplier = Double.parseDouble(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("salaryEnlistedMultiplier")) {
+                retVal.salaryEnlistedMultiplier = Double.parseDouble(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("salaryAntiMekMultiplier")) {
+                retVal.salaryAntiMekMultiplier = Double.parseDouble(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("salaryTypeBase")) {
+                retVal.salaryTypeBase = Utilities.readMoneyArray(wn2);
+            } else if (wn2.getNodeName().equalsIgnoreCase("salaryXpMultiplier")) {
+                String[] values = wn2.getTextContent().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.salaryXpMultiplier[i] = Double.parseDouble(values[i]);
+                }
+            //endregion Salary
+            //region Death
             } else if (wn2.getNodeName().equalsIgnoreCase("useRandomDeaths")) {
                 retVal.useRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathUtilType")) {
+                retVal.randomDeathUtilType = RandomDeathRandomizationType.valueOf(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMaleMValues")) {
+                String[] values = wn2.getTextContent().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathMaleMValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMaleNValues")) {
+                String[] values = wn2.getTextContent().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathMaleNValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathFemaleMValues")) {
+                String[] values = wn2.getTextContent().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathFemaleMValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathFemaleNValues")) {
+                String[] values = wn2.getTextContent().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathFemaleNValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableTeenRandomDeaths")) {
+                retVal.enableTeenRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableChildRandomDeaths")) {
+                retVal.enableChildRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableInfantRandomDeaths")) {
+                retVal.enableInfantRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("keepMarriedNameUponSpouseDeath")) {
                 retVal.keepMarriedNameUponSpouseDeath = Boolean.parseBoolean(wn2.getTextContent().trim());
-            //endregion Family
+            //endregion Death
+            //endregion Personnel
             } else if (wn2.getNodeName().equalsIgnoreCase("useTransfers")) {
             	retVal.useTransfers = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useTimeInService")) {
@@ -3333,19 +3518,6 @@ public class CampaignOptions implements Serializable {
                 retVal.personnelMarketReportRefresh = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketDylansWeight")) {
                 retVal.personnelMarketDylansWeight = Double.parseDouble(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("salaryCommissionMultiplier")) {
-                retVal.salaryCommissionMultiplier = Double.parseDouble(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("salaryEnlistedMultiplier")) {
-                retVal.salaryEnlistedMultiplier = Double.parseDouble(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("salaryAntiMekMultiplier")) {
-                retVal.salaryAntiMekMultiplier = Double.parseDouble(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("salaryTypeBase")) {
-                retVal.salaryTypeBase = Utilities.readMoneyArray(wn2);
-            } else if (wn2.getNodeName().equalsIgnoreCase("salaryXpMultiplier")) {
-                String[] values = wn2.getTextContent().split(",");
-                for (int i = 0; i < values.length; i++) {
-                    retVal.salaryXpMultiplier[i] = Double.parseDouble(values[i]);
-                }
             } else if (wn2.getNodeName().equalsIgnoreCase("probPhenoMW")) {
                 retVal.probPhenoMW = Integer.parseInt(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("probPhenoAero")) {
