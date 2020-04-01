@@ -39,6 +39,7 @@ import mekhq.campaign.log.*;
 import mekhq.campaign.personnel.enums.BodyLocation;
 import mekhq.campaign.personnel.enums.GenderDescriptors;
 import mekhq.campaign.personnel.enums.ModifierValue;
+import mekhq.campaign.personnel.enums.PersonnelStatus;
 import org.joda.time.DateTime;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -103,12 +104,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     // This value should always be +1 of the last defined role
     public static final int T_NUM = 28;
-
-    public static final int S_ACTIVE = 0;
-    public static final int S_RETIRED = 1;
-    public static final int S_KIA = 2;
-    public static final int S_MIA = 3;
-    public static final int S_NUM = 4;
 
     // Prisoners, Bondsmen, and Normal Personnel
     public static final int PRISONER_NOT = 0;
@@ -250,7 +245,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     private PersonnelOptions options;
     private int toughness;
 
-    private int status;
+    private PersonnelStatus status;
     protected int xp;
     protected int engXp;
     protected int acquisitions;
@@ -451,7 +446,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         doctorId = null;
         unitId = null;
         salary = Money.of(-1);
-        status = S_ACTIVE;
+        status = PersonnelStatus.ACTIVE;
         prisonerStatus = PRISONER_NOT;
         willingToDefect = false;
         hits = 0;
@@ -584,112 +579,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     //region Text Getters
-    //TODO : Rename and Localize region
-    public String getGenderString(GenderDescriptors variant) {
-        return getGenderString(gender, variant);
-    }
-
-    public static String getGenderString(int gender, GenderDescriptors variant) {
-        switch (variant) {
-            case MALE_FEMALE: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "Male";
-                    case Crew.G_FEMALE:
-                        return "Female";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HE_SHE: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "he";
-                    case Crew.G_FEMALE:
-                        return "she";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HIM_HER: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "him";
-                    case Crew.G_FEMALE:
-                        return "her";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HIS_HER: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "his";
-                    case Crew.G_FEMALE:
-                        return "her";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HIS_HERS: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "his";
-                    case Crew.G_FEMALE:
-                        return "hers";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case BOY_GIRL: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "boy";
-                    case Crew.G_FEMALE:
-                        return "girl";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            default: {
-                MekHQ.getLogger().error(Person.class, "getGenderString",
-                        "Gender described by int " + gender + " is unknown!");
-                return Crew.GENDER_ERROR;
-            }
-        }
-    }
-
-    public String getStatusName() {
-        return getStatusName(status);
-    }
-
-    public static String getStatusName(int status) {
-        switch (status) {
-            case S_ACTIVE:
-                return "Active";
-            case S_RETIRED:
-                return "Retired";
-            case S_KIA:
-                return "Killed in Action";
-            case S_MIA:
-                return "Missing in Action";
-            default:
-                return "?";
-        }
-    }
-
     public String pregnancyStatus() {
         return isPregnant() ? " (Pregnant)" : "";
     }
@@ -788,24 +677,22 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void setFullName() {
-        if (!StringUtil.isNullOrEmpty(givenName)) {
-            if (isClanner()) {
-                if (!StringUtil.isNullOrEmpty(bloodname)) {
-                    fullName = givenName + " " + bloodname;
-                } else {
-                    fullName = givenName;
-                }
+        if (isClanner()) {
+            if (!StringUtil.isNullOrEmpty(bloodname)) {
+                fullName = givenName + " " + bloodname;
             } else {
-                if (!StringUtil.isNullOrEmpty(surname)) {
-                    fullName = givenName + " " + surname;
-                } else {
-                    fullName = givenName;
-                }
+                fullName = givenName;
             }
+        } else {
+            if (!StringUtil.isNullOrEmpty(surname)) {
+                fullName = givenName + " " + surname;
+            } else {
+                fullName = givenName;
+            }
+        }
 
-            if (!StringUtil.isNullOrEmpty(honorific)) {
-                fullName += " " + honorific;
-            }
+        if (!StringUtil.isNullOrEmpty(honorific)) {
+            fullName += " " + honorific;
         }
     }
 
@@ -844,12 +731,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
             if (!(!StringUtil.isNullOrEmpty(getBloodname()) && getBloodname().equals(name[i]))) {
                 givenName += space + name[i];
             }
-
-            surname = null;
         } else {
             if (name.length == 1) {
                 givenName = name[0];
-                surname = null;
             } else if (name.length == 2) {
                 givenName = name[0];
                 surname = name[1];
@@ -875,6 +759,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     surname = name[i] + space + name[i + 1];
                 }
             }
+        }
+
+        if ((surname == null) || (surname.equals(Crew.UNNAMED_SURNAME))) {
+            surname = "";
         }
 
         setFullName();
@@ -946,12 +834,12 @@ public class Person implements Serializable, MekHqXmlSerializable {
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
 
-    public int getStatus() {
+    public PersonnelStatus getStatus() {
         return status;
     }
 
-    public void setStatus(int s) {
-        this.status = s;
+    public void setStatus(PersonnelStatus status) {
+        this.status = status;
     }
 
     public int getIdleMonths() {
@@ -1374,7 +1262,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             baby.setAncestorsId(ancId);
 
             campaign.addReport(String.format("%s has given birth to %s, a baby %s!", getHyperlinkedName(),
-                    baby.getHyperlinkedName(), baby.getGenderString(GenderDescriptors.BOY_GIRL)));
+                    baby.getHyperlinkedName(), GenderDescriptors.BOY_GIRL.getDescriptor(baby.getGender())));
             if (campaign.getCampaignOptions().logConception()) {
                 MedicalLogger.deliveredBaby(this, baby, campaign.getDate());
                 if (fatherId != null) {
@@ -1472,15 +1360,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         String surname = getSurname();
         String spouseSurname = spouse.getSurname();
 
-        // these are used in the divorce code, as a null name will be ignored while a
-        // "" name is used to set an empty last name
-        if (surname == null) {
-            surname = "";
-        }
-        if (spouseSurname == null) {
-            spouseSurname = "";
-        }
-
         if (surnameOption == SURNAME_WEIGHTED) {
             WeightedMap<Integer> map = createWeightedSurnameMap();
             surnameOption = map.randomItem();
@@ -1490,17 +1369,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
             case SURNAME_NO_CHANGE:
                 break;
             case SURNAME_SPOUSE:
-                if (!StringUtil.isNullOrEmpty(spouseSurname)) {
-                    setSurname(spouseSurname);
-                }
-
+                setSurname(spouseSurname);
                 setMaidenName(surname); //"" is handled in the divorce code
                 break;
             case SURNAME_YOURS:
-                if (!StringUtil.isNullOrEmpty(surname)) {
-                    spouse.setSurname(surname);
-                }
-
+                spouse.setSurname(surname);
                 spouse.setMaidenName(spouseSurname); //"" is handled in the divorce code
                 break;
             case SURNAME_HYP_YOURS:
@@ -1509,7 +1382,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else {
                     setSurname(spouseSurname);
                 }
-                //both null or "" is ignored as a case, as it would lead to no changes
 
                 setMaidenName(surname); //"" is handled in the divorce code
                 break;
@@ -1533,7 +1405,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else {
                     spouse.setSurname(surname);
                 }
-                //both null or "" is ignored as a case, as it would lead to no changes
 
                 spouse.setMaidenName(spouseSurname); //"" is handled in the divorce code
                 break;
@@ -1553,31 +1424,19 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 break;
             case SURNAME_MALE:
                 if (isMale()) {
-                    if (!StringUtil.isNullOrEmpty(surname)) {
-                        spouse.setSurname(surname);
-                    }
-
+                    spouse.setSurname(surname);
                     spouse.setMaidenName(spouseSurname); //"" is handled in the divorce code
                 } else {
-                    if (!StringUtil.isNullOrEmpty(spouseSurname)) {
-                        setSurname(spouseSurname);
-                    }
-
+                    setSurname(spouseSurname);
                     setMaidenName(surname); //"" is handled in the divorce code
                 }
                 break;
             case SURNAME_FEMALE:
                 if (isMale()) {
-                    if (!StringUtil.isNullOrEmpty(spouseSurname)) {
-                        setSurname(spouseSurname);
-                    }
-
+                    setSurname(spouseSurname);
                     setMaidenName(surname); //"" is handled in the divorce code
                 } else {
-                    if (!StringUtil.isNullOrEmpty(surname)) {
-                        spouse.setSurname(surname);
-                    }
-
+                    spouse.setSurname(surname);
                     spouse.setMaidenName(spouseSurname); //"" is handled in the divorce code
                 }
                 break;
@@ -1772,11 +1631,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean isActive() {
-        return getStatus() == S_ACTIVE;
+        return getStatus() == PersonnelStatus.ACTIVE;
     }
 
     public boolean isInActive() {
-        return getStatus() != S_ACTIVE;
+        return getStatus() != PersonnelStatus.ACTIVE;
     }
 
     public ExtraData getExtraData() {
@@ -1800,12 +1659,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 + "<givenName>"
                 + MekHqXmlUtil.escape(givenName)
                 + "</givenName>");
-        if (!StringUtil.isNullOrEmpty(surname)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<surname>"
-                    + MekHqXmlUtil.escape(surname)
-                    + "</surname>");
-        }
+        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
+                + "<surname>"
+                + MekHqXmlUtil.escape(surname)
+                + "</surname>");
         if (!StringUtil.isNullOrEmpty(honorific)) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                     + "<honorific>"
@@ -2016,7 +1873,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         // Always save a person's status, to make it easy to parse the personnel saved data
         pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                     + "<status>"
-                    + status
+                    + status.name()
                     + "</status>");
         if (prisonerStatus != PRISONER_NOT) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
@@ -2333,7 +2190,25 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("status")) {
-                    retVal.status = Integer.parseInt(wn2.getTextContent());
+                    // TODO : remove inline migration
+                    if (version.isLowerThan("0.47.6")) {
+                        switch (Integer.parseInt(wn2.getTextContent())) {
+                            case 1:
+                                retVal.status = PersonnelStatus.RETIRED;
+                                break;
+                            case 2:
+                                retVal.status = PersonnelStatus.KIA;
+                                break;
+                            case 3:
+                                retVal.status = PersonnelStatus.MIA;
+                                break;
+                            default:
+                                retVal.status = PersonnelStatus.ACTIVE;
+                                break;
+                        }
+                    } else {
+                        retVal.status = PersonnelStatus.valueOf(wn2.getTextContent());
+                    }
                 } else if (wn2.getNodeName().equalsIgnoreCase("prisonerStatus")) {
                     retVal.prisonerStatus = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("willingToDefect")) {
@@ -3395,7 +3270,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             }
         }
         // Check parent locations as well (a hand can be missing if the corresponding arm is)
-        return isLocationMissing(loc.parent);
+        return isLocationMissing(loc.Parent());
     }
 
     public void heal() {
@@ -3406,7 +3281,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean needsFixing() {
-        return (hits > 0 || needsAMFixing()) && status != S_KIA && status == S_ACTIVE;
+        return ((hits > 0) || needsAMFixing()) && (status == PersonnelStatus.ACTIVE);
     }
 
     public String succeed() {
@@ -4155,21 +4030,21 @@ public class Person implements Serializable, MekHqXmlSerializable {
         setHits(0);
     }
 
-    public void changeStatus(int status) {
+    public void changeStatus(PersonnelStatus status) {
         if (status == getStatus()) {
             return;
         }
         Unit u = campaign.getUnit(getUnitId());
-        if (status == Person.S_KIA) {
+        if (status == PersonnelStatus.KIA) {
             MedicalLogger.diedFromWounds(this, campaign.getDate());
             //set the date of death
             setDateOfDeath((GregorianCalendar) campaign.getCalendar().clone());
         }
-        if (status == Person.S_RETIRED) {
+        if (status == PersonnelStatus.RETIRED) {
             ServiceLogger.retireDueToWounds(this, campaign.getDate());
         }
         setStatus(status);
-        if (status != Person.S_ACTIVE) {
+        if (status != PersonnelStatus.ACTIVE) {
             setDoctorId(null, campaign.getCampaignOptions().getNaturalHealingWaitingPeriod());
             // If we're assigned to a unit, remove us from it
             if (null != u) {
@@ -4425,7 +4300,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean isDeadOrMIA() {
-        return (status == S_KIA) || (status == S_MIA);
+        return (status == PersonnelStatus.KIA) || (status == PersonnelStatus.MIA);
     }
 
     public boolean isEngineer() {
