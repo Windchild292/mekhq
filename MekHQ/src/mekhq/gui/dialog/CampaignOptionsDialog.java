@@ -667,8 +667,10 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panMisc = new JPanel();
         chkHistoricalDailyLog = new JCheckBox();
 
-        java.awt.GridBagConstraints gridBagConstraints;
+        GridBagConstraints gridBagConstraints;
+        int gridx = 0;
         int gridy = 0;
+        int panelGridY = 0;
         //endregion Variable Declaration and Initialisation
 
         ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignOptionsDialog", new EncodeControl()); //$NON-NLS-1$
@@ -1556,7 +1558,9 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         //region Personnel Tab
         panPersonnel.setName("panPersonnel");
         panPersonnel.setLayout(new java.awt.GridBagLayout());
+        gridx = 0;
         gridy = 0;
+        panelGridY = 0;
 
         useTacticsBox.setText(resourceMap.getString("useTacticsBox.text"));
         useTacticsBox.setToolTipText(resourceMap.getString("useTacticsBox.toolTipText"));
@@ -1718,7 +1722,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         //Family
         JPanel panFamily = new JPanel(new GridBagLayout());
         panFamily.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("FamilyTab.text")));
-        int panGridY = ++gridy;
+        panelGridY = ++gridy;
 
         spnMinimumMarriageAge = new JSpinner(new SpinnerNumberModel(options.getMinimumMarriageAge(), 14, null, 1));
         Dimension dimensionMinimumMarriageAge = spnMinimumMarriageAge.getPreferredSize();
@@ -1879,12 +1883,14 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(pnlDisplayFamilyLevel, gridBagConstraints);
 
-        gridBagConstraints.gridy = panGridY;
+        gridBagConstraints.gridy = panelGridY;
         panPersonnel.add(panFamily, gridBagConstraints);
 
         //region Salary
         JPanel panSalary = new JPanel(new GridBagLayout());
         panSalary.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("SalaryTab.text")));
+        panelGridY = 0;
+        gridy = 0;
 
         JPanel panMultiplier = new JPanel(new GridLayout(1, 3));
         panMultiplier.setBorder(BorderFactory.createTitledBorder("Multipliers"));
@@ -1994,9 +2000,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         //region Death
         JPanel panDeath = new JPanel(new GridBagLayout());
         panDeath.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("DeathTab.text")));
-        panGridY = 1;
-        int panGridX = 1;
-        gridy = -1;
+        panelGridY += 1;
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2010,7 +2014,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkUseRandomDeaths, gridBagConstraints);
 
-
+/*
         // TODO : FINISH THIS SECTION
         double[] mValues = options.getRandomDeathMaleMValues();
         double[] nValues = options.getRandomDeathMaleNValues();
@@ -2057,30 +2061,6 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         sixthOrderConstraints.gridy = 0;
         randomDeathSixthOrderDifferentialPanel.add(randomDeathMaleFemaleMNPanel, sixthOrderConstraints);
 
-        /*
-
-        JPanel panType;
-        spnSalaryBase = new JSpinner[Person.T_NUM];
-
-        for (int i = 1; i < Person.T_NUM; i++) {
-            panType = new JPanel(new GridBagLayout());
-
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.weightx = 1.0;
-            panType.add(new JLabel(Person.getRoleDesc(i, false)), gridBagConstraints);
-
-            JSpinner spnType = new JSpinner(new SpinnerNumberModel(options.getBaseSalary(i), 0d, null, 10d));
-            spnType.setPreferredSize(new Dimension(75, 20));
-            spnSalaryBase[i] = spnType;
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.weightx = 0.0;
-            panType.add(spnType, gridBagConstraints);
-            panAllTypes.add(panType);
-        }
-
-         */
-
-
         mValues = options.getRandomDeathFemaleMValues();
         nValues = options.getRandomDeathFemaleNValues();
         randomDeathMaleFemaleMNPanel = new JPanel(new GridLayout(mValues.length, 4));
@@ -2095,28 +2075,33 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panDeath.add(randomDeathSixthOrderDifferentialPanel, gridBagConstraints);
         // TODO : END FINISH THIS SECTION
 
-
+*/
         chkEnableTeenRandomDeaths = new JCheckBox(resourceMap.getString("enableTeenRandomDeaths.text"));
+        chkEnableTeenRandomDeaths.setToolTipText(resourceMap.getString("enableTeenRandomDeaths.toolTipText"));
         chkEnableTeenRandomDeaths.setSelected(options.teenDeathsEnabled());
         gridBagConstraints.gridy = ++gridy;
-        panDeath.add(chkEnablePreteenRandomDeaths, gridBagConstraints);
+        panDeath.add(chkEnableTeenRandomDeaths, gridBagConstraints);
 
         chkEnablePreteenRandomDeaths = new JCheckBox(resourceMap.getString("enablePreteenRandomDeaths.text"));
+        chkEnablePreteenRandomDeaths.setToolTipText(resourceMap.getString("enablePreteenRandomDeaths.toolTipText"));
         chkEnablePreteenRandomDeaths.setSelected(options.preteenDeathsEnabled());
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkEnablePreteenRandomDeaths, gridBagConstraints);
 
         chkEnableChildRandomDeaths = new JCheckBox(resourceMap.getString("enableChildRandomDeaths.text"));
+        chkEnableChildRandomDeaths.setToolTipText(resourceMap.getString("enableChildRandomDeaths.toolTipText"));
         chkEnableChildRandomDeaths.setSelected(options.childDeathsEnabled());
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkEnableChildRandomDeaths, gridBagConstraints);
 
         chkEnableToddlerRandomDeaths = new JCheckBox(resourceMap.getString("enableToddlerRandomDeaths.text"));
+        chkEnableToddlerRandomDeaths.setToolTipText(resourceMap.getString("enableToddlerRandomDeaths.toolTipText"));
         chkEnableToddlerRandomDeaths.setSelected(options.toddlerDeathsEnabled());
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkEnableToddlerRandomDeaths, gridBagConstraints);
 
         chkEnableBabyRandomDeaths = new JCheckBox(resourceMap.getString("enableBabyRandomDeaths.text"));
+        chkEnableBabyRandomDeaths.setToolTipText(resourceMap.getString("enableBabyRandomDeaths.toolTipText"));
         chkEnableBabyRandomDeaths.setSelected(options.infantMortalityEnabled());
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkEnableBabyRandomDeaths, gridBagConstraints);
@@ -2126,8 +2111,14 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkKeepMarriedNameUponSpouseDeath, gridBagConstraints);
 
-        gridBagConstraints.gridy = panGridY;
-        gridBagConstraints.gridx = panGridX;
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 23;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panPersonnel.add(panDeath, gridBagConstraints);
         //endregion Death
 
