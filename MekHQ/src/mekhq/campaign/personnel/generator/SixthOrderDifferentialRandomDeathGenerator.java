@@ -50,15 +50,17 @@ public class SixthOrderDifferentialRandomDeathGenerator extends AbstractRandomDe
     //endregion Constructors
 
     @Override
-    public boolean randomDeath(int x, int gender) {
+    public boolean randomDeath(int age, int gender) {
+        // The chance is calculated in the format:
+        // sum from 0 to M.length of m * 10^n * age^i
         double chance = 0.0;
         if (gender == Crew.G_MALE) {
             for (int i = 0; i < maleM.length; i++) {
-                chance += maleM[i] * Math.pow(10, maleN[i]) * Math.pow(x, i);
+                chance += maleM[i] * Math.pow(10, maleN[i]) * Math.pow(age, i);
             }
         } else {
             for (int i = 0; i < femaleM.length; i++) {
-                chance += femaleM[i] * Math.pow(10, femaleN[i]) * Math.pow(x, i);
+                chance += femaleM[i] * Math.pow(10, femaleN[i]) * Math.pow(age, i);
             }
         }
 
