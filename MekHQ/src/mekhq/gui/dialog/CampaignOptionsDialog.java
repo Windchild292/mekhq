@@ -70,7 +70,6 @@ import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.GamePreset;
 import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.event.OptionsChangedEvent;
-import mekhq.campaign.finances.Money;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.parts.Part;
@@ -78,6 +77,7 @@ import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.Ranks;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.SpecialAbility;
+import mekhq.campaign.personnel.enums.RandomDeathRandomizationType;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.RATManager;
@@ -86,7 +86,6 @@ import mekhq.gui.SpecialAbilityPanel;
 import mekhq.gui.model.RankTableModel;
 import mekhq.gui.model.SortedComboBoxModel;
 import mekhq.gui.preferences.JWindowPreference;
-import mekhq.gui.utilities.JMoneyTextField;
 import mekhq.gui.utilities.TableCellListener;
 import mekhq.module.PersonnelMarketServiceManager;
 import mekhq.module.api.PersonnelMarketMethod;
@@ -245,14 +244,23 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
     private JComboBox<String> comboBabySurnameStyle;
     private JCheckBox chkUseParentage;
     private JComboBox<String> comboDisplayFamilyLevel;
-    private JCheckBox chkUseRandomDeaths;
-    private JCheckBox chkKeepMarriedNameUponSpouseDeath;
     //Salary
     private JSpinner spnSalaryCommission;
     private JSpinner spnSalaryEnlisted;
     private JSpinner spnSalaryAntiMek;
     private JSpinner[] spnSalaryXp;
     private JSpinner[] spnSalaryBase;
+    //Death
+    private JCheckBox chkUseRandomDeaths;
+    private JComboBox<RandomDeathRandomizationType> comboRandomDeathUtilType;
+    private JSpinner[] spnRandomDeathMaleValues;
+    private JSpinner[] spnRandomDeathFemaleValues;
+    private JCheckBox chkEnableTeenRandomDeaths;
+    private JCheckBox chkEnablePreteenRandomDeaths;
+    private JCheckBox chkEnableChildRandomDeaths;
+    private JCheckBox chkEnableToddlerRandomDeaths;
+    private JCheckBox chkEnableBabyRandomDeaths;
+    private JCheckBox chkKeepMarriedNameUponSpouseDeath;
     //endregion Personnel Tab
 
     //region Finances Tab
@@ -1710,7 +1718,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         //Family
         JPanel panFamily = new JPanel(new GridBagLayout());
         panFamily.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("FamilyTab.text")));
-        int panFamilyGridY = ++gridy;
+        int panGridY = ++gridy;
 
         spnMinimumMarriageAge = new JSpinner(new SpinnerNumberModel(options.getMinimumMarriageAge(), 14, null, 1));
         Dimension dimensionMinimumMarriageAge = spnMinimumMarriageAge.getPreferredSize();
@@ -1871,21 +1879,10 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(pnlDisplayFamilyLevel, gridBagConstraints);
 
-        chkUseRandomDeaths = new JCheckBox(resourceMap.getString("useRandomDeaths.text"));
-        chkUseRandomDeaths.setToolTipText(resourceMap.getString("useRandomDeaths.toolTipText"));
-        chkUseRandomDeaths.setSelected(options.useRandomDeaths());
-        gridBagConstraints.gridy = ++gridy;
-        panFamily.add(chkUseRandomDeaths, gridBagConstraints);
-
-        chkKeepMarriedNameUponSpouseDeath = new JCheckBox(resourceMap.getString("keepMarriedNameUponSpouseDeath.text"));
-        chkKeepMarriedNameUponSpouseDeath.setSelected(options.getKeepMarriedNameUponSpouseDeath());
-        gridBagConstraints.gridy = ++gridy;
-        panFamily.add(chkKeepMarriedNameUponSpouseDeath, gridBagConstraints);
-
-        gridBagConstraints.gridy = panFamilyGridY;
+        gridBagConstraints.gridy = panGridY;
         panPersonnel.add(panFamily, gridBagConstraints);
 
-        //Salary
+        //region Salary
         JPanel panSalary = new JPanel(new GridBagLayout());
         panSalary.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("SalaryTab.text")));
 
@@ -1992,6 +1989,147 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panPersonnel.add(panSalary, gridBagConstraints);
+        //endregion Salary
+
+        //region Death
+        JPanel panDeath = new JPanel(new GridBagLayout());
+        panDeath.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("DeathTab.text")));
+        panGridY = 1;
+        int panGridX = 1;
+        gridy = -1;
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+
+        chkUseRandomDeaths = new JCheckBox(resourceMap.getString("useRandomDeaths.text"));
+        chkUseRandomDeaths.setToolTipText(resourceMap.getString("useRandomDeaths.toolTipText"));
+        chkUseRandomDeaths.setSelected(options.useRandomDeaths());
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(chkUseRandomDeaths, gridBagConstraints);
+
+
+        // TODO : FINISH THIS SECTION
+        double[] mValues = options.getRandomDeathMaleMValues();
+        double[] nValues = options.getRandomDeathMaleNValues();
+        JPanel randomDeathSixthOrderDifferentialPanel = new JPanel();
+        JPanel randomDeathMaleFemaleMNPanel = new JPanel(new GridLayout(mValues.length, 4));
+
+        GridBagConstraints sixthOrderConstraints = new GridBagConstraints();
+
+        GridBagConstraints mnConstraints = new GridBagConstraints();
+        mnConstraints.gridx = 0;
+        mnConstraints.gridy = 0;
+        mnConstraints.weightx = 0.0;
+        mnConstraints.weighty = 0.0;
+        mnConstraints.fill = GridBagConstraints.HORIZONTAL;
+        mnConstraints.anchor = GridBagConstraints.NORTHWEST;
+
+        spnRandomDeathMaleValues = new JSpinner[mValues.length * 2]; // both must be of same length
+        for (int i = 0; i < mValues.length; i++) {
+            panType = new JPanel(new GridBagLayout());
+
+            JSpinner spnType = new JSpinner(new SpinnerNumberModel(mValues[i], null, null, 0.1));
+            spnRandomDeathMaleValues[i] = spnType;
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.weightx = 0.0;
+            panType.add(spnType, gridBagConstraints);
+
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.weightx = 1.0;
+            panType.add(new JLabel(" * 10 ^ "), gridBagConstraints);
+
+            spnType = new JSpinner(new SpinnerNumberModel(nValues[i], null, null, 0.1));
+            spnRandomDeathMaleValues[i] = spnType;
+            gridBagConstraints.gridx = 2;
+            gridBagConstraints.weightx = 0.0;
+            panType.add(spnType, gridBagConstraints);
+
+            gridBagConstraints.gridx = 3;
+            gridBagConstraints.weightx = 1.0;
+            panType.add(new JLabel(" * x^" + (mValues.length - i)), gridBagConstraints);
+
+            randomDeathMaleFemaleMNPanel.add(panType);
+        }
+
+        sixthOrderConstraints.gridy = 0;
+        randomDeathSixthOrderDifferentialPanel.add(randomDeathMaleFemaleMNPanel, sixthOrderConstraints);
+
+        /*
+
+        JPanel panType;
+        spnSalaryBase = new JSpinner[Person.T_NUM];
+
+        for (int i = 1; i < Person.T_NUM; i++) {
+            panType = new JPanel(new GridBagLayout());
+
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.weightx = 1.0;
+            panType.add(new JLabel(Person.getRoleDesc(i, false)), gridBagConstraints);
+
+            JSpinner spnType = new JSpinner(new SpinnerNumberModel(options.getBaseSalary(i), 0d, null, 10d));
+            spnType.setPreferredSize(new Dimension(75, 20));
+            spnSalaryBase[i] = spnType;
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.weightx = 0.0;
+            panType.add(spnType, gridBagConstraints);
+            panAllTypes.add(panType);
+        }
+
+         */
+
+
+        mValues = options.getRandomDeathFemaleMValues();
+        nValues = options.getRandomDeathFemaleNValues();
+        randomDeathMaleFemaleMNPanel = new JPanel(new GridLayout(mValues.length, 4));
+
+        spnRandomDeathFemaleValues = new JSpinner[mValues.length * 2]; // both must be of same length
+
+
+        sixthOrderConstraints.gridy = 1;
+        randomDeathSixthOrderDifferentialPanel.add(randomDeathMaleFemaleMNPanel, sixthOrderConstraints);
+
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(randomDeathSixthOrderDifferentialPanel, gridBagConstraints);
+        // TODO : END FINISH THIS SECTION
+
+
+        chkEnableTeenRandomDeaths = new JCheckBox(resourceMap.getString("enableTeenRandomDeaths.text"));
+        chkEnableTeenRandomDeaths.setSelected(options.teenDeathsEnabled());
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(chkEnablePreteenRandomDeaths, gridBagConstraints);
+
+        chkEnablePreteenRandomDeaths = new JCheckBox(resourceMap.getString("enablePreteenRandomDeaths.text"));
+        chkEnablePreteenRandomDeaths.setSelected(options.preteenDeathsEnabled());
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(chkEnablePreteenRandomDeaths, gridBagConstraints);
+
+        chkEnableChildRandomDeaths = new JCheckBox(resourceMap.getString("enableChildRandomDeaths.text"));
+        chkEnableChildRandomDeaths.setSelected(options.childDeathsEnabled());
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(chkEnableChildRandomDeaths, gridBagConstraints);
+
+        chkEnableToddlerRandomDeaths = new JCheckBox(resourceMap.getString("enableToddlerRandomDeaths.text"));
+        chkEnableToddlerRandomDeaths.setSelected(options.toddlerDeathsEnabled());
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(chkEnableToddlerRandomDeaths, gridBagConstraints);
+
+        chkEnableBabyRandomDeaths = new JCheckBox(resourceMap.getString("enableBabyRandomDeaths.text"));
+        chkEnableBabyRandomDeaths.setSelected(options.infantMortalityEnabled());
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(chkEnableBabyRandomDeaths, gridBagConstraints);
+
+        chkKeepMarriedNameUponSpouseDeath = new JCheckBox(resourceMap.getString("keepMarriedNameUponSpouseDeath.text"));
+        chkKeepMarriedNameUponSpouseDeath.setSelected(options.getKeepMarriedNameUponSpouseDeath());
+        gridBagConstraints.gridy = ++gridy;
+        panDeath.add(chkKeepMarriedNameUponSpouseDeath, gridBagConstraints);
+
+        gridBagConstraints.gridy = panGridY;
+        gridBagConstraints.gridx = panGridX;
+        panPersonnel.add(panDeath, gridBagConstraints);
+        //endregion Death
 
         JScrollPane scrollPersonnel = new JScrollPane(panPersonnel);
         scrollPersonnel.setPreferredSize(new java.awt.Dimension(500, 400));
