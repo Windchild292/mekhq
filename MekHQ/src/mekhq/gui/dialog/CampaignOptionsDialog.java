@@ -668,7 +668,6 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         chkHistoricalDailyLog = new JCheckBox();
 
         GridBagConstraints gridBagConstraints;
-        int gridx = 0;
         int gridy = 0;
         int panelGridY = 0;
         //endregion Variable Declaration and Initialisation
@@ -1510,7 +1509,6 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         techLevelComboBoxModel.addElement(CampaignOptions.getTechLevelName(CampaignOptions.TECH_EXPERIMENTAL));
         techLevelComboBoxModel.addElement(CampaignOptions.getTechLevelName(CampaignOptions.TECH_UNOFFICIAL));
         choiceTechLevel.setModel(techLevelComboBoxModel);
-        //choiceTechLevel.setToolTipText(resourceMap.getString("choiceTechLevel.toolTipText")); // NOI18N
         choiceTechLevel.setName("choiceTechLevel"); // NOI18N
         choiceTechLevel.setSelectedIndex(options.getTechLevel());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1557,20 +1555,20 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
 
         //region Personnel Tab
         panPersonnel.setName("panPersonnel");
-        panPersonnel.setLayout(new java.awt.GridBagLayout());
-        gridx = 0;
-        gridy = 0;
-        panelGridY = 0;
+        panPersonnel.setLayout(new GridBagLayout());
+
+        gridy = -1;
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
 
         useTacticsBox.setText(resourceMap.getString("useTacticsBox.text"));
         useTacticsBox.setToolTipText(resourceMap.getString("useTacticsBox.toolTipText"));
         useTacticsBox.setName("useTacticsBox");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = gridy;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = ++gridy;
         panPersonnel.add(useTacticsBox, gridBagConstraints);
 
         useInitBonusBox.setText(resourceMap.getString("useInitBonusBox.text"));
@@ -1889,7 +1887,8 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         //region Salary
         JPanel panSalary = new JPanel(new GridBagLayout());
         panSalary.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("SalaryTab.text")));
-        panelGridY = 0;
+        // We do not want to use panelGridY here, as that can instead be used to ensure that the family
+        // and death panels line up properly
         gridy = 0;
 
         JPanel panMultiplier = new JPanel(new GridLayout(1, 3));
@@ -2000,7 +1999,6 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         //region Death
         JPanel panDeath = new JPanel(new GridBagLayout());
         panDeath.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("DeathTab.text")));
-        panelGridY += 1;
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2014,14 +2012,14 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkUseRandomDeaths, gridBagConstraints);
 
-/*
+
         // TODO : FINISH THIS SECTION
         double[] mValues = options.getRandomDeathMaleMValues();
         double[] nValues = options.getRandomDeathMaleNValues();
         JPanel randomDeathSixthOrderDifferentialPanel = new JPanel();
-        JPanel randomDeathMaleFemaleMNPanel = new JPanel(new GridLayout(mValues.length, 4));
+        randomDeathSixthOrderDifferentialPanel.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("sixthOrderDifferentialUtilValues.text")));
 
-        GridBagConstraints sixthOrderConstraints = new GridBagConstraints();
+        JPanel randomDeathMaleFemaleMNPanel = new JPanel(new GridLayout(mValues.length, 4));
 
         GridBagConstraints mnConstraints = new GridBagConstraints();
         mnConstraints.gridx = 0;
@@ -2031,6 +2029,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         mnConstraints.fill = GridBagConstraints.HORIZONTAL;
         mnConstraints.anchor = GridBagConstraints.NORTHWEST;
 
+        randomDeathMaleFemaleMNPanel.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("male.text")));
         spnRandomDeathMaleValues = new JSpinner[mValues.length * 2]; // both must be of same length
         for (int i = 0; i < mValues.length; i++) {
             panType = new JPanel(new GridBagLayout());
@@ -2058,7 +2057,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
             randomDeathMaleFemaleMNPanel.add(panType);
         }
 
-        sixthOrderConstraints.gridy = 0;
+        sixthOrderConstraints.gridx = 3;
         randomDeathSixthOrderDifferentialPanel.add(randomDeathMaleFemaleMNPanel, sixthOrderConstraints);
 
         mValues = options.getRandomDeathFemaleMValues();
@@ -2068,14 +2067,12 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         spnRandomDeathFemaleValues = new JSpinner[mValues.length * 2]; // both must be of same length
 
 
-        sixthOrderConstraints.gridy = 1;
         randomDeathSixthOrderDifferentialPanel.add(randomDeathMaleFemaleMNPanel, sixthOrderConstraints);
 
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(randomDeathSixthOrderDifferentialPanel, gridBagConstraints);
         // TODO : END FINISH THIS SECTION
 
-*/
         chkEnableTeenRandomDeaths = new JCheckBox(resourceMap.getString("enableTeenRandomDeaths.text"));
         chkEnableTeenRandomDeaths.setToolTipText(resourceMap.getString("enableTeenRandomDeaths.toolTipText"));
         chkEnableTeenRandomDeaths.setSelected(options.teenDeathsEnabled());
@@ -2111,14 +2108,8 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = ++gridy;
         panDeath.add(chkKeepMarriedNameUponSpouseDeath, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 23;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridy = panelGridY;
         panPersonnel.add(panDeath, gridBagConstraints);
         //endregion Death
 
