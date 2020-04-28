@@ -19,6 +19,7 @@
 package mekhq.gui;
 
 import megamek.common.Crew;
+import megamek.common.annotations.Nullable;
 import megamek.common.util.DirectoryItems;
 import megamek.common.util.StringUtil;
 import mekhq.MekHQ;
@@ -32,9 +33,9 @@ public class PortraitPanel extends JPanel {
     public static final String DEFAULT_PORTRAIT_FILENAME = "default.gif";
 
     /**
-     * @return the PortraitPanel for the given person
+     * @return the PortraitPanel for the given filename and category
      */
-    public static JPanel createPortraitPanel(Person person, DirectoryItems portraits) {
+    public static JPanel createPortraitPanel(String category, String filename, int width, DirectoryItems portraits) {
         JPanel portraitPanel = new JPanel();
         // We are creating it this way to permit the addition of ribbons
         portraitPanel.setName("portraitPanel");
@@ -43,40 +44,12 @@ public class PortraitPanel extends JPanel {
         JLabel portraitLabel = new JLabel();
         portraitLabel.setName("portraitLabel");
 
-        String category = person.getPortraitCategory();
-        String filename = person.getPortraitFileName();
-
-        if (Crew.ROOT_PORTRAIT.equals(category)) {
-            category = ROOT_PORTRAIT_CATEGORY;
-        }
-
-        // Return the default file if PORTRAIT_NONE is selected
-        if ((filename == null) || Crew.PORTRAIT_NONE.equals(filename)) {
-            category = null;
-        }
-
-        // Try to get the player's portrait file.
-        Image portrait;
-        try {
-            if (category != null) { // prevents us from having an exception here
-                portrait = (Image) portraits.getItem(category, filename);
-            } else {
-                portrait = (Image) portraits.getItem(ROOT_PORTRAIT_CATEGORY, DEFAULT_PORTRAIT_FILENAME);
-            }
-
-            if (portrait != null) {
-                portrait = portrait.getScaledInstance(100, -1, Image.SCALE_DEFAULT);
-            }
-
-            if (portrait != null) {
-                portraitLabel.setIcon(new ImageIcon(portrait));
-            } else {
-                MekHQ.getLogger().error(PortraitPanel.class, "createPortraitPanel",
-                        "Cannot locate the portrait file for " + person.getFullName()
-                                + ", which should be file " + filename + " in category " + category);
-            }
-        } catch (Exception e) {
-            MekHQ.getLogger().error(PortraitPanel.class, "createPortraitPanel", e);
+        Icon portrait = getPortraitIcon(category, filename, width, portraits);
+        if (portrait != null) {
+            portraitLabel.setIcon(portrait);
+        } else {
+            MekHQ.getLogger().error(PortraitPanel.class, "createPortraitPanel",
+                    "Cannot locate the portrait file in file " + filename + ", category " + category);
         }
 
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -88,5 +61,49 @@ public class PortraitPanel extends JPanel {
         portraitPanel.add(portraitLabel, gridBagConstraints);
 
         return portraitPanel;
+    }
+
+    /**
+     * @param category the intended portrait category
+     * @param filename the intended file name
+     * @param width the width of the image icon
+     * @param portraits the portraits directory item
+     * @return an ImageIcon if one is found, otherwise null
+     */
+    public static @Nullable Icon getPortraitIcon(String category, String filename, int width,
+                                                           DirectoryItems portraits) {
+        if (Crew.ROOT_PORTRAIT.equals(category)) {
+            category = ROOT_PORTRAIT_CATEGORY;
+        }
+
+        // Return the default file if PORTRAIT_NONE is selected
+        if ((filename == null) || Crew.PORTRAIT_NONE.equals(filename)) {
+            category = null;
+        }
+
+        // Try to get the player's portrait file.
+        Image portrait = null;
+        try {
+            // First, we check based on the input parameters
+            if (category != null) {
+                portrait = (Image) portraits.getItem(category, filename);
+            }
+
+            // If we don't find a portrait (or were told to skip the above), we try to grab the default file
+            if (portrait == null) {
+                portrait = (Image) portraits.getItem(ROOT_PORTRAIT_CATEGORY, DEFAULT_PORTRAIT_FILENAME);
+            }
+
+            // If we grab a file, resize it based on the inputs
+            if (portrait != null) {
+                portrait = portrait.getScaledInstance(width, -1, Image.SCALE_DEFAULT);
+                return new ImageIcon(portrait);
+            }
+        } catch (Exception e) {
+            MekHQ.getLogger().error(PortraitPanel.class, "createPortraitPanel", e);
+        }
+
+        // Can't find a portrait, so we return null
+        return null;
     }
 }

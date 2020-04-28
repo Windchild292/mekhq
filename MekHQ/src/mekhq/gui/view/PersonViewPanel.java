@@ -93,7 +93,8 @@ public class PersonViewPanel extends ScrollablePanel {
 
         setLayout(new GridBagLayout());
 
-        JPanel portraitPanel = PortraitPanel.createPortraitPanel(person, gui.getIconPackage().getPortraits());
+        JPanel portraitPanel = PortraitPanel.createPortraitPanel(person.getPortraitCategory(),
+                person.getPortraitFileName(), 100, gui.getIconPackage().getPortraits());
         GridBagConstraints gbc_pnlPortrait = new GridBagConstraints();
         gbc_pnlPortrait.gridx = 0;
         gbc_pnlPortrait.gridy = 0;

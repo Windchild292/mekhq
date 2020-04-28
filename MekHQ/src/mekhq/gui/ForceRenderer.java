@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.UUID;
 
+import javax.sound.sampled.Port;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
@@ -156,53 +157,20 @@ public class ForceRenderer extends DefaultTreeCellRenderer {
     }
 
     protected Icon getIcon(Object node) {
-
-        if(node instanceof Unit) {
-            return getIconFrom((Unit)node);
-        } else if(node instanceof Force) {
-            return getIconFrom((Force)node);
+        if (node instanceof Unit) {
+            Person person = ((Unit) node).getCommander();
+            return PortraitPanel.getPortraitIcon(person.getPortraitCategory(),
+                    person.getPortraitFileName(), 58, getIconPackage().getPortraits());
+        } else if (node instanceof Force) {
+            return getIconFrom((Force) node);
         } else {
             return null;
         }
     }
 
-    protected Icon getIconFrom(Unit unit) {
-        Person person = unit.getCommander();
-        if(null == person) {
-            return null;
-        }
-        String category = person.getPortraitCategory();
-        String filename = person.getPortraitFileName();
-
-        if(Crew.ROOT_PORTRAIT.equals(category)) {
-            category = "";
-        }
-
-        // Return a null if the unit has no selected portrait file.
-        if ((null == category) || (null == filename) || Crew.PORTRAIT_NONE.equals(filename)) {
-            filename = "default.gif";
-        }
-        // Try to get the unit's portrait file.
-        Image portrait = null;
-        try {
-            portrait = (Image) getIconPackage().getPortraits().getItem(category, filename);
-            if(null != portrait) {
-                portrait = portrait.getScaledInstance(58, -1, Image.SCALE_DEFAULT);
-            } else {
-                portrait = (Image) getIconPackage().getPortraits().getItem("", "default.gif");
-                if(null != portrait) {
-                    portrait = portrait.getScaledInstance(58, -1, Image.SCALE_DEFAULT);
-                }
-            }
-            return new ImageIcon(portrait);
-        } catch (Exception e) {
-            MekHQ.getLogger().error(getClass(), "getIconFrom", e);
-            return null;
-        }
-    }
-
     protected Icon getIconFrom(Force force) {
-        Image forceImage = IconPackage.buildForceIcon(force.getIconCategory(), force.getIconFileName(), getIconPackage().getForceIcons(), force.getIconMap());
+        Image forceImage = IconPackage.buildForceIcon(force.getIconCategory(), force.getIconFileName(),
+                getIconPackage().getForceIcons(), force.getIconMap());
         if(null != forceImage) {
             forceImage = forceImage.getScaledInstance(58, -1, Image.SCALE_SMOOTH);
         }

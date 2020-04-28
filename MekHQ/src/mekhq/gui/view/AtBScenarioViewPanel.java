@@ -74,6 +74,7 @@ import mekhq.campaign.mission.BotForceStub;
 import mekhq.campaign.mission.Loot;
 import mekhq.campaign.mission.ScenarioForceTemplate;
 import mekhq.campaign.mission.ScenarioObjective;
+import mekhq.gui.PortraitPanel;
 import mekhq.gui.dialog.PrincessBehaviorDialog;
 
 /**
@@ -907,43 +908,12 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         }
 
         protected Icon getIcon(Object node) {
-
-            if(node instanceof UnitStub) {
-                return getIconFrom((UnitStub)node);
-            } else if(node instanceof ForceStub) {
-                return getIconFrom((ForceStub)node);
+            if (node instanceof UnitStub) {
+                return PortraitPanel.getPortraitIcon(((UnitStub) node).getPortraitCategory(),
+                        ((UnitStub) node).getPortraitFileName(), 50, icons.getPortraits());
+            } else if (node instanceof ForceStub) {
+                return getIconFrom((ForceStub) node);
             } else {
-                return null;
-            }
-        }
-
-        protected Icon getIconFrom(UnitStub unit) {
-            String category = unit.getPortraitCategory();
-            String filename = unit.getPortraitFileName();
-
-            if(Crew.ROOT_PORTRAIT.equals(category)) {
-                category = "";
-            }
-
-            // Return a null if the player has selected no portrait file.
-            if ((null == category) || (null == filename) || Crew.PORTRAIT_NONE.equals(filename)) {
-                filename = "default.gif";
-            }
-            // Try to get the player's portrait file.
-            Image portrait = null;
-            try {
-                portrait = (Image) icons.getPortraits().getItem(category, filename);
-                if(null != portrait) {
-                    portrait = portrait.getScaledInstance(50, -1, Image.SCALE_DEFAULT);
-                } else {
-                    portrait = (Image) icons.getPortraits().getItem("", "default.gif");
-                    if(null != portrait) {
-                        portrait = portrait.getScaledInstance(50, -1, Image.SCALE_DEFAULT);
-                    }
-                }
-                return new ImageIcon(portrait);
-            } catch (Exception e) {
-                MekHQ.getLogger().error(getClass(), "getIconFrom", e);
                 return null;
             }
         }

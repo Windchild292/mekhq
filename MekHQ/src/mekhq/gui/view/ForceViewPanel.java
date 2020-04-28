@@ -17,9 +17,7 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import javax.swing.*;
 
 import megamek.client.ui.Messages;
 import megamek.client.ui.swing.util.PlayerColors;
@@ -35,6 +33,7 @@ import mekhq.campaign.force.Force;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.EntityImage;
+import mekhq.gui.PortraitPanel;
 import mekhq.gui.utilities.MarkdownRenderer;
 
 /**
@@ -432,35 +431,31 @@ public class ForceViewPanel extends ScrollablePanel {
 		}
 		JLabel lblPerson;
 		JLabel lblUnit;
-		ArrayList<Unit> units = new ArrayList<Unit>();
-		ArrayList<Unit> unmannedUnits = new ArrayList<Unit>();
+		ArrayList<Unit> units = new ArrayList<>();
+		ArrayList<Unit> unmannedUnits = new ArrayList<>();
  		for(UUID uid : force.getUnits()) {
 			Unit u = campaign.getUnit(uid);
 			if(null == u) {
 				continue;
 			}
-			if(null == u.getCommander()) {
+			if (null == u.getCommander()) {
 				unmannedUnits.add(u);
 			} else {
 				units.add(u);
 			}
  		}
  		//sort person vector by rank
- 		Collections.sort(units, new Comparator<Unit>(){
-            public int compare(final Unit u1, final Unit u2) {
-               return ((Comparable<Integer>)u2.getCommander().getRankNumeric()).compareTo(u1.getCommander().getRankNumeric());
-            }
-        });
- 		for(Unit unit : unmannedUnits) {
- 			units.add(unit);
- 		}
- 		for(Unit unit : units) {
+ 		units.sort((u1, u2) -> ((Comparable<Integer>) u2.getCommander().getRankNumeric())
+                .compareTo(u1.getCommander().getRankNumeric()));
+        units.addAll(unmannedUnits);
+ 		for (Unit unit : units) {
  			Person p = unit.getCommander();
  			lblPerson = new JLabel();
 			lblUnit = new JLabel();
-			if(null != p) {
+			if (p != null) {
 				lblPerson.setText(getSummaryFor(p, unit));
-				setPortrait(p, lblPerson);
+				lblPerson.setIcon(PortraitPanel.getPortraitIcon(p.getPortraitCategory(),
+                        p.getPortraitFileName(), 72, icons.getPortraits()));
 			}
 			nexty++;
 			gridBagConstraints = new java.awt.GridBagConstraints();
@@ -484,45 +479,6 @@ public class ForceViewPanel extends ScrollablePanel {
 			pnlSubUnits.add(lblUnit, gridBagConstraints);
 		}
 	}
-
-	/**
-     * set the portrait for the given person.
-     *
-     * @return The <code>Image</code> of the pilot's portrait. This value
-     *         will be <code>null</code> if no portrait was selected
-     *          or if there was an error loading it.
-     */
-    public void setPortrait(Person p, JLabel lbl) {
-
-        String category = p.getPortraitCategory();
-        String filename = p.getPortraitFileName();
-
-        if(Crew.ROOT_PORTRAIT.equals(category)) {
-            category = "";
-        }
-
-        // Return a null if the player has selected no portrait file.
-        if ((null == category) || (null == filename) || Crew.PORTRAIT_NONE.equals(filename)) {
-        	filename = "default.gif";
-        }
-
-        // Try to get the player's portrait file.
-        Image portrait = null;
-        try {
-            portrait = (Image) icons.getPortraits().getItem(category, filename);
-            if(null != portrait) {
-                portrait = portrait.getScaledInstance(72, -1, Image.SCALE_DEFAULT);
-            } else {
-            	portrait = (Image) icons.getPortraits().getItem("", "default.gif");
-            	if(null != portrait) {
-                    portrait = portrait.getScaledInstance(72, -1, Image.SCALE_DEFAULT);
-            	}
-            }
-            lbl.setIcon(new ImageIcon(portrait));
-        } catch (Exception e) {
-            MekHQ.getLogger().error(getClass(), "setPortrait", e);
-        }
-    }
 
     private Image getImageFor(Unit u, Component c) {
 
