@@ -1,9 +1,21 @@
 /*
- * CampaignOptionsDialog.java
+ * Copyright (C) 2009, 2020 - The MegaMek Team. All rights reserved
  *
- * Created on August 19, 2009, 11:22 AM
+ * This file is part of MekHQ.
+ *
+ * MekHQ is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * MekHQ is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.gui.dialog;
 
 import java.awt.BorderLayout;
@@ -72,11 +84,16 @@ import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.GamePreset;
 import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.event.OptionsChangedEvent;
-import mekhq.campaign.finances.Money;
+import mekhq.campaign.finances.enums.FinancialYearDuration;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.Ranks;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.SpecialAbility;
+import mekhq.campaign.personnel.enums.TimeInDisplayFormat;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.RATManager;
@@ -85,7 +102,6 @@ import mekhq.gui.SpecialAbilityPanel;
 import mekhq.gui.model.RankTableModel;
 import mekhq.gui.model.SortedComboBoxModel;
 import mekhq.gui.preferences.JWindowPreference;
-import mekhq.gui.utilities.JMoneyTextField;
 import mekhq.gui.utilities.TableCellListener;
 import mekhq.module.PersonnelMarketServiceManager;
 import mekhq.module.api.PersonnelMarketMethod;
@@ -222,6 +238,10 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
     private JCheckBox useTougherHealing;
     private JCheckBox chkUseTransfers;
     private JCheckBox chkUseTimeInService;
+    private JComboBox<TimeInDisplayFormat> comboTimeInServiceDisplayFormat;
+    private JCheckBox chkUseTimeInRank;
+    private JComboBox<TimeInDisplayFormat> comboTimeInRankDisplayFormat;
+    private JCheckBox chkTrackTotalEarnings;
     private JCheckBox chkShowOriginFaction;
     private JCheckBox chkRandomizeOrigin;
     private JCheckBox chkRandomizeDependentsOrigin;
@@ -229,6 +249,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
     //Family
     private JSpinner spnMinimumMarriageAge;
     private JSpinner spnCheckMutualAncestorsDepth;
+    private JCheckBox chkLogMarriageNameChange;
     private JCheckBox chkUseRandomMarriages;
     private JSpinner spnChanceRandomMarriages;
     private JSpinner spnMarriageAgeRange;
@@ -251,7 +272,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
     private JSpinner spnSalaryEnlisted;
     private JSpinner spnSalaryAntiMek;
     private JSpinner[] spnSalaryXp;
-    private JMoneyTextField[] txtSalaryBase;
+    private JSpinner[] spnSalaryBase;
     //endregion Personnel Tab
 
     //region Finances Tab
@@ -272,6 +293,8 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
     private JCheckBox usePeacetimeCostBox;
     private JCheckBox useExtendedPartsModifierBox;
     private JCheckBox showPeacetimeCostBox;
+    private JCheckBox newFinancialYearFinancesToCSVExportBox;
+    private JComboBox<FinancialYearDuration> comboFinancialYearDuration;
     private JSpinner spnClanPriceModifier;
     private JSpinner[] spnUsedPartsValue;
     private JSpinner spnDamagedPartsValue;
@@ -397,6 +420,8 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
     private JCheckBox chkRetirementRolls;
     private JCheckBox chkCustomRetirementMods;
     private JCheckBox chkFoundersNeverRetire;
+    private JCheckBox chkAddDependents;
+    private JCheckBox chkDependentsNeverLeave;
     private JCheckBox chkTrackUnitFatigue;
     private JCheckBox chkUseLeadership;
     private JCheckBox chkTrackOriginalUnit;
@@ -651,7 +676,6 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         useQualityMaintenance = new JCheckBox();
         useUnofficialMaintenance = new JCheckBox();
         checkMaintenance = new JCheckBox();
-        logMaintenance = new JCheckBox();
         reverseQualityNames = new JCheckBox();
 
         chkSupportStaffOnly = new JCheckBox();
@@ -947,12 +971,14 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
                 spnMaintenanceDays.setEnabled(true);
                 useQualityMaintenance.setEnabled(true);
                 useUnofficialMaintenance.setEnabled(true);
+                reverseQualityNames.setEnabled(true);
                 spnMaintenanceBonus.setEnabled(true);
                 logMaintenance.setEnabled(true);
             } else {
                 spnMaintenanceDays.setEnabled(false);
                 useQualityMaintenance.setEnabled(false);
                 useUnofficialMaintenance.setEnabled(false);
+                reverseQualityNames.setEnabled(false);
                 spnMaintenanceBonus.setEnabled(false);
                 logMaintenance.setEnabled(false);
             }
@@ -1028,15 +1054,13 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panSubMaintenance.add(useUnofficialMaintenance, gridBagConstraints);
 
-        logMaintenance.setText(resourceMap.getString("logMaintenance.text")); // NOI18N
+        logMaintenance = new JCheckBox(resourceMap.getString("logMaintenance.text")); // NOI18N
         logMaintenance.setToolTipText(resourceMap.getString("logMaintenance.toolTipText")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        logMaintenance.setName("logMaintenance");
+        logMaintenance.setSelected(options.logMaintenance());
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panSubMaintenance.add(logMaintenance, gridBagConstraints);
 
         tabOptions.addTab(resourceMap.getString("panRepair.TabConstraints.tabTitle"), panRepair); // NOI18N
@@ -1614,8 +1638,8 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         comboPrisonerStatus = new JComboBox<>(prisonerStatusModel);
         comboPrisonerStatus.setSelectedIndex(options.getDefaultPrisonerStatus());
         JPanel pnlPrisonerStatus = new JPanel();
-        pnlPrisonerStatus.add(new JLabel(resourceMap.getString("prisonerStatus.text")));
         pnlPrisonerStatus.add(comboPrisonerStatus);
+        pnlPrisonerStatus.add(new JLabel(resourceMap.getString("prisonerStatus.text")));
         gridBagConstraints.gridy = ++gridy;
         panPersonnel.add(pnlPrisonerStatus, gridBagConstraints);
 
@@ -1685,6 +1709,37 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = ++gridy;
         panPersonnel.add(chkUseTimeInService, gridBagConstraints);
 
+        DefaultComboBoxModel<TimeInDisplayFormat> timeInServiceDisplayFormatModel = new DefaultComboBoxModel<>(TimeInDisplayFormat.values());
+        comboTimeInServiceDisplayFormat = new JComboBox<>(timeInServiceDisplayFormatModel);
+        comboTimeInServiceDisplayFormat.setName("comboTimeInServiceDisplayFormat");
+        comboTimeInServiceDisplayFormat.setSelectedItem(options.getTimeInServiceDisplayFormat());
+        JPanel pnlTimeInServiceDisplayFormat = new JPanel();
+        pnlTimeInServiceDisplayFormat.add(comboTimeInServiceDisplayFormat);
+        pnlTimeInServiceDisplayFormat.add(new JLabel(resourceMap.getString("timeInServiceDisplayFormat.text")));
+        gridBagConstraints.gridy = ++gridy;
+        panPersonnel.add(pnlTimeInServiceDisplayFormat, gridBagConstraints);
+
+        chkUseTimeInRank = new JCheckBox(resourceMap.getString("useTimeInRank.text"));
+        chkUseTimeInRank.setSelected(options.getUseTimeInRank());
+        gridBagConstraints.gridy = ++gridy;
+        panPersonnel.add(chkUseTimeInRank, gridBagConstraints);
+
+        DefaultComboBoxModel<TimeInDisplayFormat> timeInRankDisplayFormatModel = new DefaultComboBoxModel<>(TimeInDisplayFormat.values());
+        comboTimeInRankDisplayFormat = new JComboBox<>(timeInRankDisplayFormatModel);
+        comboTimeInRankDisplayFormat.setName("comboTimeInRankDisplayFormat");
+        comboTimeInRankDisplayFormat.setSelectedItem(options.getTimeInRankDisplayFormat());
+        JPanel pnlTimeInRankDisplayFormat = new JPanel();
+        pnlTimeInRankDisplayFormat.add(comboTimeInRankDisplayFormat);
+        pnlTimeInRankDisplayFormat.add(new JLabel(resourceMap.getString("timeInRankDisplayFormat.text")));
+        gridBagConstraints.gridy = ++gridy;
+        panPersonnel.add(pnlTimeInRankDisplayFormat, gridBagConstraints);
+
+        chkTrackTotalEarnings = new JCheckBox(resourceMap.getString("trackTotalEarnings.text"));
+        chkTrackTotalEarnings.setToolTipText("trackTotalEarnings.toolTipText");
+        chkTrackTotalEarnings.setSelected(options.trackTotalEarnings());
+        gridBagConstraints.gridy = ++gridy;
+        panPersonnel.add(chkTrackTotalEarnings, gridBagConstraints);
+
         chkShowOriginFaction = new JCheckBox(resourceMap.getString("showOriginFaction.text"));
         chkShowOriginFaction.setSelected(options.showOriginFaction());
         gridBagConstraints.gridy = ++gridy;
@@ -1713,26 +1768,26 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         int panFamilyGridY = ++gridy;
 
         spnMinimumMarriageAge = new JSpinner(new SpinnerNumberModel(options.getMinimumMarriageAge(), 14, null, 1));
-        Dimension dimensionMinimumMarriageAge = spnMinimumMarriageAge.getPreferredSize();
-        dimensionMinimumMarriageAge.width = 40;
-        spnMinimumMarriageAge.setPreferredSize(dimensionMinimumMarriageAge);
         JPanel panMinimumMarriageAge = new JPanel();
+        panMinimumMarriageAge.add(spnMinimumMarriageAge);
         panMinimumMarriageAge.add(new JLabel(resourceMap.getString("minimumMarriageAge.text")));
         panMinimumMarriageAge.setToolTipText(resourceMap.getString("minimumMarriageAge.toolTipText"));
-        panMinimumMarriageAge.add(spnMinimumMarriageAge);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(panMinimumMarriageAge, gridBagConstraints);
 
         spnCheckMutualAncestorsDepth = new JSpinner(new SpinnerNumberModel(options.checkMutualAncestorsDepth(), 0, 20, 1));
-        Dimension dimensionCheckMutualAncestorsDepth = spnCheckMutualAncestorsDepth.getPreferredSize();
-        dimensionCheckMutualAncestorsDepth.width = 40;
-        spnCheckMutualAncestorsDepth.setPreferredSize(dimensionCheckMutualAncestorsDepth);
         JPanel panCheckMutualAncestorsDepth = new JPanel();
+        panCheckMutualAncestorsDepth.add(spnCheckMutualAncestorsDepth);
         panCheckMutualAncestorsDepth.add(new JLabel(resourceMap.getString("checkMutualAncestorsDepth.text")));
         panCheckMutualAncestorsDepth.setToolTipText(resourceMap.getString("checkMutualAncestorsDepth.toolTipText"));
-        panCheckMutualAncestorsDepth.add(spnCheckMutualAncestorsDepth);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(panCheckMutualAncestorsDepth, gridBagConstraints);
+
+        chkLogMarriageNameChange = new JCheckBox(resourceMap.getString("logMarriageNameChange.text"));
+        chkLogMarriageNameChange.setToolTipText(resourceMap.getString("logMarriageNameChange.toolTipText"));
+        chkLogMarriageNameChange.setSelected(options.logMarriageNameChange());
+        gridBagConstraints.gridy = ++gridy;
+        panFamily.add(chkLogMarriageNameChange, gridBagConstraints);
 
         chkUseRandomMarriages = new JCheckBox(resourceMap.getString("useRandomMarriages.text"));
         chkUseRandomMarriages.setToolTipText(resourceMap.getString("useRandomMarriages.toolTipText"));
@@ -1741,24 +1796,20 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panFamily.add(chkUseRandomMarriages, gridBagConstraints);
 
         spnChanceRandomMarriages = new JSpinner(new SpinnerNumberModel(options.getChanceRandomMarriages() * 100.0, 0, 100, 0.001));
-        Dimension dimensionChanceRandomMarriages = spnChanceRandomMarriages.getPreferredSize();
-        dimensionChanceRandomMarriages.width = 50;
-        spnChanceRandomMarriages.setPreferredSize(dimensionChanceRandomMarriages);
         JPanel panChanceRandomMarriages = new JPanel();
+        panChanceRandomMarriages.add(spnChanceRandomMarriages);
         panChanceRandomMarriages.add(new JLabel(resourceMap.getString("chanceRandomMarriages.text")));
         panChanceRandomMarriages.setToolTipText(resourceMap.getString("chanceRandomMarriages.toolTipText"));
-        panChanceRandomMarriages.add(spnChanceRandomMarriages);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(panChanceRandomMarriages, gridBagConstraints);
 
-        spnMarriageAgeRange = new JSpinner(new SpinnerNumberModel(options.getMarriageAgeRange(), 0, null, 1));
-        Dimension dimensionMarriageAgeRange = spnMarriageAgeRange.getPreferredSize();
-        dimensionMarriageAgeRange.width = 40;
-        spnMarriageAgeRange.setPreferredSize(dimensionMarriageAgeRange);
+        spnMarriageAgeRange = new JSpinner(new SpinnerNumberModel(options.getMarriageAgeRange(), 0, null, 1.0));
+        spnMarriageAgeRange.setPreferredSize(new Dimension(50,
+                spnMarriageAgeRange.getEditor().getPreferredSize().height + 5));
         JPanel panMarriageAgeRange = new JPanel();
+        panMarriageAgeRange.add(spnMarriageAgeRange);
         panMarriageAgeRange.add(new JLabel(resourceMap.getString("marriageAgeRange.text")));
         panMarriageAgeRange.setToolTipText(resourceMap.getString("marriageAgeRange.toolTipText"));
-        panMarriageAgeRange.add(spnMarriageAgeRange);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(panMarriageAgeRange, gridBagConstraints);
 
@@ -1786,13 +1837,10 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panFamily.add(chkUseRandomSameSexMarriages, gridBagConstraints);
 
         spnChanceRandomSameSexMarriages = new JSpinner(new SpinnerNumberModel(options.getChanceRandomSameSexMarriages() * 100.0, 0, 100, 0.001));
-        Dimension dimensionChanceRandomSameSexMarriages = spnChanceRandomSameSexMarriages.getPreferredSize();
-        dimensionChanceRandomSameSexMarriages.width = 50;
-        spnChanceRandomSameSexMarriages.setPreferredSize(dimensionChanceRandomSameSexMarriages);
         JPanel panChanceRandomSameSexMarriages = new JPanel();
+        panChanceRandomSameSexMarriages.add(spnChanceRandomSameSexMarriages);
         panChanceRandomSameSexMarriages.add(new JLabel(resourceMap.getString("chanceRandomSameSexMarriages.text")));
         panChanceRandomSameSexMarriages.setToolTipText(resourceMap.getString("chanceRandomSameSexMarriages.toolTipText"));
-        panChanceRandomSameSexMarriages.add(spnChanceRandomSameSexMarriages);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(panChanceRandomSameSexMarriages, gridBagConstraints);
 
@@ -1803,13 +1851,10 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panFamily.add(chkUseUnofficialProcreation, gridBagConstraints);
 
         spnChanceProcreation = new JSpinner(new SpinnerNumberModel(options.getChanceProcreation() * 100.0, 0, 100, 0.001));
-        Dimension dimensionChanceProcreation = spnChanceProcreation.getPreferredSize();
-        dimensionChanceProcreation.width = 50;
-        spnChanceProcreation.setPreferredSize(dimensionChanceProcreation);
         JPanel panChanceProcreation = new JPanel();
+        panChanceProcreation.add(spnChanceProcreation);
         panChanceProcreation.add(new JLabel(resourceMap.getString("chanceProcreation.text")));
         panChanceProcreation.setToolTipText(resourceMap.getString("chanceProcreation.toolTipText"));
-        panChanceProcreation.add(spnChanceProcreation);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(panChanceProcreation, gridBagConstraints);
 
@@ -1820,13 +1865,10 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panFamily.add(chkUseUnofficialProcreationNoRelationship, gridBagConstraints);
 
         spnChanceProcreationNoRelationship = new JSpinner(new SpinnerNumberModel(options.getChanceProcreationNoRelationship() * 100.0, 0, 100, 0.001));
-        Dimension dimensionChanceProcreationNoRelationship = spnChanceProcreationNoRelationship.getPreferredSize();
-        dimensionChanceProcreationNoRelationship.width = 50;
-        spnChanceProcreationNoRelationship.setPreferredSize(dimensionChanceProcreationNoRelationship);
         JPanel panChanceProcreationNoRelationship = new JPanel();
+        panChanceProcreationNoRelationship.add(spnChanceProcreationNoRelationship);
         panChanceProcreationNoRelationship.add(new JLabel(resourceMap.getString("chanceProcreationNoRelationship.text")));
         panChanceProcreationNoRelationship.setToolTipText(resourceMap.getString("chanceProcreationNoRelationship.toolTipText"));
-        panChanceProcreationNoRelationship.add(spnChanceProcreationNoRelationship);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(panChanceProcreationNoRelationship, gridBagConstraints);
 
@@ -1849,9 +1891,9 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         comboBabySurnameStyle = new JComboBox<>(babySurnameStyleModel);
         comboBabySurnameStyle.setSelectedIndex(options.getBabySurnameStyle());
         JPanel pnlBabySurnameStyle = new JPanel();
+        pnlBabySurnameStyle.add(comboBabySurnameStyle);
         pnlBabySurnameStyle.add(new JLabel(resourceMap.getString("babySurnameStyle.text")));
         pnlBabySurnameStyle.setToolTipText(resourceMap.getString("babySurnameStyle.toolTipText"));
-        pnlBabySurnameStyle.add(comboBabySurnameStyle);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(pnlBabySurnameStyle, gridBagConstraints);
 
@@ -1867,9 +1909,9 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         comboDisplayFamilyLevel = new JComboBox<>(familyLevelStatusModel);
         comboDisplayFamilyLevel.setSelectedIndex(options.displayFamilyLevel());
         JPanel pnlDisplayFamilyLevel = new JPanel();
+        pnlDisplayFamilyLevel.add(comboDisplayFamilyLevel);
         pnlDisplayFamilyLevel.add(new JLabel(resourceMap.getString("displayFamilyLevel.text")));
         pnlDisplayFamilyLevel.setToolTipText(resourceMap.getString("displayFamilyLevel.toolTipText"));
-        pnlDisplayFamilyLevel.add(comboDisplayFamilyLevel);
         gridBagConstraints.gridy = ++gridy;
         panFamily.add(pnlDisplayFamilyLevel, gridBagConstraints);
 
@@ -1947,34 +1989,32 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panSalary.add(panXpMultiplier, gridBagConstraints);
 
         JPanel panAllTypes = new JPanel(new GridLayout(Person.T_NUM / 2, 2));
-        JMoneyTextField txtType;
         JPanel panType;
-        // TODO: use JFormattedTextField with Numeric formatter
-        txtSalaryBase = new JMoneyTextField[Person.T_NUM];
+        spnSalaryBase = new JSpinner[Person.T_NUM];
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 0.0;
+        gridBagConstraints.weighty = 0.0;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         for (int i = 1; i < Person.T_NUM; i++) {
-            txtType = new JMoneyTextField();
-            txtType.setMoney(options.getBaseSalary(i));
-            txtType.setPreferredSize(new Dimension(75, 20));
             panType = new JPanel(new GridBagLayout());
-            gridBagConstraints = new java.awt.GridBagConstraints();
+
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
             gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.weighty = 0.0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
             panType.add(new JLabel(Person.getRoleDesc(i, false)), gridBagConstraints);
-            gridBagConstraints = new java.awt.GridBagConstraints();
+
+            JSpinner spnType = new JSpinner(new SpinnerNumberModel(options.getBaseSalary(i), 0d, null, 10d));
+            spnType.setMinimumSize(new Dimension(75, 20));
+            spnType.setPreferredSize(new Dimension(75, 25));
+            spnSalaryBase[i] = spnType;
             gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 0;
             gridBagConstraints.weightx = 0.0;
-            gridBagConstraints.weighty = 0.0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-            panType.add(txtType, gridBagConstraints);
-            txtSalaryBase[i] = txtType;
+            panType.add(spnType, gridBagConstraints);
             panAllTypes.add(panType);
         }
+
         JScrollPane scrSalaryBase = new JScrollPane(panAllTypes);
         scrSalaryBase.setBorder(BorderFactory.createTitledBorder("Base Salaries"));
         scrSalaryBase.setOpaque(false);
@@ -2163,7 +2203,6 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panFinances.add(usePeacetimeCostBox, gridBagConstraints);
 
         useExtendedPartsModifierBox.setText(resourceMap.getString("useExtendedPartsModifierBox.text")); // NOI18N
-        //useExtendedPartsModifierBox.setToolTipText(resourceMap.getString("useExtendedPartsModifierBox.toolTipText")); // NOI18N
         useExtendedPartsModifierBox.setName("useExtendedPartsModifierBox"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2184,6 +2223,34 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panFinances.add(showPeacetimeCostBox, gridBagConstraints);
 
+        DefaultComboBoxModel<FinancialYearDuration> financialYearDurationModel = new DefaultComboBoxModel<>(FinancialYearDuration.values());
+        comboFinancialYearDuration = new JComboBox<>(financialYearDurationModel);
+        comboFinancialYearDuration.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (isSelected && (index > -1)) {
+                        list.setToolTipText((list.getSelectedValue() instanceof FinancialYearDuration)
+                                ? ((FinancialYearDuration) list.getSelectedValue()).getToolTipText() : "");
+                    }
+
+                    return this;
+                }
+            });
+        comboFinancialYearDuration.setSelectedItem(options.getFinancialYearDuration());
+        JPanel pnlFinancialYearDuration = new JPanel();
+        pnlFinancialYearDuration.add(new JLabel(resourceMap.getString("financialYearDuration.text")));
+        pnlFinancialYearDuration.setToolTipText(resourceMap.getString("financialYearDuration.toolTipText"));
+        pnlFinancialYearDuration.add(comboFinancialYearDuration);
+        gridBagConstraints.gridy = gridy++;
+        panFinances.add(pnlFinancialYearDuration, gridBagConstraints);
+
+        newFinancialYearFinancesToCSVExportBox = new JCheckBox(resourceMap.getString("newFinancialYearFinancesToCSVExportBox.text"));
+        newFinancialYearFinancesToCSVExportBox.setToolTipText(resourceMap.getString("newFinancialYearFinancesToCSVExportBox.toolTipText"));
+        newFinancialYearFinancesToCSVExportBox.setName("newFinancialYearFinancesToCSVExportBox");
+        newFinancialYearFinancesToCSVExportBox.setSelected(options.getNewFinancialYearFinancesToCSVExport());
+        gridBagConstraints.gridy = gridy++;
+        panFinances.add(newFinancialYearFinancesToCSVExportBox, gridBagConstraints);
 
         clanPriceModifierLabel.setText(resourceMap.getString("clanPriceModifierLabel.text")); // NOI18N
         clanPriceModifierLabel.setName("clanPriceModifierLabel"); // NOI18N
@@ -2203,8 +2270,6 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panFinances.add(spnClanPriceModifier, gridBagConstraints);
-
-        //JPanel panUsedParts = new JPanel(new GridBagLayout());
 
         usedPartsValueLabel.setText(resourceMap.getString("usedPartsValueLabel.text")); // NOI18N
         usedPartsValueLabel.setName("usedPartsValueLabel"); // NOI18N
@@ -3340,9 +3405,40 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         panRandomPortrait.setName("panRandomPortrait"); // NOI18N
         panRandomPortrait.setLayout(new BorderLayout());
 
-        JPanel panUsePortrait = new JPanel(new GridLayout(nRow, 4));
-
+        // The math below is used to determine how to split the personnel role options for portraits,
+        // which it does into 4 columns with rows equal to the number of roles plus two, with the
+        // additional two being the all role and no role options.
+        JPanel panUsePortrait = new JPanel(new GridLayout((int) Math.ceil((Person.T_NUM + 2) / 4.0), 4));
         chkUsePortrait = new JCheckBox[Person.T_NUM];
+        JCheckBox allPortraitsBox = new JCheckBox(resourceMap.getString("panUsePortrait.all.text"));
+        JCheckBox noPortraitsBox = new JCheckBox(resourceMap.getString("panUsePortrait.no.text"));
+        allPortraitsBox.addActionListener(evt -> {
+            final boolean selected = allPortraitsBox.isSelected();
+            for (JCheckBox box : chkUsePortrait) {
+                if (selected) {
+                    box.setSelected(true);
+                }
+                box.setEnabled(!selected);
+            }
+            if (selected) {
+                noPortraitsBox.setSelected(false);
+            }
+        });
+        noPortraitsBox.addActionListener(evt -> {
+            final boolean selected = noPortraitsBox.isSelected();
+            for (JCheckBox box : chkUsePortrait) {
+                if (selected) {
+                    box.setSelected(false);
+                }
+                box.setEnabled(!selected);
+            }
+            if (selected) {
+                allPortraitsBox.setSelected(false);
+            }
+        });
+        panUsePortrait.add(allPortraitsBox);
+        panUsePortrait.add(noPortraitsBox);
+
         JCheckBox box;
         for (int i = 0; i < Person.T_NUM; i++) {
             box = new JCheckBox(Person.getRoleDesc(i, false));
@@ -3763,103 +3859,100 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         chkSharesExcludeLargeCraft.setText(resourceMap.getString("chkSharesExcludeLargeCraft.text"));
         chkSharesExcludeLargeCraft.setToolTipText(resourceMap.getString("chkSharesExcludeLargeCraft.toolTipText"));
         chkSharesExcludeLargeCraft.setSelected(options.getSharesExcludeLargeCraft());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkSharesExcludeLargeCraft, gridBagConstraints);
 
         chkSharesForAll.setText(resourceMap.getString("chkSharesForAll.text"));
         chkSharesForAll.setToolTipText(resourceMap.getString("chkSharesForAll.toolTipText"));
         chkSharesForAll.setSelected(options.getSharesForAll());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkSharesForAll, gridBagConstraints);
 
         chkAeroRecruitsHaveUnits.setText(resourceMap.getString("chkAeroRecruitsHaveUnits.text"));
         chkAeroRecruitsHaveUnits.setToolTipText(resourceMap.getString("chkAeroRecruitsHaveUnits.toolTipText"));
         chkAeroRecruitsHaveUnits.setSelected(options.getAeroRecruitsHaveUnits());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkAeroRecruitsHaveUnits, gridBagConstraints);
 
         chkRetirementRolls.setText(resourceMap.getString("chkRetirementRolls.text"));
         chkRetirementRolls.setToolTipText(resourceMap.getString("chkRetirementRolls.toolTipText"));
         chkRetirementRolls.setSelected(options.doRetirementRolls());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkRetirementRolls, gridBagConstraints);
 
         chkCustomRetirementMods.setText(resourceMap.getString("chkCustomRetirementMods.text"));
         chkCustomRetirementMods.setToolTipText(resourceMap.getString("chkCustomRetirementMods.toolTipText"));
         chkCustomRetirementMods.setSelected(options.getCustomRetirementMods());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkCustomRetirementMods, gridBagConstraints);
 
         chkFoundersNeverRetire.setText(resourceMap.getString("chkFoundersNeverRetire.text"));
         chkFoundersNeverRetire.setToolTipText(resourceMap.getString("chkFoundersNeverRetire.toolTipText"));
         chkFoundersNeverRetire.setSelected(options.getFoundersNeverRetire());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkFoundersNeverRetire, gridBagConstraints);
+
+        chkAddDependents = new JCheckBox(resourceMap.getString("chkAddDependents.text"));
+        chkAddDependents.setToolTipText(resourceMap.getString("chkAddDependents.toolTipText"));
+        chkAddDependents.setSelected(options.canAtBAddDependents());
+        gridBagConstraints.gridy++;
+        panSubAtBAdmin.add(chkAddDependents, gridBagConstraints);
+
+        chkDependentsNeverLeave = new JCheckBox(resourceMap.getString("chkDependentsNeverLeave.text"));
+        chkDependentsNeverLeave.setToolTipText(resourceMap.getString("chkDependentsNeverLeave.toolTipText"));
+        chkDependentsNeverLeave.setSelected(options.getDependentsNeverLeave());
+        gridBagConstraints.gridy++;
+        panSubAtBAdmin.add(chkDependentsNeverLeave, gridBagConstraints);
 
         chkTrackUnitFatigue.setText(resourceMap.getString("chkTrackUnitFatigue.text"));
         chkTrackUnitFatigue.setToolTipText(resourceMap.getString("chkTrackUnitFatigue.toolTipText"));
         chkTrackUnitFatigue.setSelected(options.getTrackUnitFatigue());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkTrackUnitFatigue, gridBagConstraints);
 
         chkUseLeadership.setText(resourceMap.getString("chkUseLeadership.text"));
         chkUseLeadership.setToolTipText(resourceMap.getString("chkUseLeadership.toolTipText"));
         chkUseLeadership.setSelected(options.getUseLeadership());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkUseLeadership, gridBagConstraints);
 
         chkTrackOriginalUnit.setText(resourceMap.getString("chkTrackOriginalUnit.text"));
         chkTrackOriginalUnit.setToolTipText(resourceMap.getString("chkTrackOriginalUnit.toolTipText"));
         chkTrackOriginalUnit.setSelected(options.getTrackOriginalUnit());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkTrackOriginalUnit, gridBagConstraints);
 
         chkUseAero.setText(resourceMap.getString("chkUseAero.text"));
         chkUseAero.setToolTipText(resourceMap.getString("chkUseAero.toolTipText"));
         chkUseAero.setSelected(options.getUseAero());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkUseAero, gridBagConstraints);
 
         chkUseVehicles.setText(resourceMap.getString("chkUseVehicles.text"));
         chkUseVehicles.setToolTipText(resourceMap.getString("chkUseVehicles.toolTipText"));
         chkUseVehicles.setSelected(options.getUseVehicles());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkUseVehicles, gridBagConstraints);
 
         chkClanVehicles.setText(resourceMap.getString("chkClanVehicles.text"));
         chkClanVehicles.setToolTipText(resourceMap.getString("chkClanVehicles.toolTipText"));
         chkClanVehicles.setSelected(options.getUseVehicles());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkClanVehicles, gridBagConstraints);
 
         chkInstantUnitMarketDelivery.setText(resourceMap.getString("chkInstantUnitMarketDelivery.text"));
         chkInstantUnitMarketDelivery.setToolTipText(resourceMap.getString("chkInstantUnitMarketDelivery.toolTipText"));
         chkInstantUnitMarketDelivery.setSelected(options.getInstantUnitMarketDelivery());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkInstantUnitMarketDelivery, gridBagConstraints);
 
         chkContractMarketReportRefresh.setText(resourceMap.getString("chkContractMarketReportRefresh.text"));
         chkContractMarketReportRefresh.setSelected(options.getContractMarketReportRefresh());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkContractMarketReportRefresh, gridBagConstraints);
 
         chkUnitMarketReportRefresh.setText(resourceMap.getString("chkUnitMarketReportRefresh.text"));
         chkUnitMarketReportRefresh.setSelected(options.getUnitMarketReportRefresh());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkUnitMarketReportRefresh, gridBagConstraints);
 
@@ -4642,7 +4735,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
     	campaign.setCalendar(date);
         // Ensure that the MegaMek year GameOption matches the campaign year
         GameOptions gameOpts = campaign.getGameOptions();
-        int campaignYear = campaign.getCalendar().get(Calendar.YEAR);
+        int campaignYear = campaign.getGameYear();
         if (gameOpts.intOption("year") != campaignYear) {
             gameOpts.getOption("year").setValue(campaignYear);
         }
@@ -4694,6 +4787,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         options.setUseQualityMaintenance(useQualityMaintenance.isSelected());
         options.setReverseQualityNames(reverseQualityNames.isSelected());
         options.setUseUnofficialMaintenance(useUnofficialMaintenance.isSelected());
+        options.setLogMaintenance(logMaintenance.isSelected());
         options.setMaintenanceBonus((Integer) spnMaintenanceBonus.getModel().getValue());
         options.setMaintenanceCycleDays((Integer) spnMaintenanceDays.getModel().getValue());
         options.setPayForParts(payForPartsBox.isSelected());
@@ -4712,6 +4806,8 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         options.setUsePeacetimeCost(usePeacetimeCostBox.isSelected());
         options.setUseExtendedPartsModifier(useExtendedPartsModifierBox.isSelected());
         options.setShowPeacetimeCost(showPeacetimeCostBox.isSelected());
+        options.setNewFinancialYearFinancesToCSVExport(newFinancialYearFinancesToCSVExportBox.isSelected());
+        options.setFinancialYearDuration((FinancialYearDuration) comboFinancialYearDuration.getSelectedItem());
         options.setAssignPortraitOnRoleChange(chkAssignPortraitOnRoleChange.isSelected());
 
         options.setEquipmentContractBase(btnContractEquipment.isSelected());
@@ -4837,6 +4933,10 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         options.setTougherHealing(useTougherHealing.isSelected());
         options.setUseTransfers(chkUseTransfers.isSelected());
         options.setUseTimeInService(chkUseTimeInService.isSelected());
+        options.setTimeInServiceDisplayFormat((TimeInDisplayFormat) comboTimeInServiceDisplayFormat.getSelectedItem());
+        options.setUseTimeInRank(chkUseTimeInRank.isSelected());
+        options.setTimeInRankDisplayFormat((TimeInDisplayFormat) comboTimeInRankDisplayFormat.getSelectedItem());
+        options.setTrackTotalEarnings(chkTrackTotalEarnings.isSelected());
         options.setShowOriginFaction(chkShowOriginFaction.isSelected());
         options.setRandomizeOrigin(chkRandomizeOrigin.isSelected());
         options.setRandomizeDependentOrigin(chkRandomizeDependentsOrigin.isSelected());
@@ -4844,6 +4944,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         //Family
         options.setMinimumMarriageAge((Integer) spnMinimumMarriageAge.getModel().getValue());
         options.setCheckMutualAncestorsDepth((Integer) spnCheckMutualAncestorsDepth.getModel().getValue());
+        options.setLogMarriageNameChange(chkLogMarriageNameChange.isSelected());
         options.setUseRandomMarriages(chkUseRandomMarriages.isSelected());
         options.setChanceRandomMarriages((Double) spnChanceRandomMarriages.getModel().getValue() / 100.0);
         options.setMarriageAgeRange((Integer) spnMarriageAgeRange.getModel().getValue());
@@ -4856,7 +4957,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         options.setUseUnofficialProcreation(chkUseUnofficialProcreation.isSelected());
         options.setChanceProcreation((Double) spnChanceProcreation.getModel().getValue() / 100.0);
         options.setUseUnofficialProcreationNoRelationship(chkUseUnofficialProcreationNoRelationship.isSelected());
-        options.setChanceProcreationNoRelationship((Double) spnChanceProcreationNoRelationship.getModel().getValue());
+        options.setChanceProcreationNoRelationship((Double) spnChanceProcreationNoRelationship.getModel().getValue() / 100.0);
         options.setDisplayTrueDueDate(chkDisplayTrueDueDate.isSelected());
         options.setLogConception(chkLogConception.isSelected());
         options.setBabySurnameStyle(comboBabySurnameStyle.getSelectedIndex());
@@ -4873,7 +4974,7 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         }
         for (int i = 1; i < Person.T_NUM; i++) {
             try {
-                options.setBaseSalary(i, txtSalaryBase[i].getMoney());
+                options.setBaseSalary(i, (double) spnSalaryBase[i].getValue());
             } catch (Exception ignored) { }
         }
         //endregion Personnel Tab
@@ -4904,6 +5005,8 @@ public class CampaignOptionsDialog extends javax.swing.JDialog {
         options.setRetirementRolls(chkRetirementRolls.isSelected());
         options.setCustomRetirementMods(chkCustomRetirementMods.isSelected());
         options.setFoundersNeverRetire(chkFoundersNeverRetire.isSelected());
+        options.setAtBAddDependents(chkAddDependents.isSelected());
+        options.setDependentsNeverLeave(chkDependentsNeverLeave.isSelected());
         options.setTrackUnitFatigue(chkTrackUnitFatigue.isSelected());
         options.setLimitLanceWeight(chkLimitLanceWeight.isSelected());
         options.setLimitLanceNumUnits(chkLimitLanceNumUnits.isSelected());

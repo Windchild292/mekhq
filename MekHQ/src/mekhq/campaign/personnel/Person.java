@@ -2,6 +2,7 @@
  * Person.java
  *
  * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved
  *
  * This file is part of MekHQ.
  *
@@ -20,9 +21,13 @@
  */
 package mekhq.campaign.personnel;
 
+import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
@@ -35,6 +40,7 @@ import megamek.common.util.WeightedMap;
 import mekhq.campaign.*;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.log.*;
+import mekhq.campaign.personnel.enums.*;
 import org.joda.time.DateTime;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -67,8 +73,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * in isCombatRole(int) or isSupportRole(int). You should also increase the value of T_NUM
      * if you add new roles.
      */
-    public static final int T_NONE = 0;
-    public static final int T_MECHWARRIOR = 1;
+    public static final int T_NONE = 0; // Support Role
+    public static final int T_MECHWARRIOR = 1; // Start of Combat Roles
     public static final int T_AERO_PILOT = 2;
     public static final int T_GVEE_DRIVER = 3;
     public static final int T_NVEE_DRIVER = 4;
@@ -81,8 +87,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
     public static final int T_SPACE_PILOT = 11;
     public static final int T_SPACE_CREW = 12;
     public static final int T_SPACE_GUNNER = 13;
-    public static final int T_NAVIGATOR = 14; // End of combat roles
-    public static final int T_MECH_TECH = 15;
+    public static final int T_NAVIGATOR = 14; // End of Combat Roles
+    public static final int T_MECH_TECH = 15; // Start of Support Roles
     public static final int T_MECHANIC = 16;
     public static final int T_AERO_TECH = 17;
     public static final int T_BA_TECH = 18;
@@ -100,42 +106,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
     // This value should always be +1 of the last defined role
     public static final int T_NUM = 28;
 
-    public static final int S_ACTIVE = 0;
-    public static final int S_RETIRED = 1;
-    public static final int S_KIA = 2;
-    public static final int S_MIA = 3;
-    public static final int S_NUM = 4;
-
-    public enum GENDER_DESCRIPTOR {
-        MALE_FEMALE,
-        HE_SHE,
-        HIM_HER,
-        HIS_HER,
-        HIS_HERS,
-        BOY_GIRL
-    }
-
     // Prisoners, Bondsmen, and Normal Personnel
     public static final int PRISONER_NOT = 0;
     public static final int PRISONER_YES = 1;
     public static final int PRISONER_BONDSMAN = 2;
-
-    // ROM Designations
-    public static final int DESIG_NONE    = 0;
-    public static final int DESIG_EPSILON = 1;
-    public static final int DESIG_PI      = 2;
-    public static final int DESIG_IOTA    = 3;
-    public static final int DESIG_XI      = 4;
-    public static final int DESIG_THETA   = 5;
-    public static final int DESIG_ZETA    = 6;
-    public static final int DESIG_MU      = 7;
-    public static final int DESIG_RHO     = 8;
-    public static final int DESIG_LAMBDA  = 9;
-    public static final int DESIG_PSI     = 10;
-    public static final int DESIG_OMICRON = 11;
-    public static final int DESIG_CHI     = 12;
-    public static final int DESIG_GAMMA   = 13;
-    public static final int DESIG_NUM     = 14;
 
     private static final Map<Integer, Money> MECHWARRIOR_AERO_RANSOM_VALUES;
     private static final Map<Integer, Money> OTHER_RANSOM_VALUES;
@@ -151,8 +125,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
     //region Procreation
     // this is a flag used in random procreation to determine whether or not to attempt to procreate
     private boolean tryingToConceive;
-    protected GregorianCalendar dueDate;
-    protected GregorianCalendar expectedDueDate;
+    protected LocalDate dueDate;
+    protected LocalDate expectedDueDate;
 
     private static final int PREGNANCY_STANDARD_DURATION = 268; //standard duration of a pregnancy in days
 
@@ -184,8 +158,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
     //endregion Procreation
 
     //region Marriage
-    // this is a flag used in determine whether or not a person is a marriage candidate (note that
-    // other checks are still used)
+    // this is a flag used in determine whether or not a person is a potential marriage candidate
+    // provided that they are not married, are old enough, etc.
     private boolean tryingToMarry;
     // Marriage Surnames
     public static final int SURNAME_NO_CHANGE = 0;
@@ -215,15 +189,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     //endregion Divorce Variables
     //endregion Family Variables
 
-    /** Contains the skill levels to be displayed in a tech's description */
-    private static final String[] DISPLAYED_SKILL_LEVELS = new String[] {
-        SkillType.S_TECH_MECH,
-        SkillType.S_TECH_MECHANIC,
-        SkillType.S_TECH_BA,
-        SkillType.S_TECH_AERO,
-        SkillType.S_TECH_VESSEL,
-    };
-
     protected UUID id;
     protected int oldId;
 
@@ -238,13 +203,14 @@ public class Person implements Serializable, MekHqXmlSerializable {
     private int primaryRole;
     private int secondaryRole;
 
-    private int primaryDesignator;
-    private int secondaryDesignator;
+    private ROMDesignation primaryDesignator;
+    private ROMDesignation secondaryDesignator;
 
     protected String biography;
-    protected GregorianCalendar birthday;
-    protected GregorianCalendar dateOfDeath;
-    protected GregorianCalendar recruitment;
+    protected LocalDate birthday;
+    protected LocalDate dateOfDeath;
+    protected LocalDate recruitment;
+    protected LocalDate lastRankChangeDate;
     protected List<LogEntry> personnelLog;
     protected List<LogEntry> missionLog;
 
@@ -252,11 +218,12 @@ public class Person implements Serializable, MekHqXmlSerializable {
     private PersonnelOptions options;
     private int toughness;
 
-    private int status;
+    private PersonnelStatus status;
     protected int xp;
     protected int engXp;
     protected int acquisitions;
     protected Money salary;
+    private Money totalEarnings;
     private int hits;
     private int prisonerStatus;
     // Is this person willing to defect? Only for prisoners ...
@@ -373,9 +340,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         OTHER_RANSOM_VALUES.put(SkillType.EXP_ELITE, Money.of(50000));
     }
 
-    // Date Formatting
-    private static final String SAVE_DATE_FORMAT = "yyyy-MM-dd"; // used for file I/O
-    private static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd"; // used for anything external
+    private final static String DATE_DISPLAY_FORMAT = "yyyy-MM-dd";
 
     //region Reverse Compatibility
     private int oldUnitId = -1;
@@ -424,8 +389,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         callsign = "";
         primaryRole = T_NONE;
         secondaryRole = T_NONE;
-        primaryDesignator = DESIG_NONE;
-        secondaryDesignator = DESIG_NONE;
+        primaryDesignator = ROMDesignation.NONE;
+        secondaryDesignator = ROMDesignation.NONE;
         commander = false;
         dependent = false;
         originFaction = Faction.getFaction(factionCode);
@@ -456,7 +421,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         doctorId = null;
         unitId = null;
         salary = Money.of(-1);
-        status = S_ACTIVE;
+        totalEarnings = Money.of(0);
+        status = PersonnelStatus.ACTIVE;
         prisonerStatus = PRISONER_NOT;
         willingToDefect = false;
         hits = 0;
@@ -465,6 +431,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         birthday = null;
         dateOfDeath = null;
         recruitment = null;
+        lastRankChangeDate = null;
         skills = new Skills();
         options = new PersonnelOptions();
         currentEdge = 0;
@@ -478,7 +445,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         originalUnitTech = TECH_IS1;
         originalUnitId = null;
         acquisitions = 0;
-        extraData = null;
+        extraData = new ExtraData();
 
         // Initialize Data based on these settings
         setFullName();
@@ -542,9 +509,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     public void setDependent(boolean tf) {
         dependent = tf;
         if (dependent) {
-            recruitment = null;
+            setRecruitment(null);
+            setLastRankChangeDate(null);
         } else {
-            recruitment = (GregorianCalendar) campaign.getCalendar().clone();
+            setRecruitment(getCampaign().getLocalDate());
+            setLastRankChangeDate(getCampaign().getLocalDate());
         }
     }
 
@@ -589,112 +558,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     //region Text Getters
-    //TODO : Rename and Localize region
-    public String getGenderString(GENDER_DESCRIPTOR variant) {
-        return getGenderString(gender, variant);
-    }
-
-    public static String getGenderString(int gender, GENDER_DESCRIPTOR variant) {
-        switch (variant) {
-            case MALE_FEMALE: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "Male";
-                    case Crew.G_FEMALE:
-                        return "Female";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HE_SHE: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "he";
-                    case Crew.G_FEMALE:
-                        return "she";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HIM_HER: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "him";
-                    case Crew.G_FEMALE:
-                        return "her";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HIS_HER: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "his";
-                    case Crew.G_FEMALE:
-                        return "her";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case HIS_HERS: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "his";
-                    case Crew.G_FEMALE:
-                        return "hers";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            case BOY_GIRL: {
-                switch (gender) {
-                    case Crew.G_MALE:
-                        return "boy";
-                    case Crew.G_FEMALE:
-                        return "girl";
-                    default:
-                        MekHQ.getLogger().error(Person.class, "getGenderString",
-                                "Gender described by int " + gender + " is unknown!");
-                        return Crew.GENDER_ERROR;
-                }
-            }
-            default: {
-                MekHQ.getLogger().error(Person.class, "getGenderString",
-                        "Gender described by int " + gender + " is unknown!");
-                return Crew.GENDER_ERROR;
-            }
-        }
-    }
-
-    public String getStatusName() {
-        return getStatusName(status);
-    }
-
-    public static String getStatusName(int status) {
-        switch (status) {
-            case S_ACTIVE:
-                return "Active";
-            case S_RETIRED:
-                return "Retired";
-            case S_KIA:
-                return "Killed in Action";
-            case S_MIA:
-                return "Missing in Action";
-            default:
-                return "?";
-        }
-    }
-
     public String pregnancyStatus() {
         return isPregnant() ? " (Pregnant)" : "";
     }
@@ -754,24 +617,22 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void setFullName() {
-        if (!StringUtil.isNullOrEmpty(givenName)) {
-            if (isClanner()) {
-                if (!StringUtil.isNullOrEmpty(bloodname)) {
-                    fullName = givenName + " " + bloodname;
-                } else {
-                    fullName = givenName;
-                }
+        if (isClanner()) {
+            if (!StringUtil.isNullOrEmpty(bloodname)) {
+                fullName = givenName + " " + bloodname;
             } else {
-                if (!StringUtil.isNullOrEmpty(surname)) {
-                    fullName = givenName + " " + surname;
-                } else {
-                    fullName = givenName;
-                }
+                fullName = givenName;
             }
+        } else {
+            if (!StringUtil.isNullOrEmpty(surname)) {
+                fullName = givenName + " " + surname;
+            } else {
+                fullName = givenName;
+            }
+        }
 
-            if (!StringUtil.isNullOrEmpty(honorific)) {
-                fullName += " " + honorific;
-            }
+        if (!StringUtil.isNullOrEmpty(honorific)) {
+            fullName += " " + honorific;
         }
     }
 
@@ -788,7 +649,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         // Then, it depends on whether the person is a Clanner or not.
         // For Clan names:
         // Takes the input name, and assumes that person does not have a surname
-        // Bloodnames are assumed to have been assigned either through the
+        // Bloodnames are assumed to have been assigned by MekHQ
         // For Inner Sphere names:
         // Depending on the length of the resulting array, the name is processed differently
         // Array of length 1: the name is assumed to not have a surname, just a given name
@@ -797,52 +658,38 @@ public class Person implements Serializable, MekHqXmlSerializable {
         // Array of length 4+: the name is assumed to be as many given names as possible and two surnames
         //
         // Then, the full name is set
-        final String space = " ";
-        String[] name = n.split(space);
+        String[] name = n.trim().split("\\s+");
+
+        givenName = name[0];
 
         if (isClanner()) {
-            int i = 0;
-            givenName = name[i];
-            for (i = 1; i < name.length - 1; i++) {
-                if (!name[i].equals(space)) {
-                    givenName += space + name[i];
+            if (name.length > 1) {
+                int i;
+                for (i = 1; i < name.length - 1; i++) {
+                    givenName += " " + name[i];
+                }
+
+                if (!(!StringUtil.isNullOrEmpty(getBloodname()) && getBloodname().equals(name[i]))) {
+                    givenName += " " + name[i];
                 }
             }
-
-            if (!(!StringUtil.isNullOrEmpty(getBloodname()) && getBloodname().equals(name[i]))) {
-                givenName += space + name[i];
-            }
-
-            surname = null;
         } else {
-            if (name.length == 1) {
-                givenName = name[0];
-                surname = null;
-            } else if (name.length == 2) {
-                givenName = name[0];
+            if (name.length == 2) {
                 surname = name[1];
             } else if (name.length == 3) {
-                givenName = name[0];
-                if (name[1].equals(space)) {
-                    surname = name[2];
-                } else {
-                    surname = name[1] + space + name[2];
-                }
+                surname = name[1] + " " + name[2];
             } else if (name.length > 3) {
-                int i = 0;
-                givenName = name[i];
+                int i;
                 for (i = 1; i < name.length - 2; i++) {
-                    if (!name[i].equals(space)) {
-                        givenName += space + name[i];
-                    }
+                    givenName += " " + name[i];
                 }
 
-                if (name[i].equals(space)) {
-                    surname = name[i + 1];
-                } else {
-                    surname = name[i] + space + name[i + 1];
-                }
+                surname = name[i] + " " + name[i + 1];
             }
+        }
+
+        if ((surname == null) || (surname.equals(Crew.UNNAMED_SURNAME))) {
+            surname = "";
         }
 
         setFullName();
@@ -885,7 +732,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.portraitFileOverride = s;
     }
 
-
+    //region Personnel Roles
+    // TODO : Move me into an enum with checks for hasAdministratorRole, hasTechRole, hasMedicalRole, etc.
     public int getPrimaryRole() {
         return primaryRole;
     }
@@ -914,12 +762,120 @@ public class Person implements Serializable, MekHqXmlSerializable {
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
 
-    public int getStatus() {
+    /**
+     * This is used to determine if a person has a specific role as either their primary OR their
+     * secondary role
+     * @param role the role to determine
+     * @return true if the person has the specific role either as their primary or secondary role
+     */
+    public boolean hasRole(int role) {
+        return (getPrimaryRole() == role) || (getSecondaryRole() == role);
+    }
+
+    /**
+     * This is used to determine whether the person has either a primary or secondary role within the
+     * two bounds. This is inclusive of the two bounds
+     * @param minimumRole the minimum role bound (inclusive)
+     * @param maximumRole the maximum role bound (inclusive)
+     * @return true if they have a role within the bounds (inclusive), otherwise false.
+     */
+    public boolean hasRoleWithin(int minimumRole, int maximumRole) {
+        return hasPrimaryRoleWithin(minimumRole, maximumRole)
+                || hasSecondaryRoleWithin(minimumRole, maximumRole);
+    }
+
+    /**
+     * @param minimumRole the minimum role bound (inclusive)
+     * @param maximumRole the maximum role bound (inclusive)
+     * @return true if they have a primary role within the bounds (inclusive), otherwise false
+     */
+    public boolean hasPrimaryRoleWithin(int minimumRole, int maximumRole) {
+        return (getPrimaryRole() >= minimumRole) && (getPrimaryRole() <= maximumRole);
+    }
+
+    /**
+     * @param minimumRole the minimum role bound (inclusive)
+     * @param maximumRole the maximum role bound (inclusive)
+     * @return true if they have a secondary role within the bounds (inclusive), otherwise false
+     */
+    public boolean hasSecondaryRoleWithin(int minimumRole, int maximumRole) {
+        return (getSecondaryRole() >= minimumRole) && (getSecondaryRole() <= maximumRole);
+    }
+
+    /**
+     * @return true if the person has a primary or secondary combat role
+     */
+    public boolean hasCombatRole() {
+        return hasPrimaryCombatRole() || hasSecondaryCombatRole();
+    }
+
+    /**
+     * @return true if the person has a primary combat role
+     */
+    public boolean hasPrimaryCombatRole() {
+        return hasPrimaryRoleWithin(T_MECHWARRIOR, T_SPACE_GUNNER)
+                || hasPrimaryRoleWithin(T_LAM_PILOT, T_VEHICLE_CREW);
+    }
+
+    /**
+     * @return true if the person has a secondary combat role
+     */
+    public boolean hasSecondaryCombatRole() {
+        return hasSecondaryRoleWithin(T_MECHWARRIOR, T_SPACE_GUNNER)
+                || hasSecondaryRoleWithin(T_LAM_PILOT, T_VEHICLE_CREW);
+    }
+
+    /**
+     * @param includeNoRole whether to include T_NONE in the primary check or not
+     * @return true if the person has a primary or secondary support role, except for secondary T_NONE
+     */
+    public boolean hasSupportRole(boolean includeNoRole) {
+        return hasPrimarySupportRole(includeNoRole) || hasSecondarySupportRole();
+    }
+
+    /**
+     * @param includeNoRole whether to include T_NONE in the check check or not
+     * @return true if the person has a primary support role
+     */
+    public boolean hasPrimarySupportRole(boolean includeNoRole) {
+        return hasPrimaryRoleWithin(T_MECH_TECH, T_ADMIN_HR) || (includeNoRole && (getPrimaryRole() == T_NONE));
+    }
+
+    /**
+     * @return true if the person has a secondary support role. Note that T_NONE is NOT a support
+     * role if it is a secondary role
+     */
+    public boolean hasSecondarySupportRole() {
+        return hasSecondaryRoleWithin(T_MECH_TECH, T_ADMIN_HR);
+    }
+
+    /**
+     * Determines whether a role is considered a combat role. Note that T_LAM_PILOT is a special
+     * placeholder which is not used for either primary or secondary role and will return false.
+     *
+     * @param role A value that can be used for a person's primary or secondary role.
+     * @return     Whether the role is considered a combat role
+     */
+    public static boolean isCombatRole(int role) {
+        return ((role > T_NONE) && (role <= T_NAVIGATOR))
+                || (role == T_VEHICLE_CREW);
+    }
+
+    /**
+     * @param role A value that can be used for a person's primary or secondary role.
+     * @return     Whether the role is considered a support role
+     */
+    public static boolean isSupportRole(int role) {
+        return (role >= T_MECH_TECH) && (role < T_LAM_PILOT);
+    }
+    //endregion Personnel Roles
+
+    public PersonnelStatus getStatus() {
         return status;
     }
 
-    public void setStatus(int s) {
-        this.status = s;
+    public void setStatus(PersonnelStatus status) {
+        this.status = status;
     }
 
     public int getIdleMonths() {
@@ -943,7 +899,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             case (T_NONE):
                 return "None";
             case (T_MECHWARRIOR):
-                return "Mechwarrior";
+                return "MechWarrior";
             case (T_GVEE_DRIVER):
                 return "Vehicle Driver";
             case (T_NVEE_DRIVER):
@@ -955,9 +911,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
             case (T_CONV_PILOT):
                 return "Conventional Aircraft Pilot";
             case (T_AERO_PILOT):
-                return "Aero Pilot";
+                return "Aerospace Pilot";
             case (T_PROTO_PILOT):
-                return "Proto Pilot";
+                return "ProtoMech Pilot";
             case (T_BA):
                 if (clan) {
                     return "Elemental";
@@ -1025,6 +981,64 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return getRoleDesc(secondaryRole, campaign.getFaction().isClan());
     }
 
+    public static int getRoleMnemonic(int type) {
+        // The following characters are unused:
+        // J, K, Q, X, Z
+        switch (type) {
+            case T_MECHWARRIOR:
+                return KeyEvent.VK_M;
+            case T_GVEE_DRIVER:
+                return KeyEvent.VK_V;
+            case T_NVEE_DRIVER:
+                return KeyEvent.VK_N;
+            case T_VEE_GUNNER:
+                return KeyEvent.VK_G;
+            case T_AERO_PILOT:
+                return KeyEvent.VK_A;
+            case T_PROTO_PILOT:
+                return KeyEvent.VK_P;
+            case T_CONV_PILOT:
+                return KeyEvent.VK_F;
+            case T_BA:
+                return KeyEvent.VK_B;
+            case T_INFANTRY:
+                return KeyEvent.VK_S;
+            case T_SPACE_PILOT:
+                return KeyEvent.VK_I;
+            case T_SPACE_CREW:
+                return KeyEvent.VK_W;
+            case T_SPACE_GUNNER:
+                return KeyEvent.VK_U;
+            case T_NAVIGATOR:
+                return KeyEvent.VK_Y;
+            case T_MECH_TECH:
+                return KeyEvent.VK_T;
+            case T_MECHANIC:
+                return KeyEvent.VK_E;
+            case T_AERO_TECH:
+                return KeyEvent.VK_O;
+            case T_DOCTOR:
+                return KeyEvent.VK_D;
+            case T_ADMIN_COM:
+                return KeyEvent.VK_C;
+            case T_ADMIN_LOG:
+                return KeyEvent.VK_L;
+            case T_ADMIN_TRA:
+                return KeyEvent.VK_R;
+            case T_ADMIN_HR:
+                return KeyEvent.VK_H;
+            case T_VTOL_PILOT:
+            case T_BA_TECH:
+            case T_ASTECH:
+            case T_MEDIC:
+            case T_LAM_PILOT:
+            case T_VEHICLE_CREW:
+            case T_NONE:
+            default:
+                return KeyEvent.VK_UNDEFINED;
+        }
+    }
+
     public boolean canPerformRole(int role) {
         switch (role) {
             case (T_NONE):
@@ -1090,81 +1104,98 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return gender;
     }
 
-    public void setBirthday(GregorianCalendar date) {
+    public void setBirthday(LocalDate date) {
         this.birthday = date;
     }
 
-    public GregorianCalendar getBirthday() {
+    public LocalDate getBirthday() {
         return birthday;
     }
 
-    public GregorianCalendar getDateOfDeath() {
+    public LocalDate getDateOfDeath() {
         return dateOfDeath;
     }
 
-    public void setDateOfDeath(GregorianCalendar date) {
+    public void setDateOfDeath(LocalDate date) {
         this.dateOfDeath = date;
     }
 
-    public void setRecruitment(GregorianCalendar date) {
+    public void setRecruitment(LocalDate date) {
         this.recruitment = date;
     }
 
-    public GregorianCalendar getRecruitment() {
+    public LocalDate getRecruitment() {
         return recruitment;
     }
 
     public String getRecruitmentAsString() {
-        if (recruitment == null) {
+        if (getRecruitment() == null) {
             return null;
+        } else {
+            return getRecruitment().format(DateTimeFormatter.ofPattern(DATE_DISPLAY_FORMAT));
         }
-        final SimpleDateFormat df = new SimpleDateFormat(DISPLAY_DATE_FORMAT);
-        return df.format(recruitment.getTime());
     }
 
-    public int getAge(GregorianCalendar today) {
+    public void setLastRankChangeDate(LocalDate date) {
+        this.lastRankChangeDate = date;
+    }
+
+    public LocalDate getLastRankChangeDate() {
+        return lastRankChangeDate;
+    }
+
+    public String getLastRankChangeDateAsString() {
+        if (getLastRankChangeDate() == null) {
+            return null;
+        } else {
+            return getLastRankChangeDate().format(DateTimeFormatter.ofPattern(DATE_DISPLAY_FORMAT));
+        }
+    }
+
+    public int getAge(LocalDate today) {
         // Get age based on year
-        if (null != dateOfDeath) {
+        if (getDateOfDeath() != null) {
             //use date of death instead of birthday
-            today = dateOfDeath;
+            today = getDateOfDeath();
         }
 
-        int age = today.get(Calendar.YEAR) - birthday.get(Calendar.YEAR);
-
-        // Add the tentative age to the date of birth to get this year's birthday
-        GregorianCalendar tmpDate = (GregorianCalendar) birthday.clone();
-        tmpDate.add(Calendar.YEAR, age);
-
-        // If this year's birthday has not happened yet, subtract one from age
-        if (today.before(tmpDate)) {
-            age--;
-        }
-        return age;
+        return Math.toIntExact(ChronoUnit.YEARS.between(getBirthday(), today));
     }
 
-    public int getTimeInService(GregorianCalendar today) {
+    public String getTimeInService(Campaign campaign) {
         // Get time in service based on year
-        if (null == recruitment) {
-            //use zero if hasn't been recruited yet
-            return -1;
+        if (getRecruitment() == null) {
+            //use "" they haven't been recruited or are dependents
+            return "";
         }
+
+        LocalDate today = campaign.getLocalDate();
 
         // If the person is dead, we only care about how long they spent in service to the company
-        if (dateOfDeath != null) {
+        if (getDateOfDeath() != null) {
             //use date of death instead of the current day
-            today = dateOfDeath;
+            today = getDateOfDeath();
         }
 
-        int timeInService = today.get(Calendar.YEAR) - recruitment.get(Calendar.YEAR);
+        return campaign.getCampaignOptions().getTimeInServiceDisplayFormat()
+                .getDisplayFormattedOutput(getRecruitment(), today);
+    }
 
-        // Add the tentative time in service to the date of recruitment to get this year's service history
-        GregorianCalendar tmpDate = (GregorianCalendar) recruitment.clone();
-        tmpDate.add(Calendar.YEAR, timeInService);
-
-        if (today.before(tmpDate)) {
-            timeInService--;
+    public String getTimeInRank(Campaign campaign) {
+        if (getLastRankChangeDate() == null) {
+            return "";
         }
-        return timeInService;
+
+        LocalDate today = campaign.getLocalDate();
+
+        // If the person is dead, we only care about how long it was from their last promotion till they died
+        if (getDateOfDeath() != null) {
+            //use date of death instead of the current day
+            today = getDateOfDeath();
+        }
+
+        return campaign.getCampaignOptions().getTimeInRankDisplayFormat()
+                .getDisplayFormattedOutput(getLastRankChangeDate(), today);
     }
 
     public void setId(UUID id) {
@@ -1176,7 +1207,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean isChild() {
-        return (getAge(campaign.getCalendar()) <= 13);
+        return (getAge(getCampaign().getLocalDate()) <= 13);
     }
 
     //region Pregnancy
@@ -1188,19 +1219,19 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.tryingToConceive = tryingToConceive;
     }
 
-    public GregorianCalendar getDueDate() {
+    public LocalDate getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(GregorianCalendar dueDate) {
+    public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
     }
 
-    public GregorianCalendar getExpectedDueDate() {
+    public LocalDate getExpectedDueDate() {
         return expectedDueDate;
     }
 
-    public void setExpectedDueDate(GregorianCalendar expectedDueDate) {
+    public void setExpectedDueDate(LocalDate expectedDueDate) {
         this.expectedDueDate = expectedDueDate;
     }
 
@@ -1208,13 +1239,17 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return dueDate != null;
     }
 
-    public void procreate() {
-        if (!isFemale() || isPregnant() || isDeployed() || !tryingToConceive) {
-            return;
-        }
+    /**
+     * This is used to determine if a person can procreate
+     * @return true if they can, otherwise false
+     */
+    public boolean canProcreate() {
+        return isFemale() && tryingToConceive && !isPregnant() && !isDeployed()
+                && !isChild() && (getAge(getCampaign().getLocalDate()) < 51);
+    }
 
-        // Age limitations...
-        if (!isChild() && getAge(campaign.getCalendar()) < 51) {
+    public void procreate() {
+        if (canProcreate()) {
             boolean conceived = false;
             if (hasSpouse()) {
                 if (!getSpouse().isDeployed() && !getSpouse().isDeadOrMIA() && !getSpouse().isChild()
@@ -1234,18 +1269,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void addPregnancy() {
-        GregorianCalendar tCal = (GregorianCalendar) campaign.getCalendar().clone();
-
-        tCal.add(GregorianCalendar.DAY_OF_YEAR, PREGNANCY_STANDARD_DURATION);
-        setExpectedDueDate(tCal);
-        tCal = (GregorianCalendar) tCal.clone();
-        tCal.add(GregorianCalendar.DAY_OF_YEAR, PREGNANCY_MODIFY_DURATION.getAsInt());
-        setDueDate(tCal);
+        LocalDate dueDate = getCampaign().getLocalDate();
+        dueDate = dueDate.plus(PREGNANCY_STANDARD_DURATION, ChronoUnit.DAYS);
+        setExpectedDueDate(dueDate);
+        dueDate = dueDate.plus(PREGNANCY_MODIFY_DURATION.getAsInt(), ChronoUnit.DAYS);
+        setDueDate(dueDate);
 
         int size = PREGNANCY_SIZE.getAsInt();
-        if (extraData == null) {
-            extraData = new ExtraData();
-        }
         extraData.set(PREGNANCY_CHILDREN_DATA, size);
         extraData.set(PREGNANCY_FATHER_DATA, (hasSpouse()) ? getSpouseId().toString() : null);
 
@@ -1288,14 +1318,14 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return IntStream.range(0, size).mapToObj(i -> {
             Person baby = campaign.newDependent(T_NONE, true);
             baby.setSurname(surname);
-            baby.setBirthday((GregorianCalendar) campaign.getCalendar().clone());
+            baby.setBirthday(getCampaign().getLocalDate());
             UUID babyId = UUID.randomUUID();
 
             baby.setId(babyId);
             baby.setAncestorsId(ancId);
 
             campaign.addReport(String.format("%s has given birth to %s, a baby %s!", getHyperlinkedName(),
-                    baby.getHyperlinkedName(), baby.getGenderString(GENDER_DESCRIPTOR.BOY_GIRL)));
+                    baby.getHyperlinkedName(), GenderDescriptors.BOY_GIRL.getDescriptor(baby.getGender())));
             if (campaign.getCampaignOptions().logConception()) {
                 MedicalLogger.deliveredBaby(this, baby, campaign.getDate());
                 if (fatherId != null) {
@@ -1374,36 +1404,38 @@ public class Person implements Serializable, MekHqXmlSerializable {
         // can't marry a prisoner, unless you are also a prisoner (this is purposely left open for prisoners to marry who they want)
         // can't marry a person who is dead or MIA
         // can't marry inactive personnel (this is to show how they aren't part of the force anymore)
+        // TODO : can't marry anyone who is not located at the same planet as the person - GitHub #1672: Implement current planet tracking for personnel
         // can't marry a close relative
         return (
                 !this.equals(p)
                 && !p.hasSpouse()
                 && p.isTryingToMarry()
                 && p.oldEnoughToMarry()
-                && (!p.isPrisoner() || (p.isPrisoner() && isPrisoner()))
+                && (!p.isPrisoner() || isPrisoner())
                 && !p.isDeadOrMIA()
                 && p.isActive()
                 && ((getAncestorsId() == null)
-                    || !campaign.getAncestors(getAncestorsId()).checkMutualAncestors(campaign.getAncestors(p.getAncestorsId())))
+                    || !getCampaign().getAncestors(getAncestorsId()).checkMutualAncestors(
+                            getCampaign().getAncestors(p.getAncestorsId())))
         );
     }
 
     public boolean oldEnoughToMarry() {
-        return (getAge(campaign.getCalendar()) >= campaign.getCampaignOptions().getMinimumMarriageAge());
+        return (getAge(getCampaign().getLocalDate()) >= getCampaign().getCampaignOptions().getMinimumMarriageAge());
     }
 
     public void randomMarriage() {
         // Don't attempt to generate is someone isn't trying to marry, has a spouse,
-        // isn't old enough to marry, is actively deployed, or is currently a prisoner
-        if (!tryingToMarry || hasSpouse() || !oldEnoughToMarry() || isDeployed() || isPrisoner()) {
+        // isn't old enough to marry, or is actively deployed
+        if (!tryingToMarry || hasSpouse() || !oldEnoughToMarry() || isDeployed()) {
             return;
         }
 
         // setting is the fractional chance that this attempt at finding a marriage will result in one
-        if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomMarriages())) {
+        if (Compute.randomFloat() < (getCampaign().getCampaignOptions().getChanceRandomMarriages())) {
             addRandomSpouse(false);
-        } else if (campaign.getCampaignOptions().useRandomSameSexMarriages()) {
-            if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomSameSexMarriages())) {
+        } else if (getCampaign().getCampaignOptions().useRandomSameSexMarriages()) {
+            if (Compute.randomFloat() < (getCampaign().getCampaignOptions().getChanceRandomSameSexMarriages())) {
                 addRandomSpouse(true);
             }
         }
@@ -1411,8 +1443,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public void addRandomSpouse(boolean sameSex) {
         List<Person> potentials = new ArrayList<>();
-        int gender = sameSex ? getGender() : (isMale() ? Crew.G_MALE : Crew.G_FEMALE);
-        for (Person p : campaign.getPersonnel()) {
+        int gender = sameSex ? getGender() : (isMale() ? Crew.G_FEMALE : Crew.G_MALE);
+        for (Person p : getCampaign().getActivePersonnel()) {
             if (isPotentialRandomSpouse(p, gender)) {
                 potentials.add(p);
             }
@@ -1425,27 +1457,18 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean isPotentialRandomSpouse(Person p, int gender) {
-        if ((p.getGender() != gender) || !safeSpouse(p)) {
+        if ((p.getGender() != gender) || !safeSpouse(p) || !(isFree() || (isPrisoner() && p.isPrisoner()))) {
             return false;
         }
 
-        int ageDifference = Math.abs(p.getAge(campaign.getCalendar()) - getAge(campaign.getCalendar()));
+        int ageDifference = Math.abs(p.getAge(getCampaign().getLocalDate()) - getAge(getCampaign().getLocalDate()));
 
-        return (ageDifference <= campaign.getCampaignOptions().getMarriageAgeRange());
+        return (ageDifference <= getCampaign().getCampaignOptions().getMarriageAgeRange());
     }
 
     public void marry(Person spouse, int surnameOption) {
         String surname = getSurname();
         String spouseSurname = spouse.getSurname();
-
-        // these are used in the divorce code, as a null name will be ignored while a
-        // "" name is used to set an empty last name
-        if (surname == null) {
-            surname = "";
-        }
-        if (spouseSurname == null) {
-            spouseSurname = "";
-        }
 
         if (surnameOption == SURNAME_WEIGHTED) {
             WeightedMap<Integer> map = createWeightedSurnameMap();
@@ -1534,8 +1557,15 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 break;
         }
 
-        setTryingToMarry(false);
-        spouse.setTryingToMarry(false);
+        if (getCampaign().getCampaignOptions().logMarriageNameChange()) {
+            if (!spouse.getSurname().equals(spouseSurname)) {
+                PersonalLogger.marriageNameChange(spouse, this, getCampaign().getDate());
+
+            }
+            if (!getSurname().equals(surname)) {
+                PersonalLogger.marriageNameChange(this, spouse, getCampaign().getDate());
+            }
+        }
 
         setSpouseId(spouse.getId());
         spouse.setSpouseId(getId());
@@ -1620,14 +1650,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         }
 
         // Add to former spouse list
-        spouse.addFormerSpouse(new FormerSpouse(getId(),
-                FormerSpouse.convertDateTimeToLocalDate(getCampaign().getDateTime()), reason));
-        addFormerSpouse(new FormerSpouse(spouse.getId(),
-                FormerSpouse.convertDateTimeToLocalDate(getCampaign().getDateTime()), reason));
-
-        // This can be set for both parties no matter the cause
-        setTryingToMarry(true);
-        spouse.setTryingToMarry(true);
+        spouse.addFormerSpouse(new FormerSpouse(getId(), getCampaign().getLocalDate(), reason));
+        addFormerSpouse(new FormerSpouse(spouse.getId(), getCampaign().getLocalDate(), reason));
 
         MekHQ.triggerEvent(new PersonChangedEvent(this));
         MekHQ.triggerEvent(new PersonChangedEvent(spouse));
@@ -1711,11 +1735,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean isActive() {
-        return getStatus() == S_ACTIVE;
+        return getStatus() == PersonnelStatus.ACTIVE;
     }
 
     public boolean isInActive() {
-        return getStatus() != S_ACTIVE;
+        return getStatus() != PersonnelStatus.ACTIVE;
     }
 
     public ExtraData getExtraData() {
@@ -1726,405 +1750,237 @@ public class Person implements Serializable, MekHqXmlSerializable {
     //region XML Save
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        final SimpleDateFormat df = new SimpleDateFormat(SAVE_DATE_FORMAT);
-
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<person id=\""
-                + id.toString()
-                + "\" type=\""
-                + this.getClass().getName()
-                + "\">");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<id>"
-                + this.id.toString()
-                + "</id>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<givenName>"
-                + MekHqXmlUtil.escape(givenName)
-                + "</givenName>");
-        if (!StringUtil.isNullOrEmpty(surname)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<surname>"
-                    + MekHqXmlUtil.escape(surname)
-                    + "</surname>");
-        }
-        if (!StringUtil.isNullOrEmpty(honorific)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<honorific>"
-                    + MekHqXmlUtil.escape(honorific)
-                    + "</honorific>");
-        }
-        if (maidenName != null) { // this is only a != null comparison because empty is a use case for divorce
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<maidenName>"
-                    + MekHqXmlUtil.escape(maidenName)
-                    + "</maidenName>");
-        }
-        if (!StringUtil.isNullOrEmpty(callsign)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<callsign>"
-                    + MekHqXmlUtil.escape(callsign)
-                    + "</callsign>");
-        }
-        // Always save the primary role
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<primaryRole>"
-                + primaryRole
-                + "</primaryRole>");
-        if (secondaryRole != T_NONE) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<secondaryRole>"
-                    + secondaryRole
-                    + "</secondaryRole>");
-        }
-        if (primaryDesignator != DESIG_NONE) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<primaryDesignator>"
-                    + primaryDesignator
-                    + "</primaryDesignator>");
-        }
-        if (secondaryDesignator != DESIG_NONE) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<secondaryDesignator>"
-                    + secondaryDesignator
-                    + "</secondaryDesignator>");
-        }
-        if (commander) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<commander>"
-                    + MekHqXmlUtil.escape(Boolean.toString(commander))
-                    + "</commander>");
-        }
-        if (dependent) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<dependent>"
-                    + MekHqXmlUtil.escape(Boolean.toString(dependent))
-                    + "</dependent>");
-        }
-        // Always save the person's origin faction
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<faction>"
-                    + originFaction.getShortName()
-                    + "</faction>");
-        if (originPlanet != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<planetId systemId=\""
-                    + originPlanet.getParentSystem().getId()
-                    + "\">"
-                    + originPlanet.getId()
-                    + "</planetId>");
-        }
-        // Always save whether or not someone is a clanner
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<clan>"
-                + clan
-                + "</clan>");
-        if (phenotype != Phenotype.P_NONE) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<phenotype>"
-                    + phenotype
-                    + "</phenotype>");
-        }
-        if (!StringUtil.isNullOrEmpty(bloodname)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<bloodname>"
-                    + bloodname
-                    + "</bloodname>");
-        }
-        if (!StringUtil.isNullOrEmpty(biography)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<biography>"
-                    + MekHqXmlUtil.escape(biography)
-                    + "</biography>");
-        }
-        if (idleMonths > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<idleMonths>"
-                    + idleMonths
-                    + "</idleMonths>");
-        }
-        if (ancestorsId != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<ancestors>"
-                    + this.ancestorsId.toString()
-                    + "</ancestors>");
-        }
-        if (spouse != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<spouse>"
-                    + this.spouse.toString()
-                    + "</spouse>");
-        }
-        if (!formerSpouses.isEmpty()) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<formerSpouses>");
-            for (FormerSpouse ex : formerSpouses) {
-                ex.writeToXml(pw1, indent + 2);
+        pw1.println(MekHqXmlUtil.indentStr(indent) + "<person id=\"" + id.toString()
+                + "\" type=\"" + this.getClass().getName() + "\">");
+        try {
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "id", id.toString());
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "givenName", givenName);
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "surname", surname);
+            if (!StringUtil.isNullOrEmpty(honorific)) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "honorific", honorific);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "</formerSpouses>");
-        }
-        if (!tryingToMarry) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<tryingToMarry>"
-                    + tryingToMarry
-                    + "</tryingToMarry>");
-        }
-        if (!tryingToConceive) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<tryingToConceive>"
-                    + tryingToConceive
-                    + "</tryingToConceive>");
-        }
-        if (dueDate != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<dueDate>"
-                    + df.format(dueDate.getTime())
-                    + "</dueDate>");
-        }
-        if (expectedDueDate != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<expectedDueDate>"
-                    + df.format(expectedDueDate.getTime())
-                    + "</expectedDueDate>");
-        }
-        if (!portraitCategory.equals(Crew.ROOT_PORTRAIT)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<portraitCategory>"
-                    + MekHqXmlUtil.escape(portraitCategory)
-                    + "</portraitCategory>");
-        }
-        if (!portraitFile.equals(Crew.PORTRAIT_NONE)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<portraitFile>"
-                    + MekHqXmlUtil.escape(portraitFile)
-                    + "</portraitFile>");
-        }
-        // Always save the current XP
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<xp>"
-                + xp
-                + "</xp>");
-        if (daysToWaitForHealing != 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<daysToWaitForHealing>"
-                    + daysToWaitForHealing
-                    + "</daysToWaitForHealing>");
-        }
-        // Always save the person's gender, as it would otherwise get confusing fast
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<gender>"
-                + gender
-                + "</gender>");
-        // Always save a person's rank
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<rank>"
-                + rank
-                + "</rank>");
-        if (rankLevel != 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<rankLevel>"
-                    + rankLevel
-                    + "</rankLevel>");
-        }
-        if (rankSystem != -1) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<rankSystem>"
-                    + rankSystem
-                    + "</rankSystem>");
-        }
-        if (maneiDominiRank != Rank.MD_RANK_NONE) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<maneiDominiRank>"
-                    + maneiDominiRank
-                    + "</maneiDominiRank>");
-        }
-        if (maneiDominiClass != MD_NONE) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<maneiDominiClass>"
-                    + maneiDominiClass
-                    + "</maneiDominiClass>");
-        }
-        if (nTasks > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<nTasks>"
-                    + nTasks
-                    + "</nTasks>");
-        }
-        if (doctorId != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<doctorId>"
-                    + doctorId.toString()
-                    + "</doctorId>");
-        }
-        if (unitId != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<unitId>"
-                    + unitId.toString()
-                    + "</unitId>");
-        }
-        if (salary != Money.of(-1)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<salary>"
-                    + salary.toXmlString()
-                    + "</salary>");
-        }
-        // Always save a person's status, to make it easy to parse the personnel saved data
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<status>"
-                    + status
-                    + "</status>");
-        if (prisonerStatus != PRISONER_NOT) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<prisonerStatus>"
-                    + prisonerStatus
-                    + "</prisonerStatus>");
-        }
-        if (willingToDefect) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<willingToDefect>"
-                    + willingToDefect
-                    + "</willingToDefect>");
-        }
-        if (hits > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<hits>"
-                    + hits
-                    + "</hits>");
-        }
-        if (toughness != 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<toughness>"
-                    + toughness
-                    + "</toughness>");
-        }
-        if (minutesLeft > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<minutesLeft>"
-                    + minutesLeft
-                    + "</minutesLeft>");
-        }
-        if (overtimeLeft > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<overtimeLeft>"
-                    + overtimeLeft
-                    + "</overtimeLeft>");
-        }
-        if (birthday != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<birthday>"
-                    + df.format(birthday.getTime())
-                    + "</birthday>");
-        }
-        if (null != dateOfDeath) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<deathday>"
-                    + df.format(dateOfDeath.getTime())
-                    + "</deathday>");
-        }
-        if (null != recruitment) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<recruitment>"
-                    + df.format(recruitment.getTime())
-                    + "</recruitment>");
-        }
-        for (Skill skill : skills.getSkills()) {
-            skill.writeToXml(pw1, indent + 1);
-        }
-        if (countOptions(PilotOptions.LVL3_ADVANTAGES) > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<advantages>"
-                    + getOptionList("::", PilotOptions.LVL3_ADVANTAGES)
-                    + "</advantages>");
-        }
-        if (countOptions(PilotOptions.EDGE_ADVANTAGES) > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<edge>"
-                    + getOptionList("::", PilotOptions.EDGE_ADVANTAGES)
-                    + "</edge>");
-            // For support personnel, write an available edge value
-            if (isSupport() || isEngineer()) {
+            if (maidenName != null) { // this is only a != null comparison because empty is a use case for divorce
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "maidenName", maidenName);
+            }
+            if (!StringUtil.isNullOrEmpty(callsign)) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "callsign", callsign);
+            }
+            // Always save the primary role
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "primaryRole", primaryRole);
+            if (secondaryRole != T_NONE) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "secondaryRole", secondaryRole);
+            }
+            if (primaryDesignator != ROMDesignation.NONE) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "primaryDesignator", primaryDesignator.name());
+            }
+            if (secondaryDesignator != ROMDesignation.NONE) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "secondaryDesignator", secondaryDesignator.name());
+            }
+            if (commander) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "commander", true);
+            }
+            if (dependent) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "dependent", true);
+            }
+            // Always save the person's origin faction
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "faction", originFaction.getShortName());
+            if (originPlanet != null) {
                 pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                        + "<edgeAvailable>"
-                        + getCurrentEdge()
-                        + "</edgeAvailable>");
+                        + "<planetId systemId=\""
+                        + originPlanet.getParentSystem().getId()
+                        + "\">"
+                        + originPlanet.getId()
+                        + "</planetId>");
             }
-        }
-        if (countOptions(PilotOptions.MD_ADVANTAGES) > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<implants>"
-                    + getOptionList("::", PilotOptions.MD_ADVANTAGES)
-                    + "</implants>");
-        }
-        if (!techUnitIds.isEmpty()) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<techUnitIds>");
-            for (UUID id : techUnitIds) {
-                pw1.println(MekHqXmlUtil.indentStr(indent + 2)
-                        + "<id>"
-                        + id.toString()
-                        + "</id>");
+            // Always save whether or not someone is a clanner
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "clan", clan);
+            if (phenotype != Phenotype.P_NONE) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "phenotype", phenotype);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "</techUnitIds>");
-        }
-        if (!personnelLog.isEmpty()) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<personnelLog>");
-            for (LogEntry entry : personnelLog) {
-                entry.writeToXml(pw1, indent + 2);
+            if (!StringUtil.isNullOrEmpty(bloodname)) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "bloodname", bloodname);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "</personnelLog>");
-        }
-        if (!missionLog.isEmpty()) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<missionLog>");
-            for (LogEntry entry : missionLog) {
-                entry.writeToXml(pw1, indent + 2);
+            if (!StringUtil.isNullOrEmpty(biography)) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "biography", biography);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "</missionLog>");
-        }
-        if (!awardController.getAwards().isEmpty()) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<awards>");
-            for (Award award : awardController.getAwards()) {
-                award.writeToXml(pw1, indent + 2);
+            if (idleMonths > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "idleMonths", idleMonths);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "</awards>");
-        }
-        if (injuries.size() > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<injuries>");
-            for (Injury injury : injuries) {
-                injury.writeToXml(pw1, indent + 2);
+            if (ancestorsId != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "ancestors", ancestorsId.toString());
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "</injuries>");
-        }
-        if (founder) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<founder>"
-                    + founder
-                    + "</founder>");
-        }
-        if (originalUnitWeight != EntityWeightClass.WEIGHT_ULTRA_LIGHT) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<originalUnitWeight>"
-                    + originalUnitWeight
-                    + "</originalUnitWeight>");
-        }
-        if (originalUnitTech != TECH_IS1) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<originalUnitTech>"
-                    + originalUnitTech
-                    + "</originalUnitTech>");
-        }
-        if (originalUnitId != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<originalUnitId>"
-                    + originalUnitId.toString()
-                    + "</originalUnitId>");
-        }
-        if (acquisitions != 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<acquisitions>"
-                    + acquisitions
-                    + "</acquisitions>");
-        }
-        // TODO : the following should also check if it is empty, and output should be formatted properly
-        if (extraData != null) {
-            extraData.writeToXml(pw1);
-            pw1.println(); // end the line to improve the formatting
+            if (spouse != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "spouse", spouse.toString());
+            }
+            if (!formerSpouses.isEmpty()) {
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "formerSpouses");
+                for (FormerSpouse ex : formerSpouses) {
+                    ex.writeToXml(pw1, indent + 2);
+                }
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "formerSpouses");
+            }
+            if (dueDate != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "dueDate",
+                        MekHqXmlUtil.saveFormattedDate(dueDate));
+            }
+            if (expectedDueDate != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "expectedDueDate",
+                        MekHqXmlUtil.saveFormattedDate(expectedDueDate));
+            }
+            if (!portraitCategory.equals(Crew.ROOT_PORTRAIT)) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "portraitCategory", portraitCategory);
+            }
+            if (!portraitFile.equals(Crew.PORTRAIT_NONE)) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "portraitFile", portraitFile);
+            }
+            // Always save the current XP
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "xp", xp);
+            if (daysToWaitForHealing != 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "daysToWaitForHealing", daysToWaitForHealing);
+            }
+            // Always save the person's gender, as it would otherwise get confusing fast
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "gender", gender);
+            // Always save a person's rank
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "rank", rank);
+            if (rankLevel != 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "rankLevel", rankLevel);
+            }
+            if (rankSystem != -1) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "rankSystem", rankSystem);
+            }
+            if (maneiDominiRank != Rank.MD_RANK_NONE) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "maneiDominiRank", maneiDominiRank);
+            }
+            if (maneiDominiClass != MD_NONE) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "maneiDominiClass", maneiDominiClass);
+            }
+            if (nTasks > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "nTasks", nTasks);
+            }
+            if (doctorId != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "doctorId", doctorId.toString());
+            }
+            if (unitId != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "unitId", unitId.toString());
+            }
+            if (!salary.equals(Money.of(-1))) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "salary", salary.toXmlString());
+            }
+            if (!totalEarnings.equals(Money.of(0))) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "totalEarnings", totalEarnings.toXmlString());
+            }
+            // Always save a person's status, to make it easy to parse the personnel saved data
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "status", status.name());
+            if (prisonerStatus != PRISONER_NOT) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "prisonerStatus", prisonerStatus);
+            }
+            if (willingToDefect) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "willingToDefect", true);
+            }
+            if (hits > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "hits", hits);
+            }
+            if (toughness != 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "toughness", toughness);
+            }
+            if (minutesLeft > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "minutesLeft", minutesLeft);
+            }
+            if (overtimeLeft > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "overtimeLeft", overtimeLeft);
+            }
+            if (birthday != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "birthday",
+                        MekHqXmlUtil.saveFormattedDate(birthday));
+            }
+            if (dateOfDeath != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "deathday",
+                        MekHqXmlUtil.saveFormattedDate(dateOfDeath));
+            }
+            if (recruitment != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "recruitment",
+                        MekHqXmlUtil.saveFormattedDate(recruitment));
+            }
+            if (lastRankChangeDate != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastRankChangeDate",
+                        MekHqXmlUtil.saveFormattedDate(lastRankChangeDate));
+            }
+            for (Skill skill : skills.getSkills()) {
+                skill.writeToXml(pw1, indent + 1);
+            }
+            if (countOptions(PilotOptions.LVL3_ADVANTAGES) > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "advantages",
+                        getOptionList("::", PilotOptions.LVL3_ADVANTAGES));
+            }
+            if (countOptions(PilotOptions.EDGE_ADVANTAGES) > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "edge",
+                        getOptionList("::", PilotOptions.EDGE_ADVANTAGES));
+                // For support personnel, write an available edge value
+                if (hasSupportRole(false) || isEngineer()) {
+                    MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "edgeAvailable", getCurrentEdge());
+                }
+            }
+            if (countOptions(PilotOptions.MD_ADVANTAGES) > 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "implants",
+                        getOptionList("::", PilotOptions.MD_ADVANTAGES));
+            }
+            if (!techUnitIds.isEmpty()) {
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "techUnitIds");
+                for (UUID id : techUnitIds) {
+                    MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 2, "id", id.toString());
+                }
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "techUnitIds");
+            }
+            if (!personnelLog.isEmpty()) {
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "personnelLog");
+                for (LogEntry entry : personnelLog) {
+                    entry.writeToXml(pw1, indent + 2);
+                }
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "personnelLog");
+            }
+            if (!missionLog.isEmpty()) {
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "missionLog");
+                for (LogEntry entry : missionLog) {
+                    entry.writeToXml(pw1, indent + 2);
+                }
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "missionLog");
+            }
+            if (!awardController.getAwards().isEmpty()) {
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "awards");
+                for (Award award : awardController.getAwards()) {
+                    award.writeToXml(pw1, indent + 2);
+                }
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "awards");
+            }
+            if (injuries.size() > 0) {
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "injuries");
+                for (Injury injury : injuries) {
+                    injury.writeToXml(pw1, indent + 2);
+                }
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "injuries");
+            }
+            if (founder) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "founder", true);
+            }
+            if (originalUnitWeight != EntityWeightClass.WEIGHT_ULTRA_LIGHT) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "originalUnitWeight", originalUnitWeight);
+            }
+            if (originalUnitTech != TECH_IS1) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "originalUnitTech", originalUnitTech);
+            }
+            if (originalUnitId != null) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "originalUnitId", originalUnitId.toString());
+            }
+            if (acquisitions != 0) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "acquisitions", acquisitions);
+            }
+            if (!extraData.isEmpty()) {
+                extraData.writeToXml(pw1);
+            }
+        } catch (Exception e) {
+            MekHQ.getLogger().error(Person.class, "writeToXml",
+                    "Failed to write " + getFullName() + " to the XML File");
+            throw e; // we want to rethrow to ensure that that the save fails
         }
         pw1.println(MekHqXmlUtil.indentStr(indent) + "</person>");
     }
@@ -2141,17 +1997,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     public static Person generateInstanceFromXML(Node wn, Campaign campaign, Version version) {
         final String METHOD_NAME = "generateInstanceFromXML(Node, Campaign, Version)"; //$NON-NLS-1$
 
-        Person retVal = null;
+        Person retVal = new Person(campaign);
 
         try {
-            // Instantiate the correct child class, and call its parsing function.
-            retVal = new Person(campaign);
-
             // Okay, now load Person-specific fields!
             NodeList nl = wn.getChildNodes();
-
-            // Create the date format we used to save with
-            final SimpleDateFormat df = new SimpleDateFormat(SAVE_DATE_FORMAT);
 
             // Determine if we need to use any migration functions for backwards compatibility.
             // This MUST be updated to equal the release version required for the latest potential
@@ -2206,9 +2056,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("acquisitions")) {
                     retVal.acquisitions = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("primaryDesignator")) {
-                    retVal.primaryDesignator = Integer.parseInt(wn2.getTextContent());
+                    retVal.primaryDesignator = ROMDesignation.parseFromString(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("secondaryDesignator")) {
-                    retVal.secondaryDesignator = Integer.parseInt(wn2.getTextContent());
+                    retVal.secondaryDesignator = ROMDesignation.parseFromString(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("daysToWaitForHealing")) {
                     retVal.daysToWaitForHealing = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("idleMonths")) {
@@ -2220,10 +2070,32 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("spouse")) {
                     retVal.spouse = UUID.fromString(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("formerSpouses")) {
-                    loadFormerSpouses(retVal, wn2.getChildNodes());
+                    NodeList nl2 = wn2.getChildNodes();
+                    for (int y = 0; y < nl2.getLength(); y++) {
+                        Node wn3 = nl2.item(y);
+                        // If it's not an element node, we ignore it.
+                        if (wn3.getNodeType() != Node.ELEMENT_NODE) {
+                            continue;
+                        }
+
+                        if (!wn3.getNodeName().equalsIgnoreCase("formerSpouse")) {
+                            // Error condition of sorts!
+                            // Errr, what should we do here?
+                            MekHQ.getLogger().log(Person.class, METHOD_NAME, LogLevel.ERROR,
+                                    "Unknown node type not loaded in formerSpouses nodes: "
+                                            + wn3.getNodeName());
+                            continue;
+                        }
+                        retVal.formerSpouses.add(FormerSpouse.generateInstanceFromXML(wn3));
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("tryingToMarry")) {
+                    retVal.tryingToMarry = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("tryingToConceive")) {
+                    retVal.tryingToConceive = Boolean.parseBoolean(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("dueDate")) {
-                    retVal.dueDate = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.dueDate.setTime(df.parse(wn2.getTextContent().trim()));
+                    retVal.dueDate = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("expectedDueDate")) {
+                    retVal.expectedDueDate = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("portraitCategory")) {
                     retVal.setPortraitCategory(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("portraitFile")) {
@@ -2251,26 +2123,45 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("unitId")) {
                     retVal.unitId = UUID.fromString(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("status")) {
-                    retVal.status = Integer.parseInt(wn2.getTextContent());
+                    // TODO : remove inline migration
+                    if (version.isLowerThan("0.47.6")) {
+                        switch (Integer.parseInt(wn2.getTextContent())) {
+                            case 1:
+                                retVal.status = PersonnelStatus.RETIRED;
+                                break;
+                            case 2:
+                                retVal.status = PersonnelStatus.KIA;
+                                break;
+                            case 3:
+                                retVal.status = PersonnelStatus.MIA;
+                                break;
+                            default:
+                                retVal.status = PersonnelStatus.ACTIVE;
+                                break;
+                        }
+                    } else {
+                        retVal.status = PersonnelStatus.valueOf(wn2.getTextContent());
+                    }
                 } else if (wn2.getNodeName().equalsIgnoreCase("prisonerStatus")) {
                     retVal.prisonerStatus = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("willingToDefect")) {
                     retVal.willingToDefect = Boolean.parseBoolean(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("salary")) {
                     retVal.salary = Money.fromXmlString(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("totalEarnings")) {
+                    retVal.totalEarnings = Money.fromXmlString(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("minutesLeft")) {
                     retVal.minutesLeft = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("overtimeLeft")) {
                     retVal.overtimeLeft = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("birthday")) {
-                    retVal.birthday = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.birthday.setTime(df.parse(wn2.getTextContent().trim()));
-                } else if (wn2.getNodeName().equalsIgnoreCase("deathDay")) {
-                    retVal.dateOfDeath = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.dateOfDeath.setTime(df.parse(wn2.getTextContent().trim()));
+                    retVal.birthday = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("deathday")) {
+                    retVal.dateOfDeath = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("recruitment")) {
-                    retVal.recruitment = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.recruitment.setTime(df.parse(wn2.getTextContent().trim()));
+                    retVal.recruitment = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("lastRankChangeDate")) {
+                    retVal.lastRankChangeDate = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("advantages")) {
                     loadAdvantages(retVal, wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("edge")) {
@@ -2554,9 +2445,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
                                               Campaign campaign, Version version) {
         final String METHOD_NAME = "checkNodeMigration";
 
-        final String oldSaveDateFormat = "yyyy-MM-dd hh:mm:ss";
-        final SimpleDateFormat df = new SimpleDateFormat(oldSaveDateFormat);
-
         boolean valueChanged = false;
         if (wn2.getNodeName().equalsIgnoreCase("name")) {
             retVal.migrateName(wn2.getTextContent());
@@ -2564,46 +2452,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         } else if (wn2.getNodeName().equalsIgnoreCase("id")) {
             if (version.isLowerThan("0.2.14")) {
                 retVal.oldId = Integer.parseInt(wn2.getTextContent());
-                valueChanged = true;
-            }
-        } else if (wn2.getNodeName().equalsIgnoreCase("dueDate")) {
-            if (version.isLowerThan("0.47.6")) {
-                try {
-                    retVal.dueDate = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.dueDate.setTime(df.parse(wn2.getTextContent().trim()));
-                } catch (Exception e) {
-                    MekHQ.getLogger().error(Person.class, METHOD_NAME, e);
-                }
-                valueChanged = true;
-            }
-        } else if (wn2.getNodeName().equalsIgnoreCase("birthday")) {
-            if (version.isLowerThan("0.47.6")) {
-                try {
-                    retVal.birthday = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.birthday.setTime(df.parse(wn2.getTextContent().trim()));
-                } catch (Exception e) {
-                    MekHQ.getLogger().error(Person.class, METHOD_NAME, e);
-                }
-                valueChanged = true;
-            }
-        } else if (wn2.getNodeName().equalsIgnoreCase("deathDay")) {
-            if (version.isLowerThan("0.47.6")) {
-                try {
-                    retVal.dateOfDeath = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.dateOfDeath.setTime(df.parse(wn2.getTextContent().trim()));
-                } catch (Exception e) {
-                    MekHQ.getLogger().error(Person.class, METHOD_NAME, e);
-                }
-                valueChanged = true;
-            }
-        } else if (wn2.getNodeName().equalsIgnoreCase("recruitment")) {
-            if (version.isLowerThan("0.47.6")) {
-                try {
-                    retVal.recruitment = (GregorianCalendar) GregorianCalendar.getInstance();
-                    retVal.recruitment.setTime(df.parse(wn2.getTextContent().trim()));
-                } catch (Exception e) {
-                    MekHQ.getLogger().error(Person.class, METHOD_NAME, e);
-                }
                 valueChanged = true;
             }
         } else if (wn2.getNodeName().equalsIgnoreCase("doctorId")) {
@@ -2816,7 +2664,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public Money getSalary() {
-        if (isPrisoner() || isBondsman()) {
+        if (!isFree() || isDependent()) {
             return Money.zero();
         }
 
@@ -2825,13 +2673,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
         }
 
         //if salary is negative, then use the standard amounts
-        Money primaryBase = campaign.getCampaignOptions().getBaseSalary(getPrimaryRole());
+        Money primaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getPrimaryRole());
         primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(false)));
         if (hasSkill(SkillType.S_ANTI_MECH) && (getPrimaryRole() == T_INFANTRY || getPrimaryRole() == T_BA)) {
             primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
         }
 
-        Money secondaryBase = campaign.getCampaignOptions().getBaseSalary(getSecondaryRole()).dividedBy(2);
+        Money secondaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getSecondaryRole()).dividedBy(2);
         secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(true)));
         if (hasSkill(SkillType.S_ANTI_MECH) && (getSecondaryRole() == T_INFANTRY || getSecondaryRole() == T_BA)) {
             secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
@@ -2850,6 +2698,42 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return totalBase;
         //TODO: distinguish DropShip, JumpShip, and WarShip crew
         //TODO: Add era mod to salary calc..
+    }
+
+    /**
+     * @return the person's total earnings
+     */
+    public Money getTotalEarnings() {
+        return totalEarnings;
+    }
+
+    /**
+     * This is used to pay a person
+     * @param money the amount of money to add to their total earnings
+     */
+    public void payPerson(Money money) {
+        totalEarnings = getTotalEarnings().plus(money);
+    }
+
+    /**
+     * This is used to pay a person their salary
+     */
+    public void payPersonSalary() {
+        if (isActive()) {
+            payPerson(getSalary());
+        }
+    }
+
+    /**
+     * This is used to pay a person their share value based on the value of a single share
+     * @param money the value of a single share
+     * @param sharesForAll whether or not all personnel have shares
+     */
+    public void payPersonShares(Money money, boolean sharesForAll) {
+        int shares = getNumShares(sharesForAll);
+        if (shares > 0) {
+            payPerson(money.multipliedBy(shares));
+        }
     }
 
     public int getRankNumeric() {
@@ -2969,7 +2853,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             rankName += " " + Rank.getManeiDominiRankName(maneiDominiRank);
         }
         if (getRankSystem() == Ranks.RS_COM || getRankSystem() == Ranks.RS_WOB) {
-            rankName += getComStarBranchDesignation();
+            rankName += ROMDesignation.getComStarBranchDesignation(this, campaign);
         }
 
         // If we have a rankLevel, add it
@@ -3056,6 +2940,27 @@ public class Person implements Serializable, MekHqXmlSerializable {
     @Override
     public String toString() {
         return getFullName();
+    }
+
+    /**
+     * Two people are determined to be equal if they have the same id
+     * @param object the object to check if it is equal to the person or not
+     * @return true if they have the same id, otherwise false
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        } else if (!(object instanceof Person)) {
+            return false;
+        } else {
+            return getId().equals(((Person) object).getId());
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
     }
 
     public int getExperienceLevel(boolean secondary) {
@@ -3255,13 +3160,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         }
     }
 
-    public String getPatientDesc() {
-        String toReturn = "<html><font size='2'><b>" + getFullTitle() + "</b><br/>";
-        toReturn += getHits() + " hit(s)<br>[next check in " + getDaysToWaitForHealing() + " days]";
-        toReturn += "</font></html>";
-        return toReturn;
-    }
-
     /**
      * returns a full description in HTML format that will be used for the graphical display in the
      * personnel table among other places
@@ -3313,125 +3211,17 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return String.format("<a href='PERSON:%s'>%s</a>", getId().toString(), getFullTitle());
     }
 
-    public String getComStarBranchDesignation() {
-        StringBuilder sb = new StringBuilder(" ");
-
-        // Primary
-        if (getPrimaryDesignator() != DESIG_NONE) {
-            sb.append(parseDesignator(getPrimaryDesignator()));
-        } else if (isTechPrimary()) {
-            sb.append("Zeta");
-        } else if (isAdminPrimary()) {
-            sb.append("Chi");
-        } else {
-            parseRoleForDesignation(getPrimaryRole(), sb);
-        }
-
-        // Secondary
-        if (getSecondaryDesignator() != DESIG_NONE) {
-            sb.append(" ");
-            sb.append(parseDesignator(getSecondaryDesignator()));
-        } else if (isTechSecondary()) {
-            sb.append(" Zeta");
-        } else if (isAdminSecondary()) {
-            sb.append(" Chi");
-        } else if (getSecondaryRole() != T_NONE) {
-            sb.append(" ");
-            parseRoleForDesignation(getSecondaryRole(), sb);
-        }
-
-        return sb.toString();
-    }
-
-    private void parseRoleForDesignation(int role, StringBuilder sb) {
-        switch (role) {
-            case T_MECHWARRIOR:
-                sb.append("Epsilon");
-                break;
-            case T_AERO_PILOT:
-                sb.append("Pi");
-                break;
-            case T_BA:
-            case T_INFANTRY:
-                sb.append("Iota");
-                break;
-            case T_SPACE_CREW:
-            case T_SPACE_GUNNER:
-            case T_SPACE_PILOT:
-            case T_NAVIGATOR:
-                Unit u = campaign.getUnit(getUnitId());
-                if (u != null) {
-                    Entity en = u.getEntity();
-                    if (en instanceof Dropship) {
-                        sb.append("Xi");
-                    }
-                    if (en instanceof Jumpship) {
-                        sb.append("Theta");
-                    }
-                }
-                break;
-            case T_DOCTOR:
-            case T_MEDIC:
-                sb.append("Kappa");
-                break;
-            case T_GVEE_DRIVER:
-            case T_NVEE_DRIVER:
-            case T_VTOL_PILOT:
-            case T_VEE_GUNNER:
-            case T_CONV_PILOT:
-            case T_VEHICLE_CREW:
-                sb.append("Lambda");
-                break;
-            default: break;
-        }
-    }
-
-    public static String parseDesignator(int designator) {
-        switch (designator) {
-            case DESIG_NONE:
-                return "None (Auto-Set)";
-            case DESIG_EPSILON:
-                return "Epsilon";
-            case DESIG_PI:
-                return "Pi";
-            case DESIG_IOTA:
-                return "Iota";
-            case DESIG_XI:
-                return "Xi";
-            case DESIG_THETA:
-                return "Theta";
-            case DESIG_ZETA:
-                return "Zeta";
-            case DESIG_MU:
-                return "Mu";
-            case DESIG_RHO:
-                return "Rho";
-            case DESIG_LAMBDA:
-                return "Lambda";
-            case DESIG_PSI:
-                return "Psi";
-            case DESIG_OMICRON:
-                return "Omicron";
-            case DESIG_CHI:
-                return "Chi";
-            case DESIG_GAMMA:
-                return "Gamma";
-            default:
-                return "";
-        }
-    }
-
     /**
      * @return the primaryDesignator
      */
-    public int getPrimaryDesignator() {
+    public ROMDesignation getPrimaryDesignator() {
         return primaryDesignator;
     }
 
     /**
      * @param primaryDesignator the primaryDesignator to set
      */
-    public void setPrimaryDesignator(int primaryDesignator) {
+    public void setPrimaryDesignator(ROMDesignation primaryDesignator) {
         this.primaryDesignator = primaryDesignator;
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
@@ -3439,14 +3229,14 @@ public class Person implements Serializable, MekHqXmlSerializable {
     /**
      * @return the secondaryDesignator
      */
-    public int getSecondaryDesignator() {
+    public ROMDesignation getSecondaryDesignator() {
         return secondaryDesignator;
     }
 
     /**
      * @param secondaryDesignator the secondaryDesignator to set
      */
-    public void setSecondaryDesignator(int secondaryDesignator) {
+    public void setSecondaryDesignator(ROMDesignation secondaryDesignator) {
         this.secondaryDesignator = secondaryDesignator;
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
@@ -3554,7 +3344,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             }
         }
         // Check parent locations as well (a hand can be missing if the corresponding arm is)
-        return isLocationMissing(loc.parent);
+        return isLocationMissing(loc.Parent());
     }
 
     public void heal() {
@@ -3565,7 +3355,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean needsFixing() {
-        return (hits > 0 || needsAMFixing()) && status != S_KIA && status == S_ACTIVE;
+        return ((hits > 0) || needsAMFixing()) && (status == PersonnelStatus.ACTIVE);
     }
 
     public String succeed() {
@@ -3752,41 +3542,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return "<html>" + abilityString + "</html>";
     }
 
-    /**
-     * @return true if this person has either a primary or a secondary role that is considered a combat
-     *         role
-     */
-    public boolean isCombat() {
-        return isCombatRole(primaryRole) || isCombatRole(secondaryRole);
-    }
-
-    /**
-     * @return true if this person has either a primary or a secondary role that is considered a support
-     *         role
-     */
-    public boolean isSupport() {
-        return isSupportRole(primaryRole) || isSupportRole(secondaryRole);
-    }
-
-    /**
-     * Determines whether a role is considered a combat role. Note that T_LAM_PILOT is a special
-     * placeholder which is not used for either primary or secondary role and will return false.
-     *
-     * @param role A value that can be used for a person's primary or secondary role.
-     * @return     Whether the role is considered a combat role
-     */
-    public static boolean isCombatRole(int role) {
-        return ((role > T_NONE) && (role <= T_NAVIGATOR)) || (role == T_VEHICLE_CREW);
-    }
-
-    /**
-     * @param role A value that can be used for a person's primary or secondary role.
-     * @return     Whether the role is considered a support role
-     */
-    public static boolean isSupportRole(int role) {
-        return (role >= T_MECH_TECH) && (role < T_LAM_PILOT);
-    }
-
     public boolean canDrive(Entity ent) {
         if (ent instanceof LandAirMech) {
             return hasSkill(SkillType.S_PILOT_MECH) && hasSkill(SkillType.S_PILOT_AERO);
@@ -3869,8 +3624,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
         if (!isTech()) {
             return false;
         }
-        for (Unit u : campaign.getUnits()) {
-            if (u.isMothballing() && u.getTech().getId().equals(id)) {
+        for (UUID unitId : techUnitIds) {
+            Unit u = campaign.getUnit(unitId);
+            if ((u != null) && u.isMothballing()) {
                 return true;
             }
         }
@@ -4105,31 +3861,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return null;
     }
 
-    public String getDocDesc() {
-        StringBuilder toReturn = new StringBuilder(128);
-        toReturn.append("<html><font size='2'><b>").append(getFullTitle()).append("</b><br/>");
-
-        Skill skill = getSkill(SkillType.S_DOCTOR);
-        if (null != skill) {
-            toReturn.append(SkillType.getExperienceLevelName(skill.getExperienceLevel()))
-                    .append(" " + SkillType.S_DOCTOR);
-        }
-
-        toReturn.append(String.format(" (%d XP)", getXp()));
-
-        if (campaign.getMedicsPerDoctor() < 4) {
-            toReturn.append("</font><font size='2' color='red'>, ")
-                    .append(campaign.getMedicsPerDoctor())
-                    .append(" medics</font><font size='2'><br/>");
-        } else {
-            toReturn.append(String.format(", %d medics<br />", campaign.getMedicsPerDoctor()));
-        }
-
-        toReturn.append(String.format("%d patient(s)</font></html>", campaign.getPatientsFor(this)));
-
-        return toReturn.toString();
-    }
-
     public int getBestTechLevel() {
         int lvl = -1;
         Skill mechSkill = getSkill(SkillType.S_TECH_MECH);
@@ -4149,40 +3880,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
             lvl = aeroSkill.getLevel();
         }
         return lvl;
-    }
-
-    public String getTechDesc(boolean overtimeAllowed, IPartWork part) {
-        StringBuilder toReturn = new StringBuilder(128);
-        toReturn.append("<html><font size='2'");
-        if (null != part && null != part.getUnit() && getTechUnitIDs().contains(part.getUnit().getId())) {
-            toReturn.append(" color='green'><b>@");
-        }
-        else {
-            toReturn.append("><b>");
-        }
-        toReturn.append(getFullTitle()).append("</b><br/>");
-
-        boolean first = true;
-        for (String skillName : DISPLAYED_SKILL_LEVELS) {
-            Skill skill = getSkill(skillName);
-            if (null == skill) {
-                continue;
-            } else if (!first) {
-                toReturn.append("; ");
-            }
-
-            toReturn.append(SkillType.getExperienceLevelName(skill.getExperienceLevel()));
-            toReturn.append(" ").append(skillName);
-            first = false;
-        }
-
-        toReturn.append(String.format(" (%d XP)<br/>", getXp()))
-                .append(String.format("%d minutes left", getMinutesLeft()));
-        if (overtimeAllowed) {
-            toReturn.append(String.format(" + (%d overtime)", getOvertimeLeft()));
-        }
-        toReturn.append("</font></html>");
-        return toReturn.toString();
     }
 
     public boolean isRightTechTypeFor(IPartWork part) {
@@ -4291,43 +3988,27 @@ public class Person implements Serializable, MekHqXmlSerializable {
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
 
-    public String getInjuriesDesc() {
-        StringBuilder toReturn = new StringBuilder("<html><font size='2'><b>").append(getFullTitle())
-                .append("</b><br/>").append("&nbsp;&nbsp;&nbsp;Injuries:");
-        String sep = "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        for (Injury injury : injuries) {
-            toReturn.append(sep).append(injury.getFluff());
-            if (sep.contains("<br/>")) {
-                sep = ", ";
-            } else {
-                sep = ",<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-            }
-        }
-        toReturn.append("</font></html>");
-        return toReturn.toString();
-    }
-
     public void diagnose(int hits) {
         InjuryUtil.resolveAfterCombat(campaign, this, hits);
         InjuryUtil.resolveCombatDamage(campaign, this, hits);
         setHits(0);
     }
 
-    public void changeStatus(int status) {
+    public void changeStatus(PersonnelStatus status) {
         if (status == getStatus()) {
             return;
         }
         Unit u = campaign.getUnit(getUnitId());
-        if (status == Person.S_KIA) {
+        if (status == PersonnelStatus.KIA) {
             MedicalLogger.diedFromWounds(this, campaign.getDate());
             //set the date of death
-            setDateOfDeath((GregorianCalendar) campaign.getCalendar().clone());
+            setDateOfDeath(getCampaign().getLocalDate());
         }
-        if (status == Person.S_RETIRED) {
+        if (status == PersonnelStatus.RETIRED) {
             ServiceLogger.retireDueToWounds(this, campaign.getDate());
         }
         setStatus(status);
-        if (status != Person.S_ACTIVE) {
+        if (status != PersonnelStatus.ACTIVE) {
             setDoctorId(null, campaign.getCampaignOptions().getNaturalHealingWaitingPeriod());
             // If we're assigned to a unit, remove us from it
             if (null != u) {
@@ -4380,34 +4061,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public int getPilotingInjuryMod() {
-        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), Modifier.Value.PILOTING);
+        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), ModifierValue.PILOTING);
     }
 
     public int getGunneryInjuryMod() {
-        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), Modifier.Value.GUNNERY);
-    }
-
-    /**
-     * @return an HTML encoded string of effects
-     */
-    public String getEffectString() {
-        StringBuilder sb = new StringBuilder("<html>");
-        final int pilotingMod = getPilotingInjuryMod();
-        final int gunneryMod = getGunneryInjuryMod();
-        if((pilotingMod != 0) && (pilotingMod < Integer.MAX_VALUE)) {
-            sb.append(String.format("  Piloting %+d <br>", pilotingMod));
-        } else if(pilotingMod == Integer.MAX_VALUE) {
-            sb.append("  Piloting: <i>Impossible</i>  <br>");
-        }
-        if((gunneryMod != 0) && (gunneryMod < Integer.MAX_VALUE)) {
-            sb.append(String.format("  Gunnery: %+d <br>", gunneryMod));
-        } else if(gunneryMod == Integer.MAX_VALUE) {
-            sb.append("  Gunnery: <i>Impossible</i>  <br>");
-        }
-        if(gunneryMod == 0 && pilotingMod == 0) {
-            sb.append("None");
-        }
-        return sb.append("</html>").toString();
+        return Modifier.calcTotalModifier(injuries.stream().flatMap(i -> i.getModifiers().stream()), ModifierValue.GUNNERY);
     }
 
     public boolean hasInjuries(boolean permCheck) {
@@ -4537,7 +4195,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     public void setOriginalUnit(Unit unit) {
         originalUnitId = unit.getId();
         if (unit.getEntity().isClan()) {
-            originalUnitTech += TECH_CLAN;
+            originalUnitTech = TECH_CLAN;
         } else if (unit.getEntity().getTechLevel() > megamek.common.TechConstants.T_INTRO_BOXSET) {
             originalUnitTech = TECH_IS2;
         } else {
@@ -4546,16 +4204,18 @@ public class Person implements Serializable, MekHqXmlSerializable {
         originalUnitWeight = unit.getEntity().getWeightClass();
     }
 
+    /**
+     * This is used to get the number of shares the person has
+     * @param sharesForAll true if all combat and support personnel have shares, otherwise false if
+     *                     just MechWarriors have shares
+     * @return the number of shares the person has
+     */
     public int getNumShares(boolean sharesForAll) {
-        if (isPrisoner() || isBondsman() || !isActive()) {
-            return 0;
-        }
-        if (!sharesForAll && primaryRole != T_MECHWARRIOR &&
-                secondaryRole != T_MECHWARRIOR) {
+        if (!isActive() || !isFree() || (!sharesForAll && !hasRole(T_MECHWARRIOR))) {
             return 0;
         }
         int shares = 1;
-        if (founder) {
+        if (isFounder()) {
             shares++;
         }
         shares += Math.max(-1, getExperienceLevel(false) - 2);
@@ -4563,7 +4223,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         if (getRank().isOfficer()) {
             Ranks ranks = getRanks();
             int rankOrder = ranks.getOfficerCut();
-            while (rankOrder <= rank && rankOrder < Ranks.RC_NUM) {
+            while ((rankOrder <= getRankNumeric()) && (rankOrder < Ranks.RC_NUM)) {
                 Rank rank = ranks.getAllRanks().get(rankOrder);
                 if (!rank.getName(getProfession()).equals("-")) {
                     shares++;
@@ -4571,19 +4231,19 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 rankOrder++;
             }
         }
-        if (originalUnitWeight >= 1) {
+        if (getOriginalUnitWeight() >= 1) {
             shares++;
         }
-        if (originalUnitWeight >= 3) {
+        if (getOriginalUnitWeight()  >= 3) {
             shares++;
         }
-        shares += originalUnitTech;
+        shares += getOriginalUnitTech();
 
         return shares;
     }
 
     public boolean isDeadOrMIA() {
-        return (status == S_KIA) || (status == S_MIA);
+        return (status == PersonnelStatus.KIA) || (status == PersonnelStatus.MIA);
     }
 
     public boolean isEngineer() {

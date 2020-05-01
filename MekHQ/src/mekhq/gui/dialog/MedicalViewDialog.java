@@ -38,6 +38,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -77,9 +79,16 @@ import mekhq.campaign.ExtraData;
 import mekhq.campaign.log.LogEntry;
 import mekhq.campaign.force.Force;
 
+import mekhq.campaign.personnel.enums.BodyLocation;
+import mekhq.campaign.personnel.Injury;
+import mekhq.campaign.personnel.enums.InjuryLevel;
+import mekhq.campaign.personnel.InjuryType;
+import mekhq.campaign.personnel.Person;
+
 public class MedicalViewDialog extends JDialog {
     private static final long serialVersionUID = 6178230374580087883L;
     private static final String MENU_CMD_SEPARATOR = ","; //$NON-NLS-1$
+    private static final String DISPLAY_FORMAT = "yyyy-MM-dd";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
     private final static DateTimeFormatter DATE_FORMATTER =
         DateTimeFormat.forPattern("yyyy-MM-dd").withChronology(GJChronology.getInstanceUTC()); //$NON-NLS-1$
@@ -141,11 +150,11 @@ public class MedicalViewDialog extends JDialog {
 
         dollActionListener = ae -> {
             final BodyLocation loc = BodyLocation.of(ae.getActionCommand());
-            final boolean locationPicked = !loc.readableName.isEmpty();
+            final boolean locationPicked = !loc.locationName().isEmpty();
             Point mousePos = doll.getMousePosition();
             JPopupMenu popup = new JPopupMenu();
             if (locationPicked) {
-                JLabel header = new JLabel(Utilities.capitalize(loc.readableName));
+                JLabel header = new JLabel(Utilities.capitalize(loc.locationName()));
                 header.setFont(UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.BOLD)); //$NON-NLS-1$
                 popup.add(header);
                 popup.addSeparator();
@@ -173,7 +182,7 @@ public class MedicalViewDialog extends JDialog {
                     UIManager.getIcon("FileView.fileIcon")); //$NON-NLS-1$
                 popup.add(edit);
             }
-            JMenuItem remove = new JMenuItem(loc.readableName.isEmpty() ? resourceMap.getString("menuHealAll.text") : resourceMap.getString("menuHeal.text"), healImageIcon); //$NON-NLS-1$ //$NON-NLS-2$
+            JMenuItem remove = new JMenuItem(loc.locationName().isEmpty() ? resourceMap.getString("menuHealAll.text") : resourceMap.getString("menuHeal.text"), healImageIcon); //$NON-NLS-1$ //$NON-NLS-2$
             if (locationPicked && p.getInjuriesByLocation(loc).isEmpty()) {
                 remove.setEnabled(false);
             } else {
@@ -287,7 +296,7 @@ public class MedicalViewDialog extends JDialog {
         Arrays.stream(BodyLocation.values())
             .filter(p::hasInjury)
             .forEach(bl -> {
-                if (person.isLocationMissing(bl) && !person.isLocationMissing(bl.parent)) {
+                if (person.isLocationMissing(bl) && !person.isLocationMissing(bl.Parent())) {
                     doll.setLocTag(bl, "lost"); //$NON-NLS-1$
                 } else if (!person.isLocationMissing(bl)) {
                     InjuryLevel level = getMaxInjuryLevel(person, bl);
@@ -337,16 +346,10 @@ public class MedicalViewDialog extends JDialog {
             surname = p.getBloodname();
         }
 
-        if (surname == null) {
-            surname = "-";
-        }
+        LocalDate birthday = p.getBirthday();
+        String birthdayString = birthday.format(java.time.format.DateTimeFormatter.ofPattern(DISPLAY_FORMAT));
 
-        GregorianCalendar birthday = (GregorianCalendar) p.getBirthday().clone();
-        DATE_FORMAT.setCalendar(birthday);
-        String birthdayString = DATE_FORMAT.format(birthday.getTime());
-        GregorianCalendar now = (GregorianCalendar) c.getCalendar().clone();
-        int ageInMonths = (now.get(Calendar.YEAR) - birthday.get(Calendar.YEAR)) * 12
-            + now.get(Calendar.MONTH) - birthday.get(Calendar.MONTH);
+        Period age = Period.between(birthday, campaign.getLocalDate());
 
         String phenotype = (p.getPhenotype() != Phenotype.P_NONE)
                 ? Phenotype.getPhenotypeName(p.getPhenotype())
@@ -367,7 +370,7 @@ public class MedicalViewDialog extends JDialog {
         panel.add(genLabel(resourceMap.getString("birthDate.text"))); //$NON-NLS-1$
         panel.add(genLabel(resourceMap.getString("age.text"))); //$NON-NLS-1$
         panel.add(genWrittenPanel(birthdayString));
-        panel.add(genWrittenPanel(String.format(resourceMap.getString("age.format"), ageInMonths / 12, ageInMonths % 12))); //$NON-NLS-1$
+        panel.add(genWrittenPanel(String.format(resourceMap.getString("age.format"), age.getYears(), age.getMonths()))); //$NON-NLS-1$
         panel.add(genLabel(resourceMap.getString("gender.text"))); //$NON-NLS-1$
         panel.add(genLabel(resourceMap.getString("phenotype.text"))); //$NON-NLS-1$
         panel.add(genWrittenPanel(p.isMale() ? resourceMap.getString("genderMale.text") : resourceMap.getString("genderFemale.text"))); //$NON-NLS-1$ //$NON-NLS-2$
@@ -464,7 +467,7 @@ public class MedicalViewDialog extends JDialog {
             blWrapper.setOpaque(false);
             blWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
             blWrapper.add(Box.createHorizontalStrut(30));
-            blWrapper.add(genWrittenText(Utilities.capitalize(bl.readableName)));
+            blWrapper.add(genWrittenText(Utilities.capitalize(bl.locationName())));
             panel.add(blWrapper);
 
             p.getInjuriesByLocation(bl).stream()

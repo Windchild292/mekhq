@@ -21,12 +21,8 @@ package mekhq.gui.model;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -41,33 +37,28 @@ import megamek.common.Jumpship;
 import megamek.common.SmallCraft;
 import megamek.common.Tank;
 import megamek.common.UnitType;
-import megamek.common.logging.LogLevel;
 import megamek.common.options.PilotOptions;
 import megamek.common.util.EncodeControl;
 import megamek.common.util.StringUtil;
 import mekhq.IconPackage;
-import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.finances.Money;
-import mekhq.campaign.finances.Transaction;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.enums.GenderDescriptors;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Planet;
 import mekhq.gui.BasicInfo;
 import mekhq.gui.MekHqColors;
 import mekhq.gui.utilities.MekHqTableCellRenderer;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 /**
  * A table Model for displaying information about personnel
  * @author Jay lawson
  */
 public class PersonnelTableModel extends DataTableModel {
-
+    //region Variable Declarations
     private static final long serialVersionUID = -5207167419079014157L;
 
     private Campaign campaign;
@@ -124,6 +115,7 @@ public class PersonnelTableModel extends DataTableModel {
     public static final int N_COL               = 44;
 
     private ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.PersonnelTableModel", new EncodeControl());
+    //endregion Variable Declarations
 
     public PersonnelTableModel(Campaign c) {
         data = new ArrayList<Person>();
@@ -381,12 +373,9 @@ public class PersonnelTableModel extends DataTableModel {
                         return toReturn;
                     }
 
-                    // Get the crew for the unit
-                    ArrayList<Person> crew = u.getCrew();
-
                     // The crew count is the number of personnel under their charge,
                     // excepting themselves.
-                    int crewCount = crew.size() - 1;
+                    int crewCount = u.getCrew().size() - 1;
                     if (crewCount <= 0) {
                         // If there is only one crew member, just return their name
                         return toReturn;
@@ -414,9 +403,9 @@ public class PersonnelTableModel extends DataTableModel {
                     return "";
                 }
             case COL_GENDER:
-                return p.getGenderString(Person.GENDER_DESCRIPTOR.MALE_FEMALE);
+                return GenderDescriptors.MALE_FEMALE.getDescriptorCapitalized(p.getGender());
             case COL_AGE:
-                return Integer.toString(p.getAge(getCampaign().getCalendar()));
+                return Integer.toString(p.getAge(getCampaign().getLocalDate()));
             case COL_TYPE:
                 return p.getRoleDesc();
             case COL_MECH:
@@ -677,12 +666,12 @@ public class PersonnelTableModel extends DataTableModel {
             setData(new ArrayList<>(getCampaign().getPersonnel()));
         } else {
             Campaign c = getCampaign();
-            ArrayList<Person> commanders = new ArrayList<>();
+            List<Person> commanders = new ArrayList<>();
             for (Person p : c.getPersonnel()) {
                 if (p.getUnitId() != null) {
                     UUID unitId = p.getUnitId();
                     Unit u = c.getUnit(unitId);
-                    if (u != null && u.getCommander() != p) {
+                    if ((u != null) && !p.equals(u.getCommander())) {
                         // this person is NOT the commander of their unit,
                         // skip them.
                         continue;

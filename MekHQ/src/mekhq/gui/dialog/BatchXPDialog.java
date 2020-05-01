@@ -36,7 +36,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.event.PersonChangedEvent;
 import mekhq.campaign.log.PersonalLogger;
 import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.SingleSpecialAbilityGenerator;
+import mekhq.campaign.personnel.generator.SingleSpecialAbilityGenerator;
 import mekhq.campaign.personnel.Skill;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.gui.model.PersonnelTableModel;
@@ -97,7 +97,7 @@ public final class BatchXPDialog extends JDialog {
 
         this.resourceMap = ResourceBundle.getBundle("mekhq.resources.BatchXPDialog", new EncodeControl()); //$NON-NLS-1$
 
-        setTitle(resourceMap.getString("dialogue.title")); //$NON-NLS-1$
+        setTitle(resourceMap.getString("MassTrainingDialog.title")); //$NON-NLS-1$
         choiceNoSkill = resourceMap.getString("skill.choice.text"); //$NON-NLS-1$
 
         this.campaign = Objects.requireNonNull(campaign);
