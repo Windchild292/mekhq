@@ -54,6 +54,7 @@ import mekhq.campaign.unit.Unit;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.dialog.*;
 import mekhq.gui.model.PersonnelTableModel;
+import mekhq.gui.sorter.enums.WeightSorterStyle;
 import mekhq.gui.utilities.JMenuHelpers;
 import mekhq.gui.utilities.MultiLineTooltip;
 import mekhq.gui.utilities.StaticChecks;
@@ -1477,7 +1478,8 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements
                 int weightClass = -1;
 
                 if (oneSelected && person.isActive() && person.isFree()) {
-                    for (Unit unit : gui.getCampaign().getUnits(true, true, true)) {
+                    for (Unit unit : gui.getCampaign().getUnits(
+                            WeightSorterStyle.WEIGHT_CLASS_DESC_WEIGHT_DESC, true)) {
                         if (!unit.isAvailable()) {
                             continue;
                         } else if (unit.getEntity().getUnitType() != unitType) {
@@ -1633,7 +1635,8 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements
                         }
                     }
                 } else if (StaticChecks.areAllActive(selected) && StaticChecks.areAllEligible(selected)) {
-                    for (Unit unit : gui.getCampaign().getUnits( true, true, true)) {
+                    for (Unit unit : gui.getCampaign().getUnits(
+                            WeightSorterStyle.WEIGHT_CLASS_DESC_WEIGHT_DESC, true)) {
                         if (!unit.isAvailable()) {
                             continue;
                         } else if (unit.getEntity().getUnitType() != unitType) {

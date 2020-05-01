@@ -33,6 +33,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.tree.TreePath;
 
 import megamek.common.util.StringUtil;
+import mekhq.gui.sorter.enums.WeightSorterStyle;
 import mekhq.gui.utilities.JMenuHelpers;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -816,7 +817,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                     // Or Gun Emplacements!
                     // TODO: Or Robotic Systems!
                     JMenu unsorted = new JMenu("Unsorted");
-                    for (Unit u : gui.getCampaign().getUnits(true, false)) {
+                    for (Unit u : gui.getCampaign().getUnits(WeightSorterStyle.WEIGHT_DESC, false)) {
                         String type = UnitType.getTypeName(u.getEntity().getUnitType());
                         String className = u.getEntity().getWeightClassName();
                         if (null != u.getCommander()) {

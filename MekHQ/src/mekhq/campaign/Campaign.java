@@ -1164,10 +1164,6 @@ public class Campaign implements Serializable, ITechManager {
         return units.values();
     }
 
-    public List<Unit> getUnits(boolean weightSorted) {
-        return getUnits(false, weightSorted, false);
-    }
-
     /**
      * This returns a list of the current units, sorted alphabetically and potentially by other methods
      * @param weightSorterStyle the style of weight and weight class sorting to use
