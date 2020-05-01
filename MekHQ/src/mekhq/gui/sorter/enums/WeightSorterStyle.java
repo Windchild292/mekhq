@@ -23,6 +23,22 @@ package mekhq.gui.sorter.enums;
  */
 public enum WeightSorterStyle {
     /**
+     * This sorts by Weight ascending without sorting by Weight Class
+     */
+    WEIGHT_ASC,
+    /**
+     * This sorts by Weight descending without sorting by Weight Class
+     */
+    WEIGHT_DESC,
+    /**
+     * The list is sorted by Weight Class ascending without sorting by Weight
+     */
+    WEIGHT_CLASS_ASC,
+    /**
+     * This sorts by Weight Class descending without sorting by Weight
+     */
+    WEIGHT_CLASS_DESC,
+    /**
      * The list is sorted by Weight Class ascending, then by Weight ascending
      */
     WEIGHT_CLASS_ASC_WEIGHT_ASC,
@@ -31,27 +47,11 @@ public enum WeightSorterStyle {
      */
     WEIGHT_CLASS_ASC_WEIGHT_DESC,
     /**
-     * The list is sorted by Weight Class ascending without sorting by Weight
-     */
-    WEIGHT_CLASS_ASC,
-    /**
      * This sorts by Weight Class descending, then by Weight Ascending
      */
     WEIGHT_CLASS_DESC_WEIGHT_ASC,
     /**
      * This sorts by Weight Class descending, then by Weight descending
      */
-    WEIGHT_CLASS_DESC_WEIGHT_DESC,
-    /**
-     * This sorts by Weight Class descending without sorting by Weight
-     */
-    WEIGHT_CLASS_DESC,
-    /**
-     * This sorts by Weight ascending without sorting by Weight Class
-     */
-    WEIGHT_ASC,
-    /**
-     * This sorts by Weight descending without sorting by Weight Class
-     */
-    WEIGHT_DESC
+    WEIGHT_CLASS_DESC_WEIGHT_DESC
 }
