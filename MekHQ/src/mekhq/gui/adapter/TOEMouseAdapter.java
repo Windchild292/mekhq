@@ -768,7 +768,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                         menuItem.addActionListener(this);
                         popup.add(menuItem);
                     }
-                    
+
                     menu = new JMenu("Add Unit");
                     menu.setEnabled(false);
                     HashMap<String, JMenu> unitTypeMenus = new HashMap<>();
@@ -816,7 +816,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                     // Or Gun Emplacements!
                     // TODO: Or Robotic Systems!
                     JMenu unsorted = new JMenu("Unsorted");
-                    for (Unit u : gui.getCampaign().getUnits(true)) {
+                    for (Unit u : gui.getCampaign().getUnits(true, false)) {
                         String type = UnitType.getTypeName(u.getEntity().getUnitType());
                         String className = u.getEntity().getWeightClassName();
                         if (null != u.getCommander()) {

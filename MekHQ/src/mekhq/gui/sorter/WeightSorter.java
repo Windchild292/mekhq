@@ -21,9 +21,11 @@ package mekhq.gui.sorter;
 import megamek.common.Entity;
 import mekhq.gui.sorter.enums.WeightSorterStyle;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
-public class WeightSorter implements Comparator<Entity> {
+public class WeightSorter implements Comparator<Entity>, Serializable {
+    private static final long serialVersionUID = -9215905225139350416L;
     private WeightSorterStyle style;
 
     //region Constructors
@@ -37,9 +39,9 @@ public class WeightSorter implements Comparator<Entity> {
         int weightClass1, weightClass2;
         switch (style) {
             case WEIGHT_ASC:
-                return (int) Math.round(lhs.getWeight() - rhs.getWeight());
+                return Double.compare(lhs.getWeight(), rhs.getWeight());
             case WEIGHT_DESC:
-                return (int) Math.round(rhs.getWeight() - lhs.getWeight());
+                return Double.compare(rhs.getWeight(), lhs.getWeight());
             case WEIGHT_CLASS_ASC:
                 return lhs.getWeightClass() - rhs.getWeightClass();
             case WEIGHT_CLASS_DESC:
@@ -47,23 +49,23 @@ public class WeightSorter implements Comparator<Entity> {
             case WEIGHT_CLASS_ASC_WEIGHT_ASC:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? (int) (lhs.getWeight() - rhs.getWeight())
+                return (weightClass1 == weightClass2) ? Double.compare(lhs.getWeight(), rhs.getWeight())
                         : (weightClass1 - weightClass2);
             case WEIGHT_CLASS_ASC_WEIGHT_DESC:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? (int) (rhs.getWeight() - lhs.getWeight())
+                return (weightClass1 == weightClass2) ? Double.compare(rhs.getWeight(), lhs.getWeight())
                         : (weightClass1 - weightClass2);
             case WEIGHT_CLASS_DESC_WEIGHT_ASC:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? (int) (lhs.getWeight() - rhs.getWeight())
+                return (weightClass1 == weightClass2) ? Double.compare(lhs.getWeight(), rhs.getWeight())
                         : (weightClass2 - weightClass1);
             case WEIGHT_CLASS_DESC_WEIGHT_DESC:
             default:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? (int) (rhs.getWeight() - lhs.getWeight())
+                return (weightClass1 == weightClass2) ? Double.compare(rhs.getWeight(), lhs.getWeight())
                         : (weightClass2 - weightClass1);
         }
     }

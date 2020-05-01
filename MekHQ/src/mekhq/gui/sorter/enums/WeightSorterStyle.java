@@ -53,5 +53,9 @@ public enum WeightSorterStyle {
     /**
      * This sorts by Weight Class descending, then by Weight descending
      */
-    WEIGHT_CLASS_DESC_WEIGHT_DESC
+    WEIGHT_CLASS_DESC_WEIGHT_DESC,
+    /**
+     * This does not sort the entities based on their Weight nor Weight Class
+     */
+    NONE
 }

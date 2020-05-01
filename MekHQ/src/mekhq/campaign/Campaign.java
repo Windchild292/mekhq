@@ -46,6 +46,8 @@ import mekhq.campaign.personnel.*;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
 import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
+import mekhq.gui.sorter.WeightSorter;
+import mekhq.gui.sorter.enums.WeightSorterStyle;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
 import org.joda.time.DateTime;
@@ -1168,42 +1170,26 @@ public class Campaign implements Serializable, ITechManager {
 
     /**
      * This returns a list of the current units, sorted alphabetically and potentially by other methods
-     * @param weightSorted      True if the unit list is sorted by weight descending, otherwise false
-     * @param weightClassSorted True if the unit list is sorted by weight class in format heaviest to lightest, otherwise false
+     * @param weightSorterStyle the style of weight and weight class sorting to use
      * @param unitTypeSorted    True if the unit list is sorted by the unit type
      * @return a copy of the units in the campaign with the applicable sort format
      */
-    public List<Unit> getUnits(boolean weightClassSorted, boolean weightSorted,
-                               boolean unitTypeSorted) {
+    public List<Unit> getUnits(WeightSorterStyle weightSorterStyle, boolean unitTypeSorted) {
         List<Unit> units = getCopyOfUnits();
 
         // Natural order sorting the units alphabetically is the default for getSortedUnits
-        units.sort(Comparator.comparing(Unit::getName, new NaturalOrderComparator()));
+        Comparator<Unit> comparator = Comparator.comparing(Unit::getName, new NaturalOrderComparator());
 
-        if (weightClassSorted || weightSorted || unitTypeSorted) {
-            // We need to determine these by both the weight sorted and weight class sorted values,
-            // as to properly sort by weight class and weight we should do both at the same time
-            if (weightSorted && weightClassSorted) {
-                units.sort((lhs, rhs) -> {
-                    int weightClass1 = lhs.getEntity().getWeightClass();
-                    int weightClass2 = rhs.getEntity().getWeightClass();
-                    if (weightClass1 == weightClass2) {
-                        return Double.compare(rhs.getEntity().getWeight(), lhs.getEntity().getWeight());
-                    } else {
-                        return weightClass2 - weightClass1;
-                    }
-                });
-            } else if (weightClassSorted) {
-                units.sort(Comparator.comparingInt(o -> o.getEntity().getWeightClass()));
-            } else if (weightSorted) {
-                // Sorted in descending order of weights
-                units.sort(Comparator.comparingDouble(o -> o.getEntity().getWeight()));
-            }
-
-            if (unitTypeSorted) {
-                units.sort(Comparator.comparingInt(e -> e.getEntity().getUnitType()));
-            }
+        if (weightSorterStyle != WeightSorterStyle.NONE) {
+            comparator.thenComparing(Unit::getEntity, new WeightSorter(weightSorterStyle));
         }
+
+        if (unitTypeSorted) {
+            comparator.thenComparing(Unit::getEntity, Comparator.comparingInt(Entity::getUnitType));
+        }
+
+        units.sort(comparator);
+
         return units;
     }
 
@@ -4307,7 +4293,7 @@ public class Campaign implements Serializable, ITechManager {
                 force.removeUnit(unitID);
             }
         }
-        
+
         // clean up units that are assigned to non-existing scenarios
         for (Unit unit : this.getUnits()) {
             if (this.getScenario(unit.getScenarioId()) == null) {
