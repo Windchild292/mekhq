@@ -1,7 +1,6 @@
 package mekhq.campaign.personnel;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.spy;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -14,7 +13,6 @@ import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 public class PersonTest {
-    private Person mockPerson;
 
     @Test
     public void testIsCombatRoleReturnsTrueAtEdgesOfRange() {
@@ -48,8 +46,8 @@ public class PersonTest {
 
     @Test
     public void testAddAndRemoveAward() throws ParseException {
-        initPerson();
-        initAwards();
+        Person mockPerson = PersonnelTestUtilities.initPerson();
+        PersonnelTestUtilities.initAwards();
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -75,8 +73,8 @@ public class PersonTest {
 
     @Test
     public void testGetNumberOfAwards() throws ParseException {
-        initPerson();
-        initAwards();
+        Person mockPerson = PersonnelTestUtilities.initPerson();
+        PersonnelTestUtilities.initAwards();
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -97,7 +95,7 @@ public class PersonTest {
 
     @Test
     public void testSetOriginalUnit() {
-        initPerson();
+        Person mockPerson = PersonnelTestUtilities.initPerson();
 
         UUID is1Id = UUID.randomUUID();
         int is1WeightClass = megamek.common.EntityWeightClass.WEIGHT_LIGHT;
@@ -168,11 +166,5 @@ public class PersonTest {
         }
     }
 
-    private void initPerson(){
-        mockPerson = spy(new Person("TestGivenName", "TestSurname", null, "MERC"));
-    }
 
-    private void initAwards(){
-        AwardsFactory.getInstance().loadAwardsFromStream(PersonnelTestUtilities.getTestAwardSet(),"TestSet");
-    }
 }

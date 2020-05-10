@@ -143,7 +143,7 @@ public enum ROMDesignation {
         ROMDesignation[] values = values();
         try {
             int designation = Integer.parseInt(information);
-            if (values.length > designation) {
+            if ((values.length - 1) > designation) { // Kappa was never saved before this enum was made
                 return values[designation];
             }
         } catch (Exception ignored) {

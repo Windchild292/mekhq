@@ -8,6 +8,9 @@ import java.util.ResourceBundle;
 
 import megamek.common.util.EncodeControl;
 
+/**
+ * This class is used to test the {@link ManeiDominiClass} Enum
+ */
 public class ManeiDominiClassTest {
     private static final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
             new EncodeControl());
