@@ -18,13 +18,13 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.mission;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -533,7 +533,7 @@ public class AtBContract extends Contract implements Serializable {
             moraleLevel -= 2;
         }
         // 2 – 5: Morale level decreases 1 level
-        else if (roll >= 2 && roll <= 5) {
+        else if (roll <= 5) {
             moraleLevel -= 1;
         }
         // 6 – 8: Morale level remains the same
@@ -672,11 +672,13 @@ public class AtBContract extends Contract implements Serializable {
         int roll = Compute.d6();
         switch (roll) {
         case 1: /* 1d6 dependents */
-            number = Compute.d6();
-            c.addReport("Bonus: " + number + " dependent" + ((number>1)?"s":""));
-            for (int i = 0; i < number; i++) {
-                Person p = c.newDependent(Person.T_ASTECH, false);
-                c.recruitPerson(p, false, true, false, true);
+            if (c.getCampaignOptions().canAtBAddDependents()) {
+                number = Compute.d6();
+                c.addReport("Bonus: " + number + " dependent" + ((number > 1) ? "s" : ""));
+                for (int i = 0; i < number; i++) {
+                    Person p = c.newDependent(Person.T_ASTECH, false);
+                    c.recruitPerson(p, false, true, false, true);
+                }
             }
             break;
         case 2: /* Recruit (choose) */
@@ -744,11 +746,11 @@ public class AtBContract extends Contract implements Serializable {
     }
 
     public void checkEvents(Campaign c) {
-        if (c.getCalendar().get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+        if (c.getLocalDate().getDayOfWeek() == DayOfWeek.MONDAY) {
             nextWeekBattleTypeMod = 0;
         }
 
-        if (c.getCalendar().get(Calendar.DAY_OF_MONTH) == 1) {
+        if (c.getLocalDate().getDayOfMonth() == 1) {
             if (priorLogisticsFailure) {
                 partsAvailabilityLevel++;
                 priorLogisticsFailure = false;
@@ -908,13 +910,11 @@ public class AtBContract extends Contract implements Serializable {
                     partsAvailabilityLevel++;
                     break;
                 case 6:
-                    String unit =
-                            c.getUnitMarket().addSingleUnit(c, UnitMarket.MARKET_EMPLOYER,
-                                    UnitType.MEK, getEmployerCode(),
-                                    IUnitRating.DRAGOON_F, 50) +
-                                    " offered by employer on the <a href='UNIT_MARKET'>unit market</a>";
+                    String unit = c.getUnitMarket().addSingleUnit(c, UnitMarket.MARKET_EMPLOYER,
+                        UnitType.MEK, getEmployerCode(),
+                        IUnitRating.DRAGOON_F, 50);
                     if (unit != null) {
-                        text += "Surplus Sale: " + unit;
+                        text += String.format("Surplus Sale: %s offered by employer on the <a href='UNIT_MARKET'>unit market</a>", unit);
                     }
                 }
                 c.addReport(text);

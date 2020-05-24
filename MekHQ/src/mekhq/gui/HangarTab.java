@@ -51,6 +51,7 @@ import megamek.common.Entity;
 import megamek.common.UnitType;
 import megamek.common.event.Subscribe;
 import megamek.common.util.EncodeControl;
+import megamek.common.util.sorter.NaturalOrderComparator;
 import mekhq.MekHQ;
 import mekhq.campaign.event.AcquisitionEvent;
 import mekhq.campaign.event.DeploymentChangedEvent;
@@ -344,6 +345,7 @@ public final class HangarTab extends CampaignGuiTab {
     @Override
     public void refreshAll() {
         refreshUnitList();
+        refreshAcquisitionList();
     }
 
     public void filterUnits() {

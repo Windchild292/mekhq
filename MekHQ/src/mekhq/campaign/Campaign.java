@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -37,6 +38,7 @@ import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 
 import megamek.common.*;
+import megamek.common.util.sorter.NaturalOrderComparator;
 import mekhq.*;
 import mekhq.campaign.finances.*;
 import mekhq.campaign.log.*;
@@ -265,6 +267,9 @@ public class Campaign implements Serializable, ITechManager {
     private IUnitGenerator unitGenerator;
     private IUnitRating unitRating;
 
+    /** This is used to determine if the player has an active AtB Contract, and is recalculated on load */
+    private transient boolean hasActiveContract;
+
     private final IAutosaveService autosaveService;
 
     public Campaign() {
@@ -314,6 +319,7 @@ public class Campaign implements Serializable, ITechManager {
         fatigueLevel = 0;
         atbConfig = null;
         autosaveService = new AutosaveService();
+        hasActiveContract = false;
     }
 
     /**
@@ -402,19 +408,23 @@ public class Campaign implements Serializable, ITechManager {
                 + getDateAsString() + " (" + getEraName() + ")";
     }
 
+    @Deprecated
     public void setCalendar(GregorianCalendar c) {
         calendar = c;
         currentDateTime = new DateTime(c);
     }
 
+    @Deprecated
     public GregorianCalendar getCalendar() {
         return calendar;
     }
 
+    @Deprecated
     public DateFormat getDateFormatter() {
         return new SimpleDateFormat(dateFormat);
     }
 
+    @Deprecated
     public DateFormat getShortDateFormatter() {
         return new SimpleDateFormat(shortDateFormat);
     }
@@ -654,7 +664,7 @@ public class Campaign implements Serializable, ITechManager {
             if (roll >= target.getValue()) {
                 report.append("<br/>Search successful. ");
                 MechSummary ms = unitGenerator.generate(factionCode, shipSearchType, -1,
-                        getCalendar().get(Calendar.YEAR), getUnitRatingMod());
+                        getGameYear(), getUnitRatingMod());
                 if (ms == null) {
                     ms = getAtBConfig().findShip(shipSearchType);
                 }
@@ -747,13 +757,15 @@ public class Campaign implements Serializable, ITechManager {
                             getPersonnelMarket().addPerson(p);
                         }
                     }
-                    int dependents = getRetirementDefectionTracker().getPayout(pid).getDependents();
-                    while (dependents > 0) {
-                        Person person = newDependent(Person.T_ASTECH, false);
-                        if (recruitPerson(person)) {
-                            dependents--;
-                        } else {
-                            dependents = 0;
+                    if (getCampaignOptions().canAtBAddDependents()) {
+                        int dependents = getRetirementDefectionTracker().getPayout(pid).getDependents();
+                        while (dependents > 0) {
+                            Person person = newDependent(Person.T_ASTECH, false);
+                            if (recruitPerson(person)) {
+                                dependents--;
+                            } else {
+                                dependents = 0;
+                            }
                         }
                     }
                     if (unitAssignments.containsKey(pid)) {
@@ -1149,18 +1161,49 @@ public class Campaign implements Serializable, ITechManager {
         return units.values();
     }
 
-    public ArrayList<Unit> getUnits(boolean weightSorted, boolean alphaSorted) {
-        ArrayList<Unit> sortedUnits = getCopyOfUnits();
-        if (alphaSorted || weightSorted) {
-            if (alphaSorted) {
-                sortedUnits.sort(Comparator.comparing(Unit::getName));
-            }
-            if (weightSorted) {
+    public List<Unit> getUnits(boolean weightSorted) {
+        return getUnits(false, weightSorted, false);
+    }
+
+    /**
+     * This returns a list of the current units, sorted alphabetically and potentially by other methods
+     * @param weightSorted      True if the unit list is sorted by weight descending, otherwise false
+     * @param weightClassSorted True if the unit list is sorted by weight class in format heaviest to lightest, otherwise false
+     * @param unitTypeSorted    True if the unit list is sorted by the unit type
+     * @return a copy of the units in the campaign with the applicable sort format
+     */
+    public List<Unit> getUnits(boolean weightClassSorted, boolean weightSorted,
+                               boolean unitTypeSorted) {
+        List<Unit> units = getCopyOfUnits();
+
+        // Natural order sorting the units alphabetically is the default for getSortedUnits
+        units.sort(Comparator.comparing(Unit::getName, new NaturalOrderComparator()));
+
+        if (weightClassSorted || weightSorted || unitTypeSorted) {
+            // We need to determine these by both the weight sorted and weight class sorted values,
+            // as to properly sort by weight class and weight we should do both at the same time
+            if (weightSorted && weightClassSorted) {
+                units.sort((lhs, rhs) -> {
+                    int weightClass1 = lhs.getEntity().getWeightClass();
+                    int weightClass2 = rhs.getEntity().getWeightClass();
+                    if (weightClass1 == weightClass2) {
+                        return Double.compare(rhs.getEntity().getWeight(), lhs.getEntity().getWeight());
+                    } else {
+                        return weightClass2 - weightClass1;
+                    }
+                });
+            } else if (weightClassSorted) {
+                units.sort(Comparator.comparingInt(o -> o.getEntity().getWeightClass()));
+            } else if (weightSorted) {
                 // Sorted in descending order of weights
-                sortedUnits.sort((lhs, rhs) -> Double.compare(rhs.getEntity().getWeight(), lhs.getEntity().getWeight()));
+                units.sort(Comparator.comparingDouble(o -> o.getEntity().getWeight()));
+            }
+
+            if (unitTypeSorted) {
+                units.sort(Comparator.comparingInt(e -> e.getEntity().getUnitType()));
             }
         }
-        return sortedUnits;
+        return units;
     }
 
     // Since getUnits doesn't return a defensive copy and I don't know what I might break if I made it do so...
@@ -1328,7 +1371,7 @@ public class Campaign implements Serializable, ITechManager {
             }
         }
 
-        UUID id = UUID.randomUUID();
+        UUID id = (p.getId() == null) ? UUID.randomUUID() : p.getId();
         p.setId(id);
         personnel.put(id, p);
 
@@ -1367,8 +1410,13 @@ public class Campaign implements Serializable, ITechManager {
         }
 
         // Add their recruitment date if using track time in service
-        if (getCampaignOptions().getUseTimeInService() && !prisoner && !dependent) {
-            p.setRecruitment(getLocalDate());
+        if (!prisoner && !dependent) {
+            if (getCampaignOptions().getUseTimeInService()) {
+                p.setRecruitment(getLocalDate());
+            }
+            if (getCampaignOptions().getUseTimeInRank()) {
+                p.setLastRankChangeDate(getLocalDate());
+            }
         }
 
         MekHQ.triggerEvent(new PersonNewEvent(p));
@@ -1503,7 +1551,7 @@ public class Campaign implements Serializable, ITechManager {
                         : rating.getModifier());
             }
             // Reavings diminish the number of available Bloodrights in later eras
-            int year = getCalendar().get(Calendar.YEAR);
+            int year = getGameYear();
             if (year <= 2950)
                 bloodnameTarget--;
             if (year > 3055)
@@ -1681,6 +1729,7 @@ public class Campaign implements Serializable, ITechManager {
         return calendar.getTime();
     }
 
+    @Deprecated
     public DateTime getDateTime() {
         return currentDateTime;
     }
@@ -1689,7 +1738,7 @@ public class Campaign implements Serializable, ITechManager {
      * For now, this is just going to parse through the current date time
      */
     public LocalDate getLocalDate() {
-        return LocalDate.of(getDateTime().getYear(), getDateTime().getMonthOfYear(), getDateTime().getDayOfMonth());
+        return LocalDate.of(currentDateTime.getYear(), currentDateTime.getMonthOfYear(), currentDateTime.getDayOfMonth());
     }
 
     public List<Person> getPatients() {
@@ -2361,8 +2410,7 @@ public class Campaign implements Serializable, ITechManager {
             return admin;
         } else if (skill.equals(CampaignOptions.S_TECH)) {
             for (Person p : getPersonnel()) {
-                if (getCampaignOptions().isAcquisitionSupportStaffOnly()
-                        && !p.isSupport()) {
+                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole(false)) {
                     continue;
                 }
                 if (maxAcquisitions > 0 && p.getAcquisitions() >= maxAcquisitions) {
@@ -2376,8 +2424,7 @@ public class Campaign implements Serializable, ITechManager {
             }
         } else {
             for (Person p : getPersonnel()) {
-                if (getCampaignOptions().isAcquisitionSupportStaffOnly()
-                        && !p.isSupport()) {
+                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole(false)) {
                     continue;
                 }
                 if (maxAcquisitions > 0 && p.getAcquisitions() >= maxAcquisitions) {
@@ -2409,8 +2456,7 @@ public class Campaign implements Serializable, ITechManager {
                 if (!p.isActive()) {
                     continue;
                 }
-                if (getCampaignOptions().isAcquisitionSupportStaffOnly()
-                        && !p.isSupport()) {
+                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole(false)) {
                     continue;
                 }
                 if (maxAcquisitions > 0 && p.getAcquisitions() >= maxAcquisitions) {
@@ -2682,9 +2728,7 @@ public class Campaign implements Serializable, ITechManager {
      * @return true if your target roll succeeded.
      */
     public boolean findContactForAcquisition(IAcquisitionWork acquisition, Person person, PlanetarySystem system) {
-        if (person.getAcquisitions() >= getCampaignOptions().getMaxAcquisitions()) {
-            return false;
-        }
+
         DateTime currentDate = Utilities.getDateTimeDay(getCalendar());
         TargetRoll target = getTargetForAcquisition(acquisition, person, false);
         target = system.getPrimaryPlanet().getAcquisitionMods(target, getDate(), getCampaignOptions(), getFaction(),
@@ -3303,6 +3347,7 @@ public class Campaign implements Serializable, ITechManager {
              * system for transport or splitting the unit, etc.
              */
             if (!getLocation().isOnPlanet() &&
+                    !getLocation().getJumpPath().isEmpty() &&
                     getLocation().getJumpPath().getLastSystem().getId().equals(m.getSystemId())) {
                 /*
                  * transitTime is measured in days; round up to the next whole day, then convert
@@ -3317,7 +3362,7 @@ public class Campaign implements Serializable, ITechManager {
                         "The start and end dates of " + m.getName() + " have been shifted to reflect the current ETA.");
                 continue;
             }
-            if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+            if (getLocalDate().getDayOfWeek() == DayOfWeek.MONDAY) {
                 int deficit = getDeploymentDeficit((AtBContract) m);
                 if (deficit > 0) {
                     ((AtBContract) m).addPlayerMinorBreaches(deficit);
@@ -3342,7 +3387,7 @@ public class Campaign implements Serializable, ITechManager {
             }
         }
 
-        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+        if (getLocalDate().getDayOfWeek() == DayOfWeek.MONDAY) {
             AtBScenarioFactory.createScenariosForNewWeek(this);
         }
 
@@ -3434,14 +3479,15 @@ public class Campaign implements Serializable, ITechManager {
             }
         }
 
-        if (getCalendar().get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+        if (getLocalDate().getDayOfWeek() == DayOfWeek.MONDAY) {
             processShipSearch();
         }
 
-        // Add or remove dependents
-        if (calendar.get(Calendar.DAY_OF_YEAR) == 1) {
+        // Add or remove dependents - only if one of the two options makes this possible is enabled
+        if ((getLocalDate().getDayOfYear() == 1)
+                && (!getCampaignOptions().getDependentsNeverLeave() || getCampaignOptions().canAtBAddDependents())) {
             int numPersonnel = 0;
-            ArrayList<Person> dependents = new ArrayList<>();
+            List<Person> dependents = new ArrayList<>();
             for (Person p : getPersonnel()) {
                 if (p.isActive()) {
                     numPersonnel++;
@@ -3451,24 +3497,30 @@ public class Campaign implements Serializable, ITechManager {
                 }
             }
             int roll = Compute.d6(2) + getUnitRatingMod() - 2;
-            if (roll < 2)
+            if (roll < 2) {
                 roll = 2;
-            if (roll > 12)
+            } else if (roll > 12) {
                 roll = 12;
-            int change = numPersonnel * (roll - 5) / 100;
-            if ((change < 0) && !getCampaignOptions().getDependentsNeverLeave()) {
-                while ((change < 0) && (dependents.size() > 0)) {
-                    removePerson(Utilities.getRandomItem(dependents).getId());
-                    change++;
-                }
             }
-            for (int i = 0; i < change; i++) {
-                Person p = newDependent(Person.T_ASTECH, false);
-                recruitPerson(p, false, true, false, true);
+            int change = numPersonnel * (roll - 5) / 100;
+            if (change < 0) {
+                if (!getCampaignOptions().getDependentsNeverLeave()) {
+                    while ((change < 0) && (dependents.size() > 0)) {
+                        removePerson(Utilities.getRandomItem(dependents).getId());
+                        change++;
+                    }
+                }
+            } else {
+                if (getCampaignOptions().canAtBAddDependents()) {
+                    for (int i = 0; i < change; i++) {
+                        Person p = newDependent(Person.T_ASTECH, false);
+                        recruitPerson(p, false, true, false, true);
+                    }
+                }
             }
         }
 
-        if (calendar.get(Calendar.DAY_OF_MONTH) == 1) {
+        if (getLocalDate().getDayOfMonth() == 1) {
             /*
              * First of the month; roll morale, track unit fatigue.
              */
@@ -3494,12 +3546,9 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     public void processNewDayPersonnel() {
-        List<Person> babies = new ArrayList<>();
-        for (Person p : getPersonnel()) {
-            if (!p.isActive()) {
-                continue;
-            }
-
+        // This MUST use getActivePersonnel as we only want to process active personnel, and
+        // furthermore this allows us to add and remove personnel without issue
+        for (Person p : getActivePersonnel()) {
             // Random Death
             if (getCampaignOptions().useRandomDeaths()) {
                 AbstractRandomDeathGenerator randomDeathGenerator;
@@ -3524,21 +3573,6 @@ public class Campaign implements Serializable, ITechManager {
             // Random Marriages
             if (getCampaignOptions().useRandomMarriages()) {
                 p.randomMarriage();
-            }
-
-            // Procreation
-            if (p.isFemale()) {
-                if (p.isPregnant()) {
-                    if (getCampaignOptions().useUnofficialProcreation()) {
-                        if (getLocalDate().compareTo((p.getDueDate())) == 0) {
-                            babies.addAll(p.birth());
-                        }
-                    } else {
-                        p.removePregnancy();
-                    }
-                } else if (getCampaignOptions().useUnofficialProcreation()) {
-                    p.procreate();
-                }
             }
 
             p.resetMinutesLeft();
@@ -3568,10 +3602,12 @@ public class Campaign implements Serializable, ITechManager {
                 }
             }
 
+            // TODO : Reset this based on hasSupportRole(false) instead of checking for each type
+            // TODO : p.isEngineer will need to stay, however
             // Reset edge points to the purchased value each week. This should only
             // apply for support personnel - combat troops reset with each new mm game
             if ((p.isAdmin() || p.isDoctor() || p.isEngineer() || p.isTech())
-                    && (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY)) {
+                    && (getLocalDate().getDayOfWeek() == DayOfWeek.MONDAY)) {
                 p.resetCurrentEdge();
             }
 
@@ -3587,10 +3623,21 @@ public class Campaign implements Serializable, ITechManager {
                     p.setIdleMonths(0);
                 }
             }
-        }
 
-        for (Person baby : babies) {
-            recruitPerson(baby, false, true, false, false);
+            // Procreation
+            if (p.isFemale()) {
+                if (p.isPregnant()) {
+                    if (getCampaignOptions().useUnofficialProcreation()) {
+                        if (getLocalDate().compareTo((p.getDueDate())) == 0) {
+                            p.birth(this);
+                        }
+                    } else {
+                        p.removePregnancy();
+                    }
+                } else if (getCampaignOptions().useUnofficialProcreation()) {
+                    p.procreate();
+                }
+            }
         }
     }
 
@@ -3694,37 +3741,47 @@ public class Campaign implements Serializable, ITechManager {
 
     /** @return <code>true</code> if the new day arrived */
     public boolean newDay() {
-        if(MekHQ.triggerEvent(new DayEndingEvent(this))) {
+        if (MekHQ.triggerEvent(new DayEndingEvent(this))) {
             return false;
         }
 
-        this.autosaveService.requestDayAdvanceAutosave(this, this.calendar);
+        // Autosave based on the previous day's information
+        this.autosaveService.requestDayAdvanceAutosave(this);
 
+        // Advance the day by one - TODO : Swap me to LocalDate tracking instead
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         currentDateTime = new DateTime(calendar);
 
-        currentReport.clear();
-        currentReportHTML = "";
+        // Determine if we have an active contract or not, as this can get used elsewhere before
+        // we actually hit the AtB new day (e.g. personnel market)
+        if (getCampaignOptions().getUseAtB()) {
+            setHasActiveContract();
+        }
+
+        // Clear Reports
+        getCurrentReport().clear();
+        setCurrentReportHTML("");
         newReports.clear();
         beginReport("<b>" + getDateAsString() + "</b>");
 
-        if (calendar.get(Calendar.DAY_OF_YEAR) == 1) {
+        // New Year Changes
+        if (getLocalDate().getDayOfYear() == 1) {
+            // News is reloaded
             reloadNews();
-        }
 
-        // Ensure that the MegaMek year GameOption matches the campaign year
-        if (gameOptions.intOption("year") != getGameYear()) {
-            gameOptions.getOption("year").setValue(getGameYear());
+            // Change Year Game Option
+            getGameOptions().getOption("year").setValue(getGameYear());
         }
 
         readNews();
 
-        location.newDay(this);
+        getLocation().newDay(this);
 
         // Manage the personnel market
-        personnelMarket.generatePersonnelForDay(this);
+        getPersonnelMarket().generatePersonnelForDay(this);
 
-        if (campaignOptions.getUseAtB()) {
+        // Process New Day for AtB
+        if (getCampaignOptions().getUseAtB()) {
             processNewDayATB();
         }
 
@@ -3734,29 +3791,60 @@ public class Campaign implements Serializable, ITechManager {
 
         processNewDayUnits();
 
-        shoppingList = goShopping(shoppingList);
+        setShoppingList(goShopping(getShoppingList()));
 
         // check for anything in finances
-        finances.newDay(this);
+        getFinances().newDay(this);
 
         MekHQ.triggerEvent(new NewDayEvent(this));
         return true;
     }
 
-    public ArrayList<Contract> getActiveContracts() {
-        ArrayList<Contract> active = new ArrayList<>();
-        for (Mission m : getMissions()) {
-            if (!(m instanceof Contract)) {
+    /**
+     * @return a list of all currently active contracts
+     */
+    public List<Contract> getActiveContracts() {
+        List<Contract> active = new ArrayList<>();
+        for (Mission mission : getMissions()) {
+            if (!(mission instanceof Contract)) {
                 continue;
             }
-            Contract c = (Contract) m;
-            if (c.isActive()
-                    && !getCalendar().getTime().after(c.getEndingDate())
-                    && !getCalendar().getTime().before(c.getStartDate())) {
-                active.add(c);
+            Contract contract = (Contract) mission;
+            if (contract.isActive()
+                    && !getCalendar().getTime().after(contract.getEndingDate())
+                    && !getCalendar().getTime().before(contract.getStartDate())) {
+                active.add(contract);
             }
         }
         return active;
+    }
+
+    /**
+     * @return whether or not the current campaign has an active contract for the current date
+     */
+    public boolean hasActiveContract() {
+        return hasActiveContract;
+    }
+
+    /**
+     * This is used to check if the current campaign has one or more active contacts, and sets the
+     * value of hasActiveContract based on that check. This value should not be set elsewhere
+     */
+    public void setHasActiveContract() {
+        hasActiveContract = false;
+        for (Mission mission : getMissions()) {
+            if (!(mission instanceof Contract)) {
+                continue;
+            }
+            Contract contract = (Contract) mission;
+
+            if (contract.isActive()
+                    && !getCalendar().getTime().after(contract.getEndingDate())
+                    && !getCalendar().getTime().before(contract.getStartDate())) {
+                hasActiveContract = true;
+                break;
+            }
+        }
     }
 
     public Person getFlaggedCommander() {
@@ -3773,24 +3861,18 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     public Money getPayRoll(boolean noInfantry) {
-        if(!campaignOptions.payForSalaries()) {
+        if (getCampaignOptions().payForSalaries()) {
+            return getTheoreticalPayroll(noInfantry);
+        } else {
             return Money.zero();
         }
-
-        return getTheoreticalPayroll(noInfantry);
     }
 
-    private Money getTheoreticalPayroll(boolean noInfantry){
+    private Money getTheoreticalPayroll(boolean noInfantry) {
         Money salaries = Money.zero();
-        for (Person p : getPersonnel()) {
+        for (Person p : getActivePersonnel()) {
             // Optionized infantry (Unofficial)
-            if (noInfantry && p.getPrimaryRole() == Person.T_INFANTRY) {
-                continue;
-            }
-
-            if (p.isActive() &&
-                    !p.isDependent() &&
-                    !(p.isPrisoner() || p.isBondsman())) {
+            if (!(noInfantry && (p.getPrimaryRole() == Person.T_INFANTRY))) {
                 salaries = salaries.plus(p.getSalary());
             }
         }
@@ -3824,11 +3906,11 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     public Money getOverheadExpenses() {
-        if(!campaignOptions.payForOverhead()) {
+        if (getCampaignOptions().payForOverhead()) {
+            return getTheoreticalPayroll(false).multipliedBy(0.05);
+        } else {
             return Money.zero();
         }
-
-        return getTheoreticalPayroll(false).multipliedBy(0.05);
     }
 
     public void removeUnit(UUID id) {
@@ -3937,7 +4019,7 @@ public class Campaign implements Serializable, ITechManager {
                         }
 
                         for (Person p : traineeUnit.getCrew()) {
-                            if (p == commander) {
+                            if (p.equals(commander)) {
                                 continue;
                             }
                             // ...and if their weakest role is Green or Ultra-Green
@@ -4235,6 +4317,13 @@ public class Campaign implements Serializable, ITechManager {
 
             for (UUID unitID : orphanForceUnitIDs) {
                 force.removeUnit(unitID);
+            }
+        }
+
+        // clean up units that are assigned to non-existing scenarios
+        for (Unit unit : this.getUnits()) {
+            if (this.getScenario(unit.getScenarioId()) == null) {
+                unit.setScenarioId(Scenario.S_DEFAULT_ID);
             }
         }
     }
@@ -4580,7 +4669,6 @@ public class Campaign implements Serializable, ITechManager {
     public void setCampaignOptions(CampaignOptions options) {
         campaignOptions = options;
     }
-
 
     public void writeToXml(PrintWriter pw1) {
         // File header
@@ -5272,7 +5360,7 @@ public class Campaign implements Serializable, ITechManager {
                 mechCollars += 1;
             }
 
-            leasedASFCapacity += leasedLargeMechDropships * largeMechDropshipASFCapacity;
+            leasedASFCapacity += (int) Math.floor(leasedLargeMechDropships * largeMechDropshipASFCapacity);
             leasedCargoCapacity += (int) Math.floor(largeMechDropshipCargoCapacity);
         }
 
@@ -5711,8 +5799,7 @@ public class Campaign implements Serializable, ITechManager {
 
             }
 
-            if ((getCalendar().get(Calendar.YEAR) < 2950
-                    || getCalendar().get(Calendar.YEAR) > 3040)
+            if (((getGameYear() < 2950) || (getGameYear() > 3040))
                     && (acquisition instanceof Armor || acquisition instanceof MissingMekActuator
                             || acquisition instanceof mekhq.campaign.parts.MissingMekCockpit
                             || acquisition instanceof mekhq.campaign.parts.MissingMekLifeSupport
@@ -5968,7 +6055,7 @@ public class Campaign implements Serializable, ITechManager {
                 }
                 break;
             case Person.PRISONER_YES:
-                if (p.getRankNumeric() > 0) {
+                if (p.getRankNumeric() != Ranks.RANK_PRISONER) {
                     changeRank(p, Ranks.RANK_PRISONER, true); // They don't get to have a rank. Their
                     // rank is Prisoner or Bondsman.
                 }
@@ -5977,7 +6064,7 @@ public class Campaign implements Serializable, ITechManager {
                 p.setRecruitment(null); //more efficient to just set it to null instead of checking if the setting is enabled
                 break;
             case Person.PRISONER_BONDSMAN:
-                if (p.getRankNumeric() > 0) {
+                if (p.getRankNumeric() != Ranks.RANK_BONDSMAN) {
                     changeRank(p, Ranks.RANK_BONDSMAN, true); // They don't get to have a rank. Their
                     // rank is Prisoner or Bondsman.
                 }
@@ -6022,7 +6109,7 @@ public class Campaign implements Serializable, ITechManager {
                 }
 
                 if (Compute.randomFloat() < babyBornChance) {
-                    person.birth();
+                    person.birth(this);
                 }
             }
         }
@@ -6083,6 +6170,15 @@ public class Campaign implements Serializable, ITechManager {
         int oldRankLevel = person.getRankLevel();
         person.setRankNumeric(rank);
         person.setRankLevel(rankLevel);
+
+        if (getCampaignOptions().getUseTimeInRank()) {
+            if (person.isFree() && !person.isDependent()) {
+                person.setLastRankChangeDate(getLocalDate());
+            } else {
+                person.setLastRankChangeDate(null);
+            }
+        }
+
         personUpdated(person);
         MekHQ.triggerEvent(new PersonChangedEvent(person));
         if (report) {
@@ -6461,7 +6557,7 @@ public class Campaign implements Serializable, ITechManager {
             searchCat_RoleGroup = "Vessel Crew/";
         }
 
-        if (p.isSupport()) {
+        if (p.hasPrimarySupportRole(true)) {
             searchCat_CombatSupport = "Support/";
         } else {
             searchCat_CombatSupport = "Combat/";
@@ -6936,6 +7032,11 @@ public class Campaign implements Serializable, ITechManager {
                         + remainingMoney.toAmountAndSymbolString()
                         + " for the remaining payout from contract "
                         + contract.getName());
+            }
+
+            // This relies on the mission being a Contract, and AtB to be on
+            if (getCampaignOptions().getUseAtB()) {
+                setHasActiveContract();
             }
         }
     }
@@ -7846,8 +7947,7 @@ public class Campaign implements Serializable, ITechManager {
 
         for (Person p : getPersonnel()) {
             // Add them to the total count
-            if (Person.isCombatRole(p.getPrimaryRole()) && !p.isPrisoner()
-                    && !p.isBondsman() && p.isActive()) {
+            if (p.hasPrimaryCombatRole() && p.isFree() && p.isActive()) {
                 countPersonByType[p.getPrimaryRole()]++;
                 countTotal++;
                 if (getCampaignOptions().useAdvancedMedical() && p.getInjuries().size() > 0) {
@@ -7856,11 +7956,11 @@ public class Campaign implements Serializable, ITechManager {
                     countInjured++;
                 }
                 salary = salary.plus(p.getSalary());
-            } else if (Person.isCombatRole(p.getPrimaryRole()) && (p.getStatus() == PersonnelStatus.RETIRED)) {
+            } else if (p.hasPrimaryCombatRole() && (p.getStatus() == PersonnelStatus.RETIRED)) {
                 countRetired++;
-            } else if (Person.isCombatRole(p.getPrimaryRole()) && (p.getStatus() == PersonnelStatus.MIA)) {
+            } else if (p.hasPrimaryCombatRole() && (p.getStatus() == PersonnelStatus.MIA)) {
                 countMIA++;
-            } else if (Person.isCombatRole(p.getPrimaryRole()) && (p.getStatus() == PersonnelStatus.KIA)) {
+            } else if (p.hasPrimaryCombatRole() && (p.getStatus() == PersonnelStatus.KIA)) {
                 countKIA++;
             }
         }
@@ -7910,8 +8010,7 @@ public class Campaign implements Serializable, ITechManager {
 
         for (Person p : getPersonnel()) {
             // Add them to the total count
-            if (Person.isSupportRole(p.getPrimaryRole()) && !p.isPrisoner()
-                    && !p.isBondsman() && p.isActive()) {
+            if (p.hasPrimarySupportRole(false) && p.isFree() && p.isActive()) {
                 countPersonByType[p.getPrimaryRole()]++;
                 countTotal++;
                 if (p.getInjuries().size() > 0 || p.getHits() > 0) {
@@ -7928,14 +8027,11 @@ public class Campaign implements Serializable, ITechManager {
                 if (p.getInjuries().size() > 0 || p.getHits() > 0) {
                     countInjured++;
                 }
-            } else if (Person.isSupportRole(p.getPrimaryRole())
-                    && (p.getStatus() == PersonnelStatus.RETIRED)) {
+            } else if (p.hasPrimarySupportRole(false) && (p.getStatus() == PersonnelStatus.RETIRED)) {
                 countRetired++;
-            } else if (Person.isSupportRole(p.getPrimaryRole())
-                    && (p.getStatus() == PersonnelStatus.MIA)) {
+            } else if (p.hasPrimarySupportRole(false) && (p.getStatus() == PersonnelStatus.MIA)) {
                 countMIA++;
-            } else if (Person.isSupportRole(p.getPrimaryRole())
-                    && (p.getStatus() == PersonnelStatus.KIA)) {
+            } else if (p.hasPrimarySupportRole(false) && (p.getStatus() == PersonnelStatus.KIA)) {
                 countKIA++;
             }
         }
@@ -8160,7 +8256,13 @@ public class Campaign implements Serializable, ITechManager {
                     }
                 }
             }
+
             u.setLastMaintenanceReport(maintenanceReport.toString());
+
+            if (getCampaignOptions().logMaintenance()) {
+                MekHQ.getLogger().info(getClass(), "doMaintenance", maintenanceReport.toString());
+            }
+
             int quality = u.getQuality();
             String qualityString;
             boolean reverse = getCampaignOptions().reverseQualityNames();
@@ -8193,8 +8295,9 @@ public class Campaign implements Serializable, ITechManager {
             addReport(techNameLinked + " performs maintenance on " + u.getHyperlinkedName() + ". " + paidString
                     + qualityString + ". " + damageString + " [<a href='MAINTENANCE|" + u.getId()
                     + "'>Get details</a>]");
+
+            u.resetDaysSinceMaintenance();
         }
-        u.resetDaysSinceMaintenance();
     }
 
     public void initTimeInService() {
@@ -8210,7 +8313,7 @@ public class Campaign implements Serializable, ITechManager {
                     break;
                 }
             }
-            if (!p.isDependent() && !p.isPrisoner() && !p.isBondsman()) {
+            if (!p.isDependent() && p.isFree()) {
                 LocalDate date;
                 // For that one in a billion chance the log is empty. Clone today's date and subtract a year
                 if (join == null) {
@@ -8219,6 +8322,32 @@ public class Campaign implements Serializable, ITechManager {
                     date = join.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 }
                 p.setRecruitment(date);
+            }
+        }
+    }
+
+    public void initTimeInRank() {
+        for (Person p : getPersonnel()) {
+            Date join = null;
+            for (LogEntry e : p.getPersonnelLog()) {
+                if (join == null) {
+                    // If by some nightmare there is no date from the below, just use the first entry.
+                    join = e.getDate();
+                }
+                if (e.getDesc().startsWith("Joined ") || e.getDesc().startsWith("Freed ")
+                        || e.getDesc().startsWith("Promoted ") || e.getDesc().startsWith("Demoted ")) {
+                    join = e.getDate();
+                }
+            }
+            if (!p.isDependent() && p.isFree()) {
+                LocalDate date;
+                // For that one in a billion chance the log is empty. Clone today's date and subtract a year
+                if (join == null) {
+                    date = getLocalDate().minus(1, ChronoUnit.YEARS);
+                } else {
+                    date = join.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                }
+                p.setLastRankChangeDate(date);
             }
         }
     }
@@ -8293,6 +8422,9 @@ public class Campaign implements Serializable, ITechManager {
             }
 
             addAllLances(this.forces);
+
+            // Determine whether or not there is an active contract
+            setHasActiveContract();
         }
 
         setAtBConfig(AtBConfiguration.loadFromXml());

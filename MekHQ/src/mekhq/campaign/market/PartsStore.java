@@ -18,13 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.market;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -275,11 +273,11 @@ public class PartsStore implements Serializable {
                 if(EquipmentPart.hasVariableTonnage(et)) {
                     EquipmentPart epart;
                     for(double ton = EquipmentPart.getStartingTonnage(et); ton <= EquipmentPart.getMaxTonnage(et); ton += EquipmentPart.getTonnageIncrement(et)) {
-                        epart = new EquipmentPart(0, et, -1, false, c);
+                        epart = new EquipmentPart(0, et, -1, 1.0, false, c);
                         epart.setEquipTonnage(ton);
                         parts.add(epart);
                         if (poddable) {
-                            epart = new EquipmentPart(0, et, -1, true, c);
+                            epart = new EquipmentPart(0, et, -1, 1.0, true, c);
                             epart.setEquipTonnage(ton);
                             parts.add(epart);
                             parts.add(new OmniPod(epart, c));
@@ -287,10 +285,10 @@ public class PartsStore implements Serializable {
                         //TODO: still need to deal with talons (unit tonnage) and masc (engine rating)
                     }
                 } else {
-                    Part p = new EquipmentPart(0, et, -1, false, c);
+                    Part p = new EquipmentPart(0, et, -1, 1.0, false, c);
                     parts.add(p);
                     if (poddable) {
-                        parts.add(new EquipmentPart(0, et, -1, true, c));
+                        parts.add(new EquipmentPart(0, et, -1, 1.0, true, c));
                         parts.add(new OmniPod(p, c));
                     }
                 }
@@ -365,7 +363,7 @@ public class PartsStore implements Serializable {
 
     private void stockEngines(Campaign c) {
         Engine engine;
-        int year = c.getCalendar().get(GregorianCalendar.YEAR);
+        int year = c.getGameYear();
         for(int rating = 10; rating <= 400; rating += 5) {
             for(int ton = 5; ton <= 100; ton += 5) {
                 for(int i = 0; i <= Engine.FISSION; i++) {
