@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.gui.sorter;
 
@@ -49,23 +49,27 @@ public class WeightSorter implements Comparator<Entity>, Serializable {
             case WEIGHT_CLASS_ASC_WEIGHT_ASC:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? Double.compare(lhs.getWeight(), rhs.getWeight())
+                return (weightClass1 == weightClass2)
+                        ? Double.compare(lhs.getWeight(), rhs.getWeight())
                         : (weightClass1 - weightClass2);
             case WEIGHT_CLASS_ASC_WEIGHT_DESC:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? Double.compare(rhs.getWeight(), lhs.getWeight())
+                return (weightClass1 == weightClass2)
+                        ? Double.compare(rhs.getWeight(), lhs.getWeight())
                         : (weightClass1 - weightClass2);
             case WEIGHT_CLASS_DESC_WEIGHT_ASC:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? Double.compare(lhs.getWeight(), rhs.getWeight())
+                return (weightClass1 == weightClass2)
+                        ? Double.compare(lhs.getWeight(), rhs.getWeight())
                         : (weightClass2 - weightClass1);
             case WEIGHT_CLASS_DESC_WEIGHT_DESC:
             default:
                 weightClass1 = lhs.getWeightClass();
                 weightClass2 = rhs.getWeightClass();
-                return (weightClass1 == weightClass2) ? Double.compare(rhs.getWeight(), lhs.getWeight())
+                return (weightClass1 == weightClass2)
+                        ? Double.compare(rhs.getWeight(), lhs.getWeight())
                         : (weightClass2 - weightClass1);
         }
     }
