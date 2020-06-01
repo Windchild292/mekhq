@@ -107,7 +107,9 @@ public class CampaignOptions implements Serializable {
     //region General Tab
     private boolean useUnitRating;
     private UnitRatingMethod unitRatingMethod;
-    private String displayDateFormat; // This is currently unlisted, but will be added in the near future
+    // These are both currently unlisted, but are being switch over to their use internally
+    private String displayDateFormat; // This is to be used for any date displays in shortened styles (i.e. DD/MM/YYYY, MM/DD/YYYY, etc.)
+    private String fullDisplayDateFormat; // This is to be used for any date displays in full styles (i.e. March 1 2020, 3 June 2020, etc.)
     //endregion General Tab
 
     //region Repair and Maintenance Tab
@@ -418,6 +420,7 @@ public class CampaignOptions implements Serializable {
         useUnitRating = true;
         unitRatingMethod = UnitRatingMethod.CAMPAIGN_OPS;
         displayDateFormat = "yyyy-MM-dd";
+        fullDisplayDateFormat = "MMMM d, yyyy";
         //endregion General Tab
 
         //region Repair and Maintenance Tab
@@ -778,12 +781,29 @@ public class CampaignOptions implements Serializable {
     //endregion Constructors
 
     //region General Tab
+
+    /**
+     * This is to be used for any date displays in shortened styles (i.e. DD/MM/YYYY, MM/DD/YYYY, etc.)
+     * @return the display date format
+     */
     public String getDisplayDateFormat() {
         return displayDateFormat;
     }
 
     public void setDisplayDateFormat(String s) {
         displayDateFormat = s;
+    }
+
+    /**
+     * This is to be used for any date displays in full styles (i.e. March 1 2020, 3 June 2020, etc.)
+     * @return the
+     */
+    public String getFullDisplayDateFormat() {
+        return fullDisplayDateFormat;
+    }
+
+    public void setFullDisplayDateFormat(String fullDisplayDateFormat) {
+        this.fullDisplayDateFormat = fullDisplayDateFormat;
     }
     //endregion General Tab
 
@@ -2992,6 +3012,7 @@ public class CampaignOptions implements Serializable {
         pw1.println(MekHqXmlUtil.indentStr(indent) + "<campaignOptions>");
         //region General Tab
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "displayDateFormat", displayDateFormat);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "fullDisplayDateFormat", fullDisplayDateFormat);
         //endregion General Tab
 
         //region Repair and Maintenance Tab
@@ -3330,6 +3351,8 @@ public class CampaignOptions implements Serializable {
             //region General Tab
             if (wn2.getNodeName().equalsIgnoreCase("displayDateFormat")) {
                 retVal.displayDateFormat = wn2.getTextContent().trim();
+            } else if (wn2.getNodeName().equalsIgnoreCase("fullDisplayDateFormat")) {
+                retVal.fullDisplayDateFormat = wn2.getTextContent().trim();
             //endregion General Tab
 
             //region Repair and Maintenance Tab
