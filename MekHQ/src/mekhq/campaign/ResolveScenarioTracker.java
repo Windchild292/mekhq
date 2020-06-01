@@ -489,7 +489,7 @@ public class ResolveScenarioTracker {
                                     + " when trying to assign kills"); //$NON-NLS-1$
                             continue;
                         }
-                        status.addKill(new Kill(p.getId(), killed, u.getEntity().getShortNameRaw(), campaign.getCalendar().getTime()));
+                        status.addKill(new Kill(p.getId(), killed, u.getEntity().getShortNameRaw(), campaign.getLocalDate()));
                     }
                 }
             }
