@@ -96,7 +96,8 @@ public final class PersonnelTab extends CampaignGuiTab {
     public static final int PG_RETIRE = 16;
     public static final int PG_MIA = 17;
     public static final int PG_KIA = 18;
-    public static final int PG_NUM = 19;
+    public static final int PG_DEAD = 19;
+    public static final int PG_NUM = 20;
 
     // personnel views
     private static final int PV_GRAPHIC = 0;
@@ -359,6 +360,8 @@ public final class PersonnelTab extends CampaignGuiTab {
             return "Personnel MIA";
         case PG_KIA:
             return "Rolls of Honor (KIA)";
+        case PG_DEAD:
+            return "Cemetery";
         case PG_PRISONER:
             return "Prisoners";
         default:
@@ -414,15 +417,17 @@ public final class PersonnelTab extends CampaignGuiTab {
                         || ((nGroup == PG_DOC) && person.hasRoleWithin(Person.T_DOCTOR, Person.T_MEDIC))
                         || ((nGroup == PG_ADMIN) && person.hasRoleWithin(Person.T_ADMIN_COM, Person.T_ADMIN_HR)))
                         && !person.getPrisonerStatus().isPrisoner()) {
-                    return person.isActive();
+                    return person.getStatus().isActive();
                 } else if (nGroup == PG_DEPENDENT) {
                     return person.isDependent();
                 } else if (nGroup == PG_RETIRE) {
-                    return person.getStatus() == PersonnelStatus.RETIRED;
+                    return person.getStatus().isRetired();
                 } else if (nGroup == PG_MIA) {
-                    return person.getStatus() == PersonnelStatus.MIA;
+                    return person.getStatus().isMIA();
                 } else if (nGroup == PG_KIA) {
-                    return person.getStatus() == PersonnelStatus.KIA;
+                    return person.getStatus().isKIA();
+                } else if (nGroup == PG_DEAD) {
+                    return person.getStatus().isDead();
                 } else if (nGroup == PG_PRISONER) {
                     return person.getPrisonerStatus().isPrisoner();
                 } else {

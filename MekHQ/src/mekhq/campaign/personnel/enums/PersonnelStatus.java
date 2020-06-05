@@ -26,8 +26,8 @@ public enum PersonnelStatus {
     //region Enum Declarations
     ACTIVE("PersonnelStatus.ACTIVE.text"),
     RETIRED("PersonnelStatus.RETIRED.text"),
-    KIA("PersonnelStatus.KIA.text"),
     MIA("PersonnelStatus.MIA.text"),
+    KIA("PersonnelStatus.KIA.text"),
     NATURAL_CAUSES("PersonnelStatus.NATURAL_CAUSES.text"),
     WOUNDS("PersonnelStatus.WOUNDS.text"),
     DISEASE("PersonnelStatus.DISEASE.text"),
@@ -53,18 +53,81 @@ public enum PersonnelStatus {
     }
 
     /**
+     * @return true if a person is active, otherwise false
+     */
+    public boolean isActive() {
+        return this == ACTIVE;
+    }
+
+    /**
+     * @return true if a person is retired, otherwise false
+     */
+    public boolean isRetired() {
+        return this == RETIRED;
+    }
+
+    /**
+     * @return true if a person is KIA, otherwise false
+     */
+    public boolean isKIA() {
+        return this == KIA;
+    }
+
+    /**
+     * @return true if a person is MIA, otherwise false
+     */
+    public boolean isMIA() {
+        return this == MIA;
+    }
+
+    /**
+     * @return true if a person has died of NATURAL_CAUSES, otherwise false
+     */
+    public boolean hasDiedOfNaturalCauses() {
+        return this == NATURAL_CAUSES;
+    }
+
+    /**
+     * @return true if a person has died from WOUNDS, otherwise false
+     */
+    public boolean hasDiedOfWounds() {
+        return this == WOUNDS;
+    }
+
+    /**
+     * @return true if a person has died from DISEASE, otherwise false
+     */
+    public boolean hasDiedOfDisease() {
+        return this == DISEASE;
+    }
+
+    /**
+     * @return true if a person has died from OLD_AGE, otherwise false
+     */
+    public boolean hasDiedOfOldAge() {
+        return this == OLD_AGE;
+    }
+
+    /**
+     * @return true if a person has died from PREGNANCY_COMPLICATIONS, otherwise false
+     */
+    public boolean hasDiedOfPregnancyComplications() {
+        return this == PREGNANCY_COMPLICATIONS;
+    }
+
+    /**
      * @return true if a person is dead, otherwise false
      */
     public boolean isDead() {
-        return (this == KIA) || (this == NATURAL_CAUSES) || (this == WOUNDS) || (this == DISEASE)
-                || (this == OLD_AGE);
+        return isKIA() || hasDiedOfNaturalCauses() || hasDiedOfWounds() || hasDiedOfDisease()
+                || hasDiedOfOldAge() || hasDiedOfPregnancyComplications();
     }
 
     /**
      * @return true if a person is dead or MIA, otherwise false
      */
     public boolean isDeadOrMIA() {
-        return isDead() || (this == MIA);
+        return isDead() || isMIA();
     }
 
     /**

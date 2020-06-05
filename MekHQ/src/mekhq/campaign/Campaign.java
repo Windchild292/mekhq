@@ -6046,7 +6046,9 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     public void changeStatus(Person person, PersonnelStatus status) {
-        Unit u = getUnit(person.getUnitId());
+        if (person.getStatus() == status) {
+            return;
+        }
 
         if (status == PersonnelStatus.PREGNANCY_COMPLICATIONS) {
             // The child might be able to be born, albeit into a world without their mother
@@ -6101,6 +6103,8 @@ public class Campaign implements Serializable, ITechManager {
         if (status != PersonnelStatus.ACTIVE) {
             person.setDoctorId(null, getCampaignOptions().getNaturalHealingWaitingPeriod());
             // If we're assigned to a unit, remove us from it
+            Unit u = getUnit(person.getUnitId());
+
             if (null != u) {
                 u.remove(person, true);
             }

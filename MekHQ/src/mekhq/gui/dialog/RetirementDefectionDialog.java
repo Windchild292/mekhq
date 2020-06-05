@@ -1,5 +1,20 @@
-/**
+/*
+ * Copyright (c) 2014, 2020 - The MegaMek Team. All rights reserved.
  *
+ * This file is part of MekHQ.
+ *
+ * MekHQ is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MekHQ is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.gui.dialog;
 
@@ -57,7 +72,6 @@ import mekhq.campaign.finances.Transaction;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.RetirementDefectionTracker;
-import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.PersonnelTab;
@@ -76,12 +90,8 @@ import mekhq.preferences.PreferencesNode;
 
 /**
  * @author Neoancient
- *
  */
 public class RetirementDefectionDialog extends JDialog {
-    /**
-     *
-     */
     private static final long serialVersionUID = -5551772461081092679L;
 
     private static final String PAN_OVERVIEW = "PanOverview";
@@ -669,11 +679,12 @@ public class RetirementDefectionDialog extends JDialog {
                     (nGroup == PersonnelTab.PG_DOC && ((type == Person.T_DOCTOR) || (type == Person.T_MEDIC))) ||
                     (nGroup == PersonnelTab.PG_ADMIN && type > Person.T_MEDIC)
                         ) {
-                    return person.isActive() || results;
+                    return person.getStatus().isActive() || results;
                 }
-                return ((nGroup == PersonnelTab.PG_MIA) && (person.getStatus() == PersonnelStatus.MIA))
-                        || ((nGroup == PersonnelTab.PG_KIA) && (person.getStatus() == PersonnelStatus.KIA))
-                        || ((nGroup == PersonnelTab.PG_RETIRE) && (person.getStatus() == PersonnelStatus.RETIRED));
+                return ((nGroup == PersonnelTab.PG_MIA) && person.getStatus().isMIA())
+                        || ((nGroup == PersonnelTab.PG_KIA) && person.getStatus().isKIA())
+                        || ((nGroup == PersonnelTab.PG_RETIRE) && person.getStatus().isRetired())
+                        || ((nGroup == PersonnelTab.PG_DEAD) && person.getStatus().isDead());
             }
         };
         sorter.setRowFilter(personTypeFilter);
@@ -702,7 +713,7 @@ public class RetirementDefectionDialog extends JDialog {
                         unit.getEntity().getUnitType() == UnitType.INFANTRY) {
                     return false;
                 }
-                if (unitAssignments.values().contains(unit.getId())) {
+                if (unitAssignments.containsValue(unit.getId())) {
                     return false;
                 }
                 if (nGroup < 0) {
