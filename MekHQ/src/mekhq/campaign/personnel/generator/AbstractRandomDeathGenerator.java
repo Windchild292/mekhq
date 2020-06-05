@@ -32,8 +32,8 @@ public abstract class AbstractRandomDeathGenerator {
     protected RandomDeathRandomizationType type;
     //endregion Variable Declarations
 
-    protected AbstractRandomDeathGenerator() {
-
+    protected AbstractRandomDeathGenerator(RandomDeathRandomizationType type) {
+        this.type = type;
     }
 
     public abstract boolean randomDeath(int age, Gender gender);
