@@ -258,7 +258,7 @@ public class CampaignOpsReputationTest {
         for (int i = 0; i < 10; i++) {
             Person admin = mock(Person.class);
             when(admin.isAdmin()).thenReturn(true);
-            when(admin.isActive()).thenReturn(true);
+            when(admin.getStatus().isActive()).thenReturn(true);
             regularAdmins.add(admin);
         }
 
@@ -266,7 +266,7 @@ public class CampaignOpsReputationTest {
 
         activePersonnelList = new ArrayList<>();
         for (Person p : personnelList) {
-            if (p.isActive()) {
+            if (p.getStatus().isActive()) {
                 activePersonnelList.add(p);
             }
         }
@@ -773,7 +773,7 @@ public class CampaignOpsReputationTest {
         when(mockThunderbolt1.getCrew()).thenReturn(mockThunderboltCrew);
         when(mockThunderbolt1Tech.isAdmin()).thenReturn(false);
         when(mockThunderbolt1Tech.isTech()).thenReturn(true);
-        when(mockThunderbolt1Tech.isActive()).thenReturn(true);
+        when(mockThunderbolt1Tech.getStatus().isActive()).thenReturn(true);
         when(mockThunderbolt1Tech.getSkill(SkillType.S_TECH_MECH)).thenReturn(mockMechTechSkillRegular);
         personnelList.add(mockThunderbolt1Tech);
 
@@ -803,7 +803,7 @@ public class CampaignOpsReputationTest {
         when(mockThunderbolt2.getCrew()).thenReturn(mockThunderbolt2Crew);
         when(mockThunderbolt2Tech.isAdmin()).thenReturn(false);
         when(mockThunderbolt2Tech.isTech()).thenReturn(true);
-        when(mockThunderbolt2Tech.isActive()).thenReturn(true);
+        when(mockThunderbolt2Tech.getStatus().isActive()).thenReturn(true);
         when(mockThunderbolt2Tech.getSkill(SkillType.S_TECH_MECH)).thenReturn(mockMechTechSkillRegular);
         personnelList.add(mockThunderbolt2Tech);
         return 6; // astechs needed by Thunderbolt2
@@ -832,7 +832,7 @@ public class CampaignOpsReputationTest {
         when(mockGrasshopper1.getCrew()).thenReturn(mockGrasshopperCrew);
         when(mockGrasshopper1Tech.isAdmin()).thenReturn(false);
         when(mockGrasshopper1Tech.isTech()).thenReturn(true);
-        when(mockGrasshopper1Tech.isActive()).thenReturn(true);
+        when(mockGrasshopper1Tech.getStatus().isActive()).thenReturn(true);
         when(mockGrasshopper1Tech.getSkill(SkillType.S_TECH_MECH)).thenReturn(mockMechTechSkillRegular);
         personnelList.add(mockGrasshopper1Tech);
         return 6; // astechs needed by Grasshopper1
@@ -865,7 +865,7 @@ public class CampaignOpsReputationTest {
         when(mockGrasshopper2.getCrew()).thenReturn(mockGrasshopper2Crew);
         when(mockGrasshopper2Tech.isAdmin()).thenReturn(false);
         when(mockGrasshopper2Tech.isTech()).thenReturn(true);
-        when(mockGrasshopper2Tech.isActive()).thenReturn(true);
+        when(mockGrasshopper2Tech.getStatus().isActive()).thenReturn(true);
         when(mockGrasshopper2Tech.getSkill(SkillType.S_TECH_MECH)).thenReturn(mockMechTechSkillElite);
         personnelList.add(mockGrasshopper2Tech);
         return 6; // astechs needed by Grasshopper1
@@ -894,7 +894,7 @@ public class CampaignOpsReputationTest {
         when(mockBulldog1Gunner3.isAdmin()).thenReturn(false);
         when(mockBulldog1Tech.isAdmin()).thenReturn(false);
         when(mockBulldog1Tech.isTech()).thenReturn(true);
-        when(mockBulldog1Tech.isActive()).thenReturn(true);
+        when(mockBulldog1Tech.getStatus().isActive()).thenReturn(true);
         when(mockBulldog1Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockBulldog1Driver);
         personnelList.add(mockBulldog1Gunner1);
@@ -945,7 +945,7 @@ public class CampaignOpsReputationTest {
         personnelList.add(mockBulldog2Gunner3);
         when(mockBulldog2Tech.isAdmin()).thenReturn(false);
         when(mockBulldog2Tech.isTech()).thenReturn(true);
-        when(mockBulldog2Tech.isActive()).thenReturn(true);
+        when(mockBulldog2Tech.getStatus().isActive()).thenReturn(true);
         when(mockBulldog2Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockBulldog2Tech);
         mockBulldogUnit2.addPilotOrSoldier(mockBulldog2Driver);
@@ -992,7 +992,7 @@ public class CampaignOpsReputationTest {
         personnelList.add(mockBulldog3Gunner3);
         when(mockBulldog3Tech.isAdmin()).thenReturn(false);
         when(mockBulldog3Tech.isTech()).thenReturn(true);
-        when(mockBulldog3Tech.isActive()).thenReturn(true);
+        when(mockBulldog3Tech.getStatus().isActive()).thenReturn(true);
         when(mockBulldog3Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockBulldog3Tech);
         mockBulldogUnit3.addPilotOrSoldier(mockBulldog3Driver);
@@ -1039,7 +1039,7 @@ public class CampaignOpsReputationTest {
         personnelList.add(mockBulldog4Gunner3);
         when(mockBulldog4Tech.isAdmin()).thenReturn(false);
         when(mockBulldog4Tech.isTech()).thenReturn(true);
-        when(mockBulldog4Tech.isActive()).thenReturn(true);
+        when(mockBulldog4Tech.getStatus().isActive()).thenReturn(true);
         when(mockBulldog4Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockBulldog4Tech);
         mockBulldogUnit4.addPilotOrSoldier(mockBulldog4Driver);
@@ -1078,7 +1078,7 @@ public class CampaignOpsReputationTest {
         personnelList.add(mockPackrat1Gunner);
         when(mockPackrat1Tech.isAdmin()).thenReturn(false);
         when(mockPackrat1Tech.isTech()).thenReturn(true);
-        when(mockPackrat1Tech.isActive()).thenReturn(true);
+        when(mockPackrat1Tech.getStatus().isActive()).thenReturn(true);
         when(mockPackrat1Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockPackrat1Tech);
         mockPackratUnit1.addPilotOrSoldier(mockPackrat1Driver);
@@ -1113,7 +1113,7 @@ public class CampaignOpsReputationTest {
         personnelList.add(mockPackrat2Gunner);
         when(mockPackrat2Tech.isAdmin()).thenReturn(false);
         when(mockPackrat2Tech.isTech()).thenReturn(true);
-        when(mockPackrat2Tech.isActive()).thenReturn(true);
+        when(mockPackrat2Tech.getStatus().isActive()).thenReturn(true);
         when(mockPackrat2Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockPackrat2Tech);
         mockPackratUnit2.addPilotOrSoldier(mockPackrat2Driver);
@@ -1148,7 +1148,7 @@ public class CampaignOpsReputationTest {
         personnelList.add(mockPackrat3Gunner);
         when(mockPackrat3Tech.isAdmin()).thenReturn(false);
         when(mockPackrat3Tech.isTech()).thenReturn(true);
-        when(mockPackrat3Tech.isActive()).thenReturn(true);
+        when(mockPackrat3Tech.getStatus().isActive()).thenReturn(true);
         when(mockPackrat3Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockPackrat3Tech);
         mockPackratUnit3.addPilotOrSoldier(mockPackrat3Driver);
@@ -1183,7 +1183,7 @@ public class CampaignOpsReputationTest {
         personnelList.add(mockPackrat4Gunner);
         when(mockPackrat4Tech.isAdmin()).thenReturn(false);
         when(mockPackrat4Tech.isTech()).thenReturn(true);
-        when(mockPackrat4Tech.isActive()).thenReturn(true);
+        when(mockPackrat4Tech.getStatus().isActive()).thenReturn(true);
         when(mockPackrat4Tech.getSkill(SkillType.S_TECH_MECHANIC)).thenReturn(mockVeeTechSkill);
         personnelList.add(mockPackrat4Tech);
         mockPackratUnit4.addPilotOrSoldier(mockPackrat4Driver);
@@ -1244,7 +1244,7 @@ public class CampaignOpsReputationTest {
         when(mockCorsairUnit1.getCrew()).thenReturn(crew);
         when(mockCorsair1Tech.isAdmin()).thenReturn(false);
         when(mockCorsair1Tech.isTech()).thenReturn(true);
-        when(mockCorsair1Tech.isActive()).thenReturn(true);
+        when(mockCorsair1Tech.getStatus().isActive()).thenReturn(true);
         when(mockCorsair1Tech.getSkill(SkillType.S_TECH_AERO)).thenReturn(mockFighterTechSkill);
         personnelList.add(mockCorsair1Tech);
         Crew mockCorsair1Crew = mock(Crew.class);
@@ -1273,7 +1273,7 @@ public class CampaignOpsReputationTest {
         when(mockCorsairUnit2.getCrew()).thenReturn(crew);
         when(mockCorsair2Tech.isAdmin()).thenReturn(false);
         when(mockCorsair2Tech.isTech()).thenReturn(true);
-        when(mockCorsair2Tech.isActive()).thenReturn(true);
+        when(mockCorsair2Tech.getStatus().isActive()).thenReturn(true);
         when(mockCorsair2Tech.getSkill(SkillType.S_TECH_AERO)).thenReturn(mockFighterTechSkillElite);
         personnelList.add(mockCorsair2Tech);
         Crew mockCorsair2Crew = mock(Crew.class);

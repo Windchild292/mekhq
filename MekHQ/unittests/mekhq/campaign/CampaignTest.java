@@ -42,37 +42,37 @@ public class CampaignTest {
 
         Person mockTechActive = Mockito.mock(Person.class);
         Mockito.when(mockTechActive.isTech()).thenReturn(true);
-        Mockito.when(mockTechActive.isActive()).thenReturn(true);
+        Mockito.when(mockTechActive.getStatus().isActive()).thenReturn(true);
         Mockito.when(mockTechActive.getMinutesLeft()).thenReturn(240);
         testPersonList.add(mockTechActive);
 
         Person mockTechActiveTwo = Mockito.mock(Person.class);
         Mockito.when(mockTechActiveTwo.isTech()).thenReturn(true);
-        Mockito.when(mockTechActiveTwo.isActive()).thenReturn(true);
+        Mockito.when(mockTechActiveTwo.getStatus().isActive()).thenReturn(true);
         Mockito.when(mockTechActiveTwo.getMinutesLeft()).thenReturn(1);
         testPersonList.add(mockTechActiveTwo);
 
         Person mockTechInactive = Mockito.mock(Person.class);
         Mockito.when(mockTechInactive.isTech()).thenReturn(true);
-        Mockito.when(mockTechInactive.isActive()).thenReturn(false);
+        Mockito.when(mockTechInactive.getStatus().isActive()).thenReturn(false);
         Mockito.when(mockTechInactive.getMinutesLeft()).thenReturn(240);
         testPersonList.add(mockTechInactive);
 
         Person mockTechNoTime = Mockito.mock(Person.class);
         Mockito.when(mockTechNoTime.isTech()).thenReturn(true);
-        Mockito.when(mockTechNoTime.isActive()).thenReturn(true);
+        Mockito.when(mockTechNoTime.getStatus().isActive()).thenReturn(true);
         Mockito.when(mockTechNoTime.getMinutesLeft()).thenReturn(0);
         testPersonList.add(mockTechNoTime);
 
         Person mockNonTechOne = Mockito.mock(Person.class);
         Mockito.when(mockNonTechOne.isTech()).thenReturn(false);
-        Mockito.when(mockNonTechOne.isActive()).thenReturn(true);
+        Mockito.when(mockNonTechOne.getStatus().isActive()).thenReturn(true);
         Mockito.when(mockNonTechOne.getMinutesLeft()).thenReturn(240);
         testPersonList.add(mockNonTechOne);
 
         Person mockNonTechTwo = Mockito.mock(Person.class);
         Mockito.when(mockNonTechTwo.isTech()).thenReturn(false);
-        Mockito.when(mockNonTechTwo.isActive()).thenReturn(true);
+        Mockito.when(mockNonTechTwo.getStatus().isActive()).thenReturn(true);
         Mockito.when(mockNonTechTwo.getMinutesLeft()).thenReturn(240);
         testPersonList.add(mockNonTechTwo);
 

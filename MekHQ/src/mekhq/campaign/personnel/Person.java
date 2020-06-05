@@ -39,6 +39,7 @@ import megamek.common.util.StringUtil;
 import mekhq.campaign.*;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.log.*;
+import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.enums.*;
 import org.joda.time.DateTime;
 import org.w3c.dom.Node;
@@ -319,6 +320,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
     //v0.1.8 and earlier
     protected int teamId = -1;
     //endregion Reverse Compatibility
+
+    private static final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
+            new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
@@ -909,11 +913,134 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
     //endregion Personnel Roles
 
+    /**
+     * @return the person's PersonnelStatus
+     */
     public PersonnelStatus getStatus() {
         return status;
     }
 
-    public void setStatus(PersonnelStatus status) {
+    /**
+     * This is used to change the person's PersonnelStatus
+     * @param campaign the campaign the person is part of
+     * @param status the person's new PersonnelStatus
+     */
+    public void changeStatus(Campaign campaign, PersonnelStatus status) {
+        if (status == getStatus()) { // no change means we don't need to process anything
+            return;
+        } else if (getStatus().isKIA()) {
+            // remove date of death for resurrection
+            setDateOfDeath(null);
+        }
+
+        switch (status) {
+            case ACTIVE:
+                if (getStatus().isMIA()) {
+                    ServiceLogger.recoveredMia(this, campaign.getDate());
+                } else if (getStatus().isDead()) {
+                    ServiceLogger.resurrected(this, campaign.getDate());
+                } else {
+                    ServiceLogger.rehired(this, campaign.getDate());
+                }
+                break;
+            case RETIRED:
+                ServiceLogger.retired(this, campaign.getDate());
+                break;
+            case MIA:
+                ServiceLogger.mia(this, campaign.getDate());
+                break;
+            case KIA:
+                ServiceLogger.kia(this, campaign.getDate());
+                break;
+            case NATURAL_CAUSES:
+                MedicalLogger.diedOfNaturalCauses(this, campaign.getDate());
+                ServiceLogger.passedAway(this, campaign.getDate(), status.toString());
+                break;
+            case WOUNDS:
+                MedicalLogger.diedFromWounds(this, campaign.getDate());
+                ServiceLogger.passedAway(this, campaign.getDate(), status.toString());
+                break;
+            case DISEASE:
+                MedicalLogger.diedFromDisease(this, campaign.getDate());
+                ServiceLogger.passedAway(this, campaign.getDate(), status.toString());
+                break;
+            case OLD_AGE:
+                MedicalLogger.diedOfOldAge(this, campaign.getDate());
+                ServiceLogger.passedAway(this, campaign.getDate(), status.toString());
+                break;
+            case PREGNANCY_COMPLICATIONS:
+                // The child might be able to be born, albeit into a world without their mother
+                if (isPregnant()) {
+                    int pregnancyWeek = getPregnancyWeek(campaign.getLocalDate());
+                    double babyBornChance;
+                    if (pregnancyWeek > 35) {
+                        babyBornChance = 1;
+                    } else if (pregnancyWeek > 29) {
+                        babyBornChance = 0.95;
+                    } else if (pregnancyWeek > 25) {
+                        babyBornChance = 0.9;
+                    } else if (pregnancyWeek == 25) {
+                        babyBornChance = 0.8;
+                    } else if (pregnancyWeek == 24) {
+                        babyBornChance = 0.5;
+                    } else if (pregnancyWeek == 23) {
+                        babyBornChance = 0.25;
+                    } else {
+                        babyBornChance = 0;
+                    }
+
+                    if (Compute.randomFloat() < babyBornChance) {
+                        birth(campaign);
+                    }
+                }
+                MedicalLogger.diedFromPregnancyComplications(this, campaign.getDate());
+                ServiceLogger.passedAway(this, campaign.getDate(), status.toString());
+                break;
+        }
+
+        setStatus(status);
+
+        if (status.isDead()) {
+            setDateOfDeath(campaign.getLocalDate());
+            // Don't forget to tell the spouse
+            if (hasSpouse()) {
+                divorce(campaign.getCampaignOptions().getKeepMarriedNameUponSpouseDeath()
+                        ? OPT_KEEP_SURNAME : OPT_SPOUSE_CHANGE_SURNAME);
+            }
+        }
+
+        if (!status.isActive()) {
+            setDoctorId(null, campaign.getCampaignOptions().getNaturalHealingWaitingPeriod());
+            // If we're assigned to a unit, remove us from it
+            Unit unit = campaign.getUnit(getUnitId());
+            if (unit != null) {
+                unit.remove(this, true);
+            }
+
+            // If we're assigned as a tech for any unit, remove us from it/them
+            List<UUID> techIds = getTechUnitIDs();
+            if (!techIds.isEmpty()) {
+                for (UUID tUUID : techIds) {
+                    unit = campaign.getUnit(tUUID);
+                    unit.remove(this, true);
+                }
+            }
+            // If we're assigned to any repairs or refits, remove that assignment
+            for (Part part : campaign.getParts()) {
+                if (getId().equals(part.getTeamId())) {
+                    part.cancelAssignment();
+                }
+            }
+        }
+
+        MekHQ.triggerEvent(new PersonChangedEvent(this));
+    }
+
+    /**
+     * This is used to directly set the Person's PersonnelStatus without any processing
+     * @param status the person's new status
+     */
+    private void setStatus(PersonnelStatus status) {
         this.status = status;
     }
 
@@ -1298,8 +1425,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         if (canProcreate()) {
             boolean conceived = false;
             if (hasSpouse()) {
-                if (!getSpouse().isDeployed() && !getSpouse().isDeadOrMIA() && !getSpouse().isChild()
-                        && !(getSpouse().getGender() == getGender())) {
+                if (!getSpouse().isDeployed() && !getSpouse().getStatus().isDeadOrMIA()
+                        && !getSpouse().isChild() && !(getSpouse().getGender() == getGender())) {
                     // setting is the decimal chance that this procreation attempt will create a child, base is 0.05%
                     conceived = (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceProcreation()));
                 }
@@ -1416,8 +1543,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 && p.isTryingToMarry()
                 && p.oldEnoughToMarry(campaign)
                 && (!p.getPrisonerStatus().isPrisoner() || getPrisonerStatus().isPrisoner())
-                && !p.isDeadOrMIA()
-                && p.isActive()
+                && !p.getStatus().isDeadOrMIA()
+                && p.getStatus().isActive()
                 && ((getAncestorsId() == null)
                     || !campaign.getAncestors(getAncestorsId()).checkMutualAncestors(
                             campaign.getAncestors(p.getAncestorsId())))
@@ -1502,7 +1629,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 break;
         }
 
-        if (!(spouse.isDeadOrMIA() && isDeadOrMIA())) {
+        if (!(spouse.getStatus().isDeadOrMIA() && getStatus().isDeadOrMIA())) {
             reason = FormerSpouse.REASON_DIVORCE;
 
             PersonalLogger.divorcedFrom(this, spouse, getCampaign().getDate());
@@ -1516,10 +1643,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
             spouse.setSpouseId(null);
             setSpouseId(null);
-        } else if (spouse.isDeadOrMIA()) {
+        } else if (spouse.getStatus().isDeadOrMIA()) {
             setMaidenName(null);
             setSpouseId(null);
-        } else if (isDeadOrMIA()) {
+        } else if (getStatus().isDeadOrMIA()) {
             spouse.setMaidenName(null);
             spouse.setSpouseId(null);
         }
@@ -1604,14 +1731,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public void setBiography(String s) {
         this.biography = s;
-    }
-
-    public boolean isActive() {
-        return getStatus() == PersonnelStatus.ACTIVE;
-    }
-
-    public boolean isInActive() {
-        return getStatus() != PersonnelStatus.ACTIVE;
     }
 
     public ExtraData getExtraData() {
@@ -2008,7 +2127,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("status")) {
-                    retVal.status = PersonnelStatus.parseFromString(wn2.getTextContent().trim());
+                    retVal.setStatus(PersonnelStatus.parseFromString(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("prisonerStatus")) {
                     retVal.prisonerStatus = PrisonerStatus.parseFromString(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("willingToDefect")) { // Legacy
@@ -2386,7 +2505,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * This is used to pay a person their salary
      */
     public void payPersonSalary() {
-        if (isActive()) {
+        if (getStatus().isActive()) {
             payPerson(getSalary());
         }
     }
@@ -3000,7 +3119,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean needsFixing() {
-        return ((hits > 0) || needsAMFixing()) && (status == PersonnelStatus.ACTIVE);
+        return ((hits > 0) || needsAMFixing()) && status.isActive();
     }
 
     public String succeed() {
@@ -3639,36 +3758,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         setHits(0);
     }
 
-    public void changeStatus(PersonnelStatus status) {
-        if (status == getStatus()) {
-            return;
-        }
-        Unit u = campaign.getUnit(getUnitId());
-        if (status == PersonnelStatus.KIA) {
-            MedicalLogger.diedFromWounds(this, campaign.getDate());
-            //set the date of death
-            setDateOfDeath(getCampaign().getLocalDate());
-        }
-        if (status == PersonnelStatus.RETIRED) {
-            ServiceLogger.retireDueToWounds(this, campaign.getDate());
-        }
-        setStatus(status);
-        if (status != PersonnelStatus.ACTIVE) {
-            setDoctorId(null, campaign.getCampaignOptions().getNaturalHealingWaitingPeriod());
-            // If we're assigned to a unit, remove us from it
-            if (null != u) {
-                u.remove(this, true);
-            }
-            // If we're assigned as a tech for any unit, remove us from it/them
-            if (!techUnitIds.isEmpty()) {
-                for (UUID tuuid : techUnitIds) {
-                    Unit t = campaign.getUnit(tuuid);
-                    t.remove(this, true);
-                }
-            }
-        }
-    }
-
     public int getAbilityTimeModifier() {
         int modifier = 100;
         if (campaign.getCampaignOptions().useToughness()) {
@@ -3856,7 +3945,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return the number of shares the person has
      */
     public int getNumShares(boolean sharesForAll) {
-        if (!isActive() || !getPrisonerStatus().isFree() || (!sharesForAll && !hasRole(T_MECHWARRIOR))) {
+        if (!getStatus().isActive() || !getPrisonerStatus().isFree()
+                || (!sharesForAll && !hasRole(T_MECHWARRIOR))) {
             return 0;
         }
         int shares = 1;
@@ -3885,10 +3975,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         shares += getOriginalUnitTech();
 
         return shares;
-    }
-
-    public boolean isDeadOrMIA() {
-        return (status == PersonnelStatus.KIA) || (status == PersonnelStatus.MIA);
     }
 
     public boolean isEngineer() {

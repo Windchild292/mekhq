@@ -228,7 +228,7 @@ public final class InfirmaryTab extends CampaignGuiTab {
     }
 
     protected ArrayList<Person> getSelectedAssignedPatients() {
-        ArrayList<Person> patients = new ArrayList<Person>();
+        ArrayList<Person> patients = new ArrayList<>();
         int[] indices = listAssignedPatient.getSelectedIndices();
         if (assignedPatientModel.getSize() == 0) {
             return patients;
@@ -244,7 +244,7 @@ public final class InfirmaryTab extends CampaignGuiTab {
     }
 
     protected ArrayList<Person> getSelectedUnassignedPatients() {
-        ArrayList<Person> patients = new ArrayList<Person>();
+        ArrayList<Person> patients = new ArrayList<>();
         int[] indices = listUnassignedPatient.getSelectedIndices();
         if (unassignedPatientModel.getSize() == 0) {
             return patients;
@@ -329,13 +329,13 @@ public final class InfirmaryTab extends CampaignGuiTab {
 
     public void refreshPatientList() {
         Person doctor = getSelectedDoctor();
-        ArrayList<Person> assigned = new ArrayList<Person>();
-        ArrayList<Person> unassigned = new ArrayList<Person>();
+        ArrayList<Person> assigned = new ArrayList<>();
+        ArrayList<Person> unassigned = new ArrayList<>();
         for (Person patient : getCampaign().getPatients()) {
             // Knock out inactive doctors
             if ((patient.getDoctorId() != null)
                     && (getCampaign().getPerson(patient.getDoctorId()) != null)
-                    && getCampaign().getPerson(patient.getDoctorId()).isInActive()) {
+                    && !getCampaign().getPerson(patient.getDoctorId()).getStatus().isActive()) {
                 patient.setDoctorId(null, getCampaign().getCampaignOptions().getNaturalHealingWaitingPeriod());
             }
             if (patient.getDoctorId() == null) {

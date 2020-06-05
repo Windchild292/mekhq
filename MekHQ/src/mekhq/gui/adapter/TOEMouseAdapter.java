@@ -820,7 +820,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                         String className = u.getEntity().getWeightClassName();
                         if (null != u.getCommander()) {
                             Person p = u.getCommander();
-                            if (p.isActive() && u.getForceId() < 1
+                            if (p.getStatus().isActive() && (u.getForceId() < 1)
                                     && u.isPresent()) {
                                 menuItem = new JMenuItem(p.getFullTitle()
                                         + ", " + u.getName());

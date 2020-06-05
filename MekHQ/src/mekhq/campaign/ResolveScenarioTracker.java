@@ -1381,9 +1381,9 @@ public class ResolveScenarioTracker {
                 campaign.addKill(k);
             }
             if (status.isMissing()) {
-                campaign.changeStatus(person, PersonnelStatus.MIA);
+                person.changeStatus(getCampaign(), PersonnelStatus.MIA);
             } else if (status.isDead()) {
-                campaign.changeStatus(person, PersonnelStatus.KIA);
+                person.changeStatus(getCampaign(), PersonnelStatus.KIA);
                 if (campaign.getCampaignOptions().getUseAtB() && m instanceof AtBContract) {
                     campaign.getRetirementDefectionTracker().removeFromCampaign(person,
                             true, campaign.getCampaignOptions().getUseShareSystem()
@@ -1442,9 +1442,9 @@ public class ResolveScenarioTracker {
             }
 
             if (status.isMissing()) {
-                campaign.changeStatus(person, PersonnelStatus.MIA);
+                person.changeStatus(getCampaign(), PersonnelStatus.MIA);
             } else if (status.isDead()) {
-                campaign.changeStatus(person, PersonnelStatus.KIA);
+                person.changeStatus(getCampaign(), PersonnelStatus.KIA);
                 if (campaign.getCampaignOptions().getUseAtB() && (m instanceof AtBContract)) {
                     campaign.getRetirementDefectionTracker().removeFromCampaign(person,
                             true, campaign.getCampaignOptions().getUseShareSystem()

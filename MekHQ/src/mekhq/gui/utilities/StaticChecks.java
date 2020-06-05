@@ -532,7 +532,7 @@ public class StaticChecks {
 
     public static boolean areAllActive(Person[] people) {
         for (Person person : people) {
-            if (!person.isActive()) {
+            if (!person.getStatus().isActive()) {
                 return false;
             }
         }

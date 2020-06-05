@@ -45,7 +45,6 @@ import megamek.common.SmallCraftBay;
 import megamek.common.UnitType;
 
 import megamek.common.logging.LogLevel;
-import megamek.common.logging.MMLogger;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.Mission;
@@ -212,9 +211,9 @@ public abstract class AbstractUnitRating implements IUnitRating {
             // Whoever has the highest rank is the commander
             commanderList.sort((p1, p2) -> {
                 // Active personnel outrank inactive personnel
-                if (p1.isActive() && !p2.isActive()) {
+                if (p1.getStatus().isActive() && !p2.getStatus().isActive()) {
                     return -1;
-                } else if (!p1.isActive() && p2.isActive()) {
+                } else if (!p1.getStatus().isActive() && p2.getStatus().isActive()) {
                     return 1;
                 }
 

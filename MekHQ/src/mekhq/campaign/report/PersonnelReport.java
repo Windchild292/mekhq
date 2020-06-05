@@ -12,11 +12,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.report;
 
@@ -28,24 +28,21 @@ import javax.swing.JTextPane;
 
 import mekhq.campaign.Campaign;
 
-
-
 /**
  * @author Jay Lawson
  * @version %I% %G%
  * @since 3/12/2012
  */
 public class PersonnelReport extends Report {
-  
-    
     public PersonnelReport(Campaign c) {
         super(c);
     }
-    
+
+    @Override
     public String getTitle() {
         return "Personnel Report";
     }
-    
+
     public JTextPane getCombatPersonnelReport() {
     	// Load combat personnel
         JTextPane txtCombat = new JTextPane();
@@ -53,7 +50,7 @@ public class PersonnelReport extends Report {
         txtCombat.setText(getCampaign().getCombatPersonnelDetails());
         return txtCombat;
     }
-    
+
     public JTextPane getSupportPersonnelReport() {
     	// Load support personnel
         JTextPane txtSupport = new JTextPane();
@@ -61,19 +58,19 @@ public class PersonnelReport extends Report {
         txtSupport.setText(getCampaign().getSupportPersonnelDetails());
         return txtSupport;
     }
-      
+
+    @Override
     public JTextPane getReport() {
         // SplitPane them
         JSplitPane splitOverviewPersonnel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getCombatPersonnelReport(), getSupportPersonnelReport());
 		splitOverviewPersonnel.setName("splitOverviewPersonnel");
 		splitOverviewPersonnel.setOneTouchExpandable(true);
 		splitOverviewPersonnel.setResizeWeight(0.5);
-        
+
 		// Actual report pane
 		JTextPane txtReport = new JTextPane();
         txtReport.setMinimumSize(new Dimension(800, 500));
         txtReport.insertComponent(splitOverviewPersonnel);
         return txtReport;
     }
-   
 }

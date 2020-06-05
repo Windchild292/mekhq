@@ -628,10 +628,10 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
             case CMD_CHANGE_STATUS: {
                 PersonnelStatus status = PersonnelStatus.valueOf(data[1]);
                 for (Person person : people) {
-                    if ((status == PersonnelStatus.ACTIVE) || (0 == JOptionPane.showConfirmDialog(null,
+                    if (status.isActive() || (0 == JOptionPane.showConfirmDialog(null,
                             String.format(resourceMap.getString("confirmRetireQ.format"), person.getFullTitle()), //$NON-NLS-1$
                             resourceMap.getString("kiaQ.text"), JOptionPane.YES_NO_OPTION))) { //$NON-NLS-1$
-                        gui.getCampaign().changeStatus(person, status);
+                        person.changeStatus(gui.getCampaign(), status);
                     }
                 }
                 break;
@@ -1466,7 +1466,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 int unitType = -1;
                 int weightClass = -1;
 
-                if (oneSelected && person.isActive() && person.getPrisonerStatus().isFree()) {
+                if (oneSelected && person.getStatus().isActive() && person.getPrisonerStatus().isFree()) {
                     for (Unit unit : gui.getCampaign().getUnits(true, true, true)) {
                         if (!unit.isAvailable()) {
                             continue;
@@ -1804,7 +1804,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 popup.add(menu);
             }
 
-            if (oneSelected && person.isActive()) {
+            if (oneSelected && person.getStatus().isActive()) {
                 if (person.oldEnoughToMarry(gui.getCampaign()) && (!person.hasSpouse())) {
                     menu = new JMenu(resourceMap.getString("chooseSpouse.text")); //$NON-NLS-1$
                     JMenu maleMenu = new JMenu(resourceMap.getString("spouseMenuMale.text"));
@@ -1978,7 +1978,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
             popup.add(awardMenu);
             //endregion Awards Menu
 
-            if (oneSelected && person.isActive()) {
+            if (oneSelected && person.getStatus().isActive()) {
                 menu = new JMenu(resourceMap.getString("spendXP.text")); //$NON-NLS-1$
                 if (gui.getCampaign().getCampaignOptions().useAbilities()) {
                     JMenu abMenu = new JMenu(resourceMap.getString("spendOnSpecialAbilities.text")); //$NON-NLS-1$

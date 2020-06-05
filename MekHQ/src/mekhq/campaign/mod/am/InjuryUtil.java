@@ -39,7 +39,6 @@ import mekhq.campaign.personnel.PersonnelOptions;
 import mekhq.campaign.personnel.Skill;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.GenderDescriptors;
-import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.unit.Unit;
 
 /**
@@ -53,7 +52,7 @@ public final class InjuryUtil {
     private static AMEventHandler eventHandler = null;
 
     public synchronized static void registerEventHandler(Campaign c) {
-        if(null != eventHandler) {
+        if (null != eventHandler) {
             MekHQ.EVENT_BUS.unregister(eventHandler);
         }
         MekHQ.EVENT_BUS.register(eventHandler = new AMEventHandler(c));
@@ -64,8 +63,8 @@ public final class InjuryUtil {
     public static void resolveDailyHealing(Campaign c, Person p) {
         Person doc = c.getPerson(p.getDoctorId());
         // TODO: Reporting
-        if((null != doc) && doc.isDoctor()) {
-            if(p.getDaysToWaitForHealing() <= 0) {
+        if ((null != doc) && doc.isDoctor()) {
+            if (p.getDaysToWaitForHealing() <= 0) {
                 genMedicalTreatment(c, p, doc).stream().forEach(GameEffect::apply);
             }
         } else {
@@ -98,7 +97,7 @@ public final class InjuryUtil {
     }
 
     private static void addHitToAccumulator(Map<BodyLocation, Integer> acc, BodyLocation loc) {
-        if(!acc.containsKey(loc)) {
+        if (!acc.containsKey(loc)) {
             acc.put(loc, 1);
         } else {
             acc.put(loc, acc.get(loc) + 1);
@@ -125,12 +124,12 @@ public final class InjuryUtil {
             addHitToAccumulator(hitAccumulator, location);
             // critical hits add to the amount
             int roll = Compute.d6(2);
-            if(roll + hits + critMod > 12) {
+            if (roll + hits + critMod > 12) {
                 addHitToAccumulator(hitAccumulator, location);
             }
         }
         List<Injury> newInjuries = new ArrayList<>();
-        for(Entry<BodyLocation, Integer> accEntry : hitAccumulator.entrySet()) {
+        for (Entry<BodyLocation, Integer> accEntry : hitAccumulator.entrySet()) {
             newInjuries.addAll(genInjuries(c, p, accEntry.getKey(), accEntry.getValue()));
         }
         return newInjuries;
@@ -193,7 +192,7 @@ public final class InjuryUtil {
                         break;
                     default:
                         newInjuries.add(gen.apply(InjuryTypes.BROKEN_BACK, 1));
-                        if(Compute.randomInt(100) < 15) {
+                        if (Compute.randomInt(100) < 15) {
                             newInjuries.add(gen.apply(InjuryTypes.SEVERED_SPINE, 1));
                         }
                         break;
@@ -232,12 +231,12 @@ public final class InjuryUtil {
     public static int genHealingTime(Campaign c, Person p, InjuryType itype, int severity) {
         int mod = 100;
         int rand = Compute.randomInt(100);
-        if(rand < 5) {
+        if (rand < 5) {
             mod += (Compute.d6() < 4) ? rand : -rand;
         }
 
         int time = itype.getRecoveryTime(severity);
-        if(itype == InjuryTypes.LACERATION) {
+        if (itype == InjuryTypes.LACERATION) {
             time += Compute.d6();
         }
 
@@ -261,8 +260,8 @@ public final class InjuryUtil {
 
         List<GameEffect> result = new ArrayList<>();
 
-        for(Injury i : p.getInjuries()) {
-            if(!i.isWorkedOn()) {
+        for (Injury i : p.getInjuries()) {
+            if (!i.isWorkedOn()) {
                 int roll = Compute.randomInt(100);
                 // Determine XP, if any
                 if (roll < Math.max(1, fumbleLimit / 10)) {
@@ -282,7 +281,7 @@ public final class InjuryUtil {
                     doc.setCurrentEdge(doc.getCurrentEdge() - 1);
                     roll = Compute.randomInt(100);
                 }
-                if(roll < fumbleLimit) {
+                if (roll < fumbleLimit) {
                     result.add(new GameEffect(
                         String.format("%s made a mistake in the treatment of %s and caused %s %s to worsen.",
                             doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(),
@@ -299,7 +298,7 @@ public final class InjuryUtil {
                                 // bleeding (death chance)
                             //}
                         }));
-                } else if((roll > critLimit) && (critTimeReduction > 0)) {
+                } else if ((roll > critLimit) && (critTimeReduction > 0)) {
                     result.add(new GameEffect(
                         String.format("%s performed some amazing work in treating %s of %s (%d fewer day(s) to heal).",
                             doc.getHyperlinkedFullTitle(), i.getName(), p.getHyperlinkedName(), critTimeReduction),
@@ -315,7 +314,7 @@ public final class InjuryUtil {
                             xpChance, c.getCampaignOptions().getTaskXP()),
                         rnd -> {
                             int taskXP = c.getCampaignOptions().getTaskXP();
-                            if((taskXP > 0) && (doc.getNTasks() >= c.getCampaignOptions().getNTasksXP())) {
+                            if ((taskXP > 0) && (doc.getNTasks() >= c.getCampaignOptions().getNTasksXP())) {
                                 doc.setXp(doc.getXp() + taskXP);
                                 doc.setNTasks(0);
 
@@ -326,7 +325,7 @@ public final class InjuryUtil {
                             i.setWorkedOn(true);
                             MedicalLogger.successfullyTreated(doc, p, c.getDate(), i);
                             Unit u = c.getUnit(p.getUnitId());
-                            if(null != u) {
+                            if (null != u) {
                                 u.resetPilotAndEntity();
                             }
                         }));
@@ -360,7 +359,7 @@ public final class InjuryUtil {
 
             result.add(new GameEffect(treatmentSummary,
                 rnd -> {
-                    if(xp > 0) {
+                    if (xp > 0) {
                         doc.setXp(doc.getXp() + xp);
                         ServiceLogger.successfullyTreatedWithXp(doc, p, c.getDate(), injuries, xp);
                     } else {
@@ -385,9 +384,9 @@ public final class InjuryUtil {
         List<GameEffect> result = new ArrayList<>();
 
         p.getInjuries().forEach((i) -> {
-            if(i.getTime() <= 1 && !i.isPermanent()) {
+            if (i.getTime() <= 1 && !i.isPermanent()) {
                 InjuryType type = i.getType();
-                if(!i.isWorkedOn() &&
+                if (!i.isWorkedOn() &&
                     ((type == InjuryTypes.BROKEN_LIMB) || (type == InjuryTypes.SPRAIN)
                     || (type == InjuryTypes.CONCUSSION) || (type == InjuryTypes.BROKEN_COLLAR_BONE))) {
                     result.add(new GameEffect(
@@ -395,7 +394,7 @@ public final class InjuryUtil {
                             i.getName()),
                         rnd -> {
                             i.setTime(0);
-                            if(rnd.applyAsInt(6) == 0) {
+                            if (rnd.applyAsInt(6) == 0) {
                                 i.setPermanent(true);
                                 MedicalLogger.injuryDidntHealProperly(p, c.getDate(), i);
                             } else {
@@ -412,11 +411,11 @@ public final class InjuryUtil {
                             MedicalLogger.injuryHealed(p, c.getDate(), i);
                         }));
                 }
-            } else if(i.getTime() > 1) {
+            } else if (i.getTime() > 1) {
                 result.add(new GameEffect(
                     String.format("%s continues healing", i.getName()),
                     rnd -> i.setTime(Math.max(i.getTime() - 1, 0))));
-            } else if((i.getTime() == 1) && i.isPermanent()) {
+            } else if ((i.getTime() == 1) && i.isPermanent()) {
                 result.add(new GameEffect(
                     String.format("%s becomes permanent", i.getName()),
                     rnd -> {
@@ -425,18 +424,18 @@ public final class InjuryUtil {
                     }));
             }
         });
-        if(null != p.getDoctorId()) {
+        if (null != p.getDoctorId()) {
             result.add(new GameEffect("Infirmary health check-up",
                 rnd -> {
                     boolean dismissed = false;
-                    if (p.getStatus() == PersonnelStatus.KIA) {
+                    if (p.getStatus().isDead()) {
                         dismissed = true;
                         MedicalLogger.diedInInfirmary(p, c.getDate());
-                    } else if (p.getStatus() == PersonnelStatus.MIA) {
+                    } else if (p.getStatus().isMIA()) {
                         // What? How?
                         dismissed = true;
                         MedicalLogger.abductedFromInfirmary(p, c.getDate());
-                    } else if (p.getStatus() == PersonnelStatus.RETIRED) {
+                    } else if (p.getStatus().isRetired()) {
                         dismissed = true;
                         MedicalLogger.retiredAndTransferredFromInfirmary(p, c.getDate());
                     } else if (!p.needsFixing()) {
@@ -460,11 +459,11 @@ public final class InjuryUtil {
         List<GameEffect> result = new ArrayList<>();
 
         p.getInjuries().forEach((i) -> {
-            if((i.getTime() > 0) && !i.isPermanent() && !i.isWorkedOn()) {
+            if ((i.getTime() > 0) && !i.isPermanent() && !i.isWorkedOn()) {
                 result.add(new GameEffect(
                     String.format("30%% chance of %s worsening its condition", i.getName()),
                     rnd -> {
-                        if(rnd.applyAsInt(100) < 30) {
+                        if (rnd.applyAsInt(100) < 30) {
                             i.setTime(i.getTime() + 1);
                             // TODO: Disabled, too much spam
                             /*

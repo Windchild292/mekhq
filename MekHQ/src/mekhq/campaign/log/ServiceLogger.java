@@ -80,6 +80,11 @@ public class ServiceLogger {
         person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("kia.text")));
     }
 
+    public static void passedAway(Person person, Date date, String cause) {
+        String message = logEntriesResourceMap.getString("passedAway.text");
+        person.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, cause)));
+    }
+
     public static void mia(Person person, Date date) {
         person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("mia.text")));
     }
@@ -90,6 +95,14 @@ public class ServiceLogger {
 
     public static void recoveredMia(Person person, Date date) {
         person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("recoveredMia.text")));
+    }
+
+    public static void resurrected(Person person, Date date) {
+        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("resurrected.text")));
+    }
+
+    public static void rehired(Person person, Date date) {
+        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("rehired.text")));
     }
 
     public static void promotedTo(Person person, Date date) {
