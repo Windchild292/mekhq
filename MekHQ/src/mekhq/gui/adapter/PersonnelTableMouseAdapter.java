@@ -1338,7 +1338,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
             }
             menu = new JMenu(resourceMap.getString("changeStatus.text"));
             for (PersonnelStatus status : PersonnelStatus.values()) {
-                cbMenuItem = new JCheckBoxMenuItem(status.getStatusName());
+                cbMenuItem = new JCheckBoxMenuItem(status.toString());
                 if (person.getStatus() == status) {
                     cbMenuItem.setSelected(true);
                 }

@@ -47,10 +47,8 @@ public enum PersonnelStatus {
     }
     //endregion Constructors
 
-    /**
-     * @return the name of the status
-     */
-    public String getStatusName() {
+    @Override
+    public String toString() {
         return statusName;
     }
 
