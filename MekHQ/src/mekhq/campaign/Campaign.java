@@ -3542,20 +3542,9 @@ public class Campaign implements Serializable, ITechManager {
         for (Person p : getActivePersonnel()) {
             // Random Death
             if (getCampaignOptions().useRandomDeaths()) {
-                AbstractRandomDeathGenerator randomDeathGenerator;
-                switch (getCampaignOptions().getRandomDeathUtilType()) {
-                    case ERA_WEIGHTED:
-                    case FACTION_WEIGHTED:
-                    case ERA_FACTION_WEIGHTED:
-                    case GENERAL_WEIGHTED:
-                        MekHQ.getLogger().warning(getClass(), "processNewDayPersonnel",
-                                "RandomDeath: Util Type " + getCampaignOptions().getRandomDeathUtilType()
-                                        + "is not currently supported. Using the standard util type instead.");
-                    case STANDARD:
-                    default:
-                        randomDeathGenerator = new SixthOrderDifferentialRandomDeathGenerator(getCampaignOptions());
-                        break;
-                }
+                AbstractRandomDeathGenerator randomDeathGenerator = getCampaignOptions()
+                        .getRandomDeathUtilType().getGenerator(getCampaignOptions());
+
                 if (randomDeathGenerator.randomDeath(p.getAge(getLocalDate()), p.getGender())) {
                     changeStatus(p, randomDeathGenerator.getCause(p, this));
                     continue;

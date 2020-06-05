@@ -19,6 +19,10 @@
 package mekhq.campaign.personnel.enums;
 
 import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
+import mekhq.campaign.CampaignOptions;
+import mekhq.campaign.personnel.generator.AbstractRandomDeathGenerator;
+import mekhq.campaign.personnel.generator.SixthOrderDifferentialRandomDeathGenerator;
 
 import java.util.ResourceBundle;
 
@@ -69,11 +73,27 @@ public enum RandomDeathRandomizationType {
     }
     //endregion Constructors
 
-    public String getName() {
+    @Override
+    public String toString() {
         return name;
     }
 
     public String getToolTip() {
         return toolTip;
+    }
+
+    public AbstractRandomDeathGenerator getGenerator(CampaignOptions campaignOptions) {
+        switch (this) {
+            case ERA_WEIGHTED:
+            case FACTION_WEIGHTED:
+            case ERA_FACTION_WEIGHTED:
+            case GENERAL_WEIGHTED:
+                MekHQ.getLogger().warning(getClass(), "processNewDayPersonnel",
+                        "RandomDeath: Util Type " + toString()
+                                + "is not currently supported. Using the standard util type instead.");
+            case STANDARD:
+            default:
+                return new SixthOrderDifferentialRandomDeathGenerator(campaignOptions);
+        }
     }
 }
