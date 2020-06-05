@@ -10,16 +10,16 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel.generator;
 
 import megamek.common.Compute;
-import megamek.common.Crew;
+import megamek.common.enums.Gender;
 import mekhq.MekHQ;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.enums.RandomDeathRandomizationType;
@@ -34,10 +34,6 @@ public class SixthOrderDifferentialRandomDeathGenerator extends AbstractRandomDe
     //endregion Variable Declarations
 
     //region Constructors
-    public SixthOrderDifferentialRandomDeathGenerator() {
-        this(null);
-    }
-
     public SixthOrderDifferentialRandomDeathGenerator(CampaignOptions campaignOptions) {
         this.type = RandomDeathRandomizationType.STANDARD;
         if (campaignOptions != null) {
@@ -50,11 +46,11 @@ public class SixthOrderDifferentialRandomDeathGenerator extends AbstractRandomDe
     //endregion Constructors
 
     @Override
-    public boolean randomDeath(int age, int gender) {
+    public boolean randomDeath(int age, Gender gender) {
         // The chance is calculated in the format:
         // sum from 0 to M.length of m * 10^n * age^i
         double chance = 0.0;
-        if (gender == Crew.G_MALE) {
+        if (gender == Gender.MALE) {
             for (int i = 0; i < maleM.length; i++) {
                 chance += maleM[i] * Math.pow(10, maleN[i]) * Math.pow(age, i);
             }
@@ -66,7 +62,7 @@ public class SixthOrderDifferentialRandomDeathGenerator extends AbstractRandomDe
 
         MekHQ.getLogger().warning(getClass(), "randomDeath",
                 "The odds of randomly dying were calculated to be " + chance + " for a "
-                        + (gender == Crew.G_FEMALE ? "female" : "male") + " person");
+                        + (gender == Gender.FEMALE ? "female" : "male") + " person");
 
         return Compute.randomFloat() < chance;
     }
