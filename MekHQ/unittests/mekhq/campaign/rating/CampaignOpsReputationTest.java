@@ -64,7 +64,7 @@ import static org.junit.Assert.*;
  * @lastEditBy Deric "Netzilla" Page (deric dot page at usa dot net)
  * @since 9/28/13 11:20 AM
  */
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings(value = "FieldCanBeLocal")
 public class CampaignOpsReputationTest {
 
     private Campaign mockCampaign;
@@ -172,14 +172,14 @@ public class CampaignOpsReputationTest {
     private Person mockCorsair2Pilot;
     private Person mockCorsair2Tech;
 
-    // Dropships
+    // DropShips
     private Skill mockDropGunnery;
     private Skill mockDropPilot;
     private Dropship mockSeeker;
     private Unit mockSeekerUnit;
     private Collection<Person> seekerCrew;
 
-    // Jumpships
+    // JumpShips
     private Skill mockJumpGunnery;
     private Skill mockJumpPilot;
     private Jumpship mockInvader;
@@ -256,8 +256,8 @@ public class CampaignOpsReputationTest {
             when(u.hasPilot()).thenReturn(true);
         }
 
-        regularAdmins = new HashSet<>(10);
-        for (int i = 0; i < 10; i++) {
+        regularAdmins = new HashSet<>(20);
+        for (int i = 0; i < 20; i++) {
             Person admin = mock(Person.class);
             when(admin.isAdmin()).thenReturn(true);
             doReturn(PersonnelStatus.ACTIVE).when(admin).getStatus();
@@ -302,14 +302,14 @@ public class CampaignOpsReputationTest {
         assertEquals(8, spyReputation.getVeeCount());
         assertEquals(0, spyReputation.getBattleArmorCount());
         assertEquals(28, spyReputation.getInfantryCount());
-        assertEquals(98, spyReputation.getNonAdminPersonnelCount());
+        assertEquals(200, spyReputation.getNonAdminPersonnelCount());
         assertEquals(1, spyReputation.getDropshipCount());
         BigDecimalAssert.assertEquals(expectedTotalSkill, spyReputation.getTotalSkillLevels(), 2);
         assertEquals(4, spyReputation.getMechTechTeamsNeeded());
         assertEquals(2, spyReputation.getAeroTechTeamsNeeded());
         assertEquals(8, spyReputation.getMechanicTeamsNeeded());
         assertEquals(0, spyReputation.getBattleArmorTechTeamsNeeded());
-        assertEquals(10, spyReputation.getAdminsNeeded());
+        assertEquals(20, spyReputation.getAdminsNeeded());
         assertEquals(expectedAverageSkill, spyReputation.calcAverageExperience());
         assertEquals(10, spyReputation.getExperienceValue());
 
@@ -323,14 +323,14 @@ public class CampaignOpsReputationTest {
         assertEquals(8, spyReputation.getVeeCount());
         assertEquals(0, spyReputation.getBattleArmorCount());
         assertEquals(28, spyReputation.getInfantryCount());
-        assertEquals(98, spyReputation.getNonAdminPersonnelCount());
+        assertEquals(200, spyReputation.getNonAdminPersonnelCount());
         assertEquals(1, spyReputation.getDropshipCount());
         BigDecimalAssert.assertEquals(expectedTotalSkill, spyReputation.getTotalSkillLevels(), 2);
         assertEquals(4, spyReputation.getMechTechTeamsNeeded());
         assertEquals(2, spyReputation.getAeroTechTeamsNeeded());
         assertEquals(8, spyReputation.getMechanicTeamsNeeded());
         assertEquals(0, spyReputation.getBattleArmorTechTeamsNeeded());
-        assertEquals(10, spyReputation.getAdminsNeeded());
+        assertEquals(20, spyReputation.getAdminsNeeded());
         assertEquals(expectedAverageSkill, spyReputation.calcAverageExperience());
         assertEquals(10, spyReputation.getExperienceValue());
 
@@ -532,7 +532,7 @@ public class CampaignOpsReputationTest {
                 "            NOTE: Vehicles and Infantry use the same mechanics.\n" +
                 "        Battle Armor Techs:           0 needed /    0 available\n" +
                 "        Astechs:                     84 needed /   84 available\n" +
-                "    Admin Support:                   10 needed /   10 available\n" +
+                "    Admin Support:                   20 needed /   20 available\n" +
                 "    Large Craft Crew:\n" +
                 "        All fully crewed.\n" +
                 "\n" +
