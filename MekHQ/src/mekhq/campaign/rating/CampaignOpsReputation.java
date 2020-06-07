@@ -69,6 +69,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         super(campaign);
     }
 
+    @Override
     public UnitRatingMethod getUnitRatingMethod() {
         return UnitRatingMethod.CAMPAIGN_OPS;
     }
@@ -430,6 +431,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         return SkillType.getExperienceLevelName(SkillType.EXP_ELITE);
     }
 
+    @Override
     public int getExperienceValue() {
         if (getNumberUnits().compareTo(BigDecimal.ZERO) == 0) {
             return 0;
