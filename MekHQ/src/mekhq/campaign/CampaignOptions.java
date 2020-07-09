@@ -183,6 +183,7 @@ public class CampaignOptions implements Serializable {
     private boolean useImplants;
     private boolean capturePrisoners; // TODO : Merge me with the AtB option useAtBCapture
     private PrisonerStatus defaultPrisonerStatus;
+    private boolean prisonerBabyStatus;
     private boolean altQualityAveraging;
     private boolean useAdvancedMedical; // Unofficial
     private boolean useDylansRandomXp; // Unofficial
@@ -390,6 +391,7 @@ public class CampaignOptions implements Serializable {
     private int opforLocalUnitChance;
     private boolean adjustPlayerVehicles;
     private boolean regionalMechVariations;
+    private boolean attachedPlayerCamouflage;
     private boolean useDropShips;
     private boolean useWeatherConditions;
     private boolean useLightConditions;
@@ -524,6 +526,7 @@ public class CampaignOptions implements Serializable {
         useImplants = false;
         capturePrisoners = true;
         defaultPrisonerStatus = PrisonerStatus.PRISONER;
+        prisonerBabyStatus = true;
         altQualityAveraging = false;
         useAdvancedMedical = false;
         useDylansRandomXp = false;
@@ -812,6 +815,7 @@ public class CampaignOptions implements Serializable {
         opforLocalUnitChance = 5;
         adjustPlayerVehicles = false;
         regionalMechVariations = false;
+        attachedPlayerCamouflage = true;
         useDropShips = false;
         useWeatherConditions = true;
         useLightConditions = true;
@@ -981,6 +985,14 @@ public class CampaignOptions implements Serializable {
 
     public void setDefaultPrisonerStatus(PrisonerStatus d) {
         defaultPrisonerStatus = d;
+    }
+
+    public boolean getPrisonerBabyStatus() {
+        return prisonerBabyStatus;
+    }
+
+    public void setPrisonerBabyStatus(boolean prisonerBabyStatus) {
+        this.prisonerBabyStatus = prisonerBabyStatus;
     }
 
     public boolean useAltQualityAveraging() {
@@ -2816,6 +2828,14 @@ public class CampaignOptions implements Serializable {
         this.regionalMechVariations = regionalMechVariations;
     }
 
+    public boolean getAttachedPlayerCamouflage() {
+        return attachedPlayerCamouflage;
+    }
+
+    public void setAttachedPlayerCamouflage(boolean attachedPlayerCamouflage) {
+        this.attachedPlayerCamouflage = attachedPlayerCamouflage;
+    }
+
     public String[] getRATs() {
         return rats;
     }
@@ -3319,6 +3339,7 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "trackTotalEarnings", trackTotalEarnings);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "capturePrisoners", capturePrisoners);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "defaultPrisonerStatus", defaultPrisonerStatus.name());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "prisonerBabyStatus", prisonerBabyStatus);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketName", personnelMarketName);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomEliteRemoval",
                                        personnelMarketRandomEliteRemoval);
@@ -3365,6 +3386,7 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "mercSizeLimited", mercSizeLimited);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "trackOriginalUnit", trackOriginalUnit);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "regionalMechVariations", regionalMechVariations);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "attachedPlayerCamouflage", attachedPlayerCamouflage);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "searchRadius", searchRadius);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "intensity", intensity);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "generateChases", generateChases);
@@ -3892,6 +3914,8 @@ public class CampaignOptions implements Serializable {
                             break;
                     }
                 }
+            } else if (wn2.getNodeName().equalsIgnoreCase("prisonerBabyStatus")) {
+                retVal.prisonerBabyStatus = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useRandomHitsForVees")) {
                 retVal.useRandomHitsForVees = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketType")) { // Legacy
@@ -3972,6 +3996,8 @@ public class CampaignOptions implements Serializable {
                 retVal.mercSizeLimited = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("regionalMechVariations")) {
                 retVal.regionalMechVariations = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("attachedPlayerCamouflage")) {
+                retVal.attachedPlayerCamouflage = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("searchRadius")) {
                 retVal.searchRadius = Integer.parseInt(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("intensity")) {

@@ -38,15 +38,17 @@ import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 
 import mekhq.*;
+import mekhq.campaign.event.MissionRemovedEvent;
+import mekhq.campaign.event.ScenarioRemovedEvent;
 import mekhq.campaign.finances.*;
 import mekhq.campaign.log.*;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.enums.Divorce;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.generator.*;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
-import org.joda.time.DateTime;
 
 import megamek.common.*;
 import megamek.common.enums.Gender;
@@ -88,7 +90,6 @@ import mekhq.campaign.event.PersonChangedEvent;
 import mekhq.campaign.event.PersonNewEvent;
 import mekhq.campaign.event.PersonRemovedEvent;
 import mekhq.campaign.event.ReportEvent;
-import mekhq.campaign.event.ScenarioChangedEvent;
 import mekhq.campaign.event.ScenarioNewEvent;
 import mekhq.campaign.event.UnitNewEvent;
 import mekhq.campaign.event.UnitRemovedEvent;
@@ -212,7 +213,7 @@ public class Campaign implements Serializable, ITechManager {
 
     // calendar stuff
     private GregorianCalendar calendar;
-    private DateTime currentDateTime;
+    private LocalDate currentDay;
     private String dateFormat;
     private String shortDateFormat;
 
@@ -285,7 +286,7 @@ public class Campaign implements Serializable, ITechManager {
         player = new Player(0, "self");
         game.addPlayer(0, player);
         calendar = new GregorianCalendar(3067, Calendar.JANUARY, 1);
-        currentDateTime = new DateTime(calendar);
+        currentDay = LocalDate.ofYearDay(3067, 1);
         CurrencyManager.getInstance().setCampaign(this);
         location = new CurrentLocation(Systems.getInstance().getSystems().get("Outreach"), 0);
         campaignOptions = new CampaignOptions();
@@ -417,14 +418,21 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     @Deprecated
-    public void setCalendar(GregorianCalendar c) {
-        calendar = c;
-        currentDateTime = new DateTime(c);
+    public GregorianCalendar getCalendar() {
+        return calendar;
     }
 
     @Deprecated
-    public GregorianCalendar getCalendar() {
-        return calendar;
+    public void setCalendar(GregorianCalendar c) {
+        calendar = c;
+    }
+
+    public LocalDate getLocalDate() {
+        return currentDay;
+    }
+
+    public void setLocalDate(LocalDate currentDay) {
+        this.currentDay = currentDay;
     }
 
     @Deprecated
@@ -437,8 +445,23 @@ public class Campaign implements Serializable, ITechManager {
         return new SimpleDateFormat(shortDateFormat);
     }
 
+    @Deprecated
+    public Date getDate() {
+        return calendar.getTime();
+    }
+
+    @Deprecated
+    public String getDateAsString() {
+        return getDateFormatter().format(calendar.getTime());
+    }
+
+    @Deprecated
+    public String getShortDateAsString() {
+        return getShortDateFormatter().format(calendar.getTime());
+    }
+
     public String getCurrentSystemName() {
-        return location.getCurrentSystem().getPrintableName(getDateTime());
+        return location.getCurrentSystem().getPrintableName(getLocalDate());
     }
 
     public PlanetarySystem getCurrentSystem() {
@@ -916,13 +939,12 @@ public class Campaign implements Serializable, ITechManager {
      *
      * @param m The mission to be added
      */
-    public int addMission(Mission m) {
+    public void addMission(Mission m) {
         int id = lastMissionId + 1;
         m.setId(id);
         missions.put(id, m);
         lastMissionId = id;
         MekHQ.triggerEvent(new MissionNewEvent(m));
-        return id;
     }
 
     /**
@@ -1707,23 +1729,6 @@ public class Campaign implements Serializable, ITechManager {
     }
     //endregion Personnel Selectors and Generators
     //endregion Personnel
-
-    @Deprecated
-    public Date getDate() {
-        return calendar.getTime();
-    }
-
-    @Deprecated
-    public DateTime getDateTime() {
-        return currentDateTime;
-    }
-
-    /**
-     * For now, this is just going to parse through the current date time
-     */
-    public LocalDate getLocalDate() {
-        return LocalDate.of(currentDateTime.getYear(), currentDateTime.getMonthOfYear(), currentDateTime.getDayOfMonth());
-    }
 
     public List<Person> getPatients() {
         List<Person> patients = new ArrayList<>();
@@ -2550,7 +2555,7 @@ public class Campaign implements Serializable, ITechManager {
 
         // we are shopping by planets, so more involved
         List<IAcquisitionWork> currentList = sList.getAllShoppingItems();
-        DateTime currentDate = Utilities.getDateTimeDay(getCalendar());
+        LocalDate currentDate = getLocalDate();
 
         // a list of items than can be taken out of the search and put back on the
         // shopping list
@@ -2558,8 +2563,7 @@ public class Campaign implements Serializable, ITechManager {
 
         //find planets within a certain radius - the function will weed out dead planets
         List<PlanetarySystem> systems = Systems.getInstance().getShoppingSystems(getCurrentSystem(),
-                getCampaignOptions().getMaxJumpsPlanetaryAcquisition(),
-                currentDate);
+                getCampaignOptions().getMaxJumpsPlanetaryAcquisition(), currentDate);
 
         for (Person person : logisticsPersonnel) {
             if (currentList.isEmpty()) {
@@ -2680,27 +2684,28 @@ public class Campaign implements Serializable, ITechManager {
      * @return true if your target roll succeeded.
      */
     public boolean findContactForAcquisition(IAcquisitionWork acquisition, Person person, PlanetarySystem system) {
-
-        DateTime currentDate = Utilities.getDateTimeDay(getCalendar());
         TargetRoll target = getTargetForAcquisition(acquisition, person, false);
-        target = system.getPrimaryPlanet().getAcquisitionMods(target, getDate(), getCampaignOptions(), getFaction(),
+        target = system.getPrimaryPlanet().getAcquisitionMods(target, getLocalDate(), getCampaignOptions(), getFaction(),
                 acquisition.getTechBase() == Part.T_CLAN);
 
         if (target.getValue() == TargetRoll.IMPOSSIBLE) {
             if (getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
-                addReport("<font color='red'><b>Can't search for " + acquisition.getAcquisitionName() + " on " + system.getPrintableName(currentDate) + " because:</b></font> " + target.getDesc());
+                addReport("<font color='red'><b>Can't search for " + acquisition.getAcquisitionName()
+                        + " on " + system.getPrintableName(getLocalDate()) + " because:</b></font> " + target.getDesc());
             }
             return false;
         }
         if (Compute.d6(2) < target.getValue()) {
             //no contacts on this planet, move along
             if (getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
-                addReport("<font color='red'><b>No contacts available for " + acquisition.getAcquisitionName() + " on " + system.getPrintableName(currentDate) + "</b></font>");
+                addReport("<font color='red'><b>No contacts available for " + acquisition.getAcquisitionName()
+                        + " on " + system.getPrintableName(getLocalDate()) + "</b></font>");
             }
             return false;
         } else {
             if (getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
-                addReport("<font color='green'>Possible contact for " + acquisition.getAcquisitionName() + " on " + system.getPrintableName(currentDate) + "</font>");
+                addReport("<font color='green'>Possible contact for " + acquisition.getAcquisitionName()
+                        + " on " + system.getPrintableName(getLocalDate()) + "</font>");
             }
             return true;
         }
@@ -2741,8 +2746,8 @@ public class Campaign implements Serializable, ITechManager {
         }
 
         if (null != system) {
-            target = system.getPrimaryPlanet().getAcquisitionMods(target, getDate(), getCampaignOptions(), getFaction(),
-                    acquisition.getTechBase() == Part.T_CLAN);
+            target = system.getPrimaryPlanet().getAcquisitionMods(target, getLocalDate(),
+                    getCampaignOptions(), getFaction(), acquisition.getTechBase() == Part.T_CLAN);
         }
 
         report += "attempts to find " + acquisition.getAcquisitionName();
@@ -2952,12 +2957,12 @@ public class Campaign implements Serializable, ITechManager {
             addReport("No tech is assigned to refit " + r.getOriginalEntity().getShortName() + ". Refit cancelled.");
             r.cancel();
             return;
-                }
+        }
         TargetRoll target = getTargetFor(r, tech);
         // check that all parts have arrived
         if (!r.acquireParts()) {
             return;
-                }
+        }
         String report = tech.getHyperlinkedFullTitle() + " works on " + r.getPartName();
         int minutes = r.getTimeLeft();
         // FIXME: Overtime?
@@ -3255,11 +3260,10 @@ public class Campaign implements Serializable, ITechManager {
      */
     public void readNews() {
         //read the news
-        DateTime now = getDateTime();
-        for (NewsItem article : news.fetchNewsFor(now)) {
+        for (NewsItem article : news.fetchNewsFor(getLocalDate())) {
             addReport(article.getHeadlineForReport());
         }
-        for (NewsItem article : Systems.getInstance().getPlanetaryNews(now)) {
+        for (NewsItem article : Systems.getInstance().getPlanetaryNews(getLocalDate())) {
             addReport(article.getHeadlineForReport());
         }
     }
@@ -3557,7 +3561,7 @@ public class Campaign implements Serializable, ITechManager {
                 p.resetCurrentEdge();
             }
 
-            if ((getCampaignOptions().getIdleXP() > 0) && (calendar.get(Calendar.DAY_OF_MONTH) == 1)
+            if ((getCampaignOptions().getIdleXP() > 0) && (getLocalDate().getDayOfMonth() == 1)
                     && !p.getPrisonerStatus().isPrisoner()) { // Prisoners can't gain XP, while Bondsmen can gain xp
                 p.setIdleMonths(p.getIdleMonths() + 1);
                 if (p.getIdleMonths() >= getCampaignOptions().getMonthsIdleXP()) {
@@ -3694,9 +3698,9 @@ public class Campaign implements Serializable, ITechManager {
         // Autosave based on the previous day's information
         this.autosaveService.requestDayAdvanceAutosave(this);
 
-        // Advance the day by one - TODO : LocalDate : Swap me to LocalDate tracking instead
+        // Advance the day by one - TODO : LocalDate : Remove the Calendar addition
         calendar.add(Calendar.DAY_OF_MONTH, 1);
-        currentDateTime = new DateTime(calendar);
+        currentDay = currentDay.plus(1, ChronoUnit.DAYS);
 
         // Determine if we have an active contract or not, as this can get used elsewhere before
         // we actually hit the AtB new day (e.g. personnel market)
@@ -4029,7 +4033,7 @@ public class Campaign implements Serializable, ITechManager {
             mission.removeScenario(scenario.getId());
         }
         scenarios.remove(id);
-        MekHQ.triggerEvent(new ScenarioChangedEvent(scenario));
+        MekHQ.triggerEvent(new ScenarioRemovedEvent(scenario));
     }
 
     public void removeMission(int id) {
@@ -4045,6 +4049,7 @@ public class Campaign implements Serializable, ITechManager {
         }
 
         missions.remove(id);
+        MekHQ.triggerEvent(new MissionRemovedEvent(mission));
     }
 
     public void removePart(Part part) {
@@ -4163,14 +4168,6 @@ public class Campaign implements Serializable, ITechManager {
         }
 
         return null;
-    }
-
-    public String getDateAsString() {
-        return getDateFormatter().format(calendar.getTime());
-    }
-
-    public String getShortDateAsString() {
-        return getShortDateFormatter().format(calendar.getTime());
     }
 
     public void restore() {
@@ -4979,13 +4976,13 @@ public class Campaign implements Serializable, ITechManager {
     public Vector<String> getSystemNames() {
         Vector<String> systemNames = new Vector<>();
         for (PlanetarySystem key : Systems.getInstance().getSystems().values()) {
-            systemNames.add(key.getPrintableName(getDateTime()));
+            systemNames.add(key.getPrintableName(getLocalDate()));
         }
         return systemNames;
     }
 
     public PlanetarySystem getSystemByName(String name) {
-        return Systems.getInstance().getSystemByName(name, getDateTime());
+        return Systems.getInstance().getSystemByName(name, getLocalDate());
     }
 
     public void setRanks(Ranks r) {
@@ -5084,7 +5081,6 @@ public class Campaign implements Serializable, ITechManager {
         String startKey = start.getId();
         String endKey = end.getId();
 
-        final DateTime now = getDateTime();
         String current = startKey;
         Set<String> closed = new HashSet<>();
         Set<String> open = new HashSet<>();
@@ -5111,7 +5107,7 @@ public class Campaign implements Serializable, ITechManager {
 
         while (!found && jumps < 10000) {
             jumps++;
-            double currentG = scoreG.get(current) + Systems.getInstance().getSystemById(current).getRechargeTime(now);
+            double currentG = scoreG.get(current) + Systems.getInstance().getSystemById(current).getRechargeTime(getLocalDate());
 
             final String localCurrent = current;
             Systems.getInstance().visitNearbySystems(Systems.getInstance().getSystemById(current), 30, p -> {
@@ -6894,7 +6890,7 @@ public class Campaign implements Serializable, ITechManager {
      * computation. This method does not calculate an exact jump path but rather determines the number of jumps
      * crudely by dividing distance in light years by 30 and then rounding up. Total part time is determined by
      * several by adding the following:
-     * - (number of jumps - 1)*7 days with a minimum value of zero.
+     * - (number of jumps - 1) * 7 days with a minimum value of zero.
      * - transit times from current planet and planet of supply origins in cases where the supply planet is not the same as current planet.
      * - a random 1d6 days for each jump plus 1d6 to simulate all of the other logistics of delivery.
      * @param system - A <code>PlanetarySystem</code> object where the supplies are shipping from
@@ -6903,84 +6899,81 @@ public class Campaign implements Serializable, ITechManager {
     public int calculatePartTransitTime(PlanetarySystem system) {
         //calculate number of jumps by light year distance as the crow flies divided by 30
         //the basic formula assumes 7 days per jump + system transit time on each side + random days equal
-        //to (1+number of jumps)d6
+        //to (1 + number of jumps) d6
         double distance = system.getDistanceTo(getCurrentSystem());
         //calculate number of jumps by dividing by 30
-        int jumps = (int)Math.ceil(distance/30.0);
+        int jumps = (int) Math.ceil(distance / 30.0);
         //you need a recharge except for the first jump
         int recharges = Math.max(jumps - 1, 0);
         //if you are delivering from the same planet then no transit times
-        int currentTransitTime = (distance>0) ? (int)Math.ceil(getCurrentSystem().getTimeToJumpPoint(1.0)) : 0;
-        int originTransitTime = (distance>0) ? (int)Math.ceil(system.getTimeToJumpPoint(1.0)) : 0;
-        int amazonFreeShipping = Compute.d6(1+jumps);
-        return recharges*7+currentTransitTime+originTransitTime+amazonFreeShipping;
+        int currentTransitTime = (distance > 0) ? (int) Math.ceil(getCurrentSystem().getTimeToJumpPoint(1.0)) : 0;
+        int originTransitTime = (distance > 0) ? (int) Math.ceil(system.getTimeToJumpPoint(1.0)) : 0;
+        int amazonFreeShipping = Compute.d6(1 + jumps);
+        return (recharges * 7) + currentTransitTime+originTransitTime + amazonFreeShipping;
     }
 
     /***
-     * Calculate transit times based on the margin of success from an acquisition roll. The values here are
-     * all based on what the user entered for the campaign options.
+     * Calculate transit times based on the margin of success from an acquisition roll. The values here
+     * are all based on what the user entered for the campaign options.
      * @param mos - an integer of the margin of success of an acquisition roll
      * @return the number of days that supplies will take to arrive.
      */
     public int calculatePartTransitTime(int mos) {
-
         int nDice = getCampaignOptions().getNDiceTransitTime();
         int time = getCampaignOptions().getConstantTransitTime();
         if (nDice > 0) {
             time += Compute.d6(nDice);
         }
         // now step forward through the calendar
-        GregorianCalendar arrivalDate = (GregorianCalendar) calendar.clone();
+        LocalDate arrivalDate = getLocalDate();
         switch (getCampaignOptions().getUnitTransitTime()) {
             case CampaignOptions.TRANSIT_UNIT_MONTH:
-                arrivalDate.add(Calendar.MONTH, time);
+                arrivalDate = arrivalDate.plusMonths(time);
                 break;
             case CampaignOptions.TRANSIT_UNIT_WEEK:
-                arrivalDate.add(Calendar.WEEK_OF_YEAR, time);
+                arrivalDate = arrivalDate.plusWeeks(time);
                 break;
             case CampaignOptions.TRANSIT_UNIT_DAY:
             default:
-                arrivalDate.add(Calendar.DAY_OF_MONTH, time);
+                arrivalDate = arrivalDate.plusDays(time);
+                break;
         }
 
         // now adjust for MoS and minimums
         int mosBonus = getCampaignOptions().getAcquireMosBonus() * mos;
         switch (getCampaignOptions().getAcquireMosUnit()) {
             case CampaignOptions.TRANSIT_UNIT_MONTH:
-                arrivalDate.add(Calendar.MONTH, -1 * mosBonus);
+                arrivalDate = arrivalDate.minusMonths(mosBonus);
                 break;
             case CampaignOptions.TRANSIT_UNIT_WEEK:
-                arrivalDate.add(Calendar.WEEK_OF_YEAR, -1 * mosBonus);
+                arrivalDate = arrivalDate.minusWeeks(mosBonus);
                 break;
             case CampaignOptions.TRANSIT_UNIT_DAY:
             default:
-                arrivalDate.add(Calendar.DAY_OF_MONTH, -1 * mosBonus);
+                arrivalDate = arrivalDate.minusDays(mosBonus);
+                break;
         }
+
         // now establish minimum date and if this is before
-        GregorianCalendar minimumDate = (GregorianCalendar) calendar.clone();
+        LocalDate minimumDate = getLocalDate();
         switch (getCampaignOptions().getAcquireMinimumTimeUnit()) {
             case CampaignOptions.TRANSIT_UNIT_MONTH:
-                minimumDate.add(Calendar.MONTH, getCampaignOptions()
-                        .getAcquireMinimumTime());
+                minimumDate = minimumDate.plusMonths(getCampaignOptions().getAcquireMinimumTime());
                 break;
             case CampaignOptions.TRANSIT_UNIT_WEEK:
-                minimumDate.add(Calendar.WEEK_OF_YEAR, getCampaignOptions()
-                        .getAcquireMinimumTime());
+                minimumDate = minimumDate.plusWeeks(getCampaignOptions().getAcquireMinimumTime());
                 break;
             case CampaignOptions.TRANSIT_UNIT_DAY:
             default:
-                minimumDate.add(Calendar.DAY_OF_MONTH, getCampaignOptions()
-                        .getAcquireMinimumTime());
+                minimumDate = minimumDate.plusDays(getCampaignOptions().getAcquireMinimumTime());
+                break;
         }
 
-        if (arrivalDate.before(minimumDate)) {
-            return Utilities.getDaysBetween(calendar.getTime(),
-                    minimumDate.getTime());
+        if (arrivalDate.isBefore(minimumDate)) {
+            return Math.toIntExact(ChronoUnit.DAYS.between(getLocalDate(), minimumDate));
         } else {
-            return Utilities.getDaysBetween(calendar.getTime(),
-                    arrivalDate.getTime());
+            return Math.toIntExact(ChronoUnit.DAYS.between(getLocalDate(), arrivalDate));
         }
-
     }
 
     /**
@@ -8442,7 +8435,7 @@ public class Campaign implements Serializable, ITechManager {
 
     @Override
     public int getGameYear() {
-        return currentDateTime.getYear();
+        return getLocalDate().getYear();
     }
 
     @Override
