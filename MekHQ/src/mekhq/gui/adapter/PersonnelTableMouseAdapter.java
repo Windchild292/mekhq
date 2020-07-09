@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -493,7 +494,11 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 break;
             }
             case CMD_REMOVE_SPOUSE: {
-                selectedPerson.divorce(data[1]);
+                for (Person person : people) {
+                    if (person.hasSpouse()) {
+                        Divorce.valueOf(data[1]).divorce(person, gui.getCampaign());
+                    }
+                }
                 break;
             }
             case CMD_ADD_SPOUSE: {
@@ -513,7 +518,11 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                     try {
                         if (person.getAwardController().hasAward(data[1], data[2])) {
                             person.getAwardController().removeAward(data[1], data[2],
-                                    (data.length > 3) ? LocalDate.parse(data[3]) : null,
+                                    (data.length > 3)
+                                            ? LocalDate.parse(data[3], DateTimeFormatter.ofPattern(
+                                                    gui.getCampaign().getCampaignOptions()
+                                                            .getDisplayDateFormat()))
+                                            : null,
                                     gui.getCampaign().getLocalDate());
                         }
                     } catch (Exception e) {
@@ -636,7 +645,9 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 try {
                     PrisonerStatus status = PrisonerStatus.valueOf(data[1]);
                     for (Person person : people) {
-                        person.setPrisonerStatus(status);
+                        if (person.getPrisonerStatus() != status) {
+                            person.setPrisonerStatus(status);
+                        }
                     }
                 } catch (Exception e) {
                     MekHQ.getLogger().error(getClass(), "actionPerformed",
@@ -821,8 +832,8 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 final String fileName = pcd.getFileName();
 
                 for (Person person : people) {
-                    if (!person.getPortraitCategory().equals(category)
-                            && !person.getPortraitFileName().equals(fileName)) {
+                    if (!(person.getPortraitCategory().equals(category)
+                            && person.getPortraitFileName().equals(fileName))) {
                         person.setPortraitCategory(category);
                         person.setPortraitFileName(fileName);
                         gui.getCampaign().personUpdated(person);
@@ -1858,34 +1869,15 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 }
                 if (person.hasSpouse()) {
                     menu = new JMenu(resourceMap.getString("removeSpouse.text"));
-                    JMenuItem divorceMenu;
-                    String type;
 
-                    type = resourceMap.getString("removeSpouseKeepSurname.text");
-                    divorceMenu = new JMenuItem(type);
-                    divorceMenu.setActionCommand(makeCommand(CMD_REMOVE_SPOUSE, Person.OPT_KEEP_SURNAME));
-                    divorceMenu.addActionListener(this);
-                    menu.add(divorceMenu);
+                    for (Divorce divorceType : Divorce.values()) {
+                        JMenuItem divorceMenu = new JMenuItem(divorceType.toString());
+                        divorceMenu.setActionCommand(makeCommand(CMD_REMOVE_SPOUSE, divorceType.name()));
+                        divorceMenu.addActionListener(this);
+                        menu.add(divorceMenu);
+                    }
 
-                    type = resourceMap.getString("removeSpouseSpouseChangeSurname.text");
-                    divorceMenu = new JMenuItem(type);
-                    divorceMenu.setActionCommand(makeCommand(CMD_REMOVE_SPOUSE, Person.OPT_SPOUSE_CHANGE_SURNAME));
-                    divorceMenu.addActionListener(this);
-                    menu.add(divorceMenu);
-
-                    type = resourceMap.getString("removeSpouseSelectedChangeSurname.text");
-                    divorceMenu = new JMenuItem(type);
-                    divorceMenu.setActionCommand(makeCommand(CMD_REMOVE_SPOUSE, Person.OPT_SELECTED_CHANGE_SURNAME));
-                    divorceMenu.addActionListener(this);
-                    menu.add(divorceMenu);
-
-                    type = resourceMap.getString("removeSpouseBothChangeSurname.text");
-                    divorceMenu = new JMenuItem(type);
-                    divorceMenu.setActionCommand(makeCommand(CMD_REMOVE_SPOUSE, Person.OPT_BOTH_CHANGE_SURNAME));
-                    divorceMenu.addActionListener(this);
-                    menu.add(divorceMenu);
-
-                    popup.add(menu);
+                    JMenuHelpers.addMenuIfNonEmpty(popup, menu, MAX_POPUP_ITEMS);
                 }
             }
 

@@ -43,6 +43,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -125,6 +126,9 @@ public class CampaignOptionsDialog extends JDialog {
     private String camoFileName;
     private int colorIndex;
     private DirectoryItems camos;
+    private String iconCategory;
+    private String iconFileName;
+    private DirectoryItems forceIcons;
     private Hashtable<String, JSpinner> hashSkillTargets;
     private Hashtable<String, JSpinner> hashGreenSkill;
     private Hashtable<String, JSpinner> hashRegSkill;
@@ -150,6 +154,7 @@ public class CampaignOptionsDialog extends JDialog {
     private JComboBox<String> unitRatingMethodCombo;
     private JButton btnDate;
     private JButton btnCamo;
+    private JButton btnIcon;
     //endregion General Tab
 
     //region Repair and Maintenance Tab
@@ -229,6 +234,7 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox useImplantsBox;
     private JCheckBox chkCapturePrisoners;
     private JComboBox<PrisonerStatus> comboPrisonerStatus;
+    private JCheckBox chkPrisonerBabyStatus;
     private JCheckBox altQualityAveragingCheckBox;
     private JCheckBox useAdvancedMedicalBox;
     private JCheckBox useDylansRandomXpBox;
@@ -475,6 +481,7 @@ public class CampaignOptionsDialog extends JDialog {
     private JSpinner spnOpforLocalForceChance;
     private JCheckBox chkAdjustPlayerVehicles;
     private JCheckBox chkRegionalMechVariations;
+    private JCheckBox chkAttachedPlayerCamouflage;
     private JCheckBox chkUseDropShips;
     private JCheckBox chkUseWeatherConditions;
     private JCheckBox chkUseLightConditions;
@@ -496,7 +503,8 @@ public class CampaignOptionsDialog extends JDialog {
     /**
      * Creates new form CampaignOptionsDialog
      */
-    public CampaignOptionsDialog(java.awt.Frame parent, boolean modal, Campaign c, DirectoryItems camos) {
+    public CampaignOptionsDialog(java.awt.Frame parent, boolean modal, Campaign c, DirectoryItems camos,
+                                 DirectoryItems forceIcons) {
         super(parent, modal);
         this.campaign = c;
         this.options = c.getCampaignOptions();
@@ -509,6 +517,9 @@ public class CampaignOptionsDialog extends JDialog {
         this.camoFileName = campaign.getCamoFileName();
         this.colorIndex = campaign.getColorIndex();
         this.camos = camos;
+        this.iconCategory = campaign.getIconCategory();
+        this.iconFileName = campaign.getIconFileName();
+        this.forceIcons = forceIcons;
         hashSkillTargets = new Hashtable<>();
         hashGreenSkill = new Hashtable<>();
         hashRegSkill = new Hashtable<>();
@@ -518,12 +529,13 @@ public class CampaignOptionsDialog extends JDialog {
 
         initComponents();
         setCamoIcon();
+        setForceIcon();
         setLocationRelativeTo(parent);
 
         // Rules panel
         useEraModsCheckBox.setSelected(options.useEraMods());
         assignedTechFirstCheckBox.setSelected(options.useAssignedTechFirst());
-		resetToFirstTechCheckBox.setSelected(options.useResetToFirstTech());
+        resetToFirstTechCheckBox.setSelected(options.useResetToFirstTech());
         useUnitRatingCheckBox.setSelected(options.useDragoonRating());
         unitRatingMethodCombo.setSelectedItem(options.getUnitRatingMethod().getDescription());
         useTacticsBox.setSelected(options.useTactics());
@@ -535,7 +547,6 @@ public class CampaignOptionsDialog extends JDialog {
         useSupportEdgeBox.setSelected(options.useSupportEdge());
         useImplantsBox.setSelected(options.useImplants());
         chkCapturePrisoners.setSelected(options.capturePrisoners());
-		altQualityAveragingCheckBox.setSelected(options.useAltQualityAveraging());
         useAdvancedMedicalBox.setSelected(options.useAdvancedMedical());
         useDylansRandomXpBox.setSelected(options.useDylansRandomXp());
         payForPartsBox.setSelected(options.payForParts());
@@ -601,6 +612,7 @@ public class CampaignOptionsDialog extends JDialog {
         comboRanks = new JComboBox<>();
         sldGender = new JSlider(SwingConstants.HORIZONTAL);
         btnCamo = new JButton();
+        btnIcon = new JButton();
         panRepair = new JPanel();
         panSupplies = new JPanel();
         panPersonnel = new JPanel();
@@ -615,7 +627,7 @@ public class CampaignOptionsDialog extends JDialog {
         panRandomPortrait = new JPanel();
         useEraModsCheckBox = new JCheckBox();
         assignedTechFirstCheckBox = new JCheckBox();
-		resetToFirstTechCheckBox = new JCheckBox();
+        resetToFirstTechCheckBox = new JCheckBox();
         useUnitRatingCheckBox = new JCheckBox();
         unitRatingMethodCombo = new JComboBox<>(UnitRatingMethod.getUnitRatingMethodNames());
         JLabel clanPriceModifierLabel = new JLabel();
@@ -630,7 +642,6 @@ public class CampaignOptionsDialog extends JDialog {
         useSupportEdgeBox = new JCheckBox();
         useImplantsBox = new JCheckBox();
         chkCapturePrisoners = new JCheckBox();
-		altQualityAveragingCheckBox = new JCheckBox();
         useAdvancedMedicalBox = new JCheckBox();
         useDylansRandomXpBox = new JCheckBox();
         payForPartsBox = new JCheckBox();
@@ -803,6 +814,23 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panGeneral.add(lblCamo, gridBagConstraints);
 
+        btnIcon.setMaximumSize(new java.awt.Dimension(84, 72));
+        btnIcon.setMinimumSize(new java.awt.Dimension(84, 72));
+        btnIcon.setPreferredSize(new java.awt.Dimension(84, 72));
+        btnIcon.addActionListener(this::btnIconActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        panGeneral.add(btnIcon, gridBagConstraints);
+
+        JLabel lblIcon = new JLabel(resourceMap.getString("lblIcon.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        panGeneral.add(lblIcon, gridBagConstraints);
+
         tabOptions.addTab(resourceMap.getString("panGeneral.TabConstraints.tabTitle"), panGeneral); // NOI18N
 
         panRepair.setName("panRules"); // NOI18N
@@ -862,7 +890,7 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panSubRepair.add(assignedTechFirstCheckBox, gridBagConstraints);
 
-		resetToFirstTechCheckBox.setText(resourceMap.getString("resetToFirstTechCheckBox.text")); // NOI18N
+        resetToFirstTechCheckBox.setText(resourceMap.getString("resetToFirstTechCheckBox.text")); // NOI18N
         resetToFirstTechCheckBox.setToolTipText(resourceMap.getString("resetToFirstTechCheckBox.toolTipText")); // NOI18N
         resetToFirstTechCheckBox.setName("resetToFirstTechCheckBox"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1640,9 +1668,17 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.gridy = ++gridy;
         panPersonnel.add(pnlPrisonerStatus, gridBagConstraints);
 
-        altQualityAveragingCheckBox.setText(resourceMap.getString("altQualityAveragingCheckBox.text"));
+        chkPrisonerBabyStatus = new JCheckBox(resourceMap.getString("prisonerBabyStatus.text"));
+        chkPrisonerBabyStatus.setToolTipText(resourceMap.getString("prisonerBabyStatus.toolTipText"));
+        chkPrisonerBabyStatus.setName("chkPrisonerBabyStatus");
+        chkPrisonerBabyStatus.setSelected(options.getPrisonerBabyStatus());
+        gridBagConstraints.gridy = ++gridy;
+        panPersonnel.add(chkPrisonerBabyStatus, gridBagConstraints);
+
+        altQualityAveragingCheckBox = new JCheckBox(resourceMap.getString("altQualityAveragingCheckBox.text"));
         altQualityAveragingCheckBox.setToolTipText(resourceMap.getString("altQualityAveragingCheckBox.toolTipText"));
         altQualityAveragingCheckBox.setName("altQualityAveragingCheckBox");
+        altQualityAveragingCheckBox.setSelected(options.useAltQualityAveraging());
         gridBagConstraints.gridy = ++gridy;
         panPersonnel.add(altQualityAveragingCheckBox, gridBagConstraints);
 
@@ -1732,7 +1768,7 @@ public class CampaignOptionsDialog extends JDialog {
         panPersonnel.add(pnlTimeInRankDisplayFormat, gridBagConstraints);
 
         chkTrackTotalEarnings = new JCheckBox(resourceMap.getString("trackTotalEarnings.text"));
-        chkTrackTotalEarnings.setToolTipText("trackTotalEarnings.toolTipText");
+        chkTrackTotalEarnings.setToolTipText(resourceMap.getString("trackTotalEarnings.toolTipText"));
         chkTrackTotalEarnings.setSelected(options.trackTotalEarnings());
         gridBagConstraints.gridy = ++gridy;
         panPersonnel.add(chkTrackTotalEarnings, gridBagConstraints);
@@ -2488,7 +2524,7 @@ public class CampaignOptionsDialog extends JDialog {
         //changing the underlying one in case the user cancels the changes
         tempSPA = new Hashtable<>();
         for(String name : spaNames) {
-        	tempSPA.put(name, SpecialAbility.getAbility(name).clone());
+            tempSPA.put(name, SpecialAbility.getAbility(name).clone());
         }
 
         panXP.setName("panXP"); // NOI18N
@@ -3275,27 +3311,27 @@ public class CampaignOptionsDialog extends JDialog {
             column.setPreferredWidth(ranksModel.getColumnWidth(i));
             column.setCellRenderer(ranksModel.getRenderer());
             if (i == RankTableModel.COL_PAYMULT) {
-            	column.setCellEditor(new SpinnerEditor());
+                column.setCellEditor(new SpinnerEditor());
             }
         }
         tableRanks.getSelectionModel().addListSelectionListener(
                 this::tableRanksValueChanged);
         AbstractAction rankCellAction = new AbstractAction() {
-			private static final long serialVersionUID = -7586376360964669234L;
+            private static final long serialVersionUID = -7586376360964669234L;
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				TableCellListener tcl = (TableCellListener)e.getSource();
-				if (!(tcl.getOldValue().equals(tcl.getNewValue()))) {
-					comboRanks.setActionCommand("noFillRanks");
-					comboRanks.setSelectedIndex(Ranks.RS_CUSTOM);
-					comboRanks.setActionCommand("fillRanks");
-				}
-			}
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TableCellListener tcl = (TableCellListener)e.getSource();
+                if (!(tcl.getOldValue().equals(tcl.getNewValue()))) {
+                    comboRanks.setActionCommand("noFillRanks");
+                    comboRanks.setSelectedIndex(Ranks.RS_CUSTOM);
+                    comboRanks.setActionCommand("fillRanks");
+                }
+            }
 
         };
         @SuppressWarnings("unused") // FIXME:
-		TableCellListener rankCellListener = new TableCellListener(tableRanks, rankCellAction);
+        TableCellListener rankCellListener = new TableCellListener(tableRanks, rankCellAction);
         scrRanks.setViewportView(tableRanks);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3738,7 +3774,6 @@ public class CampaignOptionsDialog extends JDialog {
         chkOpforUsesVTOLs = new JCheckBox();
         chkOpforUsesAero = new JCheckBox();
         chkOpforUsesLocalForces = new JCheckBox();
-        chkUseDropShips = new JCheckBox();
         spnOpforAeroChance = new JSpinner();
         spnOpforLocalForceChance = new JSpinner();
 
@@ -3754,8 +3789,6 @@ public class CampaignOptionsDialog extends JDialog {
         chkVariableContractLength = new JCheckBox();
         chkMercSizeLimited = new JCheckBox();
         chkRestrictPartsByMission = new JCheckBox();
-        chkRegionalMechVariations = new JCheckBox();
-        chkUseWeatherConditions = new JCheckBox();
         chkUseLightConditions = new JCheckBox();
         chkUsePlanetaryConditions = new JCheckBox();
         chkUseAtBCapture = new JCheckBox();
@@ -3791,9 +3824,9 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panAtB.add(chkUseAtB, gridBagConstraints);
         chkUseAtB.addActionListener(ev -> {
-        	enableAtBComponents(panAtB, chkUseAtB.isSelected());
-        	enableAtBComponents(panSubAtBRat,
-        			chkUseAtB.isSelected() && btnStaticRATs.isSelected());
+            enableAtBComponents(panAtB, chkUseAtB.isSelected());
+            enableAtBComponents(panSubAtBRat,
+                    chkUseAtB.isSelected() && btnStaticRATs.isSelected());
         });
 
         JLabel lblSkillLevel = new JLabel(resourceMap.getString("lblSkillLevel.text"));
@@ -3827,7 +3860,7 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.gridy = 1;
         panAtB.add(btnStaticRATs, gridBagConstraints);
         btnStaticRATs.addItemListener(ev -> enableAtBComponents(panSubAtBRat,
-        		btnStaticRATs.isSelected()));
+                btnStaticRATs.isSelected()));
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -3962,18 +3995,18 @@ public class CampaignOptionsDialog extends JDialog {
 
         chosenRatModel = new DefaultListModel<>();
         for (String rat : options.getRATs()) {
-           	List<Integer> eras = RATManager.getAllRATCollections().get(rat);
+            List<Integer> eras = RATManager.getAllRATCollections().get(rat);
             if (eras != null) {
-            	StringBuilder displayName = new StringBuilder(rat);
-            	if (eras.size() > 0) {
-            		displayName.append(" (").append(eras.get(0));
-                	if (eras.size() > 1) {
-                		displayName.append("-").append(eras.get(eras.size() - 1));
-                	}
-                	displayName.append(")");
-            	}
-    			chosenRatModel.addElement(displayName.toString());
-        	}
+                StringBuilder displayName = new StringBuilder(rat);
+                if (eras.size() > 0) {
+                    displayName.append(" (").append(eras.get(0));
+                    if (eras.size() > 1) {
+                        displayName.append("-").append(eras.get(eras.size() - 1));
+                    }
+                    displayName.append(")");
+                }
+                chosenRatModel.addElement(displayName.toString());
+            }
         }
         chosenRats.setModel(chosenRatModel);
         chosenRats.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -3984,20 +4017,20 @@ public class CampaignOptionsDialog extends JDialog {
         });
         availableRatModel = new DefaultListModel<>();
         for (String rat : RATManager.getAllRATCollections().keySet()) {
-           	List<Integer> eras = RATManager.getAllRATCollections().get(rat);
+            List<Integer> eras = RATManager.getAllRATCollections().get(rat);
             if (eras != null) {
-            	StringBuilder displayName = new StringBuilder(rat);
-            	if (eras.size() > 0) {
-            		displayName.append(" (").append(eras.get(0));
-                	if (eras.size() > 1) {
-                		displayName.append("-").append(eras.get(eras.size() - 1));
-                	}
-                	displayName.append(")");
-            	}
-            	if (!chosenRatModel.contains(displayName.toString())) {
-            		availableRatModel.addElement(displayName.toString());
-            	}
-        	}
+                StringBuilder displayName = new StringBuilder(rat);
+                if (eras.size() > 0) {
+                    displayName.append(" (").append(eras.get(0));
+                    if (eras.size() > 1) {
+                        displayName.append("-").append(eras.get(eras.size() - 1));
+                    }
+                    displayName.append(")");
+                }
+                if (!chosenRatModel.contains(displayName.toString())) {
+                    availableRatModel.addElement(displayName.toString());
+                }
+            }
         }
         availableRats.setModel(availableRatModel);
         availableRats.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -4371,37 +4404,27 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         panSubAtBScenario.add(chkAdjustPlayerVehicles, gridBagConstraints);
 
-        chkRegionalMechVariations.setText(resourceMap.getString("chkRegionalMechVariations.text"));
+        chkRegionalMechVariations = new JCheckBox(resourceMap.getString("chkRegionalMechVariations.text"));
         chkRegionalMechVariations.setToolTipText(resourceMap.getString("chkRegionalMechVariations.toolTipText"));
         chkRegionalMechVariations.setSelected(options.getRegionalMechVariations());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = yTablePosition++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         panSubAtBScenario.add(chkRegionalMechVariations, gridBagConstraints);
 
-        chkUseDropShips.setText(resourceMap.getString("chkUseDropShips.text"));
+        chkAttachedPlayerCamouflage = new JCheckBox(resourceMap.getString("chkAttachedPlayerCamouflage.text"));
+        chkAttachedPlayerCamouflage.setSelected(options.getAttachedPlayerCamouflage());
+        gridBagConstraints.gridy = yTablePosition++;
+        panSubAtBScenario.add(chkAttachedPlayerCamouflage, gridBagConstraints);
+
+        chkUseDropShips = new JCheckBox(resourceMap.getString("chkUseDropShips.text"));
         chkUseDropShips.setToolTipText(resourceMap.getString("chkUseDropShips.toolTipText"));
         chkUseDropShips.setSelected(options.getUseDropShips());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = yTablePosition++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         panSubAtBScenario.add(chkUseDropShips, gridBagConstraints);
 
-        chkUseWeatherConditions.setText(resourceMap.getString("chkUseWeatherConditions.text"));
+        chkUseWeatherConditions = new JCheckBox(resourceMap.getString("chkUseWeatherConditions.text"));
         chkUseWeatherConditions.setToolTipText(resourceMap.getString("chkUseWeatherConditions.toolTipText"));
         chkUseWeatherConditions.setSelected(options.getUseWeatherConditions());
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = yTablePosition++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         panSubAtBScenario.add(chkUseWeatherConditions, gridBagConstraints);
 
         chkUseLightConditions.setText(resourceMap.getString("chkUseLightConditions.text"));
@@ -4477,9 +4500,9 @@ public class CampaignOptionsDialog extends JDialog {
 
         tabOptions.addTab(resourceMap.getString("panAtB.TabConstraints.tabTitle"),
                 scrAtB); // NOI18N
-		enableAtBComponents(panAtB, chkUseAtB.isSelected());
-		enableAtBComponents(panSubAtBRat, chkUseAtB.isSelected()
-				&& btnStaticRATs.isSelected());
+        enableAtBComponents(panAtB, chkUseAtB.isSelected());
+        enableAtBComponents(panSubAtBRat, chkUseAtB.isSelected()
+                && btnStaticRATs.isSelected());
 
         javax.swing.SwingUtilities.invokeLater(() -> {
             scrSPA.getVerticalScrollBar().setValue(0);
@@ -4575,19 +4598,19 @@ public class CampaignOptionsDialog extends JDialog {
             column.setPreferredWidth(ranksModel.getColumnWidth(i));
             column.setCellRenderer(ranksModel.getRenderer());
             if (i == RankTableModel.COL_PAYMULT) {
-            	column.setCellEditor(new SpinnerEditor());
+                column.setCellEditor(new SpinnerEditor());
             }
         }
     }
 
     @SuppressWarnings("unused") // FIXME:
-	private void tableRanksValueChanged(javax.swing.event.ListSelectionEvent evt) {
+    private void tableRanksValueChanged(javax.swing.event.ListSelectionEvent evt) {
         int row = tableRanks.getSelectedRow();
         //btnDeleteRank.setEnabled(row != -1);
     }
 
     @SuppressWarnings("unused") // FIXME
-	private void addRank() {
+    private void addRank() {
         Object[] rank = {"Unknown", false, 1.0};
         int row = tableRanks.getSelectedRow();
         if (row == -1) {
@@ -4604,13 +4627,13 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     @SuppressWarnings("unused") // FIXME
-	private void removeRank() {
+    private void removeRank() {
         int row = tableRanks.getSelectedRow();
         if (row > -1) {
             ranksModel.removeRow(row);
         }
         if (tableRanks.getRowCount() == 0) {
-        	return;
+            return;
         }
         if (tableRanks.getRowCount() > row) {
             tableRanks.setRowSelectionInterval(row, row);
@@ -4620,31 +4643,31 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private void btnLoadActionPerformed() {
-    	ArrayList<GamePreset> presets = GamePreset.getGamePresetsIn(MekHQ.PRESET_DIR);
+        ArrayList<GamePreset> presets = GamePreset.getGamePresetsIn(MekHQ.PRESET_DIR);
 
-		if (!presets.isEmpty()) {
-			ChooseGamePresetDialog cgpd = new ChooseGamePresetDialog(null, true, presets);
-			cgpd.setVisible(true);
-			if (!cgpd.wasCancelled() && null != cgpd.getSelectedPreset()) {
-				cgpd.getSelectedPreset().apply(campaign);
-				// TODO: it would be nice if we could just update the choices in this dialog now
-				// TODO: rather than closing it, but that is currently not possible given how
-				// TODO: this dialog is set up
-				MekHQ.triggerEvent(new OptionsChangedEvent(campaign));
-				this.setVisible(false);
-			}
-		}
+        if (!presets.isEmpty()) {
+            ChooseGamePresetDialog cgpd = new ChooseGamePresetDialog(null, true, presets);
+            cgpd.setVisible(true);
+            if (!cgpd.wasCancelled() && null != cgpd.getSelectedPreset()) {
+                cgpd.getSelectedPreset().apply(campaign);
+                // TODO: it would be nice if we could just update the choices in this dialog now
+                // TODO: rather than closing it, but that is currently not possible given how
+                // TODO: this dialog is set up
+                MekHQ.triggerEvent(new OptionsChangedEvent(campaign));
+                this.setVisible(false);
+            }
+        }
     }
 
     private void btnSaveActionPerformed() {
         final String METHOD_NAME = "btnSaveActionPerformed()"; //$NON-NLS-1$
-    	if (txtName.getText().length() == 0) {
-    		return;
-    	}
-    	GamePresetDescriptionDialog gpdd = new GamePresetDescriptionDialog(null, true, "Enter a title", "Enter description of preset");
+        if (txtName.getText().length() == 0) {
+            return;
+        }
+        GamePresetDescriptionDialog gpdd = new GamePresetDescriptionDialog(null, true, "Enter a title", "Enter description of preset");
         gpdd.setVisible(true);
         if (!gpdd.wasChanged()) {
-        	return;
+            return;
         }
 
         MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.INFO,
@@ -4704,12 +4727,13 @@ public class CampaignOptionsDialog extends JDialog {
                 backupFile.delete();
             }
         }
-    	this.setVisible(false);
+        this.setVisible(false);
     }
 
     private void updateOptions() {
-    	campaign.setName(txtName.getText());
-    	campaign.setCalendar(date);
+        campaign.setName(txtName.getText());
+        campaign.setCalendar(date);
+        campaign.setLocalDate(LocalDate.ofYearDay(date.get(Calendar.YEAR), date.get(Calendar.DAY_OF_YEAR)));
         // Ensure that the MegaMek year GameOption matches the campaign year
         GameOptions gameOpts = campaign.getGameOptions();
         int campaignYear = campaign.getGameYear();
@@ -4717,18 +4741,21 @@ public class CampaignOptionsDialog extends JDialog {
             gameOpts.getOption("year").setValue(campaignYear);
         }
         campaign.setFactionCode(Faction.getFactionFromFullNameAndYear
-        		(String.valueOf(comboFaction.getSelectedItem()), date.get(Calendar.YEAR)).getShortName());
+                (String.valueOf(comboFaction.getSelectedItem()), date.get(Calendar.YEAR)).getShortName());
         if (null != comboFactionNames.getSelectedItem()) {
             RandomNameGenerator.getInstance().setChosenFaction((String) comboFactionNames.getSelectedItem());
         }
         RandomGenderGenerator.setPercentFemale(sldGender.getValue());
         campaign.setRankSystem(comboRanks.getSelectedIndex());
         if (comboRanks.getSelectedIndex() == Ranks.RS_CUSTOM) {
-	        campaign.getRanks().setRanksFromModel(ranksModel);
+            campaign.getRanks().setRanksFromModel(ranksModel);
         }
         campaign.setCamoCategory(camoCategory);
         campaign.setCamoFileName(camoFileName);
         campaign.setColorIndex(colorIndex);
+
+        campaign.setIconCategory(iconCategory);
+        campaign.setIconFileName(iconFileName);
 
         for (int i = 0; i < chkUsePortrait.length; i++) {
             options.setUsePortraitForType(i, chkUsePortrait[i].isSelected());
@@ -4740,7 +4767,7 @@ public class CampaignOptionsDialog extends JDialog {
         // Rules panel
         options.setEraMods(useEraModsCheckBox.isSelected());
         options.setAssignedTechFirst(assignedTechFirstCheckBox.isSelected());
-		options.setResetToFirstTech(resetToFirstTechCheckBox.isSelected());
+        options.setResetToFirstTech(resetToFirstTechCheckBox.isSelected());
         options.setQuirks(useQuirksBox.isSelected());
         campaign.getGameOptions().getOption("stratops_quirks").setValue(useQuirksBox.isSelected());
         options.setClanPriceModifier((Double) spnClanPriceModifier.getModel().getValue());
@@ -4896,6 +4923,7 @@ public class CampaignOptionsDialog extends JDialog {
         campaign.getGameOptions().getOption("manei_domini").setValue(useImplantsBox.isSelected());
         options.setCapturePrisoners(chkCapturePrisoners.isSelected());
         options.setDefaultPrisonerStatus((PrisonerStatus) comboPrisonerStatus.getSelectedItem());
+        options.setPrisonerBabyStatus(chkPrisonerBabyStatus.isSelected());
         options.setAltQualityAveraging(altQualityAveragingCheckBox.isSelected());
         options.setAdvancedMedical(useAdvancedMedicalBox.isSelected());
         options.setDylansRandomXp(useDylansRandomXpBox.isSelected());
@@ -5012,7 +5040,7 @@ public class CampaignOptionsDialog extends JDialog {
         //Strip dates used in display name
         String[] ratList = new String[chosenRatModel.size()];
         for (int i = 0; i < chosenRatModel.size(); i++) {
-        	ratList[i] = chosenRatModel.elementAt(i).replaceFirst(" \\(.*?\\)", "");
+            ratList[i] = chosenRatModel.elementAt(i).replaceFirst(" \\(.*?\\)", "");
         }
         options.setRATs(ratList);
         options.setSearchRadius((Integer) spnSearchRadius.getValue());
@@ -5022,6 +5050,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setMercSizeLimited(chkMercSizeLimited.isSelected());
         options.setRestrictPartsByMission(chkRestrictPartsByMission.isSelected());
         options.setRegionalMechVariations(chkRegionalMechVariations.isSelected());
+        options.setAttachedPlayerCamouflage(chkAttachedPlayerCamouflage.isSelected());
         options.setUseWeatherConditions(chkUseWeatherConditions.isSelected());
         options.setUseLightConditions(chkUseLightConditions.isSelected());
         options.setUsePlanetaryConditions(chkUsePlanetaryConditions.isSelected());
@@ -5044,7 +5073,7 @@ public class CampaignOptionsDialog extends JDialog {
 
     private void btnOkayActionPerformed() {
         if (txtName.getText().length() > 0) {
-        	updateOptions();
+            updateOptions();
             this.setVisible(false);
         }
     }
@@ -5114,6 +5143,16 @@ public class CampaignOptionsDialog extends JDialog {
         }
     }//GEN-LAST:event_btnDateActionPerformed
 
+    private void btnIconActionPerformed(java.awt.event.ActionEvent evt) {
+        ImageChoiceDialog pcd = new ImageChoiceDialog(frame, true, iconCategory, iconFileName, forceIcons);
+        pcd.setVisible(true);
+        if (pcd.isChanged()) {
+            iconCategory = pcd.getCategory();
+            iconFileName = pcd.getFileName();
+        }
+        setForceIcon();
+    }
+
     private void btnCamoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCamoActionPerformed
         CamoChoiceDialog ccd = new CamoChoiceDialog(frame, true, camoCategory, camoFileName, colorIndex, camos);
         ccd.setVisible(true);
@@ -5123,34 +5162,33 @@ public class CampaignOptionsDialog extends JDialog {
             colorIndex = ccd.getColorIndex();
         }
         setCamoIcon();
-    }//GEN-LAST:event_btnCamoActionPerformed
-
+    }
 
     private Vector<String> getUnusedSPA() {
-    	Vector<String> unused = new Vector<>();
-    	PilotOptions poptions = new PilotOptions();
-    	for (Enumeration<IOptionGroup> i = poptions.getGroups(); i.hasMoreElements();) {
-    		IOptionGroup group = i.nextElement();
+        Vector<String> unused = new Vector<>();
+        PilotOptions poptions = new PilotOptions();
+        for (Enumeration<IOptionGroup> i = poptions.getGroups(); i.hasMoreElements();) {
+            IOptionGroup group = i.nextElement();
 
-    		if (!group.getKey().equalsIgnoreCase(PilotOptions.LVL3_ADVANTAGES)) {
-    			continue;
-    		}
+            if (!group.getKey().equalsIgnoreCase(PilotOptions.LVL3_ADVANTAGES)) {
+                continue;
+            }
 
-    		for (Enumeration<IOption> j = group.getOptions(); j.hasMoreElements();) {
-    			IOption option = j.nextElement();
-    			if(null == tempSPA.get(option.getName())) {
-    				unused.add(option.getName());
-    			}
-    		}
-    	}
+            for (Enumeration<IOption> j = group.getOptions(); j.hasMoreElements();) {
+                IOption option = j.nextElement();
+                if(null == tempSPA.get(option.getName())) {
+                    unused.add(option.getName());
+                }
+            }
+        }
 
-    	for (String key : SpecialAbility.getAllDefaultSpecialAbilities().keySet()) {
+        for (String key : SpecialAbility.getAllDefaultSpecialAbilities().keySet()) {
             if(null == tempSPA.get(key) && !unused.contains(key)) {
                 unused.add(key);
             }
         }
 
-    	return unused;
+        return unused;
     }
 
     public Hashtable<String, SpecialAbility> getCurrentSPA() {
@@ -5158,10 +5196,10 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private void btnAddSPA() {
-    	SelectUnusedAbilityDialog suad = new SelectUnusedAbilityDialog(this.frame, getUnusedSPA(), getCurrentSPA());
-    	suad.setVisible(true);
+        SelectUnusedAbilityDialog suad = new SelectUnusedAbilityDialog(this.frame, getUnusedSPA(), getCurrentSPA());
+        suad.setVisible(true);
 
-    	panSpecialAbilities.removeAll();
+        panSpecialAbilities.removeAll();
 
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.NONE;
@@ -5194,19 +5232,19 @@ public class CampaignOptionsDialog extends JDialog {
         //we also need to cycle through the existing SPAs and remove this one from
         //any prereqs
         for(String key: tempSPA.keySet()) {
-        	SpecialAbility otherAbil = tempSPA.get(key);
-    		Vector<String> prereq = otherAbil.getPrereqAbilities();
-    		Vector<String> invalid = otherAbil.getInvalidAbilities();
-    		Vector<String> remove = otherAbil.getRemovedAbilities();
-        	if(prereq.remove(name)) {
-        		otherAbil.setPrereqAbilities(prereq);
-        	}
-        	if(invalid.remove(name)) {
-        		otherAbil.setInvalidAbilities(invalid);
-        	}
-        	if(remove.remove(name)) {
-        		otherAbil.setRemovedAbilities(remove);
-        	}
+            SpecialAbility otherAbil = tempSPA.get(key);
+            Vector<String> prereq = otherAbil.getPrereqAbilities();
+            Vector<String> invalid = otherAbil.getInvalidAbilities();
+            Vector<String> remove = otherAbil.getRemovedAbilities();
+            if(prereq.remove(name)) {
+                otherAbil.setPrereqAbilities(prereq);
+            }
+            if(invalid.remove(name)) {
+                otherAbil.setInvalidAbilities(invalid);
+            }
+            if(remove.remove(name)) {
+                otherAbil.setRemovedAbilities(remove);
+            }
         }
 
         panSpecialAbilities.removeAll();
@@ -5268,41 +5306,67 @@ public class CampaignOptionsDialog extends JDialog {
             Image camo = (Image) camos.getItem(camoCategory, camoFileName);
             btnCamo.setIcon(new ImageIcon(camo));
         } catch (Exception err) {
-        	JOptionPane.showMessageDialog(
-        			this,
-        			"Cannot find your camo file.\n"
-        			+ "Setting to default color.\n"
-        			+ "You should browse to the correct camo file,\n"
-        			+ "or if it isn't available copy it into MekHQ's"
-        			+ "data/images/camo folder.",
-        			"Missing Camo File",
-        			JOptionPane.WARNING_MESSAGE);
-        	camoCategory = Player.NO_CAMO;
-        	colorIndex = 0;
-        	setCamoIcon();
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Cannot find your camo file.\n"
+                    + "Setting to default color.\n"
+                    + "You should browse to the correct camo file,\n"
+                    + "or if it isn't available copy it into MekHQ's"
+                    + "data/images/camo folder.",
+                    "Missing Camo File",
+                    JOptionPane.WARNING_MESSAGE);
+            camoCategory = Player.NO_CAMO;
+            colorIndex = 0;
+            setCamoIcon();
+        }
+    }
+
+    public void setForceIcon() {
+        if (null == iconCategory) {
+            return;
+        }
+
+        if (Campaign.ICON_NONE.equals(iconFileName)) {
+            btnIcon.setIcon(null);
+            btnIcon.setText("None");
+            return;
+        }
+
+        // Try to get the root file.
+        try {
+            // Translate the root icon directory name.
+            if (Campaign.ROOT_ICON.equals(iconCategory)) {
+                iconCategory = ""; //$NON-NLS-1$
+            }
+            Image icon = (Image) forceIcons.getItem(iconCategory, iconFileName);
+            icon = icon.getScaledInstance(75, -1, Image.SCALE_DEFAULT);
+            btnIcon.setIcon(new ImageIcon(icon));
+        } catch (Exception err) {
+            iconFileName = Campaign.ICON_NONE;
+            setForceIcon();
         }
     }
 
     private void enableAtBComponents(JPanel panel, boolean enabled) {
-    	for (Component c : panel.getComponents()) {
-    		if (c.equals(chkUseAtB)) {
-    			continue;
-    		}
-    		if (c instanceof JPanel) {
-    			enableAtBComponents((JPanel)c, enabled);
-    		} else if (enabled && c.equals(btnAddRat)) {
-    			c.setEnabled(availableRats.getSelectedIndex() >= 0);
-    		} else if (enabled && c.equals(btnRemoveRat)) {
-    			c.setEnabled(chosenRats.getSelectedIndex() >= 0);
-    		} else if (enabled && c.equals(btnMoveRatUp)) {
-				c.setEnabled(chosenRats.getSelectedIndex() > 0);
-    		} else if (enabled && c.equals(btnMoveRatDown)) {
-				c.setEnabled(availableRats.getSelectedIndex() >= 0 &&
-						chosenRatModel.size() > chosenRats.getSelectedIndex() + 1);
-    		} else {
-    			c.setEnabled(enabled);
-    		}
-    	}
+        for (Component c : panel.getComponents()) {
+            if (c.equals(chkUseAtB)) {
+                continue;
+            }
+            if (c instanceof JPanel) {
+                enableAtBComponents((JPanel)c, enabled);
+            } else if (enabled && c.equals(btnAddRat)) {
+                c.setEnabled(availableRats.getSelectedIndex() >= 0);
+            } else if (enabled && c.equals(btnRemoveRat)) {
+                c.setEnabled(chosenRats.getSelectedIndex() >= 0);
+            } else if (enabled && c.equals(btnMoveRatUp)) {
+                c.setEnabled(chosenRats.getSelectedIndex() > 0);
+            } else if (enabled && c.equals(btnMoveRatDown)) {
+                c.setEnabled(availableRats.getSelectedIndex() >= 0 &&
+                        chosenRatModel.size() > chosenRats.getSelectedIndex() + 1);
+            } else {
+                c.setEnabled(enabled);
+            }
+        }
     }
 
     private void updateBattleChances() {
@@ -5460,8 +5524,8 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     public static class SpinnerEditor extends DefaultCellEditor {
-		private static final long serialVersionUID = -2711422398394960413L;
-		JSpinner spinner;
+        private static final long serialVersionUID = -2711422398394960413L;
+        JSpinner spinner;
         JSpinner.NumberEditor editor;
         JTextField textField;
         boolean valueSet;

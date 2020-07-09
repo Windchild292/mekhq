@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - The MegaMek Team
+ * Copyright (c) 2018 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.io;
 
@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -889,6 +888,7 @@ public class CampaignXmlParser {
                             .getInstance();
                     c.setTime(parseDate(df, wn.getTextContent().trim()));
                     retVal.setCalendar(c);
+                    retVal.setLocalDate(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase("camoCategory")) {
                     String val = wn.getTextContent().trim();
 
@@ -907,6 +907,22 @@ public class CampaignXmlParser {
                     }
                 } else if (xn.equalsIgnoreCase("colorIndex")) {
                     retVal.setColorIndex(Integer.parseInt(wn.getTextContent().trim()));
+                } else if (xn.equalsIgnoreCase("iconCategory")) {
+                    String val = wn.getTextContent().trim();
+
+                    if (val.equals("null")) {
+                        retVal.setIconCategory(null);
+                    } else {
+                        retVal.setIconCategory(val);
+                    }
+                } else if (xn.equalsIgnoreCase("iconFileName")) {
+                    String val = wn.getTextContent().trim();
+
+                    if (val.equals("null")) {
+                        retVal.setIconFileName(null);
+                    } else {
+                        retVal.setIconFileName(val);
+                    }
                 } else if (xn.equalsIgnoreCase("nameGen")) {
                     // First, get all the child nodes;
                     NodeList nl2 = wn.getChildNodes();

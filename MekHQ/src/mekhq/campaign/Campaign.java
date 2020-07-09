@@ -12,11 +12,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign;
 
@@ -38,9 +38,12 @@ import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 
 import mekhq.*;
+import mekhq.campaign.event.MissionRemovedEvent;
+import mekhq.campaign.event.ScenarioRemovedEvent;
 import mekhq.campaign.finances.*;
 import mekhq.campaign.log.*;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.enums.Divorce;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
@@ -49,7 +52,6 @@ import mekhq.gui.sorter.WeightSorter;
 import mekhq.gui.sorter.enums.WeightSorterStyle;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
-import org.joda.time.DateTime;
 
 import megamek.common.*;
 import megamek.common.enums.Gender;
@@ -91,7 +93,6 @@ import mekhq.campaign.event.PersonChangedEvent;
 import mekhq.campaign.event.PersonNewEvent;
 import mekhq.campaign.event.PersonRemovedEvent;
 import mekhq.campaign.event.ReportEvent;
-import mekhq.campaign.event.ScenarioChangedEvent;
 import mekhq.campaign.event.ScenarioNewEvent;
 import mekhq.campaign.event.UnitNewEvent;
 import mekhq.campaign.event.UnitRemovedEvent;
@@ -154,7 +155,6 @@ import mekhq.campaign.universe.RangedPlanetSelector;
 import mekhq.campaign.universe.Systems;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
-import mekhq.gui.GuiTabType;
 import mekhq.gui.dialog.HistoricalDailyReportDialog;
 import mekhq.gui.utilities.PortraitFileFactory;
 import mekhq.module.atb.AtBEventProcessor;
@@ -216,7 +216,7 @@ public class Campaign implements Serializable, ITechManager {
 
     // calendar stuff
     private GregorianCalendar calendar;
-    private DateTime currentDateTime;
+    private LocalDate currentDay;
     private String dateFormat;
     private String shortDateFormat;
 
@@ -240,6 +240,12 @@ public class Campaign implements Serializable, ITechManager {
     private String camoCategory = Player.NO_CAMO;
     private String camoFileName = null;
     private int colorIndex = 0;
+
+    //unit icon
+    public static final String ROOT_ICON = "-- General --";
+    public static final String ICON_NONE = "None";
+    private String iconCategory = ROOT_ICON;
+    private String iconFileName = ICON_NONE;
 
     private Finances finances;
 
@@ -270,6 +276,7 @@ public class Campaign implements Serializable, ITechManager {
     private Calendar shipSearchExpiration; //AtB
     private IUnitGenerator unitGenerator;
     private IUnitRating unitRating;
+    private CampaignSummary campaignSummary;
 
     /** This is used to determine if the player has an active AtB Contract, and is recalculated on load */
     private transient boolean hasActiveContract;
@@ -282,7 +289,7 @@ public class Campaign implements Serializable, ITechManager {
         player = new Player(0, "self");
         game.addPlayer(0, player);
         calendar = new GregorianCalendar(3067, Calendar.JANUARY, 1);
-        currentDateTime = new DateTime(calendar);
+        currentDay = LocalDate.ofYearDay(3067, 1);
         CurrencyManager.getInstance().setCampaign(this);
         location = new CurrentLocation(Systems.getInstance().getSystems().get("Outreach"), 0);
         campaignOptions = new CampaignOptions();
@@ -324,6 +331,7 @@ public class Campaign implements Serializable, ITechManager {
         atbConfig = null;
         autosaveService = new AutosaveService();
         hasActiveContract = false;
+        campaignSummary = new CampaignSummary(this);
     }
 
     /**
@@ -413,14 +421,21 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     @Deprecated
-    public void setCalendar(GregorianCalendar c) {
-        calendar = c;
-        currentDateTime = new DateTime(c);
+    public GregorianCalendar getCalendar() {
+        return calendar;
     }
 
     @Deprecated
-    public GregorianCalendar getCalendar() {
-        return calendar;
+    public void setCalendar(GregorianCalendar c) {
+        calendar = c;
+    }
+
+    public LocalDate getLocalDate() {
+        return currentDay;
+    }
+
+    public void setLocalDate(LocalDate currentDay) {
+        this.currentDay = currentDay;
     }
 
     @Deprecated
@@ -433,8 +448,23 @@ public class Campaign implements Serializable, ITechManager {
         return new SimpleDateFormat(shortDateFormat);
     }
 
+    @Deprecated
+    public Date getDate() {
+        return calendar.getTime();
+    }
+
+    @Deprecated
+    public String getDateAsString() {
+        return getDateFormatter().format(calendar.getTime());
+    }
+
+    @Deprecated
+    public String getShortDateAsString() {
+        return getShortDateFormatter().format(calendar.getTime());
+    }
+
     public String getCurrentSystemName() {
-        return location.getCurrentSystem().getPrintableName(getDateTime());
+        return location.getCurrentSystem().getPrintableName(getLocalDate());
     }
 
     public PlanetarySystem getCurrentSystem() {
@@ -783,6 +813,10 @@ public class Campaign implements Serializable, ITechManager {
         return true;
     }
 
+    public CampaignSummary getCampaignSummary() {
+        return campaignSummary;
+    }
+
     public News getNews() {
         return news;
     }
@@ -908,13 +942,12 @@ public class Campaign implements Serializable, ITechManager {
      *
      * @param m The mission to be added
      */
-    public int addMission(Mission m) {
+    public void addMission(Mission m) {
         int id = lastMissionId + 1;
         m.setId(id);
         missions.put(id, m);
         lastMissionId = id;
         MekHQ.triggerEvent(new MissionNewEvent(m));
-        return id;
     }
 
     /**
@@ -1679,23 +1712,6 @@ public class Campaign implements Serializable, ITechManager {
     }
     //endregion Personnel Selectors and Generators
     //endregion Personnel
-
-    @Deprecated
-    public Date getDate() {
-        return calendar.getTime();
-    }
-
-    @Deprecated
-    public DateTime getDateTime() {
-        return currentDateTime;
-    }
-
-    /**
-     * For now, this is just going to parse through the current date time
-     */
-    public LocalDate getLocalDate() {
-        return LocalDate.of(currentDateTime.getYear(), currentDateTime.getMonthOfYear(), currentDateTime.getDayOfMonth());
-    }
 
     public List<Person> getPatients() {
         List<Person> patients = new ArrayList<>();
@@ -2554,7 +2570,7 @@ public class Campaign implements Serializable, ITechManager {
 
         // we are shopping by planets, so more involved
         List<IAcquisitionWork> currentList = sList.getAllShoppingItems();
-        DateTime currentDate = Utilities.getDateTimeDay(getCalendar());
+        LocalDate currentDate = getLocalDate();
 
         // a list of items than can be taken out of the search and put back on the
         // shopping list
@@ -2562,8 +2578,7 @@ public class Campaign implements Serializable, ITechManager {
 
         //find planets within a certain radius - the function will weed out dead planets
         List<PlanetarySystem> systems = Systems.getInstance().getShoppingSystems(getCurrentSystem(),
-                getCampaignOptions().getMaxJumpsPlanetaryAcquisition(),
-                currentDate);
+                getCampaignOptions().getMaxJumpsPlanetaryAcquisition(), currentDate);
 
         for (Person person : logisticsPersonnel) {
             if (currentList.isEmpty()) {
@@ -2684,27 +2699,28 @@ public class Campaign implements Serializable, ITechManager {
      * @return true if your target roll succeeded.
      */
     public boolean findContactForAcquisition(IAcquisitionWork acquisition, Person person, PlanetarySystem system) {
-
-        DateTime currentDate = Utilities.getDateTimeDay(getCalendar());
         TargetRoll target = getTargetForAcquisition(acquisition, person, false);
-        target = system.getPrimaryPlanet().getAcquisitionMods(target, getDate(), getCampaignOptions(), getFaction(),
+        target = system.getPrimaryPlanet().getAcquisitionMods(target, getLocalDate(), getCampaignOptions(), getFaction(),
                 acquisition.getTechBase() == Part.T_CLAN);
 
         if (target.getValue() == TargetRoll.IMPOSSIBLE) {
-            if(getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
-                addReport("<font color='red'><b>Can't search for " + acquisition.getAcquisitionName() + " on " + system.getPrintableName(currentDate) + " because:</b></font> " + target.getDesc());
+            if (getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
+                addReport("<font color='red'><b>Can't search for " + acquisition.getAcquisitionName()
+                        + " on " + system.getPrintableName(getLocalDate()) + " because:</b></font> " + target.getDesc());
             }
             return false;
         }
-        if(Compute.d6(2) < target.getValue()) {
+        if (Compute.d6(2) < target.getValue()) {
             //no contacts on this planet, move along
-            if(getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
-                addReport("<font color='red'><b>No contacts available for " + acquisition.getAcquisitionName() + " on " + system.getPrintableName(currentDate) + "</b></font>");
+            if (getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
+                addReport("<font color='red'><b>No contacts available for " + acquisition.getAcquisitionName()
+                        + " on " + system.getPrintableName(getLocalDate()) + "</b></font>");
             }
             return false;
         } else {
-            if(getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
-                addReport("<font color='green'>Possible contact for " + acquisition.getAcquisitionName() + " on " + system.getPrintableName(currentDate) + "</font>");
+            if (getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
+                addReport("<font color='green'>Possible contact for " + acquisition.getAcquisitionName()
+                        + " on " + system.getPrintableName(getLocalDate()) + "</font>");
             }
             return true;
         }
@@ -2740,13 +2756,13 @@ public class Campaign implements Serializable, ITechManager {
         TargetRoll target = getTargetForAcquisition(acquisition, person, false);
 
         //check on funds
-        if(!canPayFor(acquisition)) {
+        if (!canPayFor(acquisition)) {
             target.addModifier(TargetRoll.IMPOSSIBLE, "Cannot afford this purchase");
         }
 
-        if(null != system) {
-            target = system.getPrimaryPlanet().getAcquisitionMods(target, getDate(), getCampaignOptions(), getFaction(),
-                    acquisition.getTechBase() == Part.T_CLAN);
+        if (null != system) {
+            target = system.getPrimaryPlanet().getAcquisitionMods(target, getLocalDate(),
+                    getCampaignOptions(), getFaction(), acquisition.getTechBase() == Part.T_CLAN);
         }
 
         report += "attempts to find " + acquisition.getAcquisitionName();
@@ -2754,7 +2770,7 @@ public class Campaign implements Serializable, ITechManager {
         //if impossible then return
         if (target.getValue() == TargetRoll.IMPOSSIBLE) {
             report += ":<font color='red'><b> " + target.getDesc() + "</b></font>";
-            if(!getCampaignOptions().usesPlanetaryAcquisition() || getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
+            if (!getCampaignOptions().usesPlanetaryAcquisition() || getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
                 addReport(report);
             }
             return false;
@@ -2820,7 +2836,7 @@ public class Campaign implements Serializable, ITechManager {
             acquisition.decrementQuantity();
             MekHQ.triggerEvent(new AcquisitionEvent(acquisition));
         }
-        if(!getCampaignOptions().usesPlanetaryAcquisition() || getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
+        if (!getCampaignOptions().usesPlanetaryAcquisition() || getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
             addReport(report);
         }
         return found;
@@ -2956,12 +2972,12 @@ public class Campaign implements Serializable, ITechManager {
             addReport("No tech is assigned to refit " + r.getOriginalEntity().getShortName() + ". Refit cancelled.");
             r.cancel();
             return;
-                }
+        }
         TargetRoll target = getTargetFor(r, tech);
         // check that all parts have arrived
         if (!r.acquireParts()) {
             return;
-                }
+        }
         String report = tech.getHyperlinkedFullTitle() + " works on " + r.getPartName();
         int minutes = r.getTimeLeft();
         // FIXME: Overtime?
@@ -3027,7 +3043,13 @@ public class Campaign implements Serializable, ITechManager {
         return repairable;
     }
 
-    public void fixPart(IPartWork partWork, Person tech) {
+    /**
+     * Attempt to fix a part, which may have all kinds of effect depending on part type.
+     * @param partWork - the {@link IPartWork} to be fixed
+     * @param tech - the {@link Person} who will attempt to fix the part
+     * @return a <code>String</code> of the report that summarizes the outcome of the attempt to fix the part
+     */
+    public String fixPart(IPartWork partWork, Person tech) {
         TargetRoll target = getTargetFor(partWork, tech);
         String report = "";
         String action = " fix ";
@@ -3053,21 +3075,21 @@ public class Campaign implements Serializable, ITechManager {
             if (!((Armor) partWork).isInSupply()) {
                 report += "<b>Not enough armor remaining.  Task suspended.</b>";
                 addReport(report);
-                return;
+                return report;
             }
         }
         if ((partWork instanceof ProtomekArmor) && !partWork.isSalvaging()) {
             if (!((ProtomekArmor) partWork).isInSupply()) {
                 report += "<b>Not enough Protomech armor remaining.  Task suspended.</b>";
                 addReport(report);
-                return;
+                return report;
             }
         }
         if ((partWork instanceof BaArmor) && !partWork.isSalvaging()) {
             if (!((BaArmor) partWork).isInSupply()) {
                 report += "<b>Not enough BA armor remaining.  Task suspended.</b>";
                 addReport(report);
-                return;
+                return report;
             }
         }
         if (partWork instanceof SpacecraftCoolingSystem) {
@@ -3134,7 +3156,7 @@ public class Campaign implements Serializable, ITechManager {
                 }
                 MekHQ.triggerEvent(new PartWorkEvent(tech, partWork));
                 addReport(report);
-                return;
+                return report;
             }
         } else {
             tech.setMinutesLeft(tech.getMinutesLeft() - minutes);
@@ -3238,6 +3260,7 @@ public class Campaign implements Serializable, ITechManager {
         partWork.cancelReservation();
         MekHQ.triggerEvent(new PartWorkEvent(tech, partWork));
         addReport(report);
+        return report;
     }
 
     /**
@@ -3252,11 +3275,10 @@ public class Campaign implements Serializable, ITechManager {
      */
     public void readNews() {
         //read the news
-        DateTime now = getDateTime();
-        for(NewsItem article : news.fetchNewsFor(now)) {
+        for (NewsItem article : news.fetchNewsFor(getLocalDate())) {
             addReport(article.getHeadlineForReport());
         }
-        for(NewsItem article : Systems.getInstance().getPlanetaryNews(now)) {
+        for (NewsItem article : Systems.getInstance().getPlanetaryNews(getLocalDate())) {
             addReport(article.getHeadlineForReport());
         }
     }
@@ -3548,7 +3570,7 @@ public class Campaign implements Serializable, ITechManager {
                 p.resetCurrentEdge();
             }
 
-            if ((getCampaignOptions().getIdleXP() > 0) && (calendar.get(Calendar.DAY_OF_MONTH) == 1)
+            if ((getCampaignOptions().getIdleXP() > 0) && (getLocalDate().getDayOfMonth() == 1)
                     && p.isActive() && !p.getPrisonerStatus().isPrisoner()) { // Prisoners can't gain XP, while Bondsmen can gain xp
                 p.setIdleMonths(p.getIdleMonths() + 1);
                 if (p.getIdleMonths() >= getCampaignOptions().getMonthsIdleXP()) {
@@ -3685,9 +3707,9 @@ public class Campaign implements Serializable, ITechManager {
         // Autosave based on the previous day's information
         this.autosaveService.requestDayAdvanceAutosave(this);
 
-        // Advance the day by one - TODO : LocalDate : Swap me to LocalDate tracking instead
+        // Advance the day by one - TODO : LocalDate : Remove the Calendar addition
         calendar.add(Calendar.DAY_OF_MONTH, 1);
-        currentDateTime = new DateTime(calendar);
+        currentDay = currentDay.plus(1, ChronoUnit.DAYS);
 
         // Determine if we have an active contract or not, as this can get used elsewhere before
         // we actually hit the AtB new day (e.g. personnel market)
@@ -4020,7 +4042,7 @@ public class Campaign implements Serializable, ITechManager {
             mission.removeScenario(scenario.getId());
         }
         scenarios.remove(id);
-        MekHQ.triggerEvent(new ScenarioChangedEvent(scenario));
+        MekHQ.triggerEvent(new ScenarioRemovedEvent(scenario));
     }
 
     public void removeMission(int id) {
@@ -4036,6 +4058,7 @@ public class Campaign implements Serializable, ITechManager {
         }
 
         missions.remove(id);
+        MekHQ.triggerEvent(new MissionRemovedEvent(mission));
     }
 
     public void removePart(Part part) {
@@ -4143,19 +4166,17 @@ public class Campaign implements Serializable, ITechManager {
 
     public Force getForceFor(Person p) {
         Unit u = getUnit(p.getUnitId());
-        if (null == u) {
-            return null;
-        } else {
+        if (u != null) {
             return getForceFor(u);
+        } else if (p.isTech()) {
+            for (Force force : forceIds.values()) {
+                if (p.getId().equals(force.getTechID())) {
+                    return force;
+                }
+            }
         }
-    }
 
-    public String getDateAsString() {
-        return getDateFormatter().format(calendar.getTime());
-    }
-
-    public String getShortDateAsString() {
-        return getShortDateFormatter().format(calendar.getTime());
+        return null;
     }
 
     public void restore() {
@@ -4385,6 +4406,23 @@ public class Campaign implements Serializable, ITechManager {
     public void setColorIndex(int index) {
         colorIndex = index;
     }
+
+    public String getIconCategory() {
+        return iconCategory;
+    }
+
+    public void setIconCategory(String s) {
+        this.iconCategory = s;
+    }
+
+    public String getIconFileName() {
+        return iconFileName;
+    }
+
+    public void setIconFileName(String s) {
+        this.iconFileName = s;
+    }
+
 
     public ArrayList<Part> getSpareParts() {
         ArrayList<Part> spares = new ArrayList<>();
@@ -4635,8 +4673,6 @@ public class Campaign implements Serializable, ITechManager {
                 RandomGenderGenerator.getPercentFemale());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "overtime", overtime);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "gmMode", gmMode);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "showOverview", app.getCampaigngui()
-                .hasTab(GuiTabType.OVERVIEW));
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "astechPool", astechPool);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "astechPoolMinutes",
                 astechPoolMinutes);
@@ -4645,6 +4681,8 @@ public class Campaign implements Serializable, ITechManager {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "medicPool", medicPool);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "camoCategory", camoCategory);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "camoFileName", camoFileName);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "iconCategory", iconCategory);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "iconFileName", iconFileName);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "colorIndex", colorIndex);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "lastPartId", lastPartId);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, 2, "lastForceId", lastForceId);
@@ -4947,13 +4985,13 @@ public class Campaign implements Serializable, ITechManager {
     public Vector<String> getSystemNames() {
         Vector<String> systemNames = new Vector<>();
         for (PlanetarySystem key : Systems.getInstance().getSystems().values()) {
-            systemNames.add(key.getPrintableName(getDateTime()));
+            systemNames.add(key.getPrintableName(getLocalDate()));
         }
         return systemNames;
     }
 
     public PlanetarySystem getSystemByName(String name) {
-        return Systems.getInstance().getSystemByName(name, getDateTime());
+        return Systems.getInstance().getSystemByName(name, getLocalDate());
     }
 
     public void setRanks(Ranks r) {
@@ -5052,7 +5090,6 @@ public class Campaign implements Serializable, ITechManager {
         String startKey = start.getId();
         String endKey = end.getId();
 
-        final DateTime now = getDateTime();
         String current = startKey;
         Set<String> closed = new HashSet<>();
         Set<String> open = new HashSet<>();
@@ -5079,7 +5116,7 @@ public class Campaign implements Serializable, ITechManager {
 
         while (!found && jumps < 10000) {
             jumps++;
-            double currentG = scoreG.get(current) + Systems.getInstance().getSystemById(current).getRechargeTime(now);
+            double currentG = scoreG.get(current) + Systems.getInstance().getSystemById(current).getRechargeTime(getLocalDate());
 
             final String localCurrent = current;
             Systems.getInstance().visitNearbySystems(Systems.getInstance().getSystemById(current), 30, p -> {
@@ -5113,7 +5150,7 @@ public class Campaign implements Serializable, ITechManager {
             }
 
             current = bestMatch;
-            if(null == current) {
+            if (null == current) {
                 // We're done - probably failed to find anything
                 break;
             }
@@ -5987,8 +6024,9 @@ public class Campaign implements Serializable, ITechManager {
             person.setDateOfDeath(getLocalDate());
             // Don't forget to tell the spouse
             if (person.hasSpouse()) {
-                person.divorce(getCampaignOptions().getKeepMarriedNameUponSpouseDeath()
-                        ? Person.OPT_KEEP_SURNAME : Person.OPT_SPOUSE_CHANGE_SURNAME);
+                Divorce divorceType = getCampaignOptions().getKeepMarriedNameUponSpouseDeath()
+                        ? Divorce.ORIGIN_CHANGE_SURNAME : Divorce.SPOUSE_CHANGE_SURNAME;
+                divorceType.divorce(person, this);
             }
         } else if (person.getStatus() == PersonnelStatus.KIA) {
             // remove date of death for resurrection
@@ -6913,7 +6951,7 @@ public class Campaign implements Serializable, ITechManager {
      * computation. This method does not calculate an exact jump path but rather determines the number of jumps
      * crudely by dividing distance in light years by 30 and then rounding up. Total part time is determined by
      * several by adding the following:
-     * - (number of jumps - 1)*7 days with a minimum value of zero.
+     * - (number of jumps - 1) * 7 days with a minimum value of zero.
      * - transit times from current planet and planet of supply origins in cases where the supply planet is not the same as current planet.
      * - a random 1d6 days for each jump plus 1d6 to simulate all of the other logistics of delivery.
      * @param system - A <code>PlanetarySystem</code> object where the supplies are shipping from
@@ -6922,84 +6960,81 @@ public class Campaign implements Serializable, ITechManager {
     public int calculatePartTransitTime(PlanetarySystem system) {
         //calculate number of jumps by light year distance as the crow flies divided by 30
         //the basic formula assumes 7 days per jump + system transit time on each side + random days equal
-        //to (1+number of jumps)d6
+        //to (1 + number of jumps) d6
         double distance = system.getDistanceTo(getCurrentSystem());
         //calculate number of jumps by dividing by 30
-        int jumps = (int)Math.ceil(distance/30.0);
+        int jumps = (int) Math.ceil(distance / 30.0);
         //you need a recharge except for the first jump
         int recharges = Math.max(jumps - 1, 0);
         //if you are delivering from the same planet then no transit times
-        int currentTransitTime = (distance>0) ? (int)Math.ceil(getCurrentSystem().getTimeToJumpPoint(1.0)) : 0;
-        int originTransitTime = (distance>0) ? (int)Math.ceil(system.getTimeToJumpPoint(1.0)) : 0;
-        int amazonFreeShipping = Compute.d6(1+jumps);
-        return recharges*7+currentTransitTime+originTransitTime+amazonFreeShipping;
+        int currentTransitTime = (distance > 0) ? (int) Math.ceil(getCurrentSystem().getTimeToJumpPoint(1.0)) : 0;
+        int originTransitTime = (distance > 0) ? (int) Math.ceil(system.getTimeToJumpPoint(1.0)) : 0;
+        int amazonFreeShipping = Compute.d6(1 + jumps);
+        return (recharges * 7) + currentTransitTime+originTransitTime + amazonFreeShipping;
     }
 
     /***
-     * Calculate transit times based on the margin of success from an acquisition roll. The values here are
-     * all based on what the user entered for the campaign options.
+     * Calculate transit times based on the margin of success from an acquisition roll. The values here
+     * are all based on what the user entered for the campaign options.
      * @param mos - an integer of the margin of success of an acquisition roll
      * @return the number of days that supplies will take to arrive.
      */
     public int calculatePartTransitTime(int mos) {
-
         int nDice = getCampaignOptions().getNDiceTransitTime();
         int time = getCampaignOptions().getConstantTransitTime();
         if (nDice > 0) {
             time += Compute.d6(nDice);
         }
         // now step forward through the calendar
-        GregorianCalendar arrivalDate = (GregorianCalendar) calendar.clone();
+        LocalDate arrivalDate = getLocalDate();
         switch (getCampaignOptions().getUnitTransitTime()) {
             case CampaignOptions.TRANSIT_UNIT_MONTH:
-                arrivalDate.add(Calendar.MONTH, time);
+                arrivalDate = arrivalDate.plusMonths(time);
                 break;
             case CampaignOptions.TRANSIT_UNIT_WEEK:
-                arrivalDate.add(Calendar.WEEK_OF_YEAR, time);
+                arrivalDate = arrivalDate.plusWeeks(time);
                 break;
             case CampaignOptions.TRANSIT_UNIT_DAY:
             default:
-                arrivalDate.add(Calendar.DAY_OF_MONTH, time);
+                arrivalDate = arrivalDate.plusDays(time);
+                break;
         }
 
         // now adjust for MoS and minimums
         int mosBonus = getCampaignOptions().getAcquireMosBonus() * mos;
         switch (getCampaignOptions().getAcquireMosUnit()) {
             case CampaignOptions.TRANSIT_UNIT_MONTH:
-                arrivalDate.add(Calendar.MONTH, -1 * mosBonus);
+                arrivalDate = arrivalDate.minusMonths(mosBonus);
                 break;
             case CampaignOptions.TRANSIT_UNIT_WEEK:
-                arrivalDate.add(Calendar.WEEK_OF_YEAR, -1 * mosBonus);
+                arrivalDate = arrivalDate.minusWeeks(mosBonus);
                 break;
             case CampaignOptions.TRANSIT_UNIT_DAY:
             default:
-                arrivalDate.add(Calendar.DAY_OF_MONTH, -1 * mosBonus);
+                arrivalDate = arrivalDate.minusDays(mosBonus);
+                break;
         }
+
         // now establish minimum date and if this is before
-        GregorianCalendar minimumDate = (GregorianCalendar) calendar.clone();
+        LocalDate minimumDate = getLocalDate();
         switch (getCampaignOptions().getAcquireMinimumTimeUnit()) {
             case CampaignOptions.TRANSIT_UNIT_MONTH:
-                minimumDate.add(Calendar.MONTH, getCampaignOptions()
-                        .getAcquireMinimumTime());
+                minimumDate = minimumDate.plusMonths(getCampaignOptions().getAcquireMinimumTime());
                 break;
             case CampaignOptions.TRANSIT_UNIT_WEEK:
-                minimumDate.add(Calendar.WEEK_OF_YEAR, getCampaignOptions()
-                        .getAcquireMinimumTime());
+                minimumDate = minimumDate.plusWeeks(getCampaignOptions().getAcquireMinimumTime());
                 break;
             case CampaignOptions.TRANSIT_UNIT_DAY:
             default:
-                minimumDate.add(Calendar.DAY_OF_MONTH, getCampaignOptions()
-                        .getAcquireMinimumTime());
+                minimumDate = minimumDate.plusDays(getCampaignOptions().getAcquireMinimumTime());
+                break;
         }
 
-        if (arrivalDate.before(minimumDate)) {
-            return Utilities.getDaysBetween(calendar.getTime(),
-                    minimumDate.getTime());
+        if (arrivalDate.isBefore(minimumDate)) {
+            return Math.toIntExact(ChronoUnit.DAYS.between(getLocalDate(), minimumDate));
         } else {
-            return Utilities.getDaysBetween(calendar.getTime(),
-                    arrivalDate.getTime());
+            return Math.toIntExact(ChronoUnit.DAYS.between(getLocalDate(), arrivalDate));
         }
-
     }
 
     /**
@@ -8463,7 +8498,7 @@ public class Campaign implements Serializable, ITechManager {
 
     @Override
     public int getGameYear() {
-        return currentDateTime.getYear();
+        return getLocalDate().getYear();
     }
 
     @Override
