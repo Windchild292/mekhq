@@ -1223,8 +1223,8 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             return;
         }
         SkillType stype = SkillType.getType(type);
-        int lvl = (Integer)skillLvls.get(type).getModel().getValue();
-        int b = (Integer)skillBonus.get(type).getModel().getValue();
+        int lvl = (Integer) skillLvls.get(type).getModel().getValue();
+        int b = (Integer) skillBonus.get(type).getModel().getValue();
         int target = stype.getTarget() - lvl - b;
         if (stype.countUp()) {
             target = stype.getTarget() + lvl + b;
@@ -1301,26 +1301,41 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             final Phenotype phenotype = (Phenotype) choicePhenotype.getSelectedItem();
             if (phenotype != null) {
                 // TODO : Windchild should there be more bonus' here for the other phenotypes?
+                JSpinner tempSkillBonus;
                 switch (phenotype) {
                     case MECHWARRIOR:
-                        skillBonus.get(SkillType.S_GUN_MECH).setValue(1);
-                        skillBonus.get(SkillType.S_PILOT_MECH).setValue(1);
-                        break;
-                    case AEROSPACE:
-                        skillBonus.get(SkillType.S_GUN_AERO).setValue(1);
-                        skillBonus.get(SkillType.S_PILOT_AERO).setValue(1);
-                        skillBonus.get(SkillType.S_GUN_JET).setValue(1);
-                        skillBonus.get(SkillType.S_PILOT_JET).setValue(1);
-                        skillBonus.get(SkillType.S_GUN_PROTO).setValue(1);
+                        tempSkillBonus = skillBonus.get(SkillType.S_GUN_MECH);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
+                        tempSkillBonus = skillBonus.get(SkillType.S_PILOT_MECH);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
                         break;
                     case ELEMENTAL:
-                        skillBonus.get(SkillType.S_GUN_BA).setValue(1);
+                        tempSkillBonus = skillBonus.get(SkillType.S_GUN_BA);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
+                        break;
+                    case AEROSPACE:
+                        tempSkillBonus = skillBonus.get(SkillType.S_GUN_AERO);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
+                        tempSkillBonus = skillBonus.get(SkillType.S_PILOT_AERO);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
+                        tempSkillBonus = skillBonus.get(SkillType.S_GUN_JET);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
+                        tempSkillBonus = skillBonus.get(SkillType.S_PILOT_JET);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
                         break;
                     case VEHICLE:
                         skillBonus.get(SkillType.S_GUN_VEE).setValue(1);
                         skillBonus.get(SkillType.S_PILOT_GVEE).setValue(1);
                         skillBonus.get(SkillType.S_PILOT_NVEE).setValue(1);
                         skillBonus.get(SkillType.S_PILOT_VTOL).setValue(1);
+                        break;
+                    case PROTOMECH:
+                        tempSkillBonus = skillBonus.get(SkillType.S_GUN_PROTO);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
+                        break;
+                    case NAVAL:
+                        tempSkillBonus = skillBonus.get(SkillType.S_GUN_PROTO);
+                        tempSkillBonus.setValue(((Integer) tempSkillBonus.getValue()) + 1);
                         break;
                 }
             }
