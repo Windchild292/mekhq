@@ -56,6 +56,7 @@ import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.gui.control.EditKillLogControl;
 import mekhq.gui.control.EditMissionLogControl;
 import mekhq.gui.control.EditPersonnelLogControl;
+import mekhq.gui.control.FamilyEditorPanel;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.gui.utilities.MarkdownEditorPanel;
 import mekhq.preferences.PreferencesNode;
@@ -760,6 +761,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         tabStats.add(resourceMap.getString("panLog.TabConstraints.tabTitle"), new EditPersonnelLogControl(frame, campaign, person));
         tabStats.add(resourceMap.getString("panMissions.TabConstraints.tabTitle"), new EditMissionLogControl(frame, campaign, person));
         tabStats.add(resourceMap.getString("panKills.TabConstraints.tabTitle"), new EditKillLogControl(frame, campaign, person));
+        tabStats.add(resourceMap.getString("panGenealogy.TabConstraints.tabTitle"), new FamilyEditorPanel(frame, campaign, person));
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
