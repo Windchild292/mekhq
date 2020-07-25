@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018  - The MegaMek Team
+ * Copyright (c) 2018 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.market;
 
@@ -31,12 +31,10 @@ import mekhq.module.api.PersonnelMarketMethod;
 /**
  * Generation method for personnel market that adds a random number of recruits of a random type
  * each day and removes them based on skill (with more experienced leaving more quickly).
- * 
- * @author Neoancient
  *
+ * @author Neoancient
  */
 public class PersonnelMarketRandom implements PersonnelMarketMethod {
-
     @Override
     public String getModuleName() {
         return "Random";
@@ -65,20 +63,20 @@ public class PersonnelMarketRandom implements PersonnelMarketMethod {
         List<Person> toRemove = new ArrayList<>();
         for (Person p : current) {
             int roll = Compute.d6(2);
-            if (p.getExperienceLevel(false) == SkillType.EXP_ELITE
-                && roll < c.getCampaignOptions().getPersonnelMarketRandomEliteRemoval()) {
+            if ((p.getExperienceLevel(false) == SkillType.EXP_ELITE)
+                    && (roll < c.getCampaignOptions().getPersonnelMarketRandomEliteRemoval())) {
                 toRemove.add(p);
-            } else if (p.getExperienceLevel(false) == SkillType.EXP_VETERAN
-                       && roll < c.getCampaignOptions().getPersonnelMarketRandomVeteranRemoval()) {
+            } else if ((p.getExperienceLevel(false) == SkillType.EXP_VETERAN)
+                    && (roll < c.getCampaignOptions().getPersonnelMarketRandomVeteranRemoval())) {
                 toRemove.add(p);
-            } else if (p.getExperienceLevel(false) == SkillType.EXP_REGULAR
-                       && roll < c.getCampaignOptions().getPersonnelMarketRandomRegularRemoval()) {
+            } else if ((p.getExperienceLevel(false) == SkillType.EXP_REGULAR)
+                    && (roll < c.getCampaignOptions().getPersonnelMarketRandomRegularRemoval())) {
                 toRemove.add(p);
-            } else if (p.getExperienceLevel(false) == SkillType.EXP_GREEN
-                       && roll < c.getCampaignOptions().getPersonnelMarketRandomGreenRemoval()) {
+            } else if ((p.getExperienceLevel(false) == SkillType.EXP_GREEN)
+                    && (roll < c.getCampaignOptions().getPersonnelMarketRandomGreenRemoval())) {
                 toRemove.add(p);
-            } else if (p.getExperienceLevel(false) == SkillType.EXP_ULTRA_GREEN
-                       && roll < c.getCampaignOptions().getPersonnelMarketRandomUltraGreenRemoval()) {
+            } else if ((p.getExperienceLevel(false) == SkillType.EXP_ULTRA_GREEN)
+                    && (roll < c.getCampaignOptions().getPersonnelMarketRandomUltraGreenRemoval())) {
                 toRemove.add(p);
             }
         }
@@ -103,5 +101,4 @@ public class PersonnelMarketRandom implements PersonnelMarketMethod {
         }
         return retval;
     }
-
 }

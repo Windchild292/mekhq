@@ -1,8 +1,8 @@
 /*
  * PersonnelMarket.java
  *
- * Copyright (c) 2013 Dylan Myers <dylan at dylanspcs.com>. All rights reserved.
- *
+ * Copyright (c) 2013 - Dylan Myers <dylan at dylanspcs.com>. All rights reserved.
+ * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
  * This file is part of MekHQ.
  *
  * MekHQ is free software: you can redistribute it and/or modify
@@ -12,11 +12,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.market;
 
@@ -60,7 +60,6 @@ public class PersonnelMarket {
 	public static final int TYPE_FMMR = 2;
 	public static final int TYPE_STRAT_OPS = 3;
 	public static final int TYPE_ATB = 4;
-	public static final int TYPE_NUM = 5;
 
 	/* Used by AtB to track Units assigned to recruits; the key
 	 * is the person UUID. */
@@ -110,9 +109,7 @@ public class PersonnelMarket {
 		if (null != method) {
 		    List<Person> newPersonnel = method.generatePersonnelForDay(c);
 		    if ((null != newPersonnel) && !newPersonnel.isEmpty()) {
-    		    for (Person recruit : newPersonnel) {
-                    personnel.add(recruit);
-    		    }
+                personnel.addAll(newPersonnel);
     		    updated = true;
                 MekHQ.triggerEvent(new MarketNewPersonnelEvent(newPersonnel));
 		    }
@@ -132,9 +129,7 @@ public class PersonnelMarket {
             List<Person> toRemove = method.removePersonnelForDay(c, personnel);
             if (null != toRemove) {
                 for (Person p : toRemove) {
-                	if (attachedEntities.containsKey(p.getId())) {
-                		attachedEntities.remove(p.getId());
-                	}
+                    attachedEntities.remove(p.getId());
                 }
                 personnel.removeAll(toRemove);
             }
@@ -162,9 +157,7 @@ public class PersonnelMarket {
 
     public void removePerson(Person p) {
         personnel.remove(p);
-        if (attachedEntities.containsKey(p.getId())) {
-        	attachedEntities.remove(p.getId());
-        }
+        attachedEntities.remove(p.getId());
     }
 
     /**
@@ -241,7 +234,7 @@ public class PersonnelMarket {
     }
 
     public static PersonnelMarket generateInstanceFromXML(Node wn, Campaign c, Version version) {
-        final String METHOD_NAME = "generateInstanceFromXML(Node,Campaign,Version)"; //$NON-NLS-1$
+        final String METHOD_NAME = "generateInstanceFromXML(Node,Campaign,Version)";
 
         PersonnelMarket retVal = null;
 
@@ -271,14 +264,14 @@ public class PersonnelMarket {
             	} else if (wn2.getNodeName().equalsIgnoreCase("entity")) {
                     UUID id = UUID.fromString(wn2.getAttributes().getNamedItem("id").getTextContent());
                     MechSummary ms = MechSummaryCache.getInstance().getMech(wn2.getTextContent());
-                    Entity en = null;
+                    Entity en;
         			try {
         				en = new MechFileParser(ms.getSourceFile(), ms.getEntryName()).getEntity();
         			} catch (EntityLoadingException ex) {
         	            en = null;
                         MekHQ.getLogger().log(PersonnelMarket.class, METHOD_NAME, LogLevel.ERROR,
-                                "Unable to load entity: " + ms.getSourceFile() + ": " //$NON-NLS-1$
-                                        + ms.getEntryName() + ": " + ex.getMessage()); //$NON-NLS-1$
+                                "Unable to load entity: " + ms.getSourceFile() + ": "
+                                        + ms.getEntryName() + ": " + ex.getMessage());
                         MekHQ.getLogger().error(PersonnelMarket.class, METHOD_NAME, ex);
         			}
                     if (null != en) {
@@ -294,7 +287,7 @@ public class PersonnelMarket {
             		// Error condition of sorts!
             		// Errr, what should we do here?
                     MekHQ.getLogger().log(PersonnelMarket.class, METHOD_NAME, LogLevel.ERROR,
-                            "Unknown node type not loaded in Personnel nodes: " //$NON-NLS-1$
+                            "Unknown node type not loaded in Personnel nodes: "
             				+ wn2.getNodeName());
 
             	}
@@ -320,9 +313,9 @@ public class PersonnelMarket {
 
     public static String getTypeName(int type) {
     	switch (type) {
-    	case TYPE_RANDOM:
-    		return "Random";
-    	case TYPE_DYLANS:
+            case TYPE_RANDOM:
+                return "Random";
+            case TYPE_DYLANS:
                 return "Dylan's Method";
             case TYPE_FMMR:
                 return "FM: Mercenaries Revised";
@@ -431,15 +424,14 @@ public class PersonnelMarket {
 		Person adminLog = campaign.findBestInRole(Person.T_ADMIN_LOG, SkillType.S_ADMIN);
 		int adminLogExp = (adminLog == null)?SkillType.EXP_ULTRA_GREEN:adminLog.getSkill(SkillType.S_ADMIN).getExperienceLevel();
     	for (Person p : campaign.getAdmins()) {
-			if ((p.getPrimaryRole() == Person.T_ADMIN_LOG ||
-					p.getSecondaryRole() == Person.T_ADMIN_LOG) &&
-					p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp) {
+			if (((p.getPrimaryRole() == Person.T_ADMIN_LOG)
+                    || (p.getSecondaryRole() == Person.T_ADMIN_LOG))
+                    && (p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp)) {
 				adminLogExp = p.getSkill(SkillType.S_ADMIN).getExperienceLevel();
 			}
     	}
     	target.addModifier(SkillType.EXP_REGULAR - adminLogExp, "Admin/Logistics");
-    	target.addModifier(IUnitRating.DRAGOON_C - campaign.getUnitRatingMod(),
-    			"Unit Rating");
+    	target.addModifier(IUnitRating.DRAGOON_C - campaign.getUnitRatingMod(), "Unit Rating");
     	return target;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018  - The MegaMek Team
+ * Copyright (c) 2018 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.market;
 
@@ -57,15 +57,15 @@ public class PersonnelMarketStratOps implements PersonnelMarketMethod {
                 } else {
                     p = c.newPerson(Person.T_AERO_PILOT);
                 }
-            } else if (roll == 4 || roll == 10) { // MW
+            } else if ((roll == 4) || (roll == 10)) { // MW
                 p = c.newPerson(Person.T_MECHWARRIOR);
-            } else if (roll == 5 || roll == 9) { // Vehicle Crews
+            } else if ((roll == 5) || (roll == 9)) { // Vehicle Crews
                 if (Compute.d6() < 3) {
                     p = c.newPerson(Person.T_GVEE_DRIVER);
                 } else {
                     p = c.newPerson(Person.T_VEE_GUNNER);
                 }
-            } else if (roll == 6 || roll == 8) { // Infantry
+            } else if ((roll == 6) || (roll == 8)) { // Infantry
                 if (c.getFaction().isClan() && Compute.d6(2) > 3) {
                     p = c.newPerson(Person.T_BA);
                 } else {
