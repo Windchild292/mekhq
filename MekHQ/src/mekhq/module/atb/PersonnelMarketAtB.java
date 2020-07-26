@@ -25,16 +25,16 @@ import java.util.UUID;
 
 import megamek.common.Compute;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.market.AbstractPersonnelMarket;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
-import mekhq.module.api.PersonnelMarketMethod;
 
 /**
  * Method for generating market personnel according to AtB rules.
  *
  * @author Neoancient
  */
-public class PersonnelMarketAtB implements PersonnelMarketMethod {
+public class PersonnelMarketAtB extends AbstractPersonnelMarket {
     @Override
     public String getModuleName() {
         return "Against the Bot";
@@ -64,7 +64,7 @@ public class PersonnelMarketAtB implements PersonnelMarketMethod {
                 }
             } else if ((roll == 3) || (roll == 11)) {
                 int r = Compute.d6();
-                if ((r == 1) && (c.getGameYear() > (c.getFaction().isClan() ? 2870 : 3050))) {
+                if ((r == 1) && canGenerateBattleArmor(c)) {
                     p = c.newPerson(Person.T_BA_TECH);
                 } else if (r < 4) {
                     p = c.newPerson(Person.T_MECHANIC);
@@ -90,9 +90,7 @@ public class PersonnelMarketAtB implements PersonnelMarketMethod {
                     p = c.newPerson(Person.T_VEE_GUNNER);
                 }
             } else if ((roll == 6) || (roll == 8)) {
-                if (c.getFaction().isClan() && (c.getGameYear() > 2870) && (Compute.d6(2) > 3)) {
-                    p = c.newPerson(Person.T_BA);
-                } else if (!c.getFaction().isClan() && (c.getGameYear() > 3050) && (Compute.d6(2) > 11)) {
+                if (canGenerateBattleArmor (c) && (Compute.d6(2) > (c.getFaction().isClan() ? 3 : 11))) {
                     p = c.newPerson(Person.T_BA);
                 } else {
                     p = c.newPerson(Person.T_INFANTRY);
@@ -101,7 +99,7 @@ public class PersonnelMarketAtB implements PersonnelMarketMethod {
                 p = c.newPerson(Person.T_DOCTOR);
             }
 
-            if (null != p) {
+            if (p != null) {
                 UUID id = UUID.randomUUID();
                 p.setId(id);
                 retVal.add(p);
