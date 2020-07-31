@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -66,7 +67,6 @@ import megamek.common.TargetRoll;
 import megamek.common.UnitType;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
-import mekhq.Utilities;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.Transaction;
 import mekhq.campaign.mission.AtBContract;
@@ -183,8 +183,8 @@ public class RetirementDefectionDialog extends JDialog {
             }
             if (null == contract) {
                 instructions += "\n\nDays since last retirement roll: "
-                        + Utilities.countDaysBetween(rdTracker.getLastRetirementRoll().getTime(),
-                                hqView.getCampaign().getDate());
+                        + ChronoUnit.DAYS.between(rdTracker.getLastRetirementRoll(),
+                        hqView.getCampaign().getLocalDate());
             }
             txtInstructions.setText(instructions);
         } else {

@@ -301,7 +301,7 @@ public final class InjuryUtil {
                 } else if ((roll > critLimit) && (critTimeReduction > 0)) {
                     result.add(new GameEffect(
                         String.format("%s performed some amazing work in treating %s of %s (%d fewer day(s) to heal).",
-                            doc.getHyperlinkedFullTitle(), i.getName(), p.getHyperlinkedName(), critTimeReduction),
+                                doc.getHyperlinkedFullTitle(), i.getName(), p.getHyperlinkedName(), critTimeReduction),
                         rnd -> {
                             i.setTime(i.getTime() - critTimeReduction);
                             MedicalLogger.docAmazingWork(doc, p, i, c.getDate(), critTimeReduction);
@@ -309,13 +309,13 @@ public final class InjuryUtil {
                 } else {
                     final int xpChance = (int) Math.round(100.0 / c.getCampaignOptions().getNTasksXP());
                     result.add(new GameEffect(
-                        String.format("%s successfully treated %s [%d%% chance of gaining %d XP]",
-                            doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(),
-                            xpChance, c.getCampaignOptions().getTaskXP()),
+                            String.format("%s successfully treated %s [%d%% chance of gaining %d XP]",
+                                    doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(),
+                                    xpChance, c.getCampaignOptions().getTaskXP()),
                         rnd -> {
                             int taskXP = c.getCampaignOptions().getTaskXP();
                             if ((taskXP > 0) && (doc.getNTasks() >= c.getCampaignOptions().getNTasksXP())) {
-                                doc.setXp(doc.getXp() + taskXP);
+                                doc.awardXP(taskXP);
                                 doc.setNTasks(0);
 
                                 ServiceLogger.gainedXpFromMedWork(doc, c.getDate(), taskXP);
@@ -360,7 +360,7 @@ public final class InjuryUtil {
             result.add(new GameEffect(treatmentSummary,
                 rnd -> {
                     if (xp > 0) {
-                        doc.setXp(doc.getXp() + xp);
+                        doc.awardXP(xp);
                         ServiceLogger.successfullyTreatedWithXp(doc, p, c.getDate(), injuries, xp);
                     } else {
                         ServiceLogger.successfullyTreated(doc, p, c.getDate(), injuries);
