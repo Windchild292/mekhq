@@ -41,6 +41,7 @@ import mekhq.campaign.event.ScenarioRemovedEvent;
 import mekhq.campaign.finances.*;
 import mekhq.campaign.log.*;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
@@ -747,7 +748,7 @@ public class Campaign implements Serializable, ITechManager {
                         getPerson(pid).changeStatus(this, PersonnelStatus.RETIRED);
                         addReport(getPerson(pid).getFullName() + " has retired.");
                     }
-                    if (Person.T_NONE != getRetirementDefectionTracker().getPayout(pid).getRecruitType()) {
+                    if (PersonnelRole.NONE != getRetirementDefectionTracker().getPayout(pid).getRecruitType()) {
                         getPersonnelMarket().addPerson(
                                 newPerson(getRetirementDefectionTracker().getPayout(pid).getRecruitType()));
                     }
@@ -765,7 +766,7 @@ public class Campaign implements Serializable, ITechManager {
                     if (getCampaignOptions().canAtBAddDependents()) {
                         int dependents = getRetirementDefectionTracker().getPayout(pid).getDependents();
                         while (dependents > 0) {
-                            Person person = newDependent(Person.T_ASTECH, false);
+                            Person person = newDependent(false);
                             if (recruitPerson(person)) {
                                 dependents--;
                             } else {
@@ -1237,17 +1238,15 @@ public class Campaign implements Serializable, ITechManager {
     //region Personnel
     //region Person Creation
     /**
-     * Creates a new {@link Person}, who is a dependent, of a given primary role.
-     * @param type The primary role of the {@link Person}, e.g. {@link Person#T_MECHWARRIOR}.
-     * @return A new {@link Person} of the given primary role, who is a dependent.
+     * @return A new {@link Person} that is a dependent
      */
-    public Person newDependent(int type, boolean baby) {
+    public Person newDependent(boolean baby) {
         Person person;
 
-        if (!baby && campaignOptions.getRandomizeDependentOrigin()) {
-            person = newPerson(type);
+        if (!baby && getCampaignOptions().getRandomizeDependentOrigin()) {
+            person = newPerson(PersonnelRole.DEPENDENT);
         } else {
-            person = newPerson(type, Person.T_NONE, new DefaultFactionSelector(),
+            person = newPerson(PersonnelRole.DEPENDENT, new DefaultFactionSelector(),
                     new DefaultPlanetSelector(), Gender.RANDOMIZE);
         }
 
@@ -1262,8 +1261,8 @@ public class Campaign implements Serializable, ITechManager {
      * @param type The primary role
      * @return A new {@link Person}.
      */
-    public Person newPerson(int type) {
-        return newPerson(type, Person.T_NONE);
+    public Person newPerson(PersonnelRole type) {
+        return newPerson(type, getFactionSelector(), getPlanetSelector(), Gender.RANDOMIZE);
     }
 
     /**
@@ -1271,25 +1270,12 @@ public class Campaign implements Serializable, ITechManager {
      * CampaignOptions
      *
      * @param type The primary role
-     * @param secondary A secondary role; used for LAM pilots to generate MW + Aero pilot
-     * @return A new {@link Person}.
-     */
-    public Person newPerson(int type, int secondary) {
-        return newPerson(type, secondary, getFactionSelector(), getPlanetSelector(), Gender.RANDOMIZE);
-    }
-
-    /**
-     * Generate a new pilotPerson of the given type using whatever randomization options have been given in the
-     * CampaignOptions
-     *
-     * @param type The primary role
-     * @param secondary A secondary role; used for LAM pilots to generate MW + Aero pilot
      * @param factionCode The code for the faction this person is to be generated from
      * @param gender The gender of the person to be generated, or a randomize it value
      * @return A new {@link Person}.
      */
-    public Person newPerson(int type, int secondary, String factionCode, Gender gender) {
-        return newPerson(type, secondary, new DefaultFactionSelector(factionCode), getPlanetSelector(), gender);
+    public Person newPerson(PersonnelRole type, String factionCode, Gender gender) {
+        return newPerson(type, new DefaultFactionSelector(factionCode), getPlanetSelector(), gender);
     }
 
     /**
@@ -1297,33 +1283,26 @@ public class Campaign implements Serializable, ITechManager {
      * CampaignOptions
      *
      * @param type The primary role
-     * @param secondary A secondary role; used for LAM pilots to generate MW + Aero pilot
      * @param factionSelector The faction selector to use for the person.
      * @param planetSelector The planet selector for the person.
      * @param gender The gender of the person to be generated, or a randomize it value
      * @return A new {@link Person}.
      */
-    public Person newPerson(int type, int secondary, AbstractFactionSelector factionSelector,
+    public Person newPerson(PersonnelRole type, AbstractFactionSelector factionSelector,
                             AbstractPlanetSelector planetSelector, Gender gender) {
         AbstractPersonnelGenerator personnelGenerator = getPersonnelGenerator(factionSelector, planetSelector);
-        return newPerson(type, secondary, personnelGenerator, gender);
+        return newPerson(type, personnelGenerator, gender);
     }
 
     /**
      * Generate a new {@link Person} of the given type, using the supplied {@link AbstractPersonnelGenerator}
      * @param type The primary role of the {@link Person}.
-     * @param secondary The secondary role, or {@link Person#T_NONE}, of the {@link Person}.
      * @param personnelGenerator The {@link AbstractPersonnelGenerator} to use when creating the {@link Person}.
      * @param gender The gender of the person to be generated, or a randomize it value
      * @return A new {@link Person} configured using {@code personnelGenerator}.
      */
-    public Person newPerson(int type, int secondary, AbstractPersonnelGenerator personnelGenerator, Gender gender) {
-        if (type == Person.T_LAM_PILOT) {
-            type = Person.T_MECHWARRIOR;
-            secondary = Person.T_AERO_PILOT;
-        }
-
-        Person person = personnelGenerator.generate(this, type, secondary, gender);
+    public Person newPerson(PersonnelRole type, AbstractPersonnelGenerator personnelGenerator, Gender gender) {
+        Person person = personnelGenerator.generate(this, type, gender);
 
         // Assign a random portrait after we generate a new person
         if (getCampaignOptions().usePortraitForType(type)) {
@@ -1474,17 +1453,17 @@ public class Campaign implements Serializable, ITechManager {
                             ? person.getSkill(SkillType.S_GUN_VEE).getFinalSkillValue()
                             : TargetRoll.AUTOMATIC_FAIL;
                     switch (person.getPrimaryRole()) {
-                        case Person.T_VTOL_PILOT:
+                        case VTOL_PILOT:
                             bloodnameTarget += person.hasSkill(SkillType.S_PILOT_VTOL)
                                     ? person.getSkill(SkillType.S_PILOT_VTOL).getFinalSkillValue()
                                     : TargetRoll.AUTOMATIC_FAIL;
                             break;
-                        case Person.T_NVEE_DRIVER:
+                        case N_VEHICLE_DRIVER:
                             bloodnameTarget += person.hasSkill(SkillType.S_PILOT_NVEE)
                                     ? person.getSkill(SkillType.S_PILOT_NVEE).getFinalSkillValue()
                                     : TargetRoll.AUTOMATIC_FAIL;
                             break;
-                        case Person.T_GVEE_DRIVER:
+                        case G_VEHICLE_DRIVER:
                             bloodnameTarget += person.hasSkill(SkillType.S_PILOT_GVEE)
                                     ? person.getSkill(SkillType.S_PILOT_GVEE).getFinalSkillValue()
                                     : TargetRoll.AUTOMATIC_FAIL;
@@ -1500,22 +1479,22 @@ public class Campaign implements Serializable, ITechManager {
                 }
                 case NAVAL: {
                     switch (person.getPrimaryRole()) {
-                        case Person.T_SPACE_CREW:
+                        case SPACECRAFT_CREW:
                             bloodnameTarget += 2 * (person.hasSkill(SkillType.S_TECH_VESSEL)
                                     ? person.getSkill(SkillType.S_TECH_VESSEL).getFinalSkillValue()
                                     : TargetRoll.AUTOMATIC_FAIL);
                             break;
-                        case Person.T_SPACE_GUNNER:
+                        case SPACECRAFT_GUNNER:
                             bloodnameTarget += 2 * (person.hasSkill(SkillType.S_GUN_SPACE)
                                     ? person.getSkill(SkillType.S_GUN_SPACE).getFinalSkillValue()
                                     : TargetRoll.AUTOMATIC_FAIL);
                             break;
-                        case Person.T_SPACE_PILOT:
+                        case SPACECRAFT_PILOT:
                             bloodnameTarget += 2 * (person.hasSkill(SkillType.S_PILOT_SPACE)
                                     ? person.getSkill(SkillType.S_PILOT_SPACE).getFinalSkillValue()
                                     : TargetRoll.AUTOMATIC_FAIL);
                             break;
-                        case Person.T_NAVIGATOR:
+                        case SPACECRAFT_NAVIGATOR:
                             bloodnameTarget += 2 * (person.hasSkill(SkillType.S_NAV)
                                     ? person.getSkill(SkillType.S_NAV).getFinalSkillValue()
                                     : TargetRoll.AUTOMATIC_FAIL);

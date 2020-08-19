@@ -34,6 +34,7 @@ import java.util.UUID;
 import mekhq.campaign.finances.FinancialReport;
 import mekhq.campaign.finances.Money;
 
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -132,7 +133,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                 if ((p.getPrimaryRole() == Person.T_NONE) || p.isDependent() || !p.getPrisonerStatus().isFree()) {
                     continue;
                 }
-                if (p.getPrimaryRole() >= Person.T_MECH_TECH) {
+                if (p.getPrimaryRole().isSupportRole()) {
                     support++;
                 } else if ((null == p.getUnitId()) ||
                         ((null != campaign.getUnit(p.getUnitId())) && campaign.getUnit(p.getUnitId()).isCommander(p))) {
@@ -141,7 +142,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                      * would tax all but the most exceptional commanders of
                      * vehicle or infantry units.
                      */
-                    if (p.getPrimaryRole() == Person.T_PROTO_PILOT) {
+                    if (p.getPrimaryRole() == PersonnelRole.PROTOMECH_PILOT) {
                         proto++;
                     } else {
                         combat++;
@@ -442,7 +443,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
         int dependents = 0;
         Money payoutAmount = Money.zero();
         boolean recruit = false;
-        int recruitType = Person.T_NONE;
+        PersonnelRole recruitType = PersonnelRole.NONE;
         boolean heir = false;
         boolean stolenUnit = false;
         UUID stolenUnitId = null;
@@ -549,7 +550,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             recruit = r;
         }
 
-        public int getRecruitType() {
+        public PersonnelRole getRecruitType() {
             return recruitType;
         }
 

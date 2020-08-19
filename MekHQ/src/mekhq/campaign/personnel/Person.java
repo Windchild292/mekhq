@@ -69,43 +69,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     //region Variable Declarations
     private static final long serialVersionUID = -847642980395311152L;
 
-    /* If any new roles are added they should go at the end. They should also be accounted for
-     * in isCombatRole(int) or isSupportRole(int). You should also increase the value of T_NUM
-     * if you add new roles.
-     */
-    public static final int T_NONE = 0; // Support Role
-    public static final int T_MECHWARRIOR = 1; // Start of Combat Roles
-    public static final int T_AERO_PILOT = 2;
-    public static final int T_GVEE_DRIVER = 3;
-    public static final int T_NVEE_DRIVER = 4;
-    public static final int T_VTOL_PILOT = 5;
-    public static final int T_VEE_GUNNER = 6;
-    public static final int T_BA = 7;
-    public static final int T_INFANTRY = 8;
-    public static final int T_PROTO_PILOT = 9;
-    public static final int T_CONV_PILOT = 10;
-    public static final int T_SPACE_PILOT = 11;
-    public static final int T_SPACE_CREW = 12;
-    public static final int T_SPACE_GUNNER = 13;
-    public static final int T_NAVIGATOR = 14; // End of Combat Roles
-    public static final int T_MECH_TECH = 15; // Start of Support Roles
-    public static final int T_MECHANIC = 16;
-    public static final int T_AERO_TECH = 17;
-    public static final int T_BA_TECH = 18;
-    public static final int T_ASTECH = 19;
-    public static final int T_DOCTOR = 20;
-    public static final int T_MEDIC = 21;
-    public static final int T_ADMIN_COM = 22;
-    public static final int T_ADMIN_LOG = 23;
-    public static final int T_ADMIN_TRA = 24;
-    public static final int T_ADMIN_HR = 25; // End of support roles
-    public static final int T_LAM_PILOT = 26; // Not a separate type, but an alias for MW + Aero pilot
-                                              // Does not count as either combat or support role
-    public static final int T_VEHICLE_CREW = 27; // non-gunner/non-driver support vehicle crew
-
-    // This value should always be +1 of the last defined role
-    public static final int T_NUM = 28;
-
     private static final Map<Integer, Money> MECHWARRIOR_AERO_RANSOM_VALUES;
     private static final Map<Integer, Money> OTHER_RANSOM_VALUES;
 
@@ -167,8 +130,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
     private String callsign;
     private Gender gender;
 
-    private int primaryRole;
-    private int secondaryRole;
+    private PersonnelRole primaryRole;
+    private PersonnelRole secondaryRole;
 
     private ROMDesignation primaryDesignator;
     private ROMDesignation secondaryDesignator;
@@ -346,8 +309,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.honorific = honorific;
         maidenName = null; // this is set to null to handle divorce cases
         callsign = "";
-        primaryRole = T_NONE;
-        secondaryRole = T_NONE;
+        primaryRole = PersonnelRole.NONE;
+        secondaryRole = PersonnelRole.NONE;
         primaryDesignator = ROMDesignation.NONE;
         secondaryDesignator = ROMDesignation.NONE;
         commander = false;
@@ -726,31 +689,30 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     //region Personnel Roles
-    // TODO : Move me into an enum with checks for hasAdministratorRole, hasTechRole, hasMedicalRole, etc.
-    public int getPrimaryRole() {
+    public PersonnelRole getPrimaryRole() {
         return primaryRole;
     }
 
-    public void setPrimaryRole(int t) {
+    public void setPrimaryRole(PersonnelRole t) {
         this.primaryRole = t;
         //you can't be primary tech and a secondary astech
         //you can't be a primary astech and a secondary tech
-        if ((isTechPrimary() && secondaryRole == T_ASTECH)
-            || (isTechSecondary() && primaryRole == T_ASTECH)) {
-            secondaryRole = T_NONE;
+        if ((isTechPrimary() && secondaryRole == PersonnelRole.ASTECH)
+            || (isTechSecondary() && primaryRole == PersonnelRole.ASTECH)) {
+            secondaryRole = PersonnelRole.NONE;
         }
-        if ((primaryRole == T_DOCTOR && secondaryRole == T_MEDIC)
-            || (secondaryRole == T_DOCTOR && primaryRole == T_MEDIC)) {
-            secondaryRole = T_NONE;
+        if ((primaryRole == PersonnelRole.DOCTOR && secondaryRole == PersonnelRole.MEDIC)
+            || (secondaryRole == PersonnelRole.DOCTOR && primaryRole == PersonnelRole.MEDIC)) {
+            secondaryRole = PersonnelRole.NONE;
         }
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
 
-    public int getSecondaryRole() {
+    public PersonnelRole getSecondaryRole() {
         return secondaryRole;
     }
 
-    public void setSecondaryRole(int t) {
+    public void setSecondaryRole(PersonnelRole t) {
         this.secondaryRole = t;
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
@@ -761,7 +723,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @param role the role to determine
      * @return true if the person has the specific role either as their primary or secondary role
      */
-    public boolean hasRole(int role) {
+    public boolean hasRole(PersonnelRole role) {
         return (getPrimaryRole() == role) || (getSecondaryRole() == role);
     }
 
@@ -772,7 +734,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @param maximumRole the maximum role bound (inclusive)
      * @return true if they have a role within the bounds (inclusive), otherwise false.
      */
-    public boolean hasRoleWithin(int minimumRole, int maximumRole) {
+    public boolean hasRoleWithin(PersonnelRole minimumRole, PersonnelRole maximumRole) {
         return hasPrimaryRoleWithin(minimumRole, maximumRole)
                 || hasSecondaryRoleWithin(minimumRole, maximumRole);
     }
@@ -782,7 +744,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @param maximumRole the maximum role bound (inclusive)
      * @return true if they have a primary role within the bounds (inclusive), otherwise false
      */
-    public boolean hasPrimaryRoleWithin(int minimumRole, int maximumRole) {
+    public boolean hasPrimaryRoleWithin(PersonnelRole minimumRole, PersonnelRole maximumRole) {
         return (getPrimaryRole() >= minimumRole) && (getPrimaryRole() <= maximumRole);
     }
 
@@ -791,7 +753,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @param maximumRole the maximum role bound (inclusive)
      * @return true if they have a secondary role within the bounds (inclusive), otherwise false
      */
-    public boolean hasSecondaryRoleWithin(int minimumRole, int maximumRole) {
+    public boolean hasSecondaryRoleWithin(PersonnelRole minimumRole, PersonnelRole maximumRole) {
         return (getSecondaryRole() >= minimumRole) && (getSecondaryRole() <= maximumRole);
     }
 
@@ -806,16 +768,16 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return true if the person has a primary combat role
      */
     public boolean hasPrimaryCombatRole() {
-        return hasPrimaryRoleWithin(T_MECHWARRIOR, T_SPACE_GUNNER)
-                || hasPrimaryRoleWithin(T_LAM_PILOT, T_VEHICLE_CREW);
+        return hasPrimaryRoleWithin(PersonnelRole.MECHWARRIOR, PersonnelRole.SPACECRAFT_GUNNER)
+                || hasPrimaryRoleWithin(PersonnelRole.LAM_PILOT, PersonnelRole.VEHICLE_CREW);
     }
 
     /**
      * @return true if the person has a secondary combat role
      */
     public boolean hasSecondaryCombatRole() {
-        return hasSecondaryRoleWithin(T_MECHWARRIOR, T_SPACE_GUNNER)
-                || hasSecondaryRoleWithin(T_LAM_PILOT, T_VEHICLE_CREW);
+        return hasSecondaryRoleWithin(PersonnelRole.MECHWARRIOR, PersonnelRole.SPACECRAFT_GUNNER)
+                || hasSecondaryRoleWithin(PersonnelRole.LAM_PILOT, PersonnelRole.VEHICLE_CREW);
     }
 
     /**
@@ -831,7 +793,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return true if the person has a primary support role
      */
     public boolean hasPrimarySupportRole(boolean includeNoRole) {
-        return hasPrimaryRoleWithin(T_MECH_TECH, T_ADMIN_HR) || (includeNoRole && (getPrimaryRole() == T_NONE));
+        return hasPrimaryRoleWithin(PersonnelRole.MECH_TECH, PersonnelRole.ADMIN_HR) || (includeNoRole && (getPrimaryRole() == PersonnelRole.NONE));
     }
 
     /**
@@ -839,7 +801,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * role if it is a secondary role
      */
     public boolean hasSecondarySupportRole() {
-        return hasSecondaryRoleWithin(T_MECH_TECH, T_ADMIN_HR);
+        return hasSecondaryRoleWithin(PersonnelRole.MECH_TECH, PersonnelRole.ADMIN_HR);
     }
 
     /**
@@ -849,9 +811,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @param role A value that can be used for a person's primary or secondary role.
      * @return     Whether the role is considered a combat role
      */
-    public static boolean isCombatRole(int role) {
-        return ((role > T_NONE) && (role <= T_NAVIGATOR))
-                || (role == T_VEHICLE_CREW);
+    public static boolean isCombatRole(PersonnelRole role) {
+        return ((role > PersonnelRole.NONE) && (role <= PersonnelRole.SPACECRAFT_NAVIGATOR))
+                || (role == PersonnelRole.VEHICLE_CREW);
     }
 
     /**
@@ -984,73 +946,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.daysToWaitForHealing = d;
     }
 
-    public static String getRoleDesc(int type, boolean clan) {
-        switch (type) {
-            case (T_NONE):
-                return "None";
-            case (T_MECHWARRIOR):
-                return "MechWarrior";
-            case (T_GVEE_DRIVER):
-                return "Vehicle Driver";
-            case (T_NVEE_DRIVER):
-                return "Naval Driver";
-            case (T_VTOL_PILOT):
-                return "VTOL Pilot";
-            case (T_VEE_GUNNER):
-                return "Vehicle Gunner";
-            case (T_CONV_PILOT):
-                return "Conventional Aircraft Pilot";
-            case (T_AERO_PILOT):
-                return "Aerospace Pilot";
-            case (T_PROTO_PILOT):
-                return "ProtoMech Pilot";
-            case (T_BA):
-                if (clan) {
-                    return "Elemental";
-                } else {
-                    return "Battle Armor Pilot";
-                }
-            case (T_INFANTRY):
-                return "Soldier";
-            case (T_SPACE_PILOT):
-                return "Vessel Pilot";
-            case (T_SPACE_CREW):
-                return "Vessel Crewmember";
-            case (T_SPACE_GUNNER):
-                return "Vessel Gunner";
-            case (T_NAVIGATOR):
-                return "Hyperspace Navigator";
-            case (T_MECH_TECH):
-                return "Mech Tech";
-            case (T_MECHANIC):
-                return "Mechanic";
-            case (T_AERO_TECH):
-                return "Aero Tech";
-            case (T_BA_TECH):
-                return "Battle Armor Tech";
-            case (T_ASTECH):
-                return "Astech";
-            case (T_DOCTOR):
-                return "Doctor";
-            case (T_MEDIC):
-                return "Medic";
-            case (T_ADMIN_COM):
-                return "Admin/Command";
-            case (T_ADMIN_LOG):
-                return "Admin/Logistical";
-            case (T_ADMIN_TRA):
-                return "Admin/Transport";
-            case (T_ADMIN_HR):
-                return "Admin/HR";
-            case (T_LAM_PILOT):
-                return "LAM Pilot";
-            case (T_VEHICLE_CREW):
-                return "Vehicle Crew";
-            default:
-                return "??";
-        }
-    }
-
     public String getRoleDesc() {
         String role = getPrimaryRoleDesc();
         if ((getSecondaryRole() != T_NONE) && (getSecondaryRole() != -1)) {
@@ -1069,121 +964,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public String getSecondaryRoleDesc() {
         return getRoleDesc(getSecondaryRole(), isClanner());
-    }
-
-    public static int getRoleMnemonic(int type) {
-        // The following characters are unused:
-        // J, K, Q, X, Z
-        switch (type) {
-            case T_MECHWARRIOR:
-                return KeyEvent.VK_M;
-            case T_GVEE_DRIVER:
-                return KeyEvent.VK_V;
-            case T_NVEE_DRIVER:
-                return KeyEvent.VK_N;
-            case T_VEE_GUNNER:
-                return KeyEvent.VK_G;
-            case T_AERO_PILOT:
-                return KeyEvent.VK_A;
-            case T_PROTO_PILOT:
-                return KeyEvent.VK_P;
-            case T_CONV_PILOT:
-                return KeyEvent.VK_F;
-            case T_BA:
-                return KeyEvent.VK_B;
-            case T_INFANTRY:
-                return KeyEvent.VK_S;
-            case T_SPACE_PILOT:
-                return KeyEvent.VK_I;
-            case T_SPACE_CREW:
-                return KeyEvent.VK_W;
-            case T_SPACE_GUNNER:
-                return KeyEvent.VK_U;
-            case T_NAVIGATOR:
-                return KeyEvent.VK_Y;
-            case T_MECH_TECH:
-                return KeyEvent.VK_T;
-            case T_MECHANIC:
-                return KeyEvent.VK_E;
-            case T_AERO_TECH:
-                return KeyEvent.VK_O;
-            case T_DOCTOR:
-                return KeyEvent.VK_D;
-            case T_ADMIN_COM:
-                return KeyEvent.VK_C;
-            case T_ADMIN_LOG:
-                return KeyEvent.VK_L;
-            case T_ADMIN_TRA:
-                return KeyEvent.VK_R;
-            case T_ADMIN_HR:
-                return KeyEvent.VK_H;
-            case T_VTOL_PILOT:
-            case T_BA_TECH:
-            case T_ASTECH:
-            case T_MEDIC:
-            case T_LAM_PILOT:
-            case T_VEHICLE_CREW:
-            case T_NONE:
-            default:
-                return KeyEvent.VK_UNDEFINED;
-        }
-    }
-
-    public boolean canPerformRole(int role) {
-        switch (role) {
-            case (T_NONE):
-                return true;
-            case (T_MECHWARRIOR):
-                return hasSkill(SkillType.S_GUN_MECH) && hasSkill(SkillType.S_PILOT_MECH);
-            case (T_GVEE_DRIVER):
-                return hasSkill(SkillType.S_PILOT_GVEE);
-            case (T_NVEE_DRIVER):
-                return hasSkill(SkillType.S_PILOT_NVEE);
-            case (T_VTOL_PILOT):
-                return hasSkill(SkillType.S_PILOT_VTOL);
-            case (T_VEE_GUNNER):
-                return hasSkill(SkillType.S_GUN_VEE);
-            case (T_AERO_PILOT):
-                return hasSkill(SkillType.S_GUN_AERO) && hasSkill(SkillType.S_PILOT_AERO);
-            case (T_CONV_PILOT):
-                return hasSkill(SkillType.S_GUN_JET) && hasSkill(SkillType.S_PILOT_JET);
-            case (T_PROTO_PILOT):
-                return hasSkill(SkillType.S_GUN_PROTO);
-            case (T_BA):
-                return hasSkill(SkillType.S_GUN_BA);
-            case (T_INFANTRY):
-                return hasSkill(SkillType.S_SMALL_ARMS);
-            case (T_SPACE_PILOT):
-                return hasSkill(SkillType.S_PILOT_SPACE);
-            case (T_SPACE_CREW):
-                return hasSkill(SkillType.S_TECH_VESSEL);
-            case (T_SPACE_GUNNER):
-                return hasSkill(SkillType.S_GUN_SPACE);
-            case (T_NAVIGATOR):
-                return hasSkill(SkillType.S_NAV);
-            case (T_MECH_TECH):
-                return hasSkill(SkillType.S_TECH_MECH) && getSkill(SkillType.S_TECH_MECH).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_MECHANIC):
-            case T_VEHICLE_CREW:
-                return hasSkill(SkillType.S_TECH_MECHANIC) && getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_AERO_TECH):
-                return hasSkill(SkillType.S_TECH_AERO) && getSkill(SkillType.S_TECH_AERO).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_BA_TECH):
-                return hasSkill(SkillType.S_TECH_BA) && getSkill(SkillType.S_TECH_BA).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_ASTECH):
-                return hasSkill(SkillType.S_ASTECH);
-            case (T_DOCTOR):
-                return hasSkill(SkillType.S_DOCTOR) && getSkill(SkillType.S_DOCTOR).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_MEDIC):
-                return hasSkill(SkillType.S_MEDTECH);
-            case (T_ADMIN_COM):
-            case (T_ADMIN_LOG):
-            case (T_ADMIN_TRA):
-            case (T_ADMIN_HR):
-                return hasSkill(SkillType.S_ADMIN);
-            default:
-                return false;
-        }
     }
 
     public void setGender(Gender gender) {
@@ -2631,12 +2411,12 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public int getExperienceLevel(boolean secondary) {
-        int role = primaryRole;
+        PersonnelRole role = primaryRole;
         if (secondary) {
             role = secondaryRole;
         }
         switch (role) {
-            case T_MECHWARRIOR:
+            case MECHWARRIOR:
                 if (hasSkill(SkillType.S_GUN_MECH) && hasSkill(SkillType.S_PILOT_MECH)) {
                     /* Attempt to use higher precision averaging, but if it doesn't provide a clear result
                     due to non-standard experience thresholds then fall back on lower precision averaging
@@ -2656,7 +2436,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else {
                     return -1;
                 }
-            case T_GVEE_DRIVER:
+            case G_VEHICLE_DRIVER:
                 if (hasSkill(SkillType.S_PILOT_GVEE)) {
                     return getSkill(SkillType.S_PILOT_GVEE).getExperienceLevel();
                 } else {
@@ -3428,13 +3208,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return (isTechPrimary() || isTechSecondary()) && (isMechTech || isAeroTech || isMechanic || isBATech);
     }
 
-    public boolean isTechPrimary() {
-        return primaryRole == T_MECH_TECH || primaryRole == T_AERO_TECH || primaryRole == T_MECHANIC || primaryRole == T_BA_TECH || primaryRole == T_SPACE_CREW;
-    }
 
-    public boolean isTechSecondary() {
-        return secondaryRole == T_MECH_TECH || secondaryRole == T_AERO_TECH || secondaryRole == T_MECHANIC || secondaryRole == T_BA_TECH;
-    }
 
     public boolean isTaskOvertime(IPartWork partWork) {
         return partWork.getTimeLeft() > getMinutesLeft()

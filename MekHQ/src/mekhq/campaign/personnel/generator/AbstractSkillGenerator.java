@@ -25,6 +25,7 @@ import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.Skill;
 import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 
 /**
@@ -61,113 +62,99 @@ public abstract class AbstractSkillGenerator {
     /**
      * Generates the default skills for a {@link Person} based on their primary role.
      * @param person The {@link Person} to add default skills.
-     * @param primaryRole The primary role of the person (e.g. {@link Person#T_MECHWARRIOR}).
+     * @param primaryRole The primary role of the person (e.g. {@link PersonnelRole#MECHWARRIOR}).
      * @param expLvl The experience level of the person (e.g. {@link SkillType#EXP_GREEN}).
      * @param bonus The bonus to use for the default skills.
      * @param rollModifier A roll modifier to apply to any randomizations.
      */
-    protected void generateDefaultSkills(Person person, int primaryRole, int expLvl, int bonus, int rollModifier) {
+    protected void generateDefaultSkills(Person person, PersonnelRole primaryRole, int expLvl, int bonus, int rollModifier) {
         switch (primaryRole) {
-            case (Person.T_MECHWARRIOR):
-                addSkill(person, SkillType.S_PILOT_MECH, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case MECHWARRIOR:
+            case LAM_PILOT:
+                addSkill(person, SkillType.S_PILOT_MECH, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_GUN_MECH, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_GVEE_DRIVER):
-                addSkill(person, SkillType.S_PILOT_GVEE, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case G_VEHICLE_DRIVER:
+                addSkill(person, SkillType.S_PILOT_GVEE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_GUN_VEE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_NVEE_DRIVER):
-                addSkill(person, SkillType.S_PILOT_NVEE, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case N_VEHICLE_DRIVER:
+                addSkill(person, SkillType.S_PILOT_NVEE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_GUN_VEE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_VTOL_PILOT):
-                addSkill(person, SkillType.S_PILOT_VTOL, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case VTOL_PILOT:
+                addSkill(person, SkillType.S_PILOT_VTOL, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_GUN_VEE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_VEE_GUNNER):
-                addSkill(person, SkillType.S_GUN_VEE, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case VEHICLE_GUNNER:
+                addSkill(person, SkillType.S_GUN_VEE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_CONV_PILOT):
-                addSkill(person, SkillType.S_PILOT_JET, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case CONVENTIONAL_AEROSPACE_PILOT:
+                addSkill(person, SkillType.S_PILOT_JET, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_GUN_JET, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_AERO_PILOT):
-                addSkill(person, SkillType.S_PILOT_AERO, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case AEROSPACE_PILOT:
+                addSkill(person, SkillType.S_PILOT_AERO, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_GUN_AERO, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_PROTO_PILOT):
-                addSkill(person, SkillType.S_GUN_PROTO, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case PROTOMECH_PILOT:
+                addSkill(person, SkillType.S_GUN_PROTO, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_BA):
-                addSkill(person, SkillType.S_GUN_BA, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case BA:
+            case ELEMENTAL:
+                addSkill(person, SkillType.S_GUN_BA, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_ANTI_MECH, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 addSkill(person, SkillType.S_SMALL_ARMS, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_INFANTRY):
+            case INFANTRY:
                 if (Utilities.rollProbability(rskillPrefs.getAntiMekProb())) {
-                    addSkill(person, SkillType.S_ANTI_MECH, expLvl,
-                            rskillPrefs.randomizeSkill(), bonus, rollModifier);
+                    addSkill(person, SkillType.S_ANTI_MECH, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 }
                 addSkill(person, SkillType.S_SMALL_ARMS, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_SPACE_PILOT):
-                addSkill(person, SkillType.S_PILOT_SPACE, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case SPACECRAFT_PILOT:
+                addSkill(person, SkillType.S_PILOT_SPACE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_SPACE_CREW):
-                addSkill(person, SkillType.S_TECH_VESSEL, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case SPACECRAFT_CREW:
+                addSkill(person, SkillType.S_TECH_VESSEL, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_SPACE_GUNNER):
-                addSkill(person, SkillType.S_GUN_SPACE, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case SPACECRAFT_GUNNER:
+                addSkill(person, SkillType.S_GUN_SPACE, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_NAVIGATOR):
-                addSkill(person, SkillType.S_NAV, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case SPACECRAFT_NAVIGATOR:
+                addSkill(person, SkillType.S_NAV, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_MECH_TECH):
-                addSkill(person, SkillType.S_TECH_MECH, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case MECH_TECH:
+                addSkill(person, SkillType.S_TECH_MECH, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_MECHANIC):
-            case Person.T_VEHICLE_CREW:
-                addSkill(person, SkillType.S_TECH_MECHANIC, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case MECHANIC:
+            case VEHICLE_CREW:
+                addSkill(person, SkillType.S_TECH_MECHANIC, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_AERO_TECH):
-                addSkill(person, SkillType.S_TECH_AERO, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case AEROSPACE_TECH:
+                addSkill(person, SkillType.S_TECH_AERO, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_BA_TECH):
-                addSkill(person, SkillType.S_TECH_BA, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case BA_TECH:
+                addSkill(person, SkillType.S_TECH_BA, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_ASTECH):
+            case ASTECH:
                 addSkill(person, SkillType.S_ASTECH, 0, 0);
                 break;
-            case (Person.T_DOCTOR):
-                addSkill(person, SkillType.S_DOCTOR, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case DOCTOR:
+                addSkill(person, SkillType.S_DOCTOR, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
                 break;
-            case (Person.T_MEDIC):
+            case MEDIC:
                 addSkill(person, SkillType.S_MEDTECH, 0, 0);
                 break;
-            case (Person.T_ADMIN_COM):
-            case (Person.T_ADMIN_LOG):
-            case (Person.T_ADMIN_TRA):
-            case (Person.T_ADMIN_HR):
-                addSkill(person, SkillType.S_ADMIN, expLvl,
-                        rskillPrefs.randomizeSkill(), bonus, rollModifier);
+            case ADMIN_COMMAND:
+            case ADMIN_LOGISTICS:
+            case ADMIN_TRANSPORT:
+            case ADMIN_HR:
+                addSkill(person, SkillType.S_ADMIN, expLvl, rskillPrefs.randomizeSkill(), bonus, rollModifier);
+                break;
+            case DEPENDENT:
+            case NONE:
+            default:
                 break;
         }
     }
@@ -198,38 +185,40 @@ public abstract class AbstractSkillGenerator {
         if (person.isClanner()) {
             // apply phenotype bonus only to primary skills
             switch (person.getPrimaryRole()) {
-                case Person.T_MECHWARRIOR:
+                case MECHWARRIOR:
+                case LAM_PILOT:
                     if (person.getPhenotype() == Phenotype.MECHWARRIOR) {
                         return 1;
                     }
                     break;
-                case Person.T_BA:
+                case BA:
+                case ELEMENTAL:
                     if (person.getPhenotype() == Phenotype.ELEMENTAL) {
                         return 1;
                     }
                     break;
-                case Person.T_CONV_PILOT:
-                case Person.T_AERO_PILOT:
+                case CONVENTIONAL_AEROSPACE_PILOT:
+                case AEROSPACE_PILOT:
                     if (person.getPhenotype() == Phenotype.AEROSPACE) {
                         return 1;
                     }
                     break;
-                case Person.T_GVEE_DRIVER:
-                case Person.T_NVEE_DRIVER:
-                case Person.T_VTOL_PILOT:
-                case Person.T_VEE_GUNNER:
+                case G_VEHICLE_DRIVER:
+                case N_VEHICLE_DRIVER:
+                case VTOL_PILOT:
+                case VEHICLE_GUNNER:
                     if (person.getPhenotype() == Phenotype.VEHICLE) {
                         return 1;
                     }
                     break;
-                case Person.T_PROTO_PILOT:
+                case PROTOMECH_PILOT:
                     if (person.getPhenotype() == Phenotype.PROTOMECH) {
                         return 1;
                     }
-                case Person.T_SPACE_CREW:
-                case Person.T_SPACE_GUNNER:
-                case Person.T_SPACE_PILOT:
-                case Person.T_NAVIGATOR:
+                case SPACECRAFT_CREW:
+                case SPACECRAFT_GUNNER:
+                case SPACECRAFT_PILOT:
+                case SPACECRAFT_NAVIGATOR:
                     if (person.getPhenotype() == Phenotype.NAVAL) {
                         return 1;
                     }

@@ -24,9 +24,11 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -698,11 +700,9 @@ public class CampaignOptions implements Serializable {
 
         //region Name and Portrait Generation Tab
         useOriginFactionForNames = true;
-        usePortraitForType = new boolean[Person.T_NUM];
-        for (int i = 0; i < Person.T_NUM; i++) {
-            usePortraitForType[i] = false;
-        }
-        usePortraitForType[Person.T_MECHWARRIOR] = true;
+        usePortraitForType = new boolean[PersonnelRole.values().length];
+        Arrays.fill(usePortraitForType, false);
+        usePortraitForType[PersonnelRole.MECHWARRIOR.ordinal()] = true;
         assignPortraitOnRoleChange = false;
         //endregion Name and Portrait Generation Tab
 
@@ -2126,15 +2126,12 @@ public class CampaignOptions implements Serializable {
         phenotypeProbabilities[index] = percentage;
     }
 
-    public boolean usePortraitForType(int type) {
-        if (type < 0 || type >= usePortraitForType.length) {
-            return false;
-        }
-        return usePortraitForType[type];
+    public boolean usePortraitForType(PersonnelRole type) {
+        return usePortraitForType[type.ordinal()];
     }
 
     public void setUsePortraitForType(int type, boolean b) {
-        if (type < 0 || type >= usePortraitForType.length) {
+        if ((type < 0 )|| (type >= usePortraitForType.length)) {
             return;
         }
         usePortraitForType[type] = b;

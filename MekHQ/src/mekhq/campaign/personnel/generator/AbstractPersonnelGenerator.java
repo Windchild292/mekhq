@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 MegaMek team
+ * Copyright (C) 2019 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel.generator;
 
@@ -30,6 +30,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 
 /**
@@ -76,12 +77,11 @@ public abstract class AbstractPersonnelGenerator {
     /**
      * Generates a new {@link Person}.
      * @param campaign The {@link Campaign} which tracks the person.
-     * @param primaryRole The primary role of the person.
-     * @param secondaryRole The secondary role of the person.
+     * @param role The person's role
      * @param gender The person's gender, or a randomize value
      * @return A new {@link Person}.
      */
-    public abstract Person generate(Campaign campaign, int primaryRole, int secondaryRole, Gender gender);
+    public abstract Person generate(Campaign campaign, PersonnelRole role, Gender gender);
 
     /**
      * Creates a {@link Person} object for the given {@link Campaign}.

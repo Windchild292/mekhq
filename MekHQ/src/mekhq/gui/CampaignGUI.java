@@ -40,6 +40,7 @@ import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.common.*;
 import mekhq.MekHqConstants;
 import mekhq.campaign.finances.Money;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.gui.dialog.*;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.preferences.PreferencesNode;
@@ -755,13 +756,13 @@ public class CampaignGUI extends JPanel {
 
         JMenu menuHire = new JMenu(resourceMap.getString("menuHire.text")); // NOI18N
         menuHire.setMnemonic(KeyEvent.VK_H);
-        for (int i = Person.T_MECHWARRIOR; i < Person.T_NUM; i++) {
-            JMenuItem miHire = new JMenuItem(Person.getRoleDesc(i, getCampaign().getFaction().isClan()));
-            int miHireMnemonic = Person.getRoleMnemonic(i);
+        for (PersonnelRole role : PersonnelRole.values()) {
+            JMenuItem miHire = new JMenuItem(role.toString());
+            int miHireMnemonic = role.getMnemonic(getCampaign().getFaction().isClan());
             if (miHireMnemonic != KeyEvent.VK_UNDEFINED) {
                 miHire.setMnemonic(miHireMnemonic);
             }
-            miHire.setActionCommand(Integer.toString(i));
+            miHire.setActionCommand(role.name());
             miHire.addActionListener(this::hirePerson);
             menuHire.add(miHire);
         }
@@ -1258,10 +1259,9 @@ public class CampaignGUI extends JPanel {
         return false;
     }
 
-    private void hirePerson(java.awt.event.ActionEvent evt) {
-        int type = Integer.parseInt(evt.getActionCommand());
+    private void hirePerson(ActionEvent evt) {
         NewRecruitDialog npd = new NewRecruitDialog(this, true,
-                getCampaign().newPerson(type));
+                getCampaign().newPerson(PersonnelRole.parseFromString(evt.getActionCommand())));
         npd.setVisible(true);
     }
 
@@ -1602,11 +1602,9 @@ public class CampaignGUI extends JPanel {
         if (r.getOriginalEntity() instanceof Dropship || r.getOriginalEntity() instanceof Jumpship) {
             Person engineer = r.getOriginalUnit().getEngineer();
             if (engineer == null) {
-                JOptionPane
-                        .showMessageDialog(
-                                frame,
-                                "You cannot refit a ship that does not have an engineer. Assign a qualified vessel crew to this unit.",
-                                "No Engineer", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(frame,
+                        "You cannot refit a ship that does not have an engineer. Assign a qualified vessel crew to this unit.",
+                        "No Engineer", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             r.setTeamId(engineer.getId());
@@ -1623,7 +1621,8 @@ public class CampaignGUI extends JPanel {
                 if (getCampaign().isWorkingOnRefit(tech) || tech.isEngineer()) {
                     continue;
                 }
-                if (tech.getSecondaryRole() == Person.T_MECH_TECH || tech.getSecondaryRole() == Person.T_MECHANIC || tech.getSecondaryRole() == Person.T_AERO_TECH) {
+                // TODO : I look wrong
+                if (tech.getSecondaryRole().isMechTech() || tech.getSecondaryRole().isMechanic() || tech.getSecondaryRole().isAerospaceTech()) {
                     TimePerDay = 240 - tech.getMaintenanceTimeUsing();
                 } else {
                     TimePerDay = 480 - tech.getMaintenanceTimeUsing();
