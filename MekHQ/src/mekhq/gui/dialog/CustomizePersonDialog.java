@@ -56,6 +56,7 @@ import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.gui.control.EditKillLogControl;
 import mekhq.gui.control.EditMissionLogControl;
 import mekhq.gui.control.EditPersonnelLogControl;
+import mekhq.gui.control.FamilyEditorPanel;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.gui.utilities.MarkdownEditorPanel;
 import mekhq.preferences.PreferencesNode;
@@ -352,8 +353,10 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         choiceFaction.setSelectedIndex(factionsModel.getIndexOf(person.getOriginFaction()));
         choiceFaction.addActionListener(evt -> {
             // Update the clan check box based on the new selected faction
-            Faction selectedFaction = (Faction)choiceFaction.getSelectedItem();
-            chkClan.setSelected(selectedFaction.is(Tag.CLAN));
+            Faction selectedFaction = (Faction) choiceFaction.getSelectedItem();
+            if (selectedFaction != null) {
+                chkClan.setSelected(selectedFaction.isClan());
+            }
 
             // We don't have to call backgroundChanged because it is already
             // called when we update the chkClan checkbox.
@@ -392,8 +395,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
                                                           final int index,
                                                           final boolean isSelected,
                                                           final boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected,
-                                                   cellHasFocus);
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof PlanetarySystem) {
                     PlanetarySystem system = (PlanetarySystem)value;
                     setText(system.getName(campaign.getLocalDate()));
@@ -452,8 +454,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
                                                           final int index,
                                                           final boolean isSelected,
                                                           final boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected,
-                                                   cellHasFocus);
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Planet) {
                     Planet planet = (Planet)value;
                     setText(planet.getName(campaign.getLocalDate()));
@@ -786,6 +787,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         tabStats.add(resourceMap.getString("panLog.TabConstraints.tabTitle"), new EditPersonnelLogControl(frame, campaign, person));
         tabStats.add(resourceMap.getString("panMissions.TabConstraints.tabTitle"), new EditMissionLogControl(frame, campaign, person));
         tabStats.add(resourceMap.getString("panKills.TabConstraints.tabTitle"), new EditKillLogControl(frame, campaign, person));
+        tabStats.add(resourceMap.getString("panGenealogy.TabConstraints.tabTitle"), new FamilyEditorPanel(frame, campaign, person));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -850,7 +852,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
                 // Allow factions between the person's birthday
                 // and when they were recruited, or now if we're
                 // not tracking recruitment.
-                int endYear = person.getRecruitment() != null
+                int endYear = (person.getRecruitment() != null)
                     ? Math.min(person.getRecruitment().getYear(), year)
                     : year;
                 if (faction.validBetween(person.getBirthday().getYear(), endYear)) {
