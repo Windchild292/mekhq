@@ -26,12 +26,12 @@ import java.util.LinkedHashMap;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
+import megamek.client.ui.swing.panels.PortraitPanel;
 import megamek.client.ui.swing.tileset.EntityImage;
 import megamek.client.ui.swing.util.PlayerColors;
 import megamek.common.Crew;
@@ -50,13 +50,13 @@ import mekhq.campaign.unit.Unit;
 public class BasicInfo extends JPanel {
     private static final long serialVersionUID = -7337823041775639463L;
 
-    private JLabel lblImage;
+    private PortraitPanel pnlImage;
     private JLabel lblLoad;
     IconPackage icons;
 
     public BasicInfo(IconPackage i) {
         this.icons = i;
-        lblImage = new JLabel();
+        pnlImage = new PortraitPanel(i.getPortraits());
         lblLoad = new JLabel();
 
         GridBagLayout gridbag = new GridBagLayout();
@@ -84,42 +84,34 @@ public class BasicInfo extends JPanel {
         c.gridwidth = 1;
         c.gridheight = 1;
         c.anchor = GridBagConstraints.NORTHWEST;
-        gridbag.setConstraints(lblImage, c);
-        add(lblImage);
+        gridbag.setConstraints(pnlImage, c);
+        add(pnlImage);
 
-        lblImage.setBorder(BorderFactory.createEmptyBorder());
+        pnlImage.setBorder(BorderFactory.createEmptyBorder());
     }
 
     public void setText(String s, String color) {
-        lblImage.setText("<html><font size='2' color='" + color + "'>" + s + "</font></html>");
+        pnlImage.setText("<html><font size='2' color='" + color + "'>" + s + "</font></html>");
     }
 
     public void setText(String s) {
-        lblImage.setText("<html><font size='2'>" + s + "</font></html>");
+        pnlImage.setText("<html><font size='2'>" + s + "</font></html>");
     }
 
     public void setHtmlText(String s) {
-        lblImage.setText(s);
+        pnlImage.setText(s);
     }
 
     public void highlightBorder() {
-        lblImage.setBorder(new LineBorder(UIManager.getColor("Tree.selectionBorderColor"), 4, true));
+        pnlImage.setBorder(new LineBorder(UIManager.getColor("Tree.selectionBorderColor"), 4, true));
     }
 
     public void unhighlightBorder() {
-        lblImage.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        pnlImage.setBorder(javax.swing.BorderFactory.createEtchedBorder());
     }
 
-    public void clearImage() {
-        lblImage.setIcon(null);
-    }
-
-    public void setImage(Image img) {
-        lblImage.setIcon(new ImageIcon(img));
-    }
-
-    public JLabel getLabel() {
-        return lblImage;
+    public PortraitPanel getImagePanel() {
+        return pnlImage;
     }
 
     public void setLoad(boolean load) {
@@ -158,43 +150,9 @@ public class BasicInfo extends JPanel {
     }
 
     protected void setPortrait(Person p) {
-
-        String category = p.getPortraitCategory();
-        String filename = p.getPortraitFileName();
-
-        // Return a null if the player has selected no portrait file.
-        if ((null == category) || (null == filename)) {
-            return;
-        }
-
-        if (Crew.ROOT_PORTRAIT.equals(category)) {
-            category = "";
-        }
-
-        if (Crew.PORTRAIT_NONE.equals(filename)) {
-            filename = "default.gif";
-        }
-
-        // Try to get the player's portrait file.
-        Image portrait = null;
-        try {
-            portrait = (Image) icons.getPortraits().getItem(category, filename);
-            if (null == portrait) {
-                // the image could not be found so switch to default one
-                p.setPortraitCategoryOverride(Crew.ROOT_PORTRAIT);
-                category = "";
-                p.setPortraitFileNameOverride(Crew.PORTRAIT_NONE);
-                filename = "default.gif";
-                portrait = (Image) icons.getPortraits().getItem(category, filename);
-            }
-            // make sure no images are longer than 72 pixels
-            if (null != portrait) {
-                portrait = portrait.getScaledInstance(-1, 58, Image.SCALE_SMOOTH);
-                setImage(portrait);
-            }
-        } catch (Exception e) {
-            MekHQ.getLogger().error(getClass(), "setPortrait", e);
-        }
+        getImagePanel().setPortraitCategory(p.getPortraitCategory());
+        getImagePanel().setPortraitFileName(p.getPortraitFileName());
+        getImagePanel().updatePanel();
     }
 
     protected Image getImageFor(Force force) {
@@ -213,7 +171,7 @@ public class BasicInfo extends JPanel {
         }
 
         // Try to get the player's portrait file.
-        Image portrait = null;
+        Image portrait;
         try {
             portrait = IconPackage.buildForceIcon(category, filename, icons.getForceIcons(), iconMap);
             if (null != portrait) {

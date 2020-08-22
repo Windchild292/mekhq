@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.swing.JTable;
@@ -33,9 +32,6 @@ import mekhq.gui.dialog.RetirementDefectionDialog;
 import mekhq.gui.utilities.MekHqTableCellRenderer;
 
 public class RetirementTableModel extends AbstractTableModel {
-    /**
-     *
-     */
     private static final long serialVersionUID = 7461821036790309952L;
 
     public final static int COL_PERSON = 0;
@@ -432,13 +428,12 @@ public class RetirementTableModel extends AbstractTableModel {
             if (actualCol == COL_PERSON) {
                 setPortrait(p);
                 setText(p.getFullDesc(false));
-            }
-            if(actualCol == COL_ASSIGN) {
+            } else if (actualCol == COL_ASSIGN) {
                 Unit u = campaign.getUnit(p.getUnitId());
-                if(!p.getTechUnitIDs().isEmpty()) {
+                if (!p.getTechUnitIDs().isEmpty()) {
                     u = campaign.getUnit(p.getTechUnitIDs().get(0));
                 }
-                if(null != u) {
+                if (null != u) {
                     String desc = "<b>" + u.getName() + "</b><br>";
                     desc += u.getEntity().getWeightClassName();
                     if(!(u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship)) {
@@ -447,37 +442,28 @@ public class RetirementTableModel extends AbstractTableModel {
                     desc += "<br>" + u.getStatus() + "";
                     setText(desc);
                     Image mekImage = getImageFor(u);
-                    if(null != mekImage) {
-                        setImage(mekImage);
-                    } else {
-                        clearImage();
-                    }
+                    getImagePanel().setImage(mekImage);
                 } else {
-                    clearImage();
+                    getImagePanel().setImage(null);
                 }
-            }
-            if(actualCol == COL_FORCE) {
+            } else if (actualCol == COL_FORCE) {
                 Force force = campaign.getForceFor(p);
-                if(null != force) {
-                    String desc = "<html><b>" + force.getName() + "</b>";
+                if (null != force) {
+                    StringBuilder desc = new StringBuilder("<html><b>" + force.getName() + "</b>");
                     Force parent = force.getParentForce();
                     //cut off after three lines and don't include the top level
                     int lines = 1;
-                    while(parent != null && null != parent.getParentForce() && lines < 4) {
-                        desc += "<br>" + parent.getName();
+                    while ((parent != null) && (null != parent.getParentForce()) && (lines < 4)) {
+                        desc.append("<br>").append(parent.getName());
                         lines++;
                         parent = parent.getParentForce();
                     }
-                    desc += "</html>";
-                    setHtmlText(desc);
+                    desc.append("</html>");
+                    setHtmlText(desc.toString());
                     Image forceImage = getImageFor(force);
-                    if(null != forceImage) {
-                        setImage(forceImage);
-                    } else {
-                        clearImage();
-                    }
+                    getImagePanel().setImage(forceImage);
                 } else {
-                    clearImage();
+                    getImagePanel().setImage(null);
                 }
             }
 
@@ -485,8 +471,8 @@ public class RetirementTableModel extends AbstractTableModel {
             if (!isSelected) {
                 if (null != campaign.getRetirementDefectionTracker().getPayout(p.getId()) &&
                         campaign.getRetirementDefectionTracker().getPayout(p.getId()).getWeightClass() > 0) {
-                    colors.getPaidRetirement().getColor().ifPresent(c -> setBackground(c));
-                    colors.getPaidRetirement().getAlternateColor().ifPresent(c -> setForeground(c));
+                    colors.getPaidRetirement().getColor().ifPresent(this::setBackground);
+                    colors.getPaidRetirement().getAlternateColor().ifPresent(this::setForeground);
                 }
             }
 

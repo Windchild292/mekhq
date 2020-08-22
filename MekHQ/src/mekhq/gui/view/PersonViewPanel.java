@@ -39,6 +39,7 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 
+import megamek.client.ui.swing.panels.PortraitPanel;
 import megamek.common.options.IOption;
 import mekhq.Utilities;
 import mekhq.campaign.CampaignOptions;
@@ -46,7 +47,6 @@ import mekhq.campaign.finances.Money;
 import mekhq.campaign.personnel.FormerSpouse;
 import mekhq.campaign.personnel.enums.GenderDescriptors;
 
-import megamek.common.Crew;
 import megamek.common.options.PilotOptions;
 import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.EncodeControl;
@@ -85,7 +85,6 @@ public class PersonViewPanel extends ScrollablePanel {
     private final Person person;
     private final Campaign campaign;
 
-    private final DirectoryItems portraits;
     private final DirectoryItems awardIcons;
     private final IconPackage ip;
 
@@ -96,9 +95,8 @@ public class PersonViewPanel extends ScrollablePanel {
         this.campaign = c;
         this.gui = gui;
         this.ip = gui.getIconPackage();
-        this.portraits = this.ip.getPortraits();
         this.awardIcons = this.ip.getAwardIcons();
-        resourceMap = ResourceBundle.getBundle("mekhq.resources.PersonViewPanel", new EncodeControl()); //$NON-NLS-1$
+        resourceMap = ResourceBundle.getBundle("mekhq.resources.PersonViewPanel", new EncodeControl());
         initComponents();
     }
 
@@ -107,7 +105,8 @@ public class PersonViewPanel extends ScrollablePanel {
 
         setLayout(new GridBagLayout());
 
-        JPanel pnlPortrait = setPortrait();
+        JPanel pnlPortrait = new PortraitPanel(ip.getPortraits(), person.getPortraitCategory(),
+                person.getPortraitFileName(), 100);
         GridBagConstraints gbc_pnlPortrait = new GridBagConstraints();
         gbc_pnlPortrait.gridx = 0;
         gbc_pnlPortrait.gridy = 0;
@@ -407,64 +406,6 @@ public class PersonViewPanel extends ScrollablePanel {
             }
         }
         return pnlMiscAwards;
-    }
-
-    /**
-     * set the portrait for the given person.
-     *
-     * @return The <code>Image</code> of the pilot's portrait. This value will be
-     *         <code>null</code> if no portrait was selected or if there was an
-     *         error loading it.
-     */
-    public JPanel setPortrait() {
-
-        JPanel pnlPortrait = new JPanel();
-
-        // Panel portrait will include the person picture and the ribbons
-        pnlPortrait.setName("pnlPortrait");
-        pnlPortrait.setLayout(new GridBagLayout());
-
-        JLabel lblPortrait = new JLabel();
-        lblPortrait.setName("lblPortrait"); // NOI18N
-
-        String category = person.getPortraitCategory();
-        String filename = person.getPortraitFileName();
-
-        if (Crew.ROOT_PORTRAIT.equals(category)) {
-            category = ""; //$NON-NLS-1$
-        }
-
-        // Return a null if the player has selected no portrait file.
-        if ((null == category) || (null == filename) || Crew.PORTRAIT_NONE.equals(filename)) {
-            filename = "default.gif"; //$NON-NLS-1$
-        }
-
-        // Try to get the player's portrait file.
-        Image portrait;
-        try {
-            portrait = (Image) portraits.getItem(category, filename);
-            if (null != portrait) {
-                portrait = portrait.getScaledInstance(100, -1, Image.SCALE_DEFAULT);
-            } else {
-                portrait = (Image) portraits.getItem("", "default.gif");
-                if (null != portrait) {
-                    portrait = portrait.getScaledInstance(100, -1, Image.SCALE_DEFAULT);
-                }
-            }
-            lblPortrait.setIcon(new ImageIcon(portrait));
-        } catch (Exception e) {
-            MekHQ.getLogger().error(getClass(), "setPortrait", e);
-        }
-
-        GridBagConstraints gbc_lblPortrait = new GridBagConstraints();
-        gbc_lblPortrait.gridx = 0;
-        gbc_lblPortrait.gridy = 0;
-        gbc_lblPortrait.fill = GridBagConstraints.NONE;
-        gbc_lblPortrait.anchor = GridBagConstraints.NORTHWEST;
-        gbc_lblPortrait.insets = new Insets(0, 0, 0, 0);
-        pnlPortrait.add(lblPortrait, gbc_lblPortrait);
-
-        return pnlPortrait;
     }
 
     private JPanel fillInfo() {

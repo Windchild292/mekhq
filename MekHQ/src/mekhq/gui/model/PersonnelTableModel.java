@@ -791,13 +791,9 @@ public class PersonnelTableModel extends DataTableModel {
                             desc += "<br>" + u.getStatus() + "";
                             setText(desc);
                             Image mekImage = getImageFor(u);
-                            if (mekImage != null) {
-                                setImage(mekImage);
-                            } else {
-                                clearImage();
-                            }
+                            getImagePanel().setImage(mekImage);
                         } else {
-                            clearImage();
+                            getImagePanel().setImage(null);
                         }
                     }
                     break;
@@ -817,22 +813,14 @@ public class PersonnelTableModel extends DataTableModel {
                         desc.append("</html>");
                         setHtmlText(desc.toString());
                         Image forceImage = getImageFor(force);
-                        if (null != forceImage) {
-                            setImage(forceImage);
-                        } else {
-                            clearImage();
-                        }
+                        getImagePanel().setImage(forceImage);
                     } else {
-                        clearImage();
+                        getImagePanel().setImage(null);
                     }
                     break;
                 case COL_HITS:
                     Image hitImage = getHitsImage(p.getHits());
-                    if (null != hitImage) {
-                        setImage(hitImage);
-                    } else {
-                        clearImage();
-                    }
+                    getImagePanel().setImage(hitImage);
                     setHtmlText("");
                     break;
             }

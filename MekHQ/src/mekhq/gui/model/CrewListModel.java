@@ -5,7 +5,7 @@ package mekhq.gui.model;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -87,9 +87,7 @@ public class CrewListModel extends AbstractListModel<Person> {
     public void setData(final Unit u) {
         this.unit = u;
         this.crew = new ArrayList<>(u.getCrew());
-        Collections.sort(crew, (p1, p2) ->
-            CrewRole.getCrewRole(p1, u).getSortOrder()
-            - CrewRole.getCrewRole(p2, u).getSortOrder());
+        crew.sort(Comparator.comparingInt(p -> CrewRole.getCrewRole(p, u).getSortOrder()));
         fireContentsChanged(this, 0, crew.size());
     }
 
@@ -110,10 +108,6 @@ public class CrewListModel extends AbstractListModel<Person> {
     }
 
     public class CrewRenderer extends BasicInfo implements ListCellRenderer<Person> {
-
-        /**
-         *
-         */
         private static final long serialVersionUID = -1742201083598095886L;
 
         public CrewRenderer(IconPackage icons) {
@@ -121,11 +115,11 @@ public class CrewListModel extends AbstractListModel<Person> {
         }
 
         @Override
-        public Component getListCellRendererComponent(JList<? extends Person> list, Person value, int index,
-                boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends Person> list, Person value,
+                                                      int index, boolean isSelected, boolean cellHasFocus) {
             Component c = this;
             setOpaque(true);
-            Person p = (Person)getElementAt(index);
+            Person p = getElementAt(index);
             StringBuilder sb = new StringBuilder("<html><font size='2'><b>")
                     .append(p.getFullTitle())
                     .append("</b><br/>")

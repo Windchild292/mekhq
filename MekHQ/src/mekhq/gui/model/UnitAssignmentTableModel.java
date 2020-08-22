@@ -41,7 +41,7 @@ public class UnitAssignmentTableModel extends AbstractTableModel {
 
     public UnitAssignmentTableModel(Campaign c) {
         this.campaign = c;
-        data = new ArrayList<UUID>();
+        data = new ArrayList<>();
     }
 
     public void setData(ArrayList<UUID> data) {
@@ -133,17 +133,12 @@ public class UnitAssignmentTableModel extends AbstractTableModel {
     }
 
     public class TextRenderer extends MekHqTableCellRenderer {
-
-        /**
-         *
-         */
         private static final long serialVersionUID = -3368335772600192895L;
 
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus,
-                int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected,
-                    hasFocus, row, column);
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             int actualCol = table.convertColumnIndexToModel(column);
             setHorizontalAlignment(getAlignment(actualCol));
             return this;
@@ -151,41 +146,33 @@ public class UnitAssignmentTableModel extends AbstractTableModel {
     }
 
     public class VisualRenderer extends BasicInfo implements TableCellRenderer {
-
-        /**
-         *
-         */
         private static final long serialVersionUID = 7261885081786958754L;
 
         public VisualRenderer(IconPackage icons) {
             super(icons);
         }
 
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus,
-                int row, int column) {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
             Component c = this;
             int actualCol = table.convertColumnIndexToModel(column);
             int actualRow = table.convertRowIndexToModel(row);
             Unit u = getUnit(actualRow);
             setText(getValueAt(actualRow, actualCol).toString());
             if (actualCol == COL_UNIT) {
-                if(null != u) {
+                if (null != u) {
                     String desc = "<b>" + u.getName() + "</b><br>";
                     desc += u.getEntity().getWeightClassName();
-                    if(!(u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship)) {
+                    if (!(u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship)) {
                         desc += " " + UnitType.getTypeDisplayableName(u.getEntity().getUnitType());
                     }
                     desc += "<br>" + u.getStatus() + "";
                     setText(desc);
                     Image mekImage = getImageFor(u);
-                    if(null != mekImage) {
-                        setImage(mekImage);
-                    } else {
-                        clearImage();
-                    }
+                    getImagePanel().setImage(mekImage);
                 } else {
-                    clearImage();
+                    getImagePanel().setImage(null);
                 }
             }
 

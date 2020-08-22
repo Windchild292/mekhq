@@ -359,9 +359,9 @@ public class UnitTableModel extends DataTableModel {
             super(icons);
         }
 
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus,
-                int row, int column) {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
             Component c = this;
             int actualCol = table.convertColumnIndexToModel(column);
             int actualRow = table.convertRowIndexToModel(row);
@@ -371,36 +371,30 @@ public class UnitTableModel extends DataTableModel {
             Unit u = getUnit(actualRow);
             if (actualCol == COL_PILOT) {
                 Person p = u.getCommander();
-                if(null != p) {
+                if (null != p) {
                     setPortrait(p);
                     setText(p.getFullDesc(false));
                 } else {
-                    clearImage();
+                    setImage(null);
                 }
-            }
-            if (actualCol == COL_TECH_CRW) {
+            } else if (actualCol == COL_TECH_CRW) {
                 Person p = u.getTech();
-                if(null != p) {
+                if (null != p) {
                     setPortrait(p);
                     setText(p.getFullDesc(false));
                 } else {
-                    clearImage();
+                    setImage(null);
                 }
-            }
-            if(actualCol == COL_WCLASS) {
+            } else if (actualCol == COL_WCLASS) {
                 String desc = "<html><b>" + u.getName() + "</b><br>";
                 desc += u.getEntity().getWeightClassName();
-                if(!(u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship)) {
+                if (!(u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship)) {
                     desc += " " + UnitType.getTypeDisplayableName(u.getEntity().getUnitType());
                 }
                 desc += "<br>" + u.getStatus() + "</html>";
                 setHtmlText(desc);
                 Image mekImage = getImageFor(u);
-                if(null != mekImage) {
-                    setImage(mekImage);
-                } else {
-                    clearImage();
-                }
+                setImage(mekImage);
             }
 
             MekHqTableCellRenderer.setupTableColors(c, table, isSelected, hasFocus, row);
