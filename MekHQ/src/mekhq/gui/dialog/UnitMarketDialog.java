@@ -33,20 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -118,7 +105,7 @@ public class UnitMarketDialog extends JDialog {
     private JSplitPane splitMain;
 
     /** Creates new form UnitSelectorDialog */
-    public UnitMarketDialog(Frame frame, Campaign c) {
+    public UnitMarketDialog(JFrame frame, Campaign c) {
         super(frame, true);
         campaign = c;
         unitMarket = c.getUnitMarket();
