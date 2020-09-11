@@ -98,8 +98,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
      */
     @Override
     public void initTab() {
-        resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI", //$NON-NLS-1$ ;
-                new EncodeControl());
+        resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI", new EncodeControl());
 
         panCommand = new JPanel(new GridBagLayout());
 
@@ -167,7 +166,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
             JLabel lblRatingHead = new JLabel(resourceMap.getString("lblRating.text"));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = y;
+            gridBagConstraints.gridy = y++;
             gridBagConstraints.fill = GridBagConstraints.NONE;
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             gridBagConstraints.insets = new Insets(5, 5, 1, 5);
@@ -175,12 +174,12 @@ public final class CommandCenterTab extends CampaignGuiTab {
             gridBagConstraints.gridx = 1;
             gridBagConstraints.weightx = 1.0;
             panInfo.add(lblRating, gridBagConstraints);
-            y++;
         }
+
         JLabel lblExperienceHead = new JLabel(resourceMap.getString("lblExperience.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
+        gridBagConstraints.gridy = y++;
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(1, 5, 1, 5);
@@ -189,11 +188,11 @@ public final class CommandCenterTab extends CampaignGuiTab {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.weightx = 1.0;
         panInfo.add(lblExperience, gridBagConstraints);
-        y++;
+
         JLabel lblMissionSuccessHead = new JLabel(resourceMap.getString("lblMissionSuccess.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
+        gridBagConstraints.gridy = y++;
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(1, 5, 1, 5);
@@ -202,11 +201,11 @@ public final class CommandCenterTab extends CampaignGuiTab {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.weightx = 1.0;
         panInfo.add(lblMissionSuccess, gridBagConstraints);
-        y++;
+
         JLabel lblPersonnelHead = new JLabel(resourceMap.getString("lblPersonnel.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
+        gridBagConstraints.gridy = y++;
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(1, 5, 1, 5);
@@ -215,11 +214,11 @@ public final class CommandCenterTab extends CampaignGuiTab {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.weightx = 1.0;
         panInfo.add(lblPersonnel, gridBagConstraints);
-        y++;
+
         JLabel lblCompositionHead = new JLabel(resourceMap.getString("lblComposition.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
+        gridBagConstraints.gridy = y++;
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(1, 5, 1, 5);
@@ -228,11 +227,11 @@ public final class CommandCenterTab extends CampaignGuiTab {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.weightx = 1.0;
         panInfo.add(lblComposition, gridBagConstraints);
-        y++;
+
         JLabel lblRepairStatusHead = new JLabel(resourceMap.getString("lblRepairStatus.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
+        gridBagConstraints.gridy = y++;
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(1, 5, 1, 5);
@@ -241,11 +240,11 @@ public final class CommandCenterTab extends CampaignGuiTab {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.weightx = 1.0;
         panInfo.add(lblRepairStatus, gridBagConstraints);
-        y++;
+
         JLabel lblTransportCapacityHead = new JLabel(resourceMap.getString("lblTransportCapacity.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
+        gridBagConstraints.gridy = y++;
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(1, 5, 1, 5);
@@ -254,11 +253,11 @@ public final class CommandCenterTab extends CampaignGuiTab {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.weightx = 1.0;
         panInfo.add(lblTransportCapacity, gridBagConstraints);
-        y++;
+
         JLabel lblCargoSummaryHead = new JLabel(resourceMap.getString("lblCargoSummary.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
+        gridBagConstraints.gridy = y++;
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(1, 5, 5, 5);
@@ -285,29 +284,27 @@ public final class CommandCenterTab extends CampaignGuiTab {
      * Initialize the panel for displaying procurement information
      */
     private void initProcurementPanel() {
-
         /* shopping buttons */
         JPanel panProcurementButtons = new JPanel(new GridLayout(4, 1));
-        btnGetUnit = new JButton(resourceMap.getString("btnGetUnit.text")); // NOI18N
-        btnGetUnit.setToolTipText(resourceMap.getString("btnGetUnit.toolTipText")); // NOI18N
+        btnGetUnit = new JButton(resourceMap.getString("btnGetUnit.text"));
+        btnGetUnit.setToolTipText(resourceMap.getString("btnGetUnit.toolTipText"));
         btnGetUnit.addActionListener(ev -> getUnit());
-        btnGetUnit.setEnabled(true);
         panProcurementButtons.add(btnGetUnit);
-        btnGetParts = new JButton(resourceMap.getString("btnGetParts.text")); // NOI18N
-        btnGetParts.setToolTipText(resourceMap.getString("btnGetParts.toolTipText")); // NOI18N
+
+        btnGetParts = new JButton(resourceMap.getString("btnGetParts.text"));
+        btnGetParts.setToolTipText(resourceMap.getString("btnGetParts.toolTipText"));
         btnGetParts.addActionListener(ev -> getParts());
-        btnGetParts.setEnabled(true);
         panProcurementButtons.add(btnGetParts);
-        btnNeededParts = new JButton();
-        btnNeededParts.setText(resourceMap.getString("btnNeededParts.text")); // NOI18N
+
+        btnNeededParts = new JButton(resourceMap.getString("btnNeededParts.text"));
         btnNeededParts.setToolTipText(resourceMap.getString("btnNeededParts.toolTipText"));
         btnNeededParts.addActionListener(ev -> {
             AcquisitionsDialog dlg = new AcquisitionsDialog(getFrame(), true, getCampaignGui());
             dlg.setVisible(true);
         });
         panProcurementButtons.add(btnNeededParts);
-        btnPartsReport = new JButton();
-        btnPartsReport.setText(resourceMap.getString("btnPartsReport.text")); // NOI18N
+
+        btnPartsReport = new JButton(resourceMap.getString("btnPartsReport.text"));
         btnPartsReport.setToolTipText(resourceMap.getString("btnPartsReport.toolTipText"));
         btnPartsReport.addActionListener(ev -> {
             PartsReportDialog dlg = new PartsReportDialog(getCampaignGui(), true);
@@ -318,8 +315,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
         /* shopping table */
         procurementModel = new ProcurementTableModel(getCampaign());
         procurementTable = new JTable(procurementModel);
-        TableRowSorter<ProcurementTableModel> shoppingSorter = new TableRowSorter<>(
-                procurementModel);
+        TableRowSorter<ProcurementTableModel> shoppingSorter = new TableRowSorter<>(procurementModel);
         shoppingSorter.setComparator(ProcurementTableModel.COL_COST, new FormattedNumberSorter());
         shoppingSorter.setComparator(ProcurementTableModel.COL_TARGET, new TargetSorter());
         procurementTable.setRowSorter(shoppingSorter);
@@ -335,12 +331,9 @@ public final class CommandCenterTab extends CampaignGuiTab {
         procurementTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "ADD");
-        procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, 0),
-                "ADD");
-        procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
-                "REMOVE");
-        procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0),
-                "REMOVE");
+        procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, 0), "ADD");
+        procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "REMOVE");
+        procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "REMOVE");
 
         procurementTable.getActionMap().put("ADD", new AbstractAction() {
             private static final long serialVersionUID = 4958203340754214211L;
@@ -399,30 +392,25 @@ public final class CommandCenterTab extends CampaignGuiTab {
     private void initReportsPanel() {
         panReports = new JPanel(new GridLayout(5, 1));
         JButton btnTransportReport = new JButton(resourceMap.getString("btnTransportReport.text"));
-        btnTransportReport.addActionListener(ev -> {
-            getCampaignGui().showReport(new TransportReport(getCampaign()));
-        });
+        btnTransportReport.addActionListener(ev -> getCampaignGui().showReport(new TransportReport(getCampaign())));
         panReports.add(btnTransportReport);
+
         JButton btnHangarOverview = new JButton(resourceMap.getString("btnHangarOverview.text"));
-        btnHangarOverview.addActionListener(evt -> {
-            getCampaignGui().showReport(new HangarReport(getCampaign()));
-        });
+        btnHangarOverview.addActionListener(evt -> getCampaignGui().showReport(new HangarReport(getCampaign())));
         panReports.add(btnHangarOverview);
+
         JButton btnPersonnelOverview = new JButton(resourceMap.getString("btnPersonnelOverview.text"));
-        btnPersonnelOverview.addActionListener(evt -> {
-            getCampaignGui().showReport(new PersonnelReport(getCampaign()));
-        });
+        btnPersonnelOverview.addActionListener(evt -> getCampaignGui().showReport(new PersonnelReport(getCampaign())));
         panReports.add(btnPersonnelOverview);
+
         JButton btnCargoCapacity = new JButton(resourceMap.getString("btnCargoCapacity.text"));
-        btnCargoCapacity.addActionListener(evt -> {
-            getCampaignGui().showReport(new CargoReport(getCampaign()));
-        });
+        btnCargoCapacity.addActionListener(evt -> getCampaignGui().showReport(new CargoReport(getCampaign())));
         panReports.add(btnCargoCapacity);
+
         JButton btnUnitRating = new JButton(resourceMap.getString("btnUnitRating.text"));
-        btnUnitRating.addActionListener(evt -> {
-            getCampaignGui().showReport(new RatingReport(getCampaign()));
-        });
+        btnUnitRating.addActionListener(evt -> getCampaignGui().showReport(new RatingReport(getCampaign())));
         panReports.add(btnUnitRating);
+
         panReports.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("panReports.title")));
     }
 
@@ -430,7 +418,6 @@ public final class CommandCenterTab extends CampaignGuiTab {
      * set the icon for the unit if it exits in the icon panel
      */
     public void setIcon() {
-
         if (null == icons) {
             icons = getCampaignGui().getIconPackage().getForceIcons();
         }
@@ -441,7 +428,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
         String filename = getCampaign().getIconFileName();
 
         if (Campaign.ROOT_ICON.equals(category)) {
-            category = ""; //$NON-NLS-1$
+            category = "";
         }
 
         // Return a null if the player has selected no icon file.
@@ -605,5 +592,4 @@ public final class CommandCenterTab extends CampaignGuiTab {
     public void handle(AssetEvent ev) {
         basicInfoScheduler.schedule();
     }
-
 }
