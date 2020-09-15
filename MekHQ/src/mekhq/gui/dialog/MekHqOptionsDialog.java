@@ -1,7 +1,7 @@
 /*
  * MekHqOptionsDialog.java
  *
- * Copyright (c) 2019 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2019-2020 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -76,7 +76,7 @@ public class MekHqOptionsDialog extends BaseDialog {
         JLabel labelDisplayDateFormatExample = new JLabel();
         optionDisplayDateFormat = new JTextField();
         optionDisplayDateFormat.addActionListener(evt -> labelDisplayDateFormatExample.setText(
-                validateDisplayDate()
+                validateDate(optionDisplayDateFormat.getText())
                         ? LocalDate.now().format(DateTimeFormatter.ofPattern(optionDisplayDateFormat.getText()))
                         : resources.getString("invalidDateFormat.error")));
 
@@ -84,7 +84,7 @@ public class MekHqOptionsDialog extends BaseDialog {
         JLabel labelLongDisplayDateFormatExample = new JLabel();
         optionLongDisplayDateFormat = new JTextField();
         optionLongDisplayDateFormat.addActionListener(evt -> labelLongDisplayDateFormatExample.setText(
-                validateLongDisplayDate()
+                validateDate(optionLongDisplayDateFormat.getText())
                         ? LocalDate.now().format(DateTimeFormatter.ofPattern(optionLongDisplayDateFormat.getText()))
                         : resources.getString("invalidDateFormat.error")));
 
@@ -204,11 +204,11 @@ public class MekHqOptionsDialog extends BaseDialog {
 
     @Override
     protected void okAction() {
-        if (validateDisplayDate()) {
+        if (validateDate(optionDisplayDateFormat.getText())) {
             MekHQ.getMekHQOptions().setDisplayDateFormat(optionDisplayDateFormat.getText());
         }
 
-        if (validateLongDisplayDate()) {
+        if (validateDate(optionLongDisplayDateFormat.getText())) {
             MekHQ.getMekHQOptions().setLongDisplayDateFormat(optionLongDisplayDateFormat.getText());
         }
         MekHQ.getMekHQOptions().setCommandCenterUseUnitMarket(optionCommandCenterUseUnitMarket.isSelected());
@@ -241,18 +241,9 @@ public class MekHqOptionsDialog extends BaseDialog {
     }
 
     //region Data Validation
-    private boolean validateDisplayDate() {
+    private boolean validateDate(String text) {
         try {
-            LocalDate.now().format(DateTimeFormatter.ofPattern(optionDisplayDateFormat.getText()));
-        } catch (Exception ignored) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validateLongDisplayDate() {
-        try {
-            LocalDate.now().format(DateTimeFormatter.ofPattern(optionLongDisplayDateFormat.getText()));
+            LocalDate.now().format(DateTimeFormatter.ofPattern(text));
         } catch (Exception ignored) {
             return false;
         }
