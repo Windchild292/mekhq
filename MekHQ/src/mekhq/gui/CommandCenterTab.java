@@ -505,10 +505,12 @@ public final class CommandCenterTab extends CampaignGuiTab {
     }
 
     /**
-     * brings up the {@link AbstractUnitSelectorDialog}
+     * brings up the {@link AbstractUnitSelectorDialog} or {@link UnitMarketDialog}, depending on
+     * the currently selected options
      */
     private void getUnit() {
-        if (MekHQ.getMekHQOptions().getCommandCenterUseUnitMarket() && getCampaign().getCampaignOptions().useAtBUnitMarket()) {
+        if (MekHQ.getMekHQOptions().getCommandCenterUseUnitMarket()
+                && getCampaign().getCampaignOptions().getUseAtBUnitMarket()) {
             UnitMarketDialog umd = new UnitMarketDialog(getFrame(), getCampaign());
             umd.setVisible(true);
         } else {

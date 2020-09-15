@@ -56,7 +56,7 @@ public final class MekHQOptions {
 
     //region Command Center Display
     public boolean getCommandCenterUseUnitMarket() {
-        return userPreferences.node(MekHqConstants.DISPLAY_NODE).getBoolean(MekHqConstants.COMMAND_CENTER_USE_UNIT_MARKET, false);
+        return userPreferences.node(MekHqConstants.DISPLAY_NODE).getBoolean(MekHqConstants.COMMAND_CENTER_USE_UNIT_MARKET, true);
     }
 
     public void setCommandCenterUseUnitMarket(boolean value) {

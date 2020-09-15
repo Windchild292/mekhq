@@ -331,6 +331,9 @@ public class CampaignOptions implements Serializable {
     private boolean useAtB;
     private int skillLevel;
 
+    // AtB Module: Unit Market // TODO : Fully Implement Me
+    private boolean useAtBUnitMarket;
+
     // Unit Administration
     private boolean useShareSystem;
     private boolean sharesExcludeLargeCraft;
@@ -719,6 +722,9 @@ public class CampaignOptions implements Serializable {
         //region Against the Bot Tab
         useAtB = false;
         skillLevel = 2;
+
+        // AtB Module: Unit Market
+        useAtBUnitMarket = false;
 
         // Unit Administration
         useShareSystem = false;
@@ -2516,6 +2522,14 @@ public class CampaignOptions implements Serializable {
         this.useAtB = useAtB;
     }
 
+    public boolean getUseAtBUnitMarket() {
+        return useAtBUnitMarket;
+    }
+
+    public void setUseAtBUnitMarket(boolean useAtBUnitMarket) {
+        this.useAtBUnitMarket = useAtBUnitMarket;
+    }
+
     public boolean getUseAero() {
         return useAero;
     }
@@ -3348,22 +3362,19 @@ public class CampaignOptions implements Serializable {
             }
         }
 
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                    + "<usePortraitForType>"
-                    + csv.toString()
-                    + "</usePortraitForType>");
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, ++indent, "usePortraitForType", csv.toString());
 
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<rats>"
-                + MekHqXmlUtil.escape(StringUtils.join(rats, ','))
-                + "</rats>");
+        //region AtB Options
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "useAtBUnitMarket", useAtBUnitMarket);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "rats", StringUtils.join(rats, ","));
         if (staticRATs) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<staticRATs/>");
+            pw1.println(MekHqXmlUtil.indentStr(indent) + "<staticRATs/>");
         }
         if (ignoreRatEra) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<ignoreRatEra/>");
+            pw1.println(MekHqXmlUtil.indentStr(indent) + "<ignoreRatEra/>");
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</campaignOptions>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "campaignOptions");
+        //endregion AtB Options
     }
 
     public static CampaignOptions generateCampaignOptionsFromXml(Node wn) {
@@ -3795,6 +3806,8 @@ public class CampaignOptions implements Serializable {
                 retVal.tougherHealing = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useAtB")) {
                 retVal.useAtB = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("useAtBUnitMarket")) {
+                retVal.setUseAtBUnitMarket(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("useAero")) {
                 retVal.useAero = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useVehicles")) {
