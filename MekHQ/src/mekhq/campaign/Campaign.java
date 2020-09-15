@@ -155,6 +155,7 @@ import mekhq.campaign.work.IPartWork;
 import mekhq.gui.dialog.HistoricalDailyReportDialog;
 import mekhq.gui.utilities.PortraitFileFactory;
 import mekhq.module.atb.AtBEventProcessor;
+import mekhq.service.MassRepairService;
 
 /**
  * The main campaign class, keeps track of teams and units
@@ -3563,6 +3564,15 @@ public class Campaign implements Serializable, ITechManager {
         }
         // Remove any unrepairable, unsalvageable units
         unitsToRemove.forEach(this::removeUnit);
+
+        // Finally, run Mass Repair Mass Salvage if desired
+        /*
+        // TODO : Commented out because of refactoring requirement in MassRepairService to move
+        // TODO : to Campaign instead of CampaignGUI
+        if (MekHQ.getMekHQOptions().getNewDayMRMS()) {
+            MassRepairService.massRepairSalvageAllUnits(this);
+        }
+        */
     }
 
     /** @return <code>true</code> if the new day arrived */
