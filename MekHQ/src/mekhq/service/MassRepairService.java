@@ -60,11 +60,7 @@ public class MassRepairService {
     }
 
     public static boolean isValidMRMSUnit(Unit unit) {
-        if (unit.isSelfCrewed() || !unit.isAvailable()) {
-            return false;
-        }
-
-        if (unit.isDeployed()) {
+        if (unit.isSelfCrewed()) {
             return false;
         }
 
@@ -745,18 +741,17 @@ public class MassRepairService {
                         continue;
                     }
 
-                    WorkTimeCalculation workTimeCalc = calculateNewMassRepairWorktime(partWork, tech, mro, campaign,
-                            true, highestAvailableTechSkill);
+                    WorkTimeCalculation workTimeCalc = calculateNewMassRepairWorktime(partWork, tech,
+                            mro, campaign, true, highestAvailableTechSkill);
 
-                    if (null == workTimeCalc.getWorkTime()) {
+                    if (workTimeCalc.getWorkTime() == null) {
                         if (workTimeCalc.isReachedMaxSkill()) {
                             debugLog("... can't increase time enough to reach BTH with max available tech", "repairPart");
 
-                            return MassRepairPartAction.createMaxSkillReached(partWork, highestAvailableTechSkill,
-                                    mro.getBthMin());
+                            return MassRepairPartAction.createMaxSkillReached(partWork,
+                                    highestAvailableTechSkill, mro.getBthMin());
                         } else {
                             debugLog("... can't increase time enough to reach BTH", "repairPart");
-
                             continue;
                         }
                     }
