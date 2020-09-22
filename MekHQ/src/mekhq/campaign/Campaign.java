@@ -152,7 +152,6 @@ import mekhq.campaign.universe.RangedPlanetSelector;
 import mekhq.campaign.universe.Systems;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
-import mekhq.gui.dialog.HistoricalDailyReportDialog;
 import mekhq.gui.utilities.PortraitFileFactory;
 import mekhq.module.atb.AtBEventProcessor;
 import mekhq.service.MassRepairService;
@@ -5512,57 +5511,43 @@ public class Campaign implements Serializable, ITechManager {
         return target;
     }
 
-    public TargetRoll getTargetForAcquisition(IAcquisitionWork acquisition,
-            Person person) {
+    public TargetRoll getTargetForAcquisition(IAcquisitionWork acquisition, Person person) {
         return getTargetForAcquisition(acquisition, person, true);
     }
 
-    public TargetRoll getTargetForAcquisition(IAcquisitionWork acquisition,
-            Person person, boolean checkDaysToWait) {
-        if (getCampaignOptions().getAcquisitionSkill().equals(
-                CampaignOptions.S_AUTO)) {
-            return new TargetRoll(TargetRoll.AUTOMATIC_SUCCESS,
-                    "Automatic Success");
+    public TargetRoll getTargetForAcquisition(IAcquisitionWork acquisition, Person person,
+                                              boolean checkDaysToWait) {
+        if (getCampaignOptions().getAcquisitionSkill().equals(CampaignOptions.S_AUTO)) {
+            return new TargetRoll(TargetRoll.AUTOMATIC_SUCCESS, "Automatic Success");
+        } else if (person == null) {
+            return new TargetRoll(TargetRoll.IMPOSSIBLE, "No one on your force is capable of acquiring parts");
         }
-        if (null == person) {
-            return new TargetRoll(TargetRoll.IMPOSSIBLE,
-                    "No one on your force is capable of acquiring parts");
-        }
-        Skill skill = person.getSkillForWorkingOn(
-                getCampaignOptions().getAcquisitionSkill());
-        if (null != getShoppingList().getShoppingItem(
-                acquisition.getNewEquipment())
-                && checkDaysToWait) {
-            return new TargetRoll(
-                    TargetRoll.AUTOMATIC_FAIL,
+        Skill skill = person.getSkillForWorkingOn(getCampaignOptions().getAcquisitionSkill());
+        if ((getShoppingList().getShoppingItem(acquisition.getNewEquipment()) != null) && checkDaysToWait) {
+            return new TargetRoll(TargetRoll.AUTOMATIC_FAIL,
                     "You must wait until the new cycle to check for this part. Further attempts will be added to the shopping list.");
         }
-        if (acquisition.getTechBase() == Part.T_CLAN
-                && !getCampaignOptions().allowClanPurchases()) {
-            return new TargetRoll(TargetRoll.IMPOSSIBLE,
-                    "You cannot acquire clan parts");
-        }
-        if (acquisition.getTechBase() == Part.T_IS
-                && !getCampaignOptions().allowISPurchases()) {
+
+        if ((acquisition.getTechBase() == Part.T_CLAN) && !getCampaignOptions().allowClanPurchases()) {
+            return new TargetRoll(TargetRoll.IMPOSSIBLE, "You cannot acquire clan parts");
+        } else if ((acquisition.getTechBase() == Part.T_IS) && !getCampaignOptions().allowISPurchases()) {
             return new TargetRoll(TargetRoll.IMPOSSIBLE,
                     "You cannot acquire inner sphere parts");
-        }
-        if (getCampaignOptions().getTechLevel() < Utilities
-                .getSimpleTechLevel(acquisition.getTechLevel())) {
-            return new TargetRoll(TargetRoll.IMPOSSIBLE,
-                    "You cannot acquire parts of this tech level");
-        }
-        if (getCampaignOptions().limitByYear()
+        } else if (getCampaignOptions().getTechLevel() < Utilities.getSimpleTechLevel(acquisition.getTechLevel())) {
+            return new TargetRoll(TargetRoll.IMPOSSIBLE, "You cannot acquire parts of this tech level");
+        } else if (getCampaignOptions().limitByYear()
                 && !acquisition.isIntroducedBy(getGameYear(), useClanTechBase(), getTechFaction())) {
-            return new TargetRoll(TargetRoll.IMPOSSIBLE,
-                    "It has not been invented yet!");
+            return new TargetRoll(TargetRoll.IMPOSSIBLE, "It has not been invented yet!");
+        }  else if ((acquisition.isExtinctIn(getGameYear(), useClanTechBase(), getTechFaction())
+                        || (acquisition.getAvailability() == EquipmentType.RATING_X))
+                && (getCampaignOptions().disallowExtinctStuff()
+                && !(getCampaignOptions().allowExtinctUnits() && (acquisition instanceof Unit))
+                && !(getCampaignOptions().allowExtinctParts() && (acquisition instanceof Part))
+                && !(getCampaignOptions().allowExtinctAmmunition() && (acquisition instanceof EquipmentPart)
+                        && ((EquipmentPart) acquisition).getType() instanceof AmmoType))) {
+            return new TargetRoll(TargetRoll.IMPOSSIBLE, "It is extinct!");
         }
-        if (getCampaignOptions().disallowExtinctStuff() &&
-                (acquisition.isExtinctIn(getGameYear(), useClanTechBase(), getTechFaction())
-                        || acquisition.getAvailability() == EquipmentType.RATING_X)) {
-            return new TargetRoll(TargetRoll.IMPOSSIBLE,
-                    "It is extinct!");
-        }
+
         if (getCampaignOptions().getUseAtB() &&
                 getCampaignOptions().getRestrictPartsByMission() && acquisition instanceof Part) {
             int partAvailability = ((Part) acquisition).getAvailability();
@@ -5574,8 +5559,8 @@ public class Campaign implements Serializable, ITechManager {
             }
 
             StringBuilder partAvailabilityLog = new StringBuilder();
-            partAvailabilityLog.append("Part Rating Level: " + partAvailability)
-                                .append("(" + EquipmentType.ratingNames[partAvailability] + ")");
+            partAvailabilityLog.append("Part Rating Level: ").append(partAvailability).append("(")
+                    .append(EquipmentType.ratingNames[partAvailability]).append(")");
 
             /*
              * Even if we can acquire Clan parts, they have a minimum availability of F for
@@ -5637,14 +5622,15 @@ public class Campaign implements Serializable, ITechManager {
             }
 
             int AtBPartsAvailability = findAtBPartsAvailabilityLevel(acquisition, null);
-            partAvailabilityLog.append("; Total part availability: " + partAvailability)
-                            .append("; Current campaign availability: " + AtBPartsAvailability);
+            partAvailabilityLog.append("; Total part availability: ").append(partAvailability)
+                    .append("; Current campaign availability: ").append(AtBPartsAvailability);
             if (partAvailability > AtBPartsAvailability) {
                 return new TargetRoll(TargetRoll.IMPOSSIBLE, partAvailabilityLog.toString());
             }
         }
+
         TargetRoll target = new TargetRoll(skill.getFinalSkillValue(),
-                SkillType.getExperienceLevelName(skill.getExperienceLevel()));// person.getTarget(Modes.MODE_NORMAL);
+                SkillType.getExperienceLevelName(skill.getExperienceLevel()));
         target.append(acquisition.getAllAcquisitionMods());
         return target;
     }
@@ -8393,11 +8379,12 @@ public class Campaign implements Serializable, ITechManager {
 
     @Override
     public boolean useVariableTechLevel() {
-        return campaignOptions.useVariableTechLevel();
+        return getCampaignOptions().useVariableTechLevel();
     }
 
     @Override
     public boolean showExtinct() {
-        return !campaignOptions.disallowExtinctStuff();
+        return !getCampaignOptions().disallowExtinctStuff()
+                || (getCampaignOptions().allowExtinctParts() && getCampaignOptions().allowExtinctAmmunition());
     }
 }

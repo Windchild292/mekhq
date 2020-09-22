@@ -33,7 +33,6 @@ import org.w3c.dom.NodeList;
 
 import megamek.common.EquipmentType;
 import megamek.common.TechConstants;
-import megamek.common.logging.LogLevel;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
 import mekhq.Utilities;
@@ -48,6 +47,8 @@ import mekhq.campaign.personnel.enums.Marriage;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.enums.FinancialYearDuration;
+
+import javax.swing.*;
 
 /**
  * @author natit
@@ -2035,7 +2036,6 @@ public class CampaignOptions implements Serializable {
         successXP = b;
     }
 
-
     public boolean limitByYear() {
         return limitByYear;
     }
@@ -2051,6 +2051,35 @@ public class CampaignOptions implements Serializable {
     public void setDisallowExtinctStuff(boolean b) {
         disallowExtinctStuff = b;
     }
+
+    public boolean allowExtinctUnits() {
+        return allowExtinctUnits;
+    }
+
+    public void setAllowExtinctUnits(boolean allowExtinctUnits) {
+        this.allowExtinctUnits = allowExtinctUnits;
+    }
+
+    public boolean allowExtinctParts() {
+        return allowExtinctParts;
+    }
+
+    public void setAllowExtinctParts(boolean allowExtinctParts) {
+        this.allowExtinctParts = allowExtinctParts;
+    }
+
+    public boolean allowExtinctAmmunition() {
+        return allowExtinctAmmunition;
+    }
+
+    public void setAllowExtinctAmmunition(boolean allowExtinctAmmunition) {
+        this.allowExtinctAmmunition = allowExtinctAmmunition;
+    }
+
+    private JCheckBox allowExtinctUnitsBox;
+    private JCheckBox allowExtinctParsBox;
+    private JCheckBox allowExtinctAmmunitionBox;
+    private JCheckBox removeExtinctAmmunitionPenaltyBox;
 
     public boolean allowClanPurchases() {
         return allowClanPurchases;

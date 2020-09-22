@@ -210,6 +210,10 @@ public class CampaignOptionsDialog extends JDialog {
     private JPanel panTech;
     private JCheckBox limitByYearBox;
     private JCheckBox disallowExtinctStuffBox;
+    private JCheckBox allowExtinctUnitsBox;
+    private JCheckBox allowExtinctPartsBox;
+    private JCheckBox allowExtinctAmmunitionBox;
+    private JCheckBox removeExtinctAmmunitionPenaltyBox;
     private JCheckBox allowClanPurchasesBox;
     private JCheckBox allowISPurchasesBox;
     private JCheckBox allowCanonOnlyBox;
@@ -583,7 +587,6 @@ public class CampaignOptionsDialog extends JDialog {
         sellPartsBox = new JCheckBox();
         useQuirksBox = new JCheckBox();
         limitByYearBox = new JCheckBox();
-        disallowExtinctStuffBox = new JCheckBox();
         allowClanPurchasesBox = new JCheckBox();
         allowISPurchasesBox = new JCheckBox();
         allowCanonOnlyBox = new JCheckBox();
@@ -1375,67 +1378,44 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panTech.add(limitByYearBox, gridBagConstraints);
 
-        disallowExtinctStuffBox.setText(resourceMap.getString("disallowExtinctStuffBox.text"));
+        disallowExtinctStuffBox = new JCheckBox(resourceMap.getString("disallowExtinctStuffBox.text"));
         disallowExtinctStuffBox.setToolTipText(resourceMap.getString("disallowExtinctStuffBox.toolTipText"));
         disallowExtinctStuffBox.setName("disallowExtinctStuffBox");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = gridy++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panTech.add(disallowExtinctStuffBox, gridBagConstraints);
+
+        allowExtinctAmmunitionBox = new JCheckBox(resourceMap.getString("allowExtinctAmmunitionBox.text"));
+        allowExtinctAmmunitionBox.setToolTipText(resourceMap.getString("allowExtinctAmmunitionBox.toolTipText"));
+        allowExtinctAmmunitionBox.setName("allowExtinctAmmunitionBox");
+        gridBagConstraints.gridy = gridy++;
+        panTech.add(allowExtinctAmmunitionBox, gridBagConstraints);
 
         allowClanPurchasesBox.setText(resourceMap.getString("allowClanPurchasesBox.text"));
         allowClanPurchasesBox.setToolTipText(resourceMap.getString("allowClanPurchasesBox.toolTipText"));
         allowClanPurchasesBox.setName("allowClanPurchasesBox");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = gridy++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panTech.add(allowClanPurchasesBox, gridBagConstraints);
 
         allowISPurchasesBox.setText(resourceMap.getString("allowISPurchasesBox.text"));
         allowISPurchasesBox.setToolTipText(resourceMap.getString("allowISPurchasesBox.toolTipText"));
         allowISPurchasesBox.setName("allowISPurchasesBox");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = gridy++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panTech.add(allowISPurchasesBox, gridBagConstraints);
 
         allowCanonOnlyBox.setText(resourceMap.getString("allowCanonOnlyBox.text"));
         allowCanonOnlyBox.setToolTipText(resourceMap.getString("allowCanonOnlyBox.toolTipText"));
-        allowCanonOnlyBox.setName("allowCanonOnlyBox");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = gridy++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panTech.add(allowCanonOnlyBox, gridBagConstraints);
 
-        allowCanonRefitOnlyBox.setText(resourceMap.getString("allowCanonRefitOnlyBox.text")); // NOI18N
-        allowCanonRefitOnlyBox.setToolTipText(resourceMap.getString("allowCanonRefitOnlyBox.toolTipText")); // NOI18N
-        allowCanonRefitOnlyBox.setName("allowCanonRefitOnlyBox"); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        allowCanonRefitOnlyBox.setText(resourceMap.getString("allowCanonRefitOnlyBox.text"));
+        allowCanonRefitOnlyBox.setToolTipText(resourceMap.getString("allowCanonRefitOnlyBox.toolTipText"));
+        allowCanonRefitOnlyBox.setName("allowCanonRefitOnlyBox");
         gridBagConstraints.gridy = gridy++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panTech.add(allowCanonRefitOnlyBox, gridBagConstraints);
 
         JLabel lblTechLevel = new JLabel(resourceMap.getString("lblTechLevel.text"));
         lblTechLevel.setName("lblTechLevel");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = gridy++;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panTech.add(lblTechLevel, gridBagConstraints);
 
@@ -4402,6 +4382,8 @@ public class CampaignOptionsDialog extends JDialog {
             limitByYearBox.doClick();
         }
         disallowExtinctStuffBox.setSelected(options.disallowExtinctStuff());
+        allowExtinctUnitsBox.setSelected(options.allowExtinctUnits());
+        allowExtinctAmmunitionBox.setSelected(options.allowExtinctAmmunition());
         allowClanPurchasesBox.setSelected(options.allowClanPurchases());
         allowISPurchasesBox.setSelected(options.allowISPurchases());
         allowCanonOnlyBox.setSelected(options.allowCanonOnly());
@@ -4963,6 +4945,7 @@ public class CampaignOptionsDialog extends JDialog {
 
         options.setLimitByYear(limitByYearBox.isSelected());
         options.setDisallowExtinctStuff(disallowExtinctStuffBox.isSelected());
+        options.setAllowExtinctAmmunition(allowExtinctAmmunitionBox.isSelected());
         options.setAllowClanPurchases(allowClanPurchasesBox.isSelected());
         options.setAllowISPurchases(allowISPurchasesBox.isSelected());
         options.setAllowCanonOnly(allowCanonOnlyBox.isSelected());

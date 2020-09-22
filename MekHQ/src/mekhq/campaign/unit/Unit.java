@@ -5180,7 +5180,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
         Money ammoCost = Money.zero();
 
         for (Part p : getParts()) {
-            if (p instanceof EquipmentPart && ((EquipmentPart)p).getType() instanceof AmmoType) {
+            if (p instanceof EquipmentPart && ((EquipmentPart) p).getType() instanceof AmmoType) {
                 ammoCost = ammoCost.plus(p.getStickerPrice());
             }
         }
