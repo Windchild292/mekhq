@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
+import megamek.migration.CamouflageMigrator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -50,7 +51,6 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
     private int team;
     private int start;
     private AbstractIcon camouflage;
-    private int colorIndex;
     private BehaviorSettings behaviorSettings;
 
     public BotForce() {
@@ -63,22 +63,20 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
     }
 
     public BotForce(String name, int team, int start, List<Entity> entityList) {
-        this(name, team, start, start, entityList, new Camouflage(Camouflage.NO_CAMOUFLAGE), -1);
+        this(name, team, start, start, entityList, new Camouflage(Camouflage.NO_CAMOUFLAGE));
     }
 
     public BotForce(String name, int team, int start, int home, List<Entity> entityList) {
-        this(name, team, start, home, entityList, new Camouflage(Camouflage.NO_CAMOUFLAGE), -1);
+        this(name, team, start, home, entityList, new Camouflage(Camouflage.NO_CAMOUFLAGE));
     }
 
-    public BotForce(String name, int team, int start, int home, List<Entity> entityList,
-                    AbstractIcon camouflage, int colorIndex) {
+    public BotForce(String name, int team, int start, int home, List<Entity> entityList, AbstractIcon camouflage) {
         this.name = name;
         this.team = team;
         this.start = start;
         // Filter all nulls out of the parameter entityList
         this.entityList = entityList.stream().filter(Objects::nonNull).collect(Collectors.toCollection(ArrayList::new));
         this.camouflage = camouflage;
-        this.colorIndex = colorIndex;
         try {
             behaviorSettings = BehaviorSettingsFactory.getInstance().DEFAULT_BEHAVIOR.getCopy();
         } catch (PrincessException ex) {
@@ -155,14 +153,6 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
         this.camouflage = camouflage;
     }
 
-    public int getColorIndex() {
-        return colorIndex;
-    }
-
-    public void setColorIndex(int index) {
-        colorIndex = index;
-    }
-
     public int getTotalBV() {
         int bv = 0;
 
@@ -201,7 +191,6 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
         if (!getCamouflage().isDefault()) {
             getCamouflage().writeToXML(pw1, indent + 1, "camouflage");
         }
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "colorIndex", colorIndex);
 
         pw1.println(MekHqXmlUtil.indentStr(indent+1) + "<entities>");
         for (Entity en : entityList) {
@@ -230,6 +219,7 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
     public void setFieldsFromXmlNode(Node wn) {
         String camoCategory = null;
         String camoFileName = null;
+        Integer camoColorIndex = null;
 
         NodeList nl = wn.getChildNodes();
         for (int x = 0; x < nl.getLength(); x++) {
@@ -241,13 +231,13 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("start")) {
                 start = Integer.parseInt(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("camouflage")) {
-                camouflage = Camouflage.parseFromXML(new Camouflage(), wn2);
+                camouflage = Camouflage.parseFromXML(wn2);
             } else if (wn2.getNodeName().equalsIgnoreCase("camoCategory")) {
                 camoCategory = MekHqXmlUtil.unEscape(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("camoFileName")) {
                 camoFileName = MekHqXmlUtil.unEscape(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("colorIndex")) {
-                colorIndex = Integer.parseInt(wn2.getTextContent());
+                camoColorIndex = Integer.parseInt(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("entities")) {
                 NodeList nl2 = wn2.getChildNodes();
                 for (int i = 0; i < nl2.getLength(); i++) {
@@ -264,8 +254,9 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
                         }
                     }
                 }
-                if ((camoCategory != null) && (camoFileName != null)) {
-                    setCamouflage(new Camouflage(camoCategory, camoFileName));
+
+                if ((camoCategory != null) || (camoFileName != null) || (camoColorIndex != null)) {
+                    setCamouflage(CamouflageMigrator.migrate(camoCategory, camoFileName, camoColorIndex));
                 }
             } else if (wn2.getNodeName().equalsIgnoreCase("behaviorSettings")) {
                 NodeList nl2 = wn2.getChildNodes();

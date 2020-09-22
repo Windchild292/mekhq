@@ -29,7 +29,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import megamek.client.generator.RandomGenderGenerator;
-import megamek.common.IPlayer;
 import megamek.common.MechSummaryCache;
 import megamek.common.enums.Gender;
 import megamek.common.util.StringUtil;
@@ -500,14 +499,12 @@ public class AtBDynamicScenarioFactory {
             ScenarioForceTemplate forceTemplate = scenario.getBotForceTemplates().get(botForce);
 
             if ((forceTemplate != null) && forceTemplate.isAlliedPlayerForce()) {
-
                 for (Entity en : botForce.getEntityList()) {
                     scenario.getAlliesPlayer().add(en);
                     scenario.getBotUnitTemplates().put(UUID.fromString(en.getExternalIdAsString()), forceTemplate);
 
                     if (!campaign.getCampaignOptions().getAttachedPlayerCamouflage()) {
-                        en.setCamoCategory(IPlayer.NO_CAMO);
-                        en.setCamoFileName(IPlayer.colorNames[scenario.getContract(campaign).getAllyColorIndex()]);
+                        en.setCamouflage(scenario.getContract(campaign).getAllyCamouflage());
                     }
                 }
 
@@ -1750,14 +1747,10 @@ public class AtBDynamicScenarioFactory {
             ForceAlignment forceAlignment, AtBContract contract) {
         if (forceAlignment == ScenarioForceTemplate.ForceAlignment.Allied) {
             generatedForce.setName(String.format("%s %s", contract.getAllyBotName(), forceTemplate.getForceName()));
-            generatedForce.setColorIndex(contract.getAllyColorIndex());
-            generatedForce.setCamoCategory(contract.getAllyCamoCategory());
-            generatedForce.setCamoFileName(contract.getAllyCamoFileName());
+            generatedForce.setCamouflage(contract.getAllyCamouflage());
         } else if (forceAlignment == ScenarioForceTemplate.ForceAlignment.Opposing) {
             generatedForce.setName(String.format("%s %s", contract.getEnemyBotName(), forceTemplate.getForceName()));
-            generatedForce.setColorIndex(contract.getEnemyColorIndex());
-            generatedForce.setCamoCategory(contract.getEnemyCamoCategory());
-            generatedForce.setCamoFileName(contract.getEnemyCamoFileName());
+            generatedForce.setCamouflage(contract.getEnemyCamouflage());
         } else {
             generatedForce.setName("Unknown Hostiles");
         }

@@ -1932,7 +1932,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("expectedDueDate")) {
                     retVal.expectedDueDate = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("portrait")) {
-                    retVal.setPortrait(AbstractIcon.parseFromXML(retVal.getPortrait(), wn2));
+                    retVal.setPortrait(Portrait.parseFromXML(wn2));
                 } else if (wn2.getNodeName().equalsIgnoreCase("portraitCategory")) {
                     portraitCategory = wn2.getTextContent();
                 } else if (wn2.getNodeName().equalsIgnoreCase("portraitFile")) {
