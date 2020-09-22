@@ -29,6 +29,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import megamek.common.icons.AbstractIcon;
+import megamek.common.icons.Camouflage;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.finances.Money;
 import org.w3c.dom.Node;
@@ -40,7 +42,6 @@ import megamek.common.Compute;
 import megamek.common.Entity;
 import megamek.common.MechFileParser;
 import megamek.common.MechSummary;
-import megamek.common.Player;
 import megamek.common.UnitType;
 import megamek.common.loaders.EntityLoadingException;
 import megamek.common.logging.LogLevel;
@@ -128,12 +129,8 @@ public class AtBContract extends Contract implements Serializable {
     protected int enemyQuality;
     protected String allyBotName;
     protected String enemyBotName;
-    protected String allyCamoCategory;
-    protected String allyCamoFileName;
-    protected int allyColorIndex;
-    protected String enemyCamoCategory;
-    protected String enemyCamoFileName;
-    protected int enemyColorIndex;
+    protected AbstractIcon allyCamouflage;
+    protected AbstractIcon enemyCamouflage;
 
     protected int extensionLength;
 
@@ -182,11 +179,9 @@ public class AtBContract extends Contract implements Serializable {
         enemyQuality = IUnitRating.DRAGOON_C;
         allyBotName = "Ally";
         enemyBotName = "Enemy";
-        allyCamoCategory = Player.NO_CAMO;
-        allyCamoFileName = null;
+        allyCamouflage = new Camouflage(Camouflage.NO_CAMOUFLAGE, AbstractIcon.DEFAULT_ICON_FILENAME);
         allyColorIndex = 1;
-        enemyCamoCategory = Player.NO_CAMO;
-        enemyCamoFileName = null;
+        enemyCamouflage = new Camouflage(Camouflage.NO_CAMOUFLAGE, AbstractIcon.DEFAULT_ICON_FILENAME);
         enemyColorIndex = 2;
 
         extensionLength = 0;
@@ -1126,6 +1121,7 @@ public class AtBContract extends Contract implements Serializable {
                 +"<enemyBotName>"
                 +enemyBotName
                 +"</enemyBotName>");
+        getally
         pw1.println(MekHqXmlUtil.indentStr(indent+1)
                 +"<allyCamoCategory>"
                 +allyCamoCategory
@@ -1210,6 +1206,7 @@ public class AtBContract extends Contract implements Serializable {
         }
     }
 
+    @Override
     public void loadFieldsFromXmlNode(Node wn) throws ParseException {
         super.loadFieldsFromXmlNode(wn);
         NodeList nl = wn.getChildNodes();
@@ -1371,6 +1368,10 @@ public class AtBContract extends Contract implements Serializable {
         enemyBotName = name;
     }
 
+    public Camouflage getAllyCamouflage() {
+        return allyCamouflage;
+    }
+
     public String getAllyCamoCategory() {
         return allyCamoCategory;
     }
@@ -1383,17 +1384,10 @@ public class AtBContract extends Contract implements Serializable {
         return allyCamoFileName;
     }
 
-    public void setAllyCamoFileName(String fileName) {
-        allyCamoFileName = fileName;
-    }
-
     public int getAllyColorIndex() {
         return allyColorIndex;
     }
 
-    public void setAllyColorIndex(int index) {
-        allyColorIndex = index;
-    }
 
     public String getEnemyCamoCategory() {
         return enemyCamoCategory;
@@ -1415,9 +1409,6 @@ public class AtBContract extends Contract implements Serializable {
         return enemyColorIndex;
     }
 
-    public void setEnemyColorIndex(int index) {
-        enemyColorIndex = index;
-    }
 
     public int getRequiredLances() {
         return requiredLances;

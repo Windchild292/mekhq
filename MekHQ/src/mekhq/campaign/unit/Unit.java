@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import megamek.common.*;
 import megamek.common.InfantryBay.PlatoonType;
+import megamek.common.icons.Camouflage;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.log.ServiceLogger;
 import mekhq.campaign.mission.Scenario;
@@ -165,8 +166,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
     public Unit(Entity en, Campaign c) {
         this.entity = en;
         if (entity != null) {
-            entity.setCamoCategory(null);
-            entity.setCamoFileName(null);
+            entity.setCamouflage(new Camouflage());
         }
         this.site = SITE_BAY;
         this.salvaged = false;
@@ -3321,40 +3321,6 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
         return ammo;
     }
 
-    public String getCamoCategory() {
-        if (null == entity) {
-            return "";
-        }
-
-        String category = getCampaign().getCamoCategory();
-        if (isEntityCamo()) {
-            category = entity.getCamoCategory();
-        }
-
-        if (Player.ROOT_CAMO.equals(category)) {
-            category = "";
-        }
-
-        return category;
-    }
-
-    public String getCamoFileName() {
-        if (null == getCampaign() || null == entity) {
-            return "";
-        }
-
-        String fileName = getCampaign().getCamoFileName();
-        if (isEntityCamo()) {
-            fileName = entity.getCamoFileName();
-        }
-
-        if (null == fileName) {
-            fileName = "";
-        }
-
-        return fileName;
-    }
-
     /**
      * Determines which crew member is considered the unit commander. For solo-piloted units there is
      * only one option, but units with multiple crew (vehicles, aerospace vessels, infantry) use the following
@@ -3484,6 +3450,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
             entity.getCrew().setName(commander.getFullTitle(), 0);
             entity.getCrew().setNickname(commander.getCallsign(), 0);
             entity.getCrew().setGender(commander.getGender(), 0);
+            entity.getCrew().setPortrait(commander.getPortrait(), 0);
             entity.getCrew().setPortraitCategory(commander.getPortraitCategory(), 0);
             entity.getCrew().setPortraitFileName(commander.getPortraitFileName(), 0);
             entity.getCrew().setExternalIdAsString(commander.getId().toString(), 0);
@@ -4793,15 +4760,6 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
             }
         }
         return null;
-    }
-
-    public boolean isEntityCamo() {
-        return (null != entity) && (null != entity.getCamoCategory()
-                && !entity.getCamoCategory().equals(IPlayer.NO_CAMO)
-                && !entity.getCamoCategory().isEmpty())
-                && (null != entity.getCamoFileName())
-                && (!Player.NO_CAMO.equals(entity.getCamoFileName()))
-                && !entity.getCamoFileName().isEmpty();
     }
 
     public int getAvailability(int era) {

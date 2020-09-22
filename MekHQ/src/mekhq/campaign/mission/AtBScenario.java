@@ -40,6 +40,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
 import megamek.common.*;
+import megamek.common.icons.Camouflage;
 import megamek.common.util.StringUtil;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import org.w3c.dom.Node;
@@ -709,11 +710,11 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                 externalIDLookup.put(en.getExternalIdAsString(), en);
 
                 if (!campaign.getCampaignOptions().getAttachedPlayerCamouflage()) {
-                    en.setCamoCategory(IPlayer.NO_CAMO);
-                    en.setCamoFileName(IPlayer.colorNames[getContract(campaign).getAllyColorIndex()]);
+                    en.setCamouflage(new Camouflage(Camouflage.NO_CAMOUFLAGE,
+                            IPlayer.colorNames[getContract(campaign).getAllyColorIndex()]));
                 }
             } else {
-                MekHQ.getLogger().error(AtBScenario.class, "setStandardMissionForces", "Entity for player-controlled allies is null");
+                MekHQ.getLogger().error(AtBScenario.class, "Entity for player-controlled allies is null");
             }
         }
 
@@ -727,7 +728,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                 allyEntities.add(en);
                 attachedUnitIds.add(UUID.fromString(en.getExternalIdAsString()));
             } else {
-                MekHQ.getLogger().error(AtBScenario.class, "setStandardMissionForces", "Entity for ally bot is null");
+                MekHQ.getLogger().error(AtBScenario.class, "Entity for ally bot is null");
             }
         }
 
@@ -1474,9 +1475,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
     /* Convenience methods for frequently-used arguments */
     protected BotForce getAllyBotForce(AtBContract c, int start, int home, List<Entity> entities) {
         return new BotForce(c.getAllyBotName(), 1, start, home, entities,
-                c.getAllyCamoCategory(),
-                c.getAllyCamoFileName(),
-                c.getAllyColorIndex());
+                c.getAllyCamouflage(), c.getAllyColorIndex());
     }
 
     protected BotForce getEnemyBotForce(AtBContract c, int start, List<Entity> entities) {
@@ -1485,9 +1484,8 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
 
     protected BotForce getEnemyBotForce(AtBContract c, int start, int home, List<Entity> entities) {
         return new BotForce(c.getEnemyBotName(), 2, start, home, entities,
-                c.getEnemyCamoCategory(),
-                c.getEnemyCamoFileName(),
-                c.getEnemyColorIndex());
+                c.getAllyCamouflage(), c.getAllyColorIndex());
+
     }
 
     public List<String> generateEntityStub(List<Entity> entities) {

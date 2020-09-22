@@ -347,9 +347,9 @@ public final class BriefingTab extends CampaignGuiTab {
     private void editMission() {
         Mission mission = getCampaign().getMission(selectedMission);
         if (null != mission) {
-            if (getCampaign().getCampaignOptions().getUseAtB() && mission instanceof AtBContract) {
-                CustomizeAtBContractDialog cmd = new CustomizeAtBContractDialog(getFrame(), true, (AtBContract) mission,
-                        getCampaign(), getIconPackage().getCamos());
+            if (getCampaign().getCampaignOptions().getUseAtB() && (mission instanceof AtBContract)) {
+                CustomizeAtBContractDialog cmd = new CustomizeAtBContractDialog(getFrame(), true,
+                        (AtBContract) mission, getCampaign());
                 cmd.setVisible(true);
                 if (cmd.getMissionId() != -1) {
                     selectedMission = cmd.getMissionId();

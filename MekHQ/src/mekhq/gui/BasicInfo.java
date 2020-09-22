@@ -142,19 +142,9 @@ public class BasicInfo extends JPanel {
             return null;
         }
         int tint = PlayerColors.getColorRGB(u.getCampaign().getColorIndex());
-        EntityImage entityImage = new EntityImage(base, tint, getCamo(u), this, u.getEntity());
+        EntityImage entityImage = new EntityImage(base, tint, u.getEntity().getCamouflage().getImage(),
+                this, u.getEntity());
         return entityImage.loadPreviewImage();
-    }
-
-    protected Image getCamo(Unit unit) {
-        // Try to get the player's camo file.
-        Image camo = null;
-        try {
-            camo = (Image) icons.getCamos().getItem(unit.getCamoCategory(), unit.getCamoFileName());
-        } catch (Exception e) {
-            MekHQ.getLogger().error(getClass(), "getCamo", e);
-        }
-        return camo;
     }
 
     protected void setPortrait(Person p) {

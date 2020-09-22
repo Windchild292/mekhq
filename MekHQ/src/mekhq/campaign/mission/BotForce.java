@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.mission;
 
@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import megamek.common.icons.AbstractIcon;
+import megamek.common.icons.Camouflage;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -35,7 +37,6 @@ import megamek.client.bot.princess.PrincessException;
 import megamek.common.Board;
 import megamek.common.Compute;
 import megamek.common.Entity;
-import megamek.common.Player;
 import megamek.common.logging.LogLevel;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlSerializable;
@@ -48,8 +49,7 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
     private List<Entity> entityList;
     private int team;
     private int start;
-    private String camoCategory;
-    private String camoFileName;
+    private AbstractIcon camouflage;
     private int colorIndex;
     private BehaviorSettings behaviorSettings;
 
@@ -58,37 +58,31 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
         try {
             behaviorSettings = BehaviorSettingsFactory.getInstance().DEFAULT_BEHAVIOR.getCopy();
         } catch (PrincessException ex) {
-            MekHQ.getLogger().log(getClass(), "BotForce()", LogLevel.ERROR, //$NON-NLS-1$
-                    "Error getting Princess default behaviors"); //$NON-NLS-1$
-            MekHQ.getLogger().error(getClass(), "BotForce()", ex); //$NON-NLS-1$
+            MekHQ.getLogger().error(this, "Error getting Princess default behaviors", ex);
         }
     }
 
     public BotForce(String name, int team, int start, List<Entity> entityList) {
-        this(name, team, start, start, entityList, Player.NO_CAMO, null, -1);
+        this(name, team, start, start, entityList, new Camouflage(Camouflage.NO_CAMOUFLAGE), -1);
     }
 
     public BotForce(String name, int team, int start, int home, List<Entity> entityList) {
-        this(name, team, start, home, entityList, Player.NO_CAMO, null, -1);
+        this(name, team, start, home, entityList, new Camouflage(Camouflage.NO_CAMOUFLAGE), -1);
     }
 
     public BotForce(String name, int team, int start, int home, List<Entity> entityList,
-            String camoCategory, String camoFileName, int colorIndex) {
-        final String METHOD_NAME = "BotForce(String,int,int,int,ArrayList<Entity>,String,String,int)"; //$NON-NLS-1$
+                    AbstractIcon camouflage, int colorIndex) {
         this.name = name;
         this.team = team;
         this.start = start;
         // Filter all nulls out of the parameter entityList
         this.entityList = entityList.stream().filter(Objects::nonNull).collect(Collectors.toCollection(ArrayList::new));
-        this.camoCategory = camoCategory;
-        this.camoFileName = camoFileName;
+        this.camouflage = camouflage;
         this.colorIndex = colorIndex;
         try {
             behaviorSettings = BehaviorSettingsFactory.getInstance().DEFAULT_BEHAVIOR.getCopy();
         } catch (PrincessException ex) {
-            MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.ERROR,
-                    "Error getting Princess default behaviors"); //$NON-NLS-1$
-            MekHQ.getLogger().error(getClass(), METHOD_NAME, ex);
+            MekHQ.getLogger().error(this, "Error getting Princess default behaviors", ex);
         }
         behaviorSettings.setRetreatEdge(CardinalEdge.NEAREST_OR_NONE);
         behaviorSettings.setDestinationEdge(CardinalEdge.NEAREST_OR_NONE);
@@ -97,26 +91,26 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
     /* Convert from MM's Board to Princess's HomeEdge */
     public CardinalEdge findCardinalEdge(int start) {
         switch (start) {
-        case Board.START_N:
-            return CardinalEdge.NORTH;
-        case Board.START_S:
-            return CardinalEdge.SOUTH;
-        case Board.START_E:
-            return CardinalEdge.EAST;
-        case Board.START_W:
-            return CardinalEdge.WEST;
-        case Board.START_NW:
-            return (Compute.randomInt(2) == 0) ? CardinalEdge.NORTH : CardinalEdge.WEST;
-        case Board.START_NE:
-            return (Compute.randomInt(2) == 0) ? CardinalEdge.NORTH : CardinalEdge.EAST;
-        case Board.START_SW:
-            return (Compute.randomInt(2) == 0) ? CardinalEdge.SOUTH : CardinalEdge.WEST;
-        case Board.START_SE:
-            return (Compute.randomInt(2) == 0) ? CardinalEdge.SOUTH : CardinalEdge.EAST;
-        case Board.START_ANY:
-            return CardinalEdge.getCardinalEdge(Compute.randomInt(4));
-        default:
-            return CardinalEdge.NEAREST_OR_NONE;
+            case Board.START_N:
+                return CardinalEdge.NORTH;
+            case Board.START_S:
+                return CardinalEdge.SOUTH;
+            case Board.START_E:
+                return CardinalEdge.EAST;
+            case Board.START_W:
+                return CardinalEdge.WEST;
+            case Board.START_NW:
+                return (Compute.randomInt(2) == 0) ? CardinalEdge.NORTH : CardinalEdge.WEST;
+            case Board.START_NE:
+                return (Compute.randomInt(2) == 0) ? CardinalEdge.NORTH : CardinalEdge.EAST;
+            case Board.START_SW:
+                return (Compute.randomInt(2) == 0) ? CardinalEdge.SOUTH : CardinalEdge.WEST;
+            case Board.START_SE:
+                return (Compute.randomInt(2) == 0) ? CardinalEdge.SOUTH : CardinalEdge.EAST;
+            case Board.START_ANY:
+                return CardinalEdge.getCardinalEdge(Compute.randomInt(4));
+            default:
+                return CardinalEdge.NEAREST_OR_NONE;
         }
     }
 
@@ -153,20 +147,12 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
         this.start = start;
     }
 
-    public String getCamoCategory() {
-        return camoCategory;
+    public AbstractIcon getCamouflage() {
+        return camouflage;
     }
 
-    public void setCamoCategory(String camoCategory) {
-        this.camoCategory = camoCategory;
-    }
-
-    public String getCamoFileName() {
-        return camoFileName;
-    }
-
-    public void setCamoFileName(String camoFileName) {
-        this.camoFileName = camoFileName;
+    public void setCamouflage(AbstractIcon camouflage) {
+        this.camouflage = camouflage;
     }
 
     public int getColorIndex() {
@@ -178,13 +164,11 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
     }
 
     public int getTotalBV() {
-        final String METHOD_NAME = "getTotalBV";
-
         int bv = 0;
 
         for(Entity entity : getEntityList()) {
             if (entity == null) {
-                MekHQ.getLogger().error(BotForce.class, METHOD_NAME, "Null entity when calculating the BV a bot force, we should never find a null here. Please investigate");
+                MekHQ.getLogger().error(BotForce.class, "Null entity when calculating the BV a bot force, we should never find a null here. Please investigate");
             } else {
                 bv += entity.calculateBattleValue(true, false);
             }
@@ -211,18 +195,18 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        final String METHOD_NAME = "writeToXml";
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "name", name);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "team", team);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "start", start);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "camoCategory", camoCategory);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "camoFileName", camoFileName);
+        if (!getCamouflage().isDefault()) {
+            getCamouflage().writeToXML(pw1, indent + 1, "camouflage");
+        }
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "colorIndex", colorIndex);
 
         pw1.println(MekHqXmlUtil.indentStr(indent+1) + "<entities>");
         for (Entity en : entityList) {
             if (en == null) {
-                MekHQ.getLogger().error(BotForce.class, METHOD_NAME, "Null entity when saving a bot force, we should never find a null here. Please investigate");
+                MekHQ.getLogger().error(BotForce.class, "Null entity when saving a bot force, we should never find a null here. Please investigate");
             } else {
                 pw1.println(AtBScenario.writeEntityWithCrewToXmlString(en, indent + 2, entityList));
             }
@@ -244,7 +228,8 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
     }
 
     public void setFieldsFromXmlNode(Node wn) {
-        final String METHOD_NAME = "setFieldsFromXmlNode(Node)"; //$NON-NLS-1$
+        String camoCategory = null;
+        String camoFileName = null;
 
         NodeList nl = wn.getChildNodes();
         for (int x = 0; x < nl.getLength(); x++) {
@@ -255,6 +240,8 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
                 team = Integer.parseInt(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("start")) {
                 start = Integer.parseInt(wn2.getTextContent());
+            } else if (wn2.getNodeName().equalsIgnoreCase("camouflage")) {
+                camouflage = Camouflage.parseFromXML(new Camouflage(), wn2);
             } else if (wn2.getNodeName().equalsIgnoreCase("camoCategory")) {
                 camoCategory = MekHqXmlUtil.unEscape(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("camoFileName")) {
@@ -270,14 +257,15 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
                         try {
                             en = MekHqXmlUtil.getEntityFromXmlString(wn3);
                         } catch (Exception e) {
-                            MekHQ.getLogger().log(getClass(), METHOD_NAME, LogLevel.ERROR,
-                                    "Error loading allied unit in scenario"); //$NON-NLS-1$
-                            MekHQ.getLogger().error(getClass(), METHOD_NAME, e);
+                            MekHQ.getLogger().error(this, "Error loading allied unit in scenario", e);
                         }
                         if (en != null) {
                             entityList.add(en);
                         }
                     }
+                }
+                if ((camoCategory != null) && (camoFileName != null)) {
+                    setCamouflage(new Camouflage(camoCategory, camoFileName));
                 }
             } else if (wn2.getNodeName().equalsIgnoreCase("behaviorSettings")) {
                 NodeList nl2 = wn2.getChildNodes();

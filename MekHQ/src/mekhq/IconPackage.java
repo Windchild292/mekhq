@@ -32,7 +32,6 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import megamek.client.ui.swing.tileset.MechTileset;
-import megamek.client.ui.swing.util.ImageFileFactory;
 import megamek.common.Configuration;
 import megamek.common.Crew;
 import megamek.common.util.fileUtils.DirectoryItems;
@@ -47,8 +46,6 @@ import mekhq.gui.utilities.PortraitFileFactory;
  */
 public class IconPackage {
     //the various directory items we need to access
-    private DirectoryItems portraits;
-    private DirectoryItems camos;
     private DirectoryItems forceIcons;
     private DirectoryItems awardIcons;
     protected static MechTileset mt;
@@ -83,30 +80,12 @@ public class IconPackage {
     }
 
     public void loadDirectories() {
-        if (null == portraits) {
-            try {
-                portraits = new DirectoryItems(new File("data/images/portraits"), "", //$NON-NLS-1$ //$NON-NLS-2$
-                        PortraitFileFactory.getInstance());
-            } catch (Exception e) {
-                MekHQ.getLogger().error(getClass(), "loadDirectories", "Unable to load portraits Directory", e);
-                portraits = null;
-            }
-        }
-        if (null == camos) {
-            try {
-                camos = new DirectoryItems(new File("data/images/camo"), "", //$NON-NLS-1$ //$NON-NLS-2$
-                        ImageFileFactory.getInstance());
-            } catch (Exception e) {
-                MekHQ.getLogger().error(getClass(), "loadDirectories", "Unable to load camo Directory", e);
-                camos = null;
-            }
-        }
         if (null == forceIcons) {
             try {
-                forceIcons = new DirectoryItems(new File("data/images/force"), "", //$NON-NLS-1$ //$NON-NLS-2$
+                forceIcons = new DirectoryItems(new File("data/images/force"), "",
                         PortraitFileFactory.getInstance());
             } catch (Exception e) {
-                MekHQ.getLogger().error(getClass(), "loadDirectories", "Unable to load forceIcons Directory", e);
+                MekHQ.getLogger().error(this, "Unable to load forceIcons Directory", e);
                 forceIcons = null;
             }
         }
@@ -115,14 +94,14 @@ public class IconPackage {
             try {
                 mt.loadFromFile("mechset.txt");
             } catch (Exception e) {
-                MekHQ.getLogger().error(getClass(), "loadDirectories", "Unable to load mech tileset", e);
+                MekHQ.getLogger().error(this, "Unable to load mech tileset", e);
             }
         }
         if (null == awardIcons) {
             try {
                 awardIcons = new DirectoryItems(new File("data/images/awards"), "", PortraitFileFactory.getInstance());
             } catch (Exception e) {
-                MekHQ.getLogger().error(getClass(), "loadDirectories", "Unable to load awardIcons Directory", e);
+                MekHQ.getLogger().error(this, "Unable to load awardIcons Directory", e);
                 awardIcons = null;
             }
         }
@@ -169,7 +148,6 @@ public class IconPackage {
     }
 
     public static Image buildForceIcon(String category, String filename, DirectoryItems items, LinkedHashMap<String, Vector<String>> iconMap) {
-        final String METHOD_NAME = "buildForceIcon(String,String, DirectoryItems,LinkedHashMap<String,Vector<String>>)"; //$NON-NLS-1$
         Image retVal = null;
 
         if (Crew.ROOT_PORTRAIT.equals(category)) {
@@ -216,7 +194,7 @@ public class IconPackage {
                     }
                 }
             } catch (Exception err) {
-                MekHQ.getLogger().error(IconPackage.class, METHOD_NAME, err);
+                MekHQ.getLogger().error(IconPackage.class, err);
             } finally {
                 if (null != g2d) {
                     g2d.dispose();
@@ -225,7 +203,7 @@ public class IconPackage {
                     try {
                         base = (BufferedImage) items.getItem("", "empty.png");
                     } catch (Exception e) {
-                        MekHQ.getLogger().error(IconPackage.class, "buildForceIcon", e);
+                        MekHQ.getLogger().error(IconPackage.class, e);
                     }
                 }
                 retVal = base;
@@ -240,7 +218,7 @@ public class IconPackage {
                 }
                 retVal = scaledImage;
             } catch (Exception err) {
-                MekHQ.getLogger().error(IconPackage.class, METHOD_NAME, err);
+                MekHQ.getLogger().error(IconPackage.class, err);
             }
         }
 

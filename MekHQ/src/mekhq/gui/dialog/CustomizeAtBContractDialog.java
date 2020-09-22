@@ -49,7 +49,7 @@ import javax.swing.SpinnerNumberModel;
 
 import megamek.client.ui.swing.util.PlayerColors;
 import megamek.common.Player;
-import megamek.common.util.fileUtils.DirectoryItems;
+import megamek.common.icons.Camouflage;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
@@ -72,13 +72,8 @@ public class CustomizeAtBContractDialog extends JDialog {
 	private Frame frame;
 	private AtBContract contract;
 	private Campaign campaign;
-	private DirectoryItems camos;
-	private String allyCamoCategory;
-	private String allyCamoFileName;
-	private int allyColorIndex;
-	private String enemyCamoCategory;
-	private String enemyCamoFileName;
-	private int enemyColorIndex;
+	private Camouflage allyCamouflage;
+	private Camouflage enemyCamouflage;
 
 	protected JTextField txtName;
 	protected FactionComboBox cbEmployer;
@@ -105,19 +100,13 @@ public class CustomizeAtBContractDialog extends JDialog {
 
 	Set<String> currentFactions;
 
-	public CustomizeAtBContractDialog(Frame parent, boolean modal, AtBContract contract, Campaign c, DirectoryItems camos) {
+	public CustomizeAtBContractDialog(Frame parent, boolean modal, AtBContract contract, Campaign c) {
 		super(parent, modal);
 		this.frame = parent;
 		this.contract = contract;
-		this.camos = camos;
 		campaign = c;
-		allyCamoCategory = contract.getAllyCamoCategory();
-		allyCamoFileName = contract.getAllyCamoFileName();
-		allyColorIndex = contract.getAllyColorIndex();
-		enemyCamoCategory = contract.getEnemyCamoCategory();
-		enemyCamoFileName = contract.getEnemyCamoFileName();
-		enemyColorIndex = contract.getEnemyColorIndex();
-
+		allyCamouflage = contract.getAllyCamouflage();
+		enemyCamouflage = contract.getEnemyCamouflage();
 		initComponents();
 		setLocationRelativeTo(parent);
 		setUserPreferences();
@@ -611,12 +600,8 @@ public class CustomizeAtBContractDialog extends JDialog {
     	contract.setContractScoreArbitraryModifier((Integer)spnContractScoreArbitraryModifier.getValue());
     	contract.setAllyBotName(txtAllyBotName.getText());
     	contract.setEnemyBotName(txtEnemyBotName.getText());
-    	contract.setAllyCamoCategory(allyCamoCategory);
-    	contract.setAllyCamoFileName(allyCamoFileName);
-    	contract.setAllyColorIndex(allyColorIndex);
-    	contract.setEnemyCamoCategory(enemyCamoCategory);
-    	contract.setEnemyCamoFileName(enemyCamoFileName);
-    	contract.setEnemyColorIndex(enemyColorIndex);
+    	contract.setAllyCamouflage(allyCamouflage);
+    	contract.setEnemyCamouflage(enemyCamouflage);
 
     	PlanetarySystem canonSystem = Systems.getInstance().getSystemByName(suggestPlanet.getText(),
                 campaign.getLocalDate());
