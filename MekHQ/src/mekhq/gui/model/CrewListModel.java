@@ -125,7 +125,7 @@ public class CrewListModel extends AbstractListModel<Person> {
                 boolean isSelected, boolean cellHasFocus) {
             Component c = this;
             setOpaque(true);
-            Person p = (Person)getElementAt(index);
+            Person p = getElementAt(index);
             StringBuilder sb = new StringBuilder("<html><font size='2'><b>")
                     .append(p.getFullTitle())
                     .append("</b><br/>")

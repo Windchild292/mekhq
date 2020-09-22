@@ -32,7 +32,7 @@ import javax.swing.JLabel;
 
 import megamek.client.ui.Messages;
 import megamek.client.ui.swing.tileset.EntityImage;
-import megamek.client.ui.swing.util.PlayerColors;
+import megamek.client.ui.swing.util.PlayerColor;
 import megamek.common.Crew;
 import megamek.common.Entity;
 import megamek.common.UnitType;
@@ -520,7 +520,7 @@ public class ForceViewPanel extends ScrollablePanel {
 			return null;
 		}
         Image base = icons.getMechTiles().imageFor(u.getEntity(), c, -1);
-        int tint = PlayerColors.getColorRGB(u.getCampaign().getColorIndex());
+        int tint = PlayerColor.getColorRGB(u.getCampaign().getColorIndex());
         EntityImage entityImage = new EntityImage(base, tint, getCamo(u), c, u.getEntity());
         return entityImage.loadPreviewImage();
     }

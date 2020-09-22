@@ -42,7 +42,6 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import megamek.client.ui.swing.util.PlayerColors;
 import megamek.common.Crew;
 import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.EncodeControl;

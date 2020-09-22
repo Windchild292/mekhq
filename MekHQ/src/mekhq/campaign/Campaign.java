@@ -33,6 +33,9 @@ import java.util.stream.Stream;
 
 import javax.swing.JOptionPane;
 
+import megamek.client.ui.swing.util.PlayerColor;
+import megamek.common.icons.AbstractIcon;
+import megamek.common.icons.Camouflage;
 import megamek.utils.MegaMekXmlUtil;
 import mekhq.*;
 import mekhq.campaign.againstTheBot.AtBConfiguration;
@@ -152,7 +155,6 @@ import mekhq.campaign.universe.RangedPlanetSelector;
 import mekhq.campaign.universe.Systems;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
-import mekhq.gui.dialog.HistoricalDailyReportDialog;
 import mekhq.gui.utilities.PortraitFileFactory;
 import mekhq.module.atb.AtBEventProcessor;
 import mekhq.service.MassRepairService;
@@ -226,9 +228,8 @@ public class Campaign implements Serializable, ITechManager {
     private boolean gmMode;
     private transient boolean overviewLoadingValue = true;
 
-    private String camoCategory = Player.NO_CAMO;
-    private String camoFileName = null;
-    private int colorIndex = 0;
+    private PlayerColor colour = PlayerColor.BLUE;
+    private AbstractIcon camouflage = new Camouflage();
 
     //unit icon
     public static final String ROOT_ICON = "-- General --";
@@ -4232,28 +4233,20 @@ public class Campaign implements Serializable, ITechManager {
         }
     }
 
-    public void setCamoCategory(String name) {
-        camoCategory = name;
+    public PlayerColor getColour() {
+        return colour;
     }
 
-    public String getCamoCategory() {
-        return camoCategory;
+    public void setColour(PlayerColor colour) {
+        this.colour = colour;
     }
 
-    public void setCamoFileName(String name) {
-        camoFileName = name;
+    public AbstractIcon getCamouflage() {
+        return camouflage;
     }
 
-    public String getCamoFileName() {
-        return camoFileName;
-    }
-
-    public int getColorIndex() {
-        return colorIndex;
-    }
-
-    public void setColorIndex(int index) {
-        colorIndex = index;
+    public void setCamouflage(AbstractIcon camouflage) {
+        this.camouflage = camouflage;
     }
 
     public String getIconCategory() {
@@ -4271,7 +4264,6 @@ public class Campaign implements Serializable, ITechManager {
     public void setIconFileName(String s) {
         this.iconFileName = s;
     }
-
 
     public ArrayList<Part> getSpareParts() {
         ArrayList<Part> spares = new ArrayList<>();

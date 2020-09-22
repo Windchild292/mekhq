@@ -23,7 +23,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import megamek.client.ui.swing.util.PlayerColors;
+import megamek.client.ui.swing.util.PlayerColor;
 import megamek.common.Player;
 import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.EncodeControl;
@@ -410,7 +410,7 @@ public class CamoChoiceDialog extends javax.swing.JDialog {
                 BufferedImage tempImage = new BufferedImage(84, 72,
                         BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = tempImage.createGraphics();
-                graphics.setColor(PlayerColors.getColor(colorInd));
+                graphics.setColor(PlayerColor.getColor(colorInd));
                 graphics.fillRect(0, 0, 84, 72);
                 lblImage.setIcon(new ImageIcon(tempImage));
                 return;

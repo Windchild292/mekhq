@@ -33,7 +33,7 @@ import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
 import megamek.client.ui.swing.tileset.EntityImage;
-import megamek.client.ui.swing.util.PlayerColors;
+import megamek.client.ui.swing.util.PlayerColor;
 import megamek.common.Crew;
 import mekhq.IconPackage;
 import mekhq.MekHQ;

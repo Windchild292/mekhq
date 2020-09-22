@@ -54,7 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 import megamek.client.ui.swing.tileset.EntityImage;
-import megamek.client.ui.swing.util.PlayerColors;
+import megamek.client.ui.swing.util.PlayerColor;
 import megamek.common.Dropship;
 import megamek.common.Jumpship;
 import megamek.common.util.fileUtils.DirectoryItems;
@@ -577,7 +577,7 @@ public class PlanetarySystemMapPanel extends JPanel {
         if (img == null) {
             return null;
         }
-        int tint = PlayerColors.getColorRGB(campaign.getColorIndex());
+        int tint = PlayerColor.getColorRGB(campaign.getColorIndex());
         EntityImage entityImage = new EntityImage(img, tint, getCamo(), this, u.getEntity());
         img = entityImage.loadPreviewImage();
         return Utilities.toBufferedImage(img);

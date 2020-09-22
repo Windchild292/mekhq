@@ -107,14 +107,6 @@ public class IconPackage {
         }
     }
 
-    public DirectoryItems getPortraits() {
-        return portraits;
-    }
-
-    public DirectoryItems getCamos() {
-        return camos;
-    }
-
     public DirectoryItems getForceIcons() {
         return forceIcons;
     }
