@@ -2,6 +2,21 @@ VERSION HISTORY:
 ----------------
 0.47.11-SNAPSHOT
 + Issue #2029: AmmoBin from warehouse can rarely come with free ammo
++ Issue #2032: Fixing Campaign Options Save following Preset Load
++ PR #2023: Moving StartGameDelay to MekHQOptions
++ Issue #2036: OmniVehicle config changes require omnipod heat sinks
++ Issue #2039: Subcontract Check NPE
++ Issue #1892: Launch Game Dialog Standardization
++ PR #2022: GM Tools Name and Callsign Generation
++ PR #2046: Fixing duplicated MekHQUnitSelectorDialog Display
++ PR #2045: Aero Fighter refit heat sink tracking improvements
++ PR #2047: Fixing Name Set after Adding a Bloodname
++ PR #2048: Fixing Random Bloodname NPEs when Editing Personnel
++ PR #2050: Fixing Person Tech Unit Id Concurrent Modification Error
++ Issue #2024: Can Repeatedly Complete Missions by Cancelling Retirement Dialog
++ Issue #1971: Fixing Repair Bay Bonus Parts
++ PR #2054: Fixing Erroneous Newline after Unit Loading Failure
++ PR #2055: Swapping MekHQ to use the proper GUI to edit DropShip/JumpShip/WarShips
 
 0.47.10 (2020-09-20 2100 UTC)
 + PR #1896: Campaign writeToXml: Fixing Output Spacing Issues
