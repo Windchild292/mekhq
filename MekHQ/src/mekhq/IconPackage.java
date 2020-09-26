@@ -33,7 +33,7 @@ import java.util.Vector;
 
 import megamek.client.ui.swing.tileset.MechTileset;
 import megamek.common.Configuration;
-import megamek.common.Crew;
+import megamek.common.icons.AbstractIcon;
 import megamek.common.util.fileUtils.DirectoryItems;
 import mekhq.campaign.force.Force;
 import mekhq.gui.enums.LayeredForceIcon;
@@ -142,12 +142,13 @@ public class IconPackage {
     public static Image buildForceIcon(String category, String filename, DirectoryItems items, LinkedHashMap<String, Vector<String>> iconMap) {
         Image retVal = null;
 
-        if (Crew.ROOT_PORTRAIT.equals(category)) {
+        if (AbstractIcon.ROOT_CATEGORY.equals(category)) {
             category = "";
         }
 
         // Return a null if the player has selected no force icon file.
-        if ((null == category) || (null == filename) || (Crew.PORTRAIT_NONE.equals(filename) && !Force.ROOT_LAYERED.equals(category))) {
+        if ((null == category) || (null == filename)
+                || (AbstractIcon.DEFAULT_ICON_FILENAME.equals(filename) && !Force.ROOT_LAYERED.equals(category))) {
             filename = "empty.png";
         }
 

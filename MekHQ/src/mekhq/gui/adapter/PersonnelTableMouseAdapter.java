@@ -30,8 +30,11 @@ import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 
+import megamek.client.ui.swing.icons.AbstractIconChooser;
+import megamek.client.ui.swing.icons.PortraitChooser;
 import megamek.client.ui.swing.util.MenuScroller;
 import megamek.common.*;
+import megamek.common.icons.AbstractIcon;
 import megamek.common.options.IOption;
 import megamek.common.options.OptionsConstants;
 import megamek.common.options.PilotOptions;
@@ -255,7 +258,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                     gui.getCampaign().personUpdated(person);
                     if (gui.getCampaign().getCampaignOptions().usePortraitForType(role)
                             && gui.getCampaign().getCampaignOptions().getAssignPortraitOnRoleChange()
-                            && person.getPortraitFileName().equals(Crew.PORTRAIT_NONE)) {
+                            && person.getPortrait().hasDefaultFilename()) {
                         gui.getCampaign().assignRandomPortraitFor(person);
                     }
                 }
@@ -803,20 +806,19 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 break;
             }
             case CMD_EDIT_PORTRAIT: {
-                ImageChoiceDialog pcd = new ImageChoiceDialog(gui.getFrame(),
-                        true, selectedPerson.getPortraitCategory(),
-                        selectedPerson.getPortraitFileName(), gui.getIconPackage()
-                        .getPortraits());
-                pcd.setVisible(true);
+                AbstractIconChooser portraitChooser = new PortraitChooser(gui.getFrame(),
+                        selectedPerson.getPortrait());
 
-                final String category = pcd.getCategory();
-                final String fileName = pcd.getFileName();
+                portraitChooser.setVisible(true);
+                final AbstractIcon portrait = portraitChooser.getSelectedItem();
+
+                if (portrait == null) {
+                    break;
+                }
 
                 for (Person person : people) {
-                    if (!(person.getPortraitCategory().equals(category)
-                            && person.getPortraitFileName().equals(fileName))) {
-                        person.setPortraitCategory(category);
-                        person.setPortraitFileName(fileName);
+                    if (!person.getPortrait().equals(portrait)) {
+                        person.setPortrait(portrait);
                         gui.getCampaign().personUpdated(person);
                     }
                 }

@@ -20,7 +20,6 @@
  */
 package mekhq.campaign;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.time.DayOfWeek;
@@ -156,7 +155,6 @@ import mekhq.campaign.universe.RangedPlanetSelector;
 import mekhq.campaign.universe.Systems;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
-import mekhq.gui.utilities.PortraitFileFactory;
 import mekhq.module.atb.AtBEventProcessor;
 import mekhq.service.MassRepairService;
 
@@ -6260,20 +6258,10 @@ public class Campaign implements Serializable, ITechManager {
         // duplicates
         List<String> existingPortraits = new ArrayList<>();
         for (Person existingPerson : this.getPersonnel()) {
-            existingPortraits.add(existingPerson.getPortraitCategory() + ":"
-                    + existingPerson.getPortraitFileName());
+            existingPortraits.add(existingPerson.getPortrait().getCategory() + ":"
+                    + existingPerson.getPortrait().getFilename());
         }
-        // TODO: it would be nice to pull the portraits directory from MekHQ
-        // TODO: itself
-        DirectoryItems portraits;
-        try {
-            portraits = new DirectoryItems(
-                    new File("data/images/portraits"), "", //$NON-NLS-1$ //$NON-NLS-2$
-                    PortraitFileFactory.getInstance());
-        } catch (Exception e) {
-            MekHQ.getLogger().error(getClass(), "assignRandomPortraitFor", e);
-            return;
-        }
+
         List<String> possiblePortraits;
 
         // Will search for portraits in the /gender/primaryrole folder first,
