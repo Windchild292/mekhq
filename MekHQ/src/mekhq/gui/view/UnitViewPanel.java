@@ -23,19 +23,14 @@ import java.awt.Font;
 import java.awt.Image;
 import java.util.ResourceBundle;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import javax.swing.*;
 
 import megamek.client.ui.swing.tileset.EntityImage;
-import megamek.client.ui.swing.tileset.MechTileset;
 import megamek.client.ui.swing.util.FluffImageHelper;
 import megamek.client.ui.swing.util.PlayerColors;
-import megamek.common.Entity;
 import megamek.common.MechView;
 import megamek.common.TechConstants;
 import megamek.common.UnitType;
-import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
@@ -51,38 +46,33 @@ public class UnitViewPanel extends ScrollablePanel {
 	private static final long serialVersionUID = 7004741688464105277L;
 
 	private Unit unit;
-	private Entity entity;
 	private Campaign campaign;
 
-	private MechTileset mt;
-    private DirectoryItems camos;
-
 	private JLabel lblImage;
-	//private javax.swing.JPanel pnlStats;
-	private javax.swing.JTextPane txtReadout;
-	private javax.swing.JTextPane txtFluff;
-	private javax.swing.JPanel pnlStats;
+	private JTextPane txtReadout;
+	private JTextPane txtFluff;
+	private JPanel pnlStats;
 
-	private javax.swing.JLabel lblType;
-	private javax.swing.JLabel lblTech;
-	private javax.swing.JLabel txtTech;
-	private javax.swing.JLabel lblTonnage;
-	private javax.swing.JLabel txtTonnage;
-	private javax.swing.JLabel lblBV;
-	private javax.swing.JLabel txtBV;
-	private javax.swing.JLabel lblCost;
-	private javax.swing.JLabel txtCost;
-	private javax.swing.JLabel lblQuirk;
-	private javax.swing.JLabel txtQuirk;
+	private JLabel lblType;
+	private JLabel lblTech;
+	private JLabel txtTech;
+	private JLabel lblTonnage;
+	private JLabel txtTonnage;
+	private JLabel lblBV;
+	private JLabel txtBV;
+	private JLabel lblCost;
+	private JLabel txtCost;
+	private JLabel lblQuirk;
+	private JLabel txtQuirk;
 
-	public UnitViewPanel(Unit u, Campaign c, DirectoryItems camos, MechTileset mt) {
-		unit = u;
-		entity = u.getEntity();
-		campaign = c;
-		this.camos = camos;
-		this.mt = mt;
+	private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.UnitViewPanel",
+            new EncodeControl());
+
+
+    public UnitViewPanel(Unit unit, Campaign campaign) {
+	    this.unit = unit;
+	    this.campaign = campaign;
 		initComponents();
-		//setMinimumSize(new Dimension(400, 200));
 	}
 
 	private void initComponents() {
@@ -92,7 +82,6 @@ public class UnitViewPanel extends ScrollablePanel {
 		txtFluff = new javax.swing.JTextPane();
 		pnlStats = new javax.swing.JPanel();
 
-    	ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.UnitViewPanel", new EncodeControl()); //$NON-NLS-1$
 
 		setLayout(new java.awt.GridBagLayout());
 

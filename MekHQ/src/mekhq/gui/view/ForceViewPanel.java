@@ -26,9 +26,7 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import javax.swing.*;
 
 import megamek.client.ui.Messages;
 import megamek.client.ui.swing.tileset.EntityImage;
@@ -58,24 +56,24 @@ public class ForceViewPanel extends ScrollablePanel {
 
 	private IconPackage icons;
 
-	private javax.swing.JLabel lblIcon;
-	private javax.swing.JPanel pnlStats;
-	private javax.swing.JPanel pnlSubUnits;
-	private javax.swing.JTextPane txtDesc;
+	private JLabel lblIcon;
+	private JPanel pnlStats;
+	private JPanel pnlSubUnits;
+	private JTextPane txtDesc;
 
-	private javax.swing.JLabel lblType;
-	private javax.swing.JLabel lblAssign1;
-	private javax.swing.JLabel lblAssign2;
-	private javax.swing.JLabel lblCommander1;
-	private javax.swing.JLabel lblCommander2;
-	private javax.swing.JLabel lblBV1;
-	private javax.swing.JLabel lblBV2;
-	private javax.swing.JLabel lblTonnage1;
-	private javax.swing.JLabel lblTonnage2;
-	private javax.swing.JLabel lblCost1;
-	private javax.swing.JLabel lblCost2;
-	private javax.swing.JLabel lblTech1;
-	private javax.swing.JLabel lblTech2;
+	private JLabel lblType;
+	private JLabel lblAssign1;
+	private JLabel lblAssign2;
+	private JLabel lblCommander1;
+	private JLabel lblCommander2;
+	private JLabel lblBV1;
+	private JLabel lblBV2;
+	private JLabel lblTonnage1;
+	private JLabel lblTonnage2;
+	private JLabel lblCost1;
+	private JLabel lblCost2;
+	private JLabel lblTech1;
+	private JLabel lblTech2;
 
 	public ForceViewPanel(Force f, Campaign c, IconPackage icons) {
 		this.force = f;
@@ -100,7 +98,7 @@ public class ForceViewPanel extends ScrollablePanel {
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		gridBagConstraints.fill = GridBagConstraints.NONE;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
 		gridBagConstraints.insets = new java.awt.Insets(10,10,0,0);
 		add(lblIcon, gridBagConstraints);

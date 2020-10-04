@@ -178,7 +178,7 @@ public final class TOETab extends CampaignGuiTab {
                     scrollPerson.getVerticalScrollBar().setValue(0);
                 });
             }
-            final JScrollPane scrollUnit = new JScrollPane(new UnitViewPanel(u, getCampaign(), getIconPackage().getCamos(), getIconPackage().getMechTiles()));
+            final JScrollPane scrollUnit = new JScrollPane(new UnitViewPanel(u, getCampaign()));
             tabUnit.add("Unit", scrollUnit);
             panForceView.add(tabUnit, BorderLayout.CENTER);
             javax.swing.SwingUtilities.invokeLater(() -> {
