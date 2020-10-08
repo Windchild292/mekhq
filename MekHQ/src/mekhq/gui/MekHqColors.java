@@ -27,24 +27,17 @@ import mekhq.gui.preferences.ColorPreference;
 import mekhq.preferences.PreferencesNode;
 
 public class MekHQColors {
-
-    //
-    // General Colors
-    //
-
+    //region Variable Declarations
+    //region General Colours
     private static ColorPreference iconButtonColors;
+    //endregion General Colours
 
-    //
-    // Force Colors
-    //
-
+    //region Force Colours
     private static ColorPreference deployedColors;
     private static ColorPreference belowContractMinimumColors;
+    //endregion Force Colours
 
-    //
-    // Unit Colors
-    //
-
+    //region Unit Colours
     private static ColorPreference inTransitColors;
     private static ColorPreference refittingColors;
     private static ColorPreference mothballingColors;
@@ -54,21 +47,20 @@ public class MekHQColors {
     private static ColorPreference needsPartsFixedColors;
     private static ColorPreference unmaintainedColors;
     private static ColorPreference uncrewedColors;
+    //endregion Unit Colours
 
-    //
-    // Financial Colors
-    //
-
+    //region Financial Colours
     private static ColorPreference loanOverdueColors;
+    //endregion Financial Colours
 
-    //
-    // Personnel Colors
-    //
-
+    //region Personnel Colours
     private static ColorPreference injuredColors;
     private static ColorPreference healedInjuriesColors;
     private static ColorPreference paidRetirementColors;
+    //endregion Personnel Colours
+    //endregion Variable Declarations
 
+    //region Static Initialization
     static {
         final PreferencesNode preferences = MekHQ.getPreferences().forClass(MekHQColors.class);
 
@@ -99,7 +91,9 @@ public class MekHQColors {
                 uncrewedColors, loanOverdueColors, injuredColors, healedInjuriesColors,
                 paidRetirementColors);
     }
+    //endregion Static Initialization=
 
+    //region Getters
     public ColorPreference getIconButton() {
         return iconButtonColors;
     }
@@ -163,4 +157,5 @@ public class MekHQColors {
     public ColorPreference getPaidRetirement() {
         return paidRetirementColors;
     }
+    //endregion Getters
 }
