@@ -20,7 +20,7 @@ package mekhq.service;
 
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
-import mekhq.gui.dialog.MassRepairSalvageDialog;
+import mekhq.gui.dialog.MassRepairMassSalvageDialog;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,8 +44,8 @@ public class MassRepairConfiguredOptions {
         setup(campaign.getCampaignOptions());
     }
 
-    public MassRepairConfiguredOptions(MassRepairSalvageDialog massRepairSalvageDialog) {
-        setup(massRepairSalvageDialog);
+    public MassRepairConfiguredOptions(MassRepairMassSalvageDialog massRepairMassSalvageDialog) {
+        setup(massRepairMassSalvageDialog);
     }
     //endregion Constructors
 
@@ -67,7 +67,7 @@ public class MassRepairConfiguredOptions {
         }
     }
 
-    public void setup(MassRepairSalvageDialog dlg) {
+    public void setup(MassRepairMassSalvageDialog dlg) {
         setUseExtraTime(dlg.getUseExtraTimeBox().isSelected());
         setUseRushJob(dlg.getUseRushJobBox().isSelected());
         setAllowCarryover(dlg.getAllowCarryoverBox().isSelected());
@@ -89,7 +89,7 @@ public class MassRepairConfiguredOptions {
         for (int i = 0; i < MassRepairOption.VALID_REPAIR_TYPES.length; i++) {
             int type = MassRepairOption.VALID_REPAIR_TYPES[i];
 
-            MassRepairSalvageDialog.MassRepairOptionControl mroc = dlg.getMassRepairOptionControlMap().get(type);
+            MassRepairMassSalvageDialog.MassRepairOptionControl mroc = dlg.getMassRepairOptionControlMap().get(type);
 
             if (mroc == null) {
                 continue;

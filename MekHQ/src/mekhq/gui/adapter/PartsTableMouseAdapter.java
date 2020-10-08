@@ -23,7 +23,7 @@ import mekhq.campaign.parts.Armor;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.work.WorkTime;
 import mekhq.gui.CampaignGUI;
-import mekhq.gui.dialog.MassRepairSalvageDialog;
+import mekhq.gui.dialog.MassRepairMassSalvageDialog;
 import mekhq.gui.dialog.PopupValueChoiceDialog;
 import mekhq.gui.model.PartsTableModel;
 import mekhq.service.MassRepairMassSalvageMode;
@@ -145,7 +145,7 @@ public class PartsTableMouseAdapter extends MouseInputAdapter implements ActionL
                 }
             }
         } else if (command.contains("MASS_REPAIR")) {
-            MassRepairSalvageDialog dlg = new MassRepairSalvageDialog(gui.getFrame(), true, gui,
+            MassRepairMassSalvageDialog dlg = new MassRepairMassSalvageDialog(gui.getFrame(), true, gui,
                     MassRepairMassSalvageMode.WAREHOUSE);
             dlg.setVisible(true);
         } else if (command.equalsIgnoreCase("DEPOD")) {

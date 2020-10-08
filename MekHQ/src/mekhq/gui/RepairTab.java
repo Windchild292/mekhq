@@ -61,7 +61,7 @@ import mekhq.campaign.work.IPartWork;
 import mekhq.gui.adapter.ServicedUnitsTableMouseAdapter;
 import mekhq.gui.adapter.TaskTableMouseAdapter;
 import mekhq.gui.dialog.AcquisitionsDialog;
-import mekhq.gui.dialog.MassRepairSalvageDialog;
+import mekhq.gui.dialog.MassRepairMassSalvageDialog;
 import mekhq.service.MassRepairMassSalvageMode;
 import mekhq.gui.model.TaskTableModel;
 import mekhq.gui.model.TechTableModel;
@@ -143,7 +143,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
         btnMRMSDialog.setToolTipText("Start Mass Repair/Salvage from dialog");
         btnMRMSDialog.setName("btnMRMSDialog");
         btnMRMSDialog.addActionListener(ev -> {
-            MassRepairSalvageDialog dlg = new MassRepairSalvageDialog(getFrame(), true,
+            MassRepairMassSalvageDialog dlg = new MassRepairMassSalvageDialog(getFrame(), true,
                     getCampaignGui(), null, MassRepairMassSalvageMode.UNITS);
             dlg.setVisible(true);
         });

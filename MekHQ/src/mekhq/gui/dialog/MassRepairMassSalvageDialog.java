@@ -65,7 +65,7 @@ import mekhq.service.MassRepairMassSalvageService.MassRepairPartSet;
 /**
  * @author Kipsta
  */
-public class MassRepairSalvageDialog extends JDialog {
+public class MassRepairMassSalvageDialog extends JDialog {
     //region Variable Declarations
     private static final long serialVersionUID = -7859207613578378162L;
 
@@ -108,13 +108,13 @@ public class MassRepairSalvageDialog extends JDialog {
     //endregion Variable Declarations
 
     //region Constructors
-    public MassRepairSalvageDialog(JFrame parent, boolean modal, CampaignGUI campaignGUI,
-                                   MassRepairMassSalvageMode mode) {
+    public MassRepairMassSalvageDialog(JFrame parent, boolean modal, CampaignGUI campaignGUI,
+                                       MassRepairMassSalvageMode mode) {
         this(parent, modal, campaignGUI, null, mode);
     }
 
-    public MassRepairSalvageDialog(JFrame parent, boolean modal, CampaignGUI campaignGUI,
-                                   Unit selectedUnit, MassRepairMassSalvageMode mode) {
+    public MassRepairMassSalvageDialog(JFrame parent, boolean modal, CampaignGUI campaignGUI,
+                                       Unit selectedUnit, MassRepairMassSalvageMode mode) {
         super(parent, modal);
         this.campaignGUI = campaignGUI;
         this.selectedUnit = selectedUnit;
@@ -1025,7 +1025,7 @@ public class MassRepairSalvageDialog extends JDialog {
     }
 
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(MassRepairSalvageDialog.class);
+        PreferencesNode preferences = MekHQ.getPreferences().forClass(MassRepairMassSalvageDialog.class);
 
         this.setName("dialog");
         preferences.manage(new JWindowPreference(this));

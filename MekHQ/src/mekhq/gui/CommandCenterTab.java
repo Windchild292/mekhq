@@ -316,7 +316,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
         btnMRMSDialog.setToolTipText(resourceMap.getString("btnMRMSDialog.toolTipText"));
         btnMRMSDialog.setName("btnMRMSDialog");
         btnMRMSDialog.addActionListener(ev -> {
-            MassRepairSalvageDialog dlg = new MassRepairSalvageDialog(getFrame(), true,
+            MassRepairMassSalvageDialog dlg = new MassRepairMassSalvageDialog(getFrame(), true,
                     getCampaignGui(), null, MassRepairMassSalvageMode.UNITS);
             dlg.setVisible(true);
         });
