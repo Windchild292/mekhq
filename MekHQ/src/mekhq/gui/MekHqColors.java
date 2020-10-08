@@ -30,6 +30,8 @@ public class MekHQColors {
     //region Variable Declarations
     //region General Colours
     private static ColorPreference iconButtonColors;
+    private static ColorPreference mekhqWarningColours;
+    private static ColorPreference mekhqIssueColours;
     //endregion General Colours
 
     //region Force Colours
@@ -64,11 +66,18 @@ public class MekHQColors {
     static {
         final PreferencesNode preferences = MekHQ.getPreferences().forClass(MekHQColors.class);
 
+        //region General Colours
         iconButtonColors = new ColorPreference("iconButton", Color.LIGHT_GRAY, Color.BLACK);
+        mekhqWarningColours = new ColorPreference("mekhqWarning", Color.ORANGE, Color.BLACK);
+        mekhqIssueColours = new ColorPreference("mekhqIssue", Color.RED, Color.BLACK);
+        //endregion General Colours
 
+        //region Force Colours
         deployedColors = new ColorPreference("deployed", Color.LIGHT_GRAY, Color.BLACK);
         belowContractMinimumColors = new ColorPreference("belowContractMinimum", UIManager.getColor("Table.background"), Color.RED);
+        //endregion Force Colours
 
+        //region Unit Colours
         inTransitColors = new ColorPreference("inTransit", Color.MAGENTA, Color.BLACK);
         refittingColors = new ColorPreference("refitting", Color.CYAN, Color.BLACK);
         mothballingColors = new ColorPreference("mothballing", new Color(153,153,255), Color.BLACK);
@@ -78,26 +87,71 @@ public class MekHQColors {
         needsPartsFixedColors = new ColorPreference("needsPartsFixed", new Color(238, 238, 0), Color.BLACK);
         unmaintainedColors = new ColorPreference("unmaintainedColors", Color.ORANGE, Color.BLACK);
         uncrewedColors = new ColorPreference("uncrewed", new Color(218, 130, 255), Color.BLACK);
+        //endregion Unit Colours
 
+        //region Financial Colours
         loanOverdueColors = new ColorPreference("loanOverdue", Color.RED, Color.BLACK);
+        //endregion Financial Colours
 
+        //region Personnel Colours
         injuredColors = new ColorPreference("injured", Color.RED, Color.BLACK);
         healedInjuriesColors = new ColorPreference("healed", new Color(0xee9a00), Color.BLACK);
         paidRetirementColors = new ColorPreference("paidRetirement", Color.LIGHT_GRAY, Color.BLACK);
+        //endregion Personnel Colours
 
-        preferences.manage(iconButtonColors, deployedColors, belowContractMinimumColors,
-                inTransitColors, refittingColors, mothballingColors, mothballedColors,
-                notRepairableColors, nonfunctionalColors, needsPartsFixedColors, unmaintainedColors,
-                uncrewedColors, loanOverdueColors, injuredColors, healedInjuriesColors,
-                paidRetirementColors);
+        preferences.manage(
+                //region General Colours
+                iconButtonColors,
+                mekhqWarningColours,
+                mekhqIssueColours,
+                //endregion General Colours
+
+                //region Force Colours
+                deployedColors,
+                belowContractMinimumColors,
+                //endregion Force Colours
+
+                //region Unit Colours
+                inTransitColors,
+                refittingColors,
+                mothballingColors,
+                mothballedColors,
+                notRepairableColors,
+                nonfunctionalColors,
+                needsPartsFixedColors,
+                unmaintainedColors,
+                uncrewedColors,
+                //endregion Unit Colours
+
+                //region Financial Colours
+                loanOverdueColors,
+                //endregion Financial Colours
+
+                //region Personnel Colours
+                injuredColors,
+                healedInjuriesColors,
+                paidRetirementColors
+                //endregion Personnel Colours
+        );
     }
     //endregion Static Initialization=
 
     //region Getters
+    //region General Colours
     public ColorPreference getIconButton() {
         return iconButtonColors;
     }
 
+    public ColorPreference getMekHQWarningColour() {
+        return mekhqWarningColours;
+    }
+
+    public ColorPreference getMekHQIssueColour() {
+        return mekhqIssueColours;
+    }
+    //endregion General Colours
+
+    //region Force Colours
     public ColorPreference getDeployed() {
         return deployedColors;
     }
@@ -105,7 +159,9 @@ public class MekHQColors {
     public ColorPreference getBelowContractMinimum() {
         return belowContractMinimumColors;
     }
+    //endregion Force Colours
 
+    //region Unit Colours
     public ColorPreference getInTransit() {
         return inTransitColors;
     }
@@ -141,11 +197,15 @@ public class MekHQColors {
     public ColorPreference getUncrewed() {
         return uncrewedColors;
     }
+    //endregion Unit Colours
 
+    //region Financial Colours
     public ColorPreference getLoanOverdue() {
         return loanOverdueColors;
     }
+    //endregion Financial Colours
 
+    //region Personnel Colours
     public ColorPreference getInjured() {
         return injuredColors;
     }
@@ -157,5 +217,6 @@ public class MekHQColors {
     public ColorPreference getPaidRetirement() {
         return paidRetirementColors;
     }
+    //endregion Personnel Colours
     //endregion Getters
 }
