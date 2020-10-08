@@ -49,7 +49,7 @@ import mekhq.campaign.personnel.enums.GenderDescriptors;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Planet;
 import mekhq.gui.BasicInfo;
-import mekhq.gui.MekHqColors;
+import mekhq.gui.MekHQColors;
 import mekhq.gui.utilities.MekHqTableCellRenderer;
 
 /**
@@ -65,7 +65,7 @@ public class PersonnelTableModel extends DataTableModel {
     private boolean loadAssignmentFromMarket;
     private boolean groupByUnit;
 
-    private final MekHqColors colors = new MekHqColors();
+    private final MekHQColors colors = new MekHQColors();
 
     public static final int COL_RANK            = 0;
     public static final int COL_GIVEN_NAME      = 1;

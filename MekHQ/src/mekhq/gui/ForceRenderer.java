@@ -26,7 +26,7 @@ public class ForceRenderer extends DefaultTreeCellRenderer {
     private static final long serialVersionUID = -553191867660269247L;
 
     private final IconPackage icons;
-    private final MekHqColors colors = new MekHqColors();
+    private final MekHQColors colors = new MekHQColors();
 
     public ForceRenderer(IconPackage i) {
         icons = i;

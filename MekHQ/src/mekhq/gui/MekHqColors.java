@@ -26,7 +26,7 @@ import mekhq.MekHQ;
 import mekhq.gui.preferences.ColorPreference;
 import mekhq.preferences.PreferencesNode;
 
-public class MekHqColors {
+public class MekHQColors {
 
     //
     // General Colors
@@ -70,7 +70,7 @@ public class MekHqColors {
     private static ColorPreference paidRetirementColors;
 
     static {
-        final PreferencesNode preferences = MekHQ.getPreferences().forClass(MekHqColors.class);
+        final PreferencesNode preferences = MekHQ.getPreferences().forClass(MekHQColors.class);
 
         iconButtonColors = new ColorPreference("iconButton", Color.LIGHT_GRAY, Color.BLACK);
 

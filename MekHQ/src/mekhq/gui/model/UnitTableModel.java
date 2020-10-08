@@ -38,7 +38,7 @@ import mekhq.campaign.force.Force;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.BasicInfo;
-import mekhq.gui.MekHqColors;
+import mekhq.gui.MekHQColors;
 import mekhq.gui.preferences.ColorPreference;
 import mekhq.gui.utilities.MekHqTableCellRenderer;
 
@@ -73,7 +73,7 @@ public class UnitTableModel extends DataTableModel {
 
     private Campaign campaign;
 
-    private final MekHqColors colors = new MekHqColors();
+    private final MekHQColors colors = new MekHQColors();
     //endregion Variable Declarations
 
     public UnitTableModel(Campaign c) {

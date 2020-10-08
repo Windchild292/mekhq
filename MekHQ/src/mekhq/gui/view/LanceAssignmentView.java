@@ -51,7 +51,7 @@ import mekhq.campaign.force.Lance;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.Mission;
 import mekhq.campaign.personnel.SkillType;
-import mekhq.gui.MekHqColors;
+import mekhq.gui.MekHQColors;
 import mekhq.gui.model.DataTableModel;
 import mekhq.gui.model.UnitMarketTableModel;
 import mekhq.gui.model.XTableColumnModel;
@@ -68,7 +68,7 @@ public class LanceAssignmentView extends JPanel {
     private static final long serialVersionUID = 7280552346074838142L;
 
     private final Campaign campaign;
-    private final MekHqColors colors = new MekHqColors();
+    private final MekHQColors colors = new MekHQColors();
 
     private JTable tblRequiredLances;
     private JTable tblAssignments;

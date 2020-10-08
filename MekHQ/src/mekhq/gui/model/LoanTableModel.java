@@ -29,7 +29,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import mekhq.MekHQ;
 import mekhq.campaign.finances.Finances;
 import mekhq.campaign.finances.Loan;
-import mekhq.gui.MekHqColors;
+import mekhq.gui.MekHQColors;
 
 /**
  * A table model for displaying active loans
@@ -48,7 +48,7 @@ public class LoanTableModel extends DataTableModel {
     public final static int COL_NEXT_PAY   =   8;
     public final static int N_COL            = 9;
 
-    private static final transient MekHqColors colors = new MekHqColors();
+    private static final transient MekHQColors colors = new MekHQColors();
 
     public LoanTableModel() {
         data = new ArrayList<Loan>();

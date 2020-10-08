@@ -26,7 +26,7 @@ import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.RetirementDefectionTracker;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.BasicInfo;
-import mekhq.gui.MekHqColors;
+import mekhq.gui.MekHQColors;
 import mekhq.gui.dialog.RetirementDefectionDialog;
 import mekhq.gui.utilities.MekHqTableCellRenderer;
 
@@ -53,7 +53,7 @@ public class RetirementTableModel extends AbstractTableModel {
     };
 
     private final Campaign campaign;
-    private final MekHqColors colors = new MekHqColors();
+    private final MekHQColors colors = new MekHQColors();
     private ArrayList<UUID> data;
     private HashMap<UUID, TargetRoll> targets;
     private HashMap<UUID, Boolean> payBonus;
