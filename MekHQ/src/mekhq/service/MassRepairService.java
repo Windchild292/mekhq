@@ -381,7 +381,8 @@ public class MassRepairService {
             }
         }
 
-        debugLog("Finished fixing %s in %s ns", "performUnitMassRepairOrSalvage", unit.getName(), System.nanoTime() - time);
+        MekHQ.getLogger().debug(String.format("Finished fixing %s in %s ns", unit.getName(),
+                System.nanoTime() - time));
 
         return unitAction;
     }
@@ -491,7 +492,7 @@ public class MassRepairService {
             if (!locationMap.isEmpty()) {
                 MassRepairOption mro = mroByTypeMap.get(Part.REPAIR_PART_TYPE.GENERAL_LOCATION);
 
-                if ((null == mro) || !mro.isActive()) {
+                if ((mro == null) || !mro.isActive()) {
                     return new MassRepairUnitAction(unit, salvaging, MassRepairUnitAction.STATUS.UNFIXABLE_LIMB);
                 }
 
@@ -669,16 +670,15 @@ public class MassRepairService {
             }
         }
 
-        debugLog("Starting with %s techs on %s", "repairPart", techs.size(), partWork.getPartName());
+        MekHQ.getLogger().debug("Starting with " + techs.size() + " techs on " + partWork.getPartName());
 
         boolean canChangeWorkTime = (partWork instanceof Part) && partWork.canChangeWorkMode();
 
         for (int i = techs.size() - 1; i >= 0; i--) {
             long time = System.nanoTime();
-
             Person tech = techs.get(i);
 
-            debugLog("Checking tech %s", "repairPart", tech.getFullName());
+            MekHQ.getLogger().debug("Checking tech " + tech.getFullName());
 
             Skill skill = tech.getSkillForWorkingOn(partWork);
 
@@ -694,10 +694,10 @@ public class MassRepairService {
                 // Check if we need to increase the time to meet the min BTH
                 if (targetRoll.getValue() > mro.getBthMin()) {
                     if (!configuredOptions.isUseExtraTime()) {
-                        debugLog("... can't increase time to reach BTH due to configuration", "repairPart");
+                        MekHQ.getLogger().debug("Can't increase time to reach BTH due to configuration");
                         continue;
                     } else if (!canChangeWorkTime) {
-                        debugLog("... can't increase time because this part can not have it's workMode changed", "repairPart");
+                        MekHQ.getLogger().debug("Can't increase time because this part can't have it's workMode changed");
                         continue;
                     }
 
@@ -706,13 +706,11 @@ public class MassRepairService {
 
                     if (workTimeCalc.getWorkTime() == null) {
                         if (workTimeCalc.isReachedMaxSkill()) {
-                            debugLog("... can't increase time enough to reach BTH with max available tech", "repairPart");
-
+                            MekHQ.getLogger().debug("Can't increase time enough to reach BTH with max available tech");
                             return MassRepairPartAction.createMaxSkillReached(partWork, highestAvailableTechSkill,
                                     mro.getBthMin());
                         } else {
-                            debugLog("... can't increase time enough to reach BTH", "repairPart");
-
+                            MekHQ.getLogger().debug("... can't increase time enough to reach BTH");
                             continue;
                         }
                     }
@@ -724,11 +722,8 @@ public class MassRepairService {
                         WorkTimeCalculation workTimeCalc = calculateNewMassRepairWorktime(partWork, tech, mro, campaign,
                                 false, highestAvailableTechSkill);
 
-                        if (null == workTimeCalc.getWorkTime()) {
-                            selectedWorktime = WorkTime.NORMAL;
-                        } else {
-                            selectedWorktime = workTimeCalc.getWorkTime();
-                        }
+                        selectedWorktime = (workTimeCalc.getWorkTime() == null) ? WorkTime.NORMAL
+                                : workTimeCalc.getWorkTime();
                     }
                 }
 
@@ -757,8 +752,7 @@ public class MassRepairService {
 
             if ((tech.getMinutesLeft() < partWork.getActualTime())) {
                 if (!configuredOptions.isAllowCarryover()) {
-                    debugLog("... would carry over day and configuration doesn't allow", "repairPart");
-
+                    MekHQ.getLogger().debug("Would carry over day and configuration doesn't allow.");
                     continue;
                 }
 
@@ -781,7 +775,7 @@ public class MassRepairService {
                 }
             }
 
-            debugLog("... time to check tech: %s ns", "repairPart", (System.nanoTime() - time));
+            MekHQ.getLogger().debug("Time to check tech: " + (System.nanoTime() - time) + " ns");
         }
 
         List<Person> validTechs = new ArrayList<>();
@@ -807,8 +801,7 @@ public class MassRepairService {
         }
 
         if (validTechs.isEmpty()) {
-            debugLog("Ending because there are no techs", "repairPart");
-
+            MekHQ.getLogger().debug("Ending because there are no techs");
             return MassRepairPartAction.createNoTechs(partWork);
         }
 
@@ -818,8 +811,8 @@ public class MassRepairService {
             Skill skill = tech.getSkillForWorkingOn(partWork);
             WorkTime wt = techSkillToWorktimeMap.get(skill.getType().getName() + "-" + skill.getLevel());
 
-            if (null == wt) {
-                debugLog("[ERROR] Null work-time from techToWorktimeMap for %s", "repairPart", tech.getFullName());
+            if (wt == null) {
+                MekHQ.getLogger().error("Null work-time from techToWorktimeMap for " + tech.getFullName());
                 wt = WorkTime.NORMAL;
             }
 
@@ -840,7 +833,7 @@ public class MassRepairService {
 
         Thread.yield();
 
-        debugLog("Ending after %s ns", "repairPart", System.nanoTime() - repairPartTime);
+        MekHQ.getLogger().debug("Ending after " + (System.nanoTime() - repairPartTime) + " ns");
 
         return MassRepairPartAction.createRepaired(partWork);
     }
@@ -900,7 +893,7 @@ public class MassRepairService {
             // Find a tech in our placeholder cache
             Person tech = techCache.get(skillName);
 
-            if (null == tech) {
+            if (tech == null) {
                 // Create a dummy elite tech with the proper skill and 1
                 // minute and put it in our cache for later use
 
@@ -935,7 +928,7 @@ public class MassRepairService {
 
         MassRepairOption mro = mroByTypeMap.get(IPartWork.findCorrectMassRepairType(partWork));
 
-        if (null == mro) {
+        if (mro == null) {
             return validTechs;
         }
 
@@ -996,8 +989,7 @@ public class MassRepairService {
                                                                       boolean increaseTime,
                                                                       int highestAvailableTechSkill) {
         long time = System.nanoTime();
-
-        debugLog("...... starting calculateNewMassRepairWorktime", "calculateNewMassRepairWorktime");
+        MekHQ.getLogger().debug("Starting calculateNewMassRepairWorktime");
 
         if (partWork instanceof Part) {
             ((Part) partWork).resetModeToNormal();
@@ -1005,11 +997,11 @@ public class MassRepairService {
 
         TargetRoll targetRoll = campaign.getTargetFor(partWork, tech);
 
-        if ((targetRoll.getValue() == TargetRoll.IMPOSSIBLE) || (targetRoll.getValue() == TargetRoll.AUTOMATIC_FAIL)
+        if ((targetRoll.getValue() == TargetRoll.IMPOSSIBLE)
+                || (targetRoll.getValue() == TargetRoll.AUTOMATIC_FAIL)
                 || (targetRoll.getValue() == TargetRoll.CHECK_FALSE)) {
-            debugLog("...... ending calculateNewMassRepairWorktime due to impossible role - %s ns", "calculateNewMassRepairWorktime",
-                    System.nanoTime() - time);
-
+            MekHQ.getLogger().debug("Ending calculateNewMassRepairWorktime due to impossible roll "
+                    + (System.nanoTime() - time) + "ns");
             return new WorkTimeCalculation();
         }
 
@@ -1018,12 +1010,13 @@ public class MassRepairService {
 
         Skill skill = tech.getSkillForWorkingOn(partWork);
 
-        while (null != newWorkTime) {
+        while (newWorkTime != null) {
             previousNewWorkTime = newWorkTime;
             newWorkTime = newWorkTime.moveTimeToNextLevel(increaseTime);
 
-            debugLog("...... looping workTime check. NewWorkTime: %s, PreviousWorkTime: %s", "calculateNewMassRepairWorktime",
-                    (null == newWorkTime ? "NULL" : newWorkTime.name()), previousNewWorkTime.name());
+            MekHQ.getLogger().debug("Looping workTime check. NewWorkTime: "
+                    + ((newWorkTime == null) ? "NULL" : newWorkTime.name())
+                    + " PreviousWorkTime: " + previousNewWorkTime.name());
 
             // If we're trying to a rush a job, our effective skill goes down
             // Let's make sure we don't put it so high that we can't fix it
@@ -1032,18 +1025,17 @@ public class MassRepairService {
                 int modePenalty = partWork.getMode().expReduction;
 
                 if (partWork.getSkillMin() > (skill.getExperienceLevel() - modePenalty)) {
-                    debugLog(
-                            "...... ending calculateNewMassRepairWorktime with previousWorkTime due time reduction skill mod now being less that required skill - %s ns", "calculateNewMassRepairWorktime",
-                            System.nanoTime() - time);
-
+                    MekHQ.getLogger().debug("Ending calculateNewMassRepairWorktime with previousWorkTime due to "
+                            + "time reduction skill mod now being less than required skill - "
+                            + (System.nanoTime() - time) + "ns");
                     return new WorkTimeCalculation(previousNewWorkTime);
                 }
             }
 
             // If we have a null newWorkTime, we're done. Use the previous one.
-            if (null == newWorkTime) {
-                debugLog("...... ending calculateNewMassRepairWorktime because newWorkTime is null - %s ns", "calculateNewMassRepairWorktime",
-                        System.nanoTime() - time);
+            if (newWorkTime == null) {
+                MekHQ.getLogger().debug("Ending calculateNewMassRepairWorktime because newWorkTime is null -"
+                        + (System.nanoTime() - time) + "ns");
 
                 if (!increaseTime) {
                     return new WorkTimeCalculation(previousNewWorkTime);
@@ -1066,50 +1058,35 @@ public class MassRepairService {
             targetRoll = campaign.getTargetFor(partWork, tech);
 
             // If our roll is impossible, revert to the previous one
-            if ((targetRoll.getValue() == TargetRoll.IMPOSSIBLE) || (targetRoll.getValue() == TargetRoll.AUTOMATIC_FAIL)
+            if ((targetRoll.getValue() == TargetRoll.IMPOSSIBLE)
+                    || (targetRoll.getValue() == TargetRoll.AUTOMATIC_FAIL)
                     || (targetRoll.getValue() == TargetRoll.CHECK_FALSE)) {
-                debugLog("...... ending calculateNewMassRepairWorktime due to impossible role - %s ns", "calculateNewMassRepairWorktime",
-                        System.nanoTime() - time);
-
+                MekHQ.getLogger().debug("Ending calculateNewMassRepairWorktime due to impossible roll "
+                        + (System.nanoTime() - time) + "ns");
                 return new WorkTimeCalculation(previousNewWorkTime);
             }
 
             if (increaseTime) {
-                // If we've reached our BTH, kick out. Otherwise we'll loop
-                // around again
+                // If we've reached our BTH, kick out. Otherwise we'll loop around again
                 if (targetRoll.getValue() <= mro.getBthMin()) {
-                    debugLog(
-                            "...... ending calculateNewMassRepairWorktime because we have reached our BTH goal - %s ns", "calculateNewMassRepairWorktime",
-                            System.nanoTime() - time);
-
+                    MekHQ.getLogger().debug("Ending calculateNewMassRepairWorktime because we have reached our BTH goal - "
+                            + (System.nanoTime() - time) + "ns");
                     return new WorkTimeCalculation(newWorkTime);
                 }
             } else {
                 if (targetRoll.getValue() > mro.getBthMax()) {
-                    debugLog(
-                            "...... ending calculateNewMassRepairWorktime because we have reached our BTH goal - %s ns", "calculateNewMassRepairWorktime",
-                            System.nanoTime() - time);
-
+                    MekHQ.getLogger().debug("Ending calculateNewMassRepairWorktime because we have reached our BTH goal - "
+                            + (System.nanoTime() - time) + "ns");
                     return new WorkTimeCalculation(previousNewWorkTime);
                 } else if (targetRoll.getValue() > mro.getBthMax()) {
-                    debugLog(
-                            "...... ending calculateNewMassRepairWorktime because we have reached our BTH goal - %s ns", "calculateNewMassRepairWorktime",
-                            System.nanoTime() - time);
-
+                    MekHQ.getLogger().debug("Ending calculateNewMassRepairWorktime because we have reached our BTH goal - "
+                            + (System.nanoTime() - time) + "ns");
                     return new WorkTimeCalculation(newWorkTime);
                 }
             }
         }
 
         return new WorkTimeCalculation();
-    }
-
-    private static void debugLog(String msg, String methodName, Object... replacements) {
-        if ((null != replacements) && (replacements.length > 0)) {
-            msg = String.format(msg, replacements);
-        }
-
-        MekHQ.getLogger().debug(MassRepairService.class, methodName, msg);
     }
 
     private static class WorkTimeCalculation {
@@ -1266,7 +1243,7 @@ public class MassRepairService {
         private Map<MassRepairPartAction.STATUS, List<MassRepairPartAction>> partActionsByStatus = new HashMap<>();
 
         public void addPartAction(MassRepairPartAction partAction) {
-            if (null == partAction) {
+            if (partAction == null) {
                 return;
             }
 
