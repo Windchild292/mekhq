@@ -44,7 +44,7 @@ import mekhq.gui.CampaignGUI;
 import mekhq.gui.dialog.LargeCraftAmmoSwapDialog;
 import mekhq.gui.model.UnitTableModel;
 import mekhq.gui.utilities.StaticChecks;
-import mekhq.service.MassRepairService;
+import mekhq.service.MassRepairMassSalvageService;
 
 public class ServicedUnitsTableMouseAdapter extends MouseInputAdapter
         implements ActionListener {
@@ -139,7 +139,7 @@ public class ServicedUnitsTableMouseAdapter extends MouseInputAdapter
                             "Unit is currently deployed and can not be repaired.",
                             "Unit is deployed", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    String message = MassRepairService.performSingleUnitMassRepairOrSalvage(gui.getCampaign(), unit);
+                    String message = MassRepairMassSalvageService.performSingleUnitMassRepairOrSalvage(gui.getCampaign(), unit);
 
                     JOptionPane.showMessageDialog(gui.getFrame(), message, "Complete",
                             JOptionPane.INFORMATION_MESSAGE);

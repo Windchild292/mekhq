@@ -59,8 +59,8 @@ import mekhq.gui.sorter.UnitStatusSorter;
 import mekhq.gui.sorter.UnitTypeSorter;
 import mekhq.preferences.PreferencesNode;
 import mekhq.service.MassRepairOption;
-import mekhq.service.MassRepairService;
-import mekhq.service.MassRepairService.MassRepairPartSet;
+import mekhq.service.MassRepairMassSalvageService;
+import mekhq.service.MassRepairMassSalvageService.MassRepairPartSet;
 
 /**
  * @author Kipsta
@@ -191,7 +191,7 @@ public class MassRepairSalvageDialog extends JDialog {
         unitList = new ArrayList<>();
 
         for (Unit unit : campaignGUI.getCampaign().getServiceableUnits()) {
-            if (!MassRepairService.isValidMRMSUnit(unit)) {
+            if (!MassRepairMassSalvageService.isValidMRMSUnit(unit)) {
                 continue;
             }
 
@@ -924,7 +924,7 @@ public class MassRepairSalvageDialog extends JDialog {
                 return;
             }
 
-            MassRepairService.massRepairSalvageUnits(campaignGUI.getCampaign(), units, configuredOptions);
+            MassRepairMassSalvageService.massRepairSalvageUnits(campaignGUI.getCampaign(), units, configuredOptions);
 
             filterUnits();
         } else if (getMode().isWarehouse()) {
@@ -960,7 +960,7 @@ public class MassRepairSalvageDialog extends JDialog {
             MassRepairConfiguredOptions configuredOptions = new MassRepairConfiguredOptions(this);
             configuredOptions.setScrapImpossible(false);
 
-            MassRepairPartSet partSet = MassRepairService.performWarehouseMassRepair(parts,
+            MassRepairPartSet partSet = MassRepairMassSalvageService.performWarehouseMassRepair(parts,
                     configuredOptions, campaignGUI.getCampaign());
 
             String msg = resources.getString("Completed.text");

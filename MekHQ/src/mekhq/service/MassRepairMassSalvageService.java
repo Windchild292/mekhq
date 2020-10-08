@@ -48,8 +48,8 @@ import mekhq.campaign.work.IPartWork;
 import mekhq.campaign.work.WorkTime;
 import mekhq.gui.sorter.UnitStatusSorter;
 
-public class MassRepairService {
-    private MassRepairService() {
+public class MassRepairMassSalvageService {
+    private MassRepairMassSalvageService() {
 
     }
 

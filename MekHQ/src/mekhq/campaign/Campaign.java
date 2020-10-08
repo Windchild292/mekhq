@@ -150,7 +150,7 @@ import mekhq.campaign.universe.Systems;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
 import mekhq.module.atb.AtBEventProcessor;
-import mekhq.service.MassRepairService;
+import mekhq.service.MassRepairMassSalvageService;
 
 /**
  * The main campaign class, keeps track of teams and units
@@ -3465,7 +3465,7 @@ public class Campaign implements Serializable, ITechManager {
 
         // Finally, run Mass Repair Mass Salvage if desired
         if (MekHQ.getMekHQOptions().getNewDayMRMS()) {
-            MassRepairService.massRepairSalvageAllUnits(this);
+            MassRepairMassSalvageService.massRepairSalvageAllUnits(this);
         }
     }
 
