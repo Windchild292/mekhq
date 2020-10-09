@@ -142,8 +142,12 @@ public class MekHQColors {
         return iconButtonColors;
     }
 
-    public ColorPreference getMekHQWarningColour() {
+    public ColorPreference getMekHQWarning() {
         return mekhqWarningColours;
+    }
+
+    public Color getMekHQWarningColour() {
+        return getMekHQWarning().getColor().orElse(Color.RED);
     }
 
     public ColorPreference getMekHQIssueColour() {

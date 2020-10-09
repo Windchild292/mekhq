@@ -19,17 +19,21 @@
 package mekhq.service;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
+import megamek.client.generator.RandomNameGenerator;
 import megamek.common.Aero;
 import megamek.common.BattleArmor;
 import megamek.common.Mech;
 import megamek.common.Tank;
 import megamek.common.TargetRoll;
+import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.force.Force;
@@ -46,12 +50,20 @@ import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.work.IPartWork;
 import mekhq.campaign.work.WorkTime;
+import mekhq.gui.MekHQColors;
 import mekhq.gui.sorter.UnitStatusSorter;
 
 public class MassRepairMassSalvageService {
+    //region Variable Declaration
+    private static final MekHQColors colours = new MekHQColors();
+    private static final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.MassRepair", new EncodeControl());
+    //endregion Variable Declaration
+
+    //region Construction
     private MassRepairMassSalvageService() {
 
     }
+    //endregion Construction
 
     public static boolean isValidMRMSUnit(Unit unit) {
         if (unit.isSelfCrewed()) {
@@ -65,14 +77,16 @@ public class MassRepairMassSalvageService {
     public static MassRepairPartSet performWarehouseMassRepair(List<IPartWork> selectedParts,
                                                                MassRepairConfiguredOptions configuredOptions,
                                                                Campaign campaign) {
-        campaign.addReport("Beginning mass warehouse repair.");
+        campaign.addReport(resources.getString("MRMS.StartReport"));
+        campaign.addReport(String.format("<font color='%s'>Test</font>", colours.getMekHQWarningColour().getRGB()));
+        MekHQ.getLogger().warning(String.format("<font color='%s'>Test</font>", colours.getMekHQWarningColour().getRGB()));
 
         List<Person> techs = campaign.getTechs(true);
 
         MassRepairPartSet partSet = new MassRepairPartSet();
 
         if (techs.isEmpty()) {
-            campaign.addReport("No available techs to repairs parts.");
+            campaign.addReport("MRMS.NoTechsAvailableReport");
         } else {
             Map<Integer, MassRepairOption> mroByTypeMap = new HashMap<>();
 
@@ -209,7 +223,7 @@ public class MassRepairMassSalvageService {
         }
 
         if (unitActionsByStatus.isEmpty()) {
-            campaign.addReport("Mass Repair/Salvage complete. There were no units worked on.");
+            campaign.addReport("MRMS.CompleteNoUnitsReport");
         } else {
             int totalCount = 0;
             int actionsPerformed = 0;
@@ -559,10 +573,11 @@ public class MassRepairMassSalvageService {
                         }
 
                         if (unfixable) {
-                            campaign.addReport(String.format(
-                                    "<font color='orange'>Found an unfixable limb (%s) on %s which contains %s parts. Going to remove all parts and scrap the limb before proceeding with other repairs.</font>",
-                                    loc.getName(), unit.getName(), countOfPartsPerLocation.get(locId)));
+                            campaign.addReport(MessageFormat.format(resources.getString("MRMS.unfixableReport"),
+                                    colours.getMekHQWarningColour().toString(), loc.getName(),
+                                    unit.getName(), countOfPartsPerLocation.get(locId)));
                         } else {
+                            // TODO : Implement Warning Colour
                             campaign.addReport(String.format(
                                     "<font color='orange'>Found missing location (%s) on %s which contains %s parts. Going to remove all parts before proceeding with other repairs.</font>",
                                     loc != null ? loc.getName() : Integer.toString(locId), unit.getName(), countOfPartsPerLocation.get(locId)));
@@ -897,7 +912,7 @@ public class MassRepairMassSalvageService {
                 // Create a dummy elite tech with the proper skill and 1
                 // minute and put it in our cache for later use
 
-                tech = new Person("Temp", String.format("Tech (%s)", skillName), campaign);
+                tech = new Person(RandomNameGenerator.UNNAMED, String.format("Tech (%s)", skillName), campaign);
                 tech.addSkill(skillName, partSkill.getType().getEliteLevel(), 1);
                 tech.setMinutesLeft(1);
 
@@ -1142,7 +1157,7 @@ public class MassRepairMassSalvageService {
                 }
             }
 
-            return skill1.getExperienceLevel() < skill2.getExperienceLevel() ? -1 : 1;
+            return (skill1.getExperienceLevel() < skill2.getExperienceLevel()) ? -1 : 1;
         }
     }
 
@@ -1155,10 +1170,6 @@ public class MassRepairMassSalvageService {
         private STATUS status;
         private int maxTechSkill;
         private int configuredBTHMin;
-
-        public MassRepairPartAction() {
-
-        }
 
         public MassRepairPartAction(IPartWork partWork) {
             this.partWork = partWork;
@@ -1286,10 +1297,6 @@ public class MassRepairMassSalvageService {
         private MassRepairPartSet partSet = new MassRepairPartSet();
         private STATUS status;
         private boolean salvaging;
-
-        public MassRepairUnitAction() {
-
-        }
 
         public MassRepairUnitAction(Unit unit, boolean salvaging, STATUS status) {
             this.unit = unit;
