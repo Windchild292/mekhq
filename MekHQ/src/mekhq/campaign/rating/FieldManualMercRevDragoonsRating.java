@@ -283,14 +283,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
     private void calcAdminSupportHoursNeeded() {
         int personnelCount = 0;
         for (Person p : getCampaign().getActivePersonnel()) {
-            if ((p.getPrimaryRole() == Person.T_ADMIN_TRA) ||
-                (p.getPrimaryRole() == Person.T_ADMIN_COM) ||
-                (p.getPrimaryRole() == Person.T_ADMIN_LOG) ||
-                (p.getPrimaryRole() == Person.T_ADMIN_HR) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_HR) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_TRA) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_COM) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_LOG)) {
+            if (p.isAdmin()) {
                 continue;
             }
             personnelCount++;
@@ -304,13 +297,13 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
 
     private static int getSupportHours(int skillLevel) {
         switch (skillLevel) {
-            case (SkillType.EXP_ULTRA_GREEN):
+            case SkillType.EXP_ULTRA_GREEN:
                 return 20;
-            case (SkillType.EXP_GREEN):
+            case SkillType.EXP_GREEN:
                 return 30;
-            case (SkillType.EXP_REGULAR):
+            case SkillType.EXP_REGULAR:
                 return 40;
-            case (SkillType.EXP_VETERAN):
+            case SkillType.EXP_VETERAN:
                 return 45;
             default:
                 return 50;
@@ -338,7 +331,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        MekHQ.getLogger().debug(this, "Person, " + p.getFullTitle() + ", provides " + hours + " tech support hours.");
+        MekHQ.getLogger().debug("Person, " + p.getFullTitle() + ", provides " + hours + " tech support hours.");
         techSupportHours += hours;
     }
 
@@ -348,11 +341,11 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             return;
         }
         int hours = getSupportHours(doctorSkill.getExperienceLevel());
-        if (p.getSecondaryRole() == Person.T_DOCTOR) {
+        if (p.getSecondaryRole().isDoctor()) {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        MekHQ.getLogger().debug(this, "Person, " + p.getFullTitle() + " provides " + hours + " medical support hours.");
+        MekHQ.getLogger().debug("Person, " + p.getFullTitle() + " provides " + hours + " medical support hours.");
         medSupportHours += hours;
     }
 
@@ -362,7 +355,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             return;
         }
         int hours = getSupportHours(adminSkill.getExperienceLevel());
-        if (p.isAdminSecondary()) {
+        if (p.getSecondaryRole().isAdministrator()) {
             hours = (int) Math.floor(hours / 2.0);
         }
 

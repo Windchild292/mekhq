@@ -27,27 +27,27 @@ import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.generator.AbstractSkillGenerator;
 
 public class DefaultSkillGenerator extends AbstractSkillGenerator {
 
     @Override
     public void generateSkills(Person person, int expLvl) {
-        int type = person.getPrimaryRole();
-        int secondary = person.getSecondaryRole();
+        PersonnelRole type = person.getPrimaryRole();
+        PersonnelRole secondary = person.getSecondaryRole();
         RandomSkillPreferences rskillPrefs = getSkillPreferences();
 
         int bonus = 0;
         int mod = 0;
 
-        if ((type == Person.T_MECHWARRIOR)
-            && (secondary == Person.T_AERO_PILOT)) {
+        if (type.isLAMPilot()) {
             mod = -2;
         }
 
         generateDefaultSkills(person, type, expLvl, bonus, mod);
 
-        if (secondary != Person.T_NONE) {
+        if (!secondary.isNone()) {
             generateDefaultSkills(person, secondary, expLvl, bonus, mod);
         }
 

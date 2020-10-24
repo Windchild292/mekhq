@@ -27,6 +27,7 @@ import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
 import mekhq.campaign.personnel.Person;
 
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -77,7 +78,7 @@ public class RandomSkillPreferences implements Serializable {
         overallRecruitBonus = b;
     }
 
-    public int getRecruitBonus(int type) {
+    public int getRecruitBonus(PersonnelRole type) {
         return (type < recruitBonuses.length) ? recruitBonuses[type] : 0;
     }
 

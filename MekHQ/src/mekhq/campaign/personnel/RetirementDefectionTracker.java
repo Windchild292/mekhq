@@ -34,6 +34,7 @@ import java.util.UUID;
 import mekhq.campaign.finances.FinancialReport;
 import mekhq.campaign.finances.Money;
 
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -129,10 +130,10 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             int proto = 0;
             int support = 0;
             for (Person p : campaign.getActivePersonnel()) {
-                if ((p.getPrimaryRole() == Person.T_NONE) || p.isDependent() || !p.getPrisonerStatus().isFree()) {
+                if (p.getPrimaryRole().isNone() || p.getPrimaryRole().isDependent() || !p.getPrisonerStatus().isFree()) {
                     continue;
                 }
-                if (p.getPrimaryRole() >= Person.T_MECH_TECH) {
+                if (!p.getPrimaryRole().isCombat()) {
                     support++;
                 } else if ((null == p.getUnitId()) ||
                         ((null != campaign.getUnit(p.getUnitId())) && campaign.getUnit(p.getUnitId()).isCommander(p))) {
@@ -141,7 +142,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                      * would tax all but the most exceptional commanders of
                      * vehicle or infantry units.
                      */
-                    if (p.getPrimaryRole() == Person.T_PROTO_PILOT) {
+                    if (p.getPrimaryRole().isProtoMechPilot()) {
                         proto++;
                     } else {
                         combat++;
@@ -229,8 +230,8 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             } else {
                 //Bonus payments handled by dialog
             }
-            if (p.getPrimaryRole() == Person.T_INFANTRY) {
-                target.addModifier(-1, "Infantry");
+            if (p.getPrimaryRole().isSoldier()) {
+                target.addModifier(-1, "Soldier");
             }
             int injuryMod = 0;
             for (Injury i : p.getInjuries()) {
@@ -241,10 +242,10 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             if (injuryMod > 0) {
                 target.addModifier(injuryMod, "Permanent injuries");
             }
-            if (combatLeadershipMod != 0 && p.getPrimaryRole() < Person.T_MECH_TECH) {
+
+            if (p.getPrimaryRole().isCombat() && (combatLeadershipMod != 0)) {
                 target.addModifier(combatLeadershipMod, "Leadership");
-            }
-            if (supportLeadershipMod != 0 && p.getPrimaryRole() >= Person.T_MECH_TECH) {
+            } else if (!p.getPrimaryRole().isCombat() && (supportLeadershipMod != 0)) {
                 target.addModifier(supportLeadershipMod, "Leadership");
             }
 
@@ -301,13 +302,13 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
      * 					contract can be resolved.
      * @return			true if the person is due a payout; otherwise false
      */
-    public boolean removeFromCampaign(Person person, boolean killed,
-            int shares, Campaign campaign, AtBContract contract) {
+    public boolean removeFromCampaign(Person person, boolean killed, int shares, Campaign campaign,
+                                      AtBContract contract) {
         /* Payouts to Infantry/Battle armor platoons/squads/points are
          * handled as a unit in the AtB rules, so we're just going to ignore
          * them here.
          */
-        if (person.getPrimaryRole() == Person.T_INFANTRY || person.getPrimaryRole() == Person.T_BA
+        if (person.getPrimaryRole().isSoldier() || person.getPrimaryRole().isBattleArmour()
                 || !person.getPrisonerStatus().isFree()) {
             return false;
         }
@@ -438,14 +439,14 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
      * person.
      */
     public static class Payout {
-        int weightClass = 0;
-        int dependents = 0;
-        Money payoutAmount = Money.zero();
-        boolean recruit = false;
-        int recruitType = Person.T_NONE;
-        boolean heir = false;
-        boolean stolenUnit = false;
-        UUID stolenUnitId = null;
+        private int weightClass = 0;
+        private int dependents = 0;
+        private Money payoutAmount = Money.zero();
+        private boolean recruit = false;
+        private PersonnelRole recruitType = PersonnelRole.NONE;
+        private boolean heir = false;
+        private boolean stolenUnit = false;
+        private UUID stolenUnitId = null;
 
         public Payout() {
 
@@ -489,8 +490,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                     roll += 1;
                 }
             }
-            if (roll >= 6 && (p.getPrimaryRole() == Person.T_AERO_PILOT ||
-                    p.getSecondaryRole() == Person.T_AERO_PILOT)) {
+            if (roll >= 6 && (p.getPrimaryRole().isAerospacePilot() || p.getSecondaryRole().isAerospacePilot())) {
                 stolenUnit = true;
             } else {
                 if (p.getProfession() == Ranks.RPROF_INF) {
@@ -549,11 +549,11 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             recruit = r;
         }
 
-        public int getRecruitType() {
+        public PersonnelRole getRecruitType() {
             return recruitType;
         }
 
-        public void setRecruitType(int type) {
+        public void setRecruitType(PersonnelRole type) {
             recruitType = type;
         }
 
@@ -582,7 +582,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
         }
     }
 
-    private String createCsv(Collection<? extends Object> coll) {
+    private String createCsv(Collection<?> coll) {
         return StringUtils.join(coll, ",");
     }
 
@@ -638,8 +638,6 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
     }
 
     public static RetirementDefectionTracker generateInstanceFromXML(Node wn, Campaign c) {
-        final String METHOD_NAME = "generateInstanceFromXML(Node,Campaign)"; //$NON-NLS-1$
-
         RetirementDefectionTracker retVal = null;
 
         try {
@@ -725,7 +723,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             // Errrr, apparently either the class name was invalid...
             // Or the listed name doesn't exist.
             // Doh!
-            MekHQ.getLogger().error(RetirementDefectionTracker.class, METHOD_NAME, ex);
+            MekHQ.getLogger().error(ex);
         }
 
         if (retVal != null) {
