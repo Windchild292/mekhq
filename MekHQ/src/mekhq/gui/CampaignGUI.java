@@ -1589,12 +1589,12 @@ public class CampaignGUI extends JPanel {
             int TimePerDay;
 
             List<Person> techs = getCampaign().getTechs();
-            techs.sort(Comparator.comparingInt(Person::getPrimaryRole));
+            techs.sort(Comparator.comparing(Person::getPrimaryRole));
             for (Person tech : techs) {
                 if (getCampaign().isWorkingOnRefit(tech) || tech.isEngineer()) {
                     continue;
                 }
-                if (tech.getSecondaryRole() == Person.T_MECH_TECH || tech.getSecondaryRole() == Person.T_MECHANIC || tech.getSecondaryRole() == Person.T_AERO_TECH) {
+                if (tech.getSecondaryRole().isTech()) {
                     TimePerDay = 240 - tech.getMaintenanceTimeUsing();
                 } else {
                     TimePerDay = 480 - tech.getMaintenanceTimeUsing();

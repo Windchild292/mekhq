@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 
-import megamek.client.ui.swing.util.MenuScroller;
 import megamek.common.*;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.options.IOption;
@@ -120,18 +119,18 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
     private static final String CMD_ACQUIRE_CUSTOM_CHOICE = "CUSTOM_CHOICE"; //$NON-NLS-1$
     private static final String CMD_IMPROVE = "IMPROVE"; //$NON-NLS-1$
     private static final String CMD_ADD_SPOUSE = "SPOUSE"; //$NON-NLS-1$
-    private static final String CMD_REMOVE_SPOUSE = "REMOVE_SPOUSE"; //$NON-NLS-1$
-    private static final String CMD_ADD_PREGNANCY = "ADD_PREGNANCY"; //$NON-NLS-1$
-    private static final String CMD_REMOVE_PREGNANCY = "PREGNANCY_SPOUSE"; //$NON-NLS-1$
-    private static final String CMD_ADD_TECH = "ADD_TECH"; //$NON-NLS-1$
+    private static final String CMD_REMOVE_SPOUSE = "REMOVE_SPOUSE";
+    private static final String CMD_ADD_PREGNANCY = "ADD_PREGNANCY";
+    private static final String CMD_REMOVE_PREGNANCY = "PREGNANCY_SPOUSE";
+    private static final String CMD_ADD_TECH = "ADD_TECH";
 
-    private static final String CMD_IMPRISON = "IMPRISON"; //$NON-NLS-1$
-    private static final String CMD_FREE = "FREE"; //$NON-NLS-1$
-    private static final String CMD_RECRUIT = "RECRUIT"; //$NON-NLS-1$
+    private static final String CMD_IMPRISON = "IMPRISON";
+    private static final String CMD_FREE = "FREE";
+    private static final String CMD_RECRUIT = "RECRUIT";
     private static final String CMD_RANSOM = "RANSOM";
 
-    private static final String SEPARATOR = "@"; //$NON-NLS-1$
-    private static final String HYPHEN = "-"; //$NON-NLS-1$
+    private static final String SEPARATOR = "@";
+    private static final String HYPHEN = "-";
     private static final String TRUE = String.valueOf(true);
     private static final String FALSE = String.valueOf(false);
 
@@ -248,11 +247,11 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 break;
             }
             case CMD_PRIMARY_ROLE: {
-                int role = Integer.parseInt(data[1]);
+                PersonnelRole role = PersonnelRole.valueOf(data[1]);
                 for (Person person : people) {
                     person.setPrimaryRole(role);
                     gui.getCampaign().personUpdated(person);
-                    if (gui.getCampaign().getCampaignOptions().usePortraitForType(role)
+                    if (gui.getCampaign().getCampaignOptions().usePortraitForRole(role)
                             && gui.getCampaign().getCampaignOptions().getAssignPortraitOnRoleChange()
                             && AbstractIcon.DEFAULT_ICON_FILENAME.equals(person.getPortraitFileName())) {
                         gui.getCampaign().assignRandomPortraitFor(person);
@@ -261,9 +260,9 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 break;
             }
             case CMD_SECONDARY_ROLE: {
-                int secRole = Integer.parseInt(data[1]);
+                PersonnelRole role = PersonnelRole.valueOf(data[1]);
                 for (Person person : people) {
-                    person.setSecondaryRole(secRole);
+                    person.setSecondaryRole(role);
                     gui.getCampaign().personUpdated(person);
                 }
                 break;
@@ -537,10 +536,9 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 gui.getCampaign().addReport(String.format(resourceMap.getString("improved.format"), selectedPerson.getHyperlinkedName(), type));
                 if (gui.getCampaign().getCampaignOptions().getUseAtB()
                         && gui.getCampaign().getCampaignOptions().useAbilities()) {
-                    if (selectedPerson.getPrimaryRole() > Person.T_NONE
-                            && selectedPerson.getPrimaryRole() <= Person.T_CONV_PILOT
-                            && selectedPerson.getExperienceLevel(false) > oldExpLevel
-                            && oldExpLevel >= SkillType.EXP_REGULAR) {
+                    if (selectedPerson.getPrimaryRole().isCombat()
+                            && (selectedPerson.getExperienceLevel(false) > oldExpLevel)
+                            && (oldExpLevel >= SkillType.EXP_REGULAR)) {
                         SingleSpecialAbilityGenerator spaGenerator = new SingleSpecialAbilityGenerator();
                         String spa = spaGenerator.rollSPA(selectedPerson);
                         if (null == spa) {
@@ -550,7 +548,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                                 gui.getCampaign().addReport(String.format(resourceMap.getString("gainedEdge.format"), selectedPerson.getHyperlinkedName()));
                             }
                         } else {
-                            gui.getCampaign().addReport(String.format(resourceMap.getString("gained.format"), //$NON-NLS-1$
+                            gui.getCampaign().addReport(String.format(resourceMap.getString("gained.format"),
                                     selectedPerson.getHyperlinkedName(), SpecialAbility.getDisplayName(spa)));
                         }
                     }
@@ -560,8 +558,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
             case CMD_ACQUIRE_ABILITY: {
                 String selected = data[1];
                 int cost = Integer.parseInt(data[2]);
-                selectedPerson.getOptions().acquireAbility(PilotOptions.LVL3_ADVANTAGES,
-                        selected, true);
+                selectedPerson.getOptions().acquireAbility(PilotOptions.LVL3_ADVANTAGES, selected, true);
                 selectedPerson.awardXP(-cost);
                 gui.getCampaign().personUpdated(selectedPerson);
                 // TODO: add personnelTab.getCampaign() report
@@ -1310,49 +1307,36 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
             }
 
             menu = new JMenu(resourceMap.getString("changePrimaryRole.text"));
-            for (int i = Person.T_MECHWARRIOR; i < Person.T_NUM; i++) {
-                if (person.canPerformRole(i) && (person.getSecondaryRole() != i)) {
-                    cbMenuItem = new JCheckBoxMenuItem(Person.getRoleDesc(
-                            i, gui.getCampaign().getFaction().isClan()));
-                    cbMenuItem.setActionCommand(makeCommand(CMD_PRIMARY_ROLE, String.valueOf(i)));
-                    if (person.getPrimaryRole() == i) {
-                        cbMenuItem.setSelected(true);
-                    }
+            for (PersonnelRole role : PersonnelRole.values()) {
+                if (person.canPerformRole(role) && (person.getSecondaryRole() != role)) {
+                    cbMenuItem = new JCheckBoxMenuItem(role.getName(gui.getCampaign().getFaction().isClan()));
+                    cbMenuItem.setActionCommand(makeCommand(CMD_PRIMARY_ROLE, role.name()));
+                    cbMenuItem.setSelected(person.getPrimaryRole() == role);
                     cbMenuItem.addActionListener(this);
-                    cbMenuItem.setEnabled(true);
                     menu.add(cbMenuItem);
                 }
             }
-            if (menu.getItemCount() > MAX_POPUP_ITEMS) {
-                MenuScroller.setScrollerFor(menu, MAX_POPUP_ITEMS);
-            }
-            popup.add(menu);
-            menu = new JMenu(resourceMap.getString("changeSecondaryRole.text")); //$NON-NLS-1$
-            for (int i = 0; i < Person.T_NUM; i++) {
-                if ((i == Person.T_NONE) || (person.canPerformRole(i) && (person.getPrimaryRole() != i))) {
+            JMenuHelpers.addMenuIfNonEmpty(popup, menu);
+
+            menu = new JMenu(resourceMap.getString("changeSecondaryRole.text"));
+            for (PersonnelRole role : PersonnelRole.values()) {
+                if (role.isNone() || (person.canPerformRole(role) && (person.getPrimaryRole() != role))) {
                     // you cant be an astech if you are a tech, or a medic
                     // if you are a doctor
-                    if (person.isTechPrimary() && (i == Person.T_ASTECH)) {
+                    if (person.isTechPrimary() && role.isAstech()) {
+                        continue;
+                    } else if (person.getPrimaryRole().isDoctor() && role.isMedic()) {
                         continue;
                     }
-                    if ((person.getPrimaryRole() == Person.T_DOCTOR) && (i == Person.T_MEDIC)) {
-                        continue;
-                    }
-                    cbMenuItem = new JCheckBoxMenuItem(Person.getRoleDesc(
-                            i, gui.getCampaign().getFaction().isClan()));
-                    cbMenuItem.setActionCommand(makeCommand(CMD_SECONDARY_ROLE, String.valueOf(i)));
-                    if (person.getSecondaryRole() == i) {
-                        cbMenuItem.setSelected(true);
-                    }
+                    cbMenuItem = new JCheckBoxMenuItem(role.getName(gui.getCampaign().getFaction().isClan()));
+                    cbMenuItem.setActionCommand(makeCommand(CMD_SECONDARY_ROLE, role.name()));
+                    cbMenuItem.setSelected(person.getSecondaryRole() == role);
                     cbMenuItem.addActionListener(this);
-                    cbMenuItem.setEnabled(true);
                     menu.add(cbMenuItem);
                 }
             }
-            if (menu.getItemCount() > MAX_POPUP_ITEMS) {
-                MenuScroller.setScrollerFor(menu, MAX_POPUP_ITEMS);
-            }
-            popup.add(menu);
+            JMenuHelpers.addMenuIfNonEmpty(popup, menu);
+
             // Bloodnames
             if (StaticChecks.areAllClanEligible(selected)) {
                 menuItem = new JMenuItem(resourceMap.getString("giveRandomBloodname.text"));
@@ -1364,7 +1348,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
 
             // change salary
             if (gui.getCampaign().getCampaignOptions().payForSalaries()) {
-                menuItem = new JMenuItem(resourceMap.getString("setSalary.text")); //$NON-NLS-1$
+                menuItem = new JMenuItem(resourceMap.getString("setSalary.text"));
                 menuItem.setActionCommand(CMD_EDIT_SALARY);
                 menuItem.addActionListener(this);
                 menuItem.setEnabled(StaticChecks.areAllActive(selected));
@@ -1373,32 +1357,32 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
 
             if (!person.isDeployed()) {
                 // Assign pilot to unit/none
-                menu = new JMenu(resourceMap.getString("assignToUnit.text")); //$NON-NLS-1$
-                JMenu pilotMenu = new JMenu(resourceMap.getString("assignAsPilot.text")); //$NON-NLS-1$
+                menu = new JMenu(resourceMap.getString("assignToUnit.text"));
+                JMenu pilotMenu = new JMenu(resourceMap.getString("assignAsPilot.text"));
                 JMenu pilotUnitTypeMenu = new JMenu();
                 JMenu pilotEntityWeightMenu = new JMenu();
-                JMenu driverMenu = new JMenu(resourceMap.getString("assignAsDriver.text")); //$NON-NLS-1$
+                JMenu driverMenu = new JMenu(resourceMap.getString("assignAsDriver.text"));
                 JMenu driverUnitTypeMenu = new JMenu();
                 JMenu driverEntityWeightMenu = new JMenu();
-                JMenu crewMenu = new JMenu(resourceMap.getString("assignAsCrewmember.text")); //$NON-NLS-1$
+                JMenu crewMenu = new JMenu(resourceMap.getString("assignAsCrewmember.text"));
                 JMenu crewUnitTypeMenu = new JMenu();
                 JMenu crewEntityWeightMenu = new JMenu();
-                JMenu gunnerMenu = new JMenu(resourceMap.getString("assignAsGunner.text")); //$NON-NLS-1$
+                JMenu gunnerMenu = new JMenu(resourceMap.getString("assignAsGunner.text"));
                 JMenu gunnerUnitTypeMenu = new JMenu();
                 JMenu gunnerEntityWeightMenu = new JMenu();
-                JMenu navMenu = new JMenu(resourceMap.getString("assignAsNavigator.text")); //$NON-NLS-1$
+                JMenu navMenu = new JMenu(resourceMap.getString("assignAsNavigator.text"));
                 JMenu navUnitTypeMenu = new JMenu();
                 JMenu navEntityWeightMenu = new JMenu();
-                JMenu soldierMenu = new JMenu(resourceMap.getString("assignAsSoldier.text")); //$NON-NLS-1$
+                JMenu soldierMenu = new JMenu(resourceMap.getString("assignAsSoldier.text"));
                 JMenu soldierUnitTypeMenu = new JMenu();
                 JMenu soldierEntityWeightMenu = new JMenu();
-                JMenu techOfficerMenu = new JMenu(resourceMap.getString("assignAsTechOfficer.text")); //$NON-NLS-1$
+                JMenu techOfficerMenu = new JMenu(resourceMap.getString("assignAsTechOfficer.text"));
                 JMenu techOfficerUnitTypeMenu = new JMenu();
                 JMenu techOfficerEntityWeightMenu = new JMenu();
-                JMenu consoleCmdrMenu = new JMenu(resourceMap.getString("assignAsConsoleCmdr.text")); //$NON-NLS-1$
+                JMenu consoleCmdrMenu = new JMenu(resourceMap.getString("assignAsConsoleCmdr.text"));
                 JMenu consoleCmdrUnitTypeMenu = new JMenu();
                 JMenu consoleCmdrEntityWeightMenu = new JMenu();
-                JMenu techMenu = new JMenu(resourceMap.getString("assignAsTech.text")); //$NON-NLS-1$
+                JMenu techMenu = new JMenu(resourceMap.getString("assignAsTech.text"));
                 JMenu techUnitTypeMenu = new JMenu();
                 JMenu techEntityWeightMenu = new JMenu();
 
@@ -2118,166 +2102,155 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                     //Start of Edge reroll options
                     //MechWarriors
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerHeadHits.text"));
-                    cbMenuItem.setSelected(person.getOptions()
-                            .booleanOption(OPT_EDGE_HEADHIT));
+                    cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_HEADHIT));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_HEADHIT));
-                    if (person.getPrimaryRole() != Person.T_MECHWARRIOR) {
+                    if (!person.getPrimaryRole().isMechWarrior()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
-                    cbMenuItem = new JCheckBoxMenuItem(
-                            resourceMap.getString("edgeTriggerTAC.text")); //$NON-NLS-1$
-                    cbMenuItem.setSelected(person.getOptions()
-                            .booleanOption(OPT_EDGE_TAC));
+
+                    cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerTAC.text"));
+                    cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_TAC));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_TAC));
-                    if (person.getPrimaryRole() != Person.T_MECHWARRIOR) {
+                    if (!person.getPrimaryRole().isMechWarrior()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerKO.text"));
-                    cbMenuItem.setSelected(person.getOptions()
-                            .booleanOption(OPT_EDGE_KO));
+                    cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_KO));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_KO));
-                    if (person.getPrimaryRole() != Person.T_MECHWARRIOR) {
+                    if (!person.getPrimaryRole().isMechWarrior()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerExplosion.text"));
-                    cbMenuItem.setSelected(person.getOptions()
-                            .booleanOption(OPT_EDGE_EXPLOSION));
+                    cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_EXPLOSION));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_EXPLOSION));
-                    if (person.getPrimaryRole() != Person.T_MECHWARRIOR) {
+                    if (!person.getPrimaryRole().isMechWarrior()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerMASCFailure.text"));
-                    cbMenuItem.setSelected(person.getOptions()
-                            .booleanOption(OPT_EDGE_MASC_FAILURE));
+                    cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_MASC_FAILURE));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_MASC_FAILURE));
-                    if (person.getPrimaryRole() != Person.T_MECHWARRIOR) {
+                    if (!person.getPrimaryRole().isMechWarrior()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     //Aero pilots and gunners
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroAltLoss.text"));
-                    cbMenuItem.setSelected(person.getOptions()
-                            .booleanOption(OPT_EDGE_WHEN_AERO_ALT_LOSS));
+                    cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_ALT_LOSS));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_ALT_LOSS));
-                    if (person.getPrimaryRole() != Person.T_SPACE_PILOT
-                            && person.getPrimaryRole() != Person.T_SPACE_GUNNER
-                            && person.getPrimaryRole() != Person.T_AERO_PILOT) {
+                    if (!person.getPrimaryRole().isVesselPilot() && !person.getPrimaryRole().isVesselGunner()
+                            && !person.getPrimaryRole().isAerospacePilot()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
-                    cbMenuItem = new JCheckBoxMenuItem(
-                            resourceMap.getString("edgeTriggerAeroExplosion.text")); //$NON-NLS-1$
-                    cbMenuItem.setSelected(person.getOptions()
-                            .booleanOption(OPT_EDGE_WHEN_AERO_EXPLOSION));
+
+                    cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroExplosion.text"));
+                    cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_EXPLOSION));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_EXPLOSION));
-                    if ((person.getPrimaryRole() != Person.T_SPACE_PILOT)
-                            && (person.getPrimaryRole() != Person.T_SPACE_GUNNER)
-                            && (person.getPrimaryRole() != Person.T_AERO_PILOT)) {
+                    if (!person.getPrimaryRole().isVesselPilot() && !person.getPrimaryRole().isVesselGunner()
+                            && !person.getPrimaryRole().isAerospacePilot()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroKO.text"));
                     cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_KO));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_KO));
-                    if (person.getPrimaryRole() != Person.T_AERO_PILOT) {
+                    if (!person.getPrimaryRole().isAerospacePilot()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroLuckyCrit.text"));
                     cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_LUCKY_CRIT));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_LUCKY_CRIT));
-                    if ((person.getPrimaryRole() != Person.T_SPACE_PILOT)
-                            && (person.getPrimaryRole() != Person.T_SPACE_GUNNER)
-                            && (person.getPrimaryRole() != Person.T_AERO_PILOT)) {
+                    if (!person.getPrimaryRole().isVesselPilot() || !person.getPrimaryRole().isVesselGunner()
+                            || !person.getPrimaryRole().isAerospacePilot()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroNukeCrit.text"));
                     cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_NUKE_CRIT));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_NUKE_CRIT));
-                    if ((person.getPrimaryRole() != Person.T_SPACE_PILOT)
-                            && (person.getPrimaryRole() != Person.T_SPACE_GUNNER)) {
+                    if (!person.getPrimaryRole().isVesselPilot() || !person.getPrimaryRole().isVesselGunner()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroTrnBayCrit.text"));
                     cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_UNIT_CARGO_LOST));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_UNIT_CARGO_LOST));
-                    if ((person.getPrimaryRole() != Person.T_SPACE_PILOT)
-                            && (person.getPrimaryRole() != Person.T_SPACE_GUNNER)) {
+                    if (!person.getPrimaryRole().isVesselPilot() && !person.getPrimaryRole().isVesselGunner()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
                     menu.add(cbMenuItem);
+
                     // Support Edge
                     if (gui.getCampaign().getCampaignOptions().useSupportEdge()) {
                         //Doctors
                         cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerHealCheck.text"));
                         cbMenuItem.setSelected(person.getOptions().booleanOption(PersonnelOptions.EDGE_MEDICAL));
                         cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, PersonnelOptions.EDGE_MEDICAL));
-                        if (person.getPrimaryRole() != Person.T_DOCTOR) {
+                        if (!person.getPrimaryRole().isDoctor()) {
                             cbMenuItem.setForeground(new Color(150, 150, 150));
                         }
                         cbMenuItem.addActionListener(this);
                         menu.add(cbMenuItem);
+
                         //Techs
                         cbMenuItem = new JCheckBoxMenuItem(
                                 resourceMap.getString("edgeTriggerBreakPart.text"));
                         cbMenuItem.setSelected(person.getOptions()
                                 .booleanOption(PersonnelOptions.EDGE_REPAIR_BREAK_PART));
                         cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, PersonnelOptions.EDGE_REPAIR_BREAK_PART));
-                        if (person.getPrimaryRole() != Person.T_SPACE_CREW
-                                && person.getPrimaryRole() != Person.T_MECH_TECH
-                                && person.getPrimaryRole() != Person.T_MECHANIC
-                                && person.getPrimaryRole() != Person.T_AERO_TECH
-                                && person.getPrimaryRole() != Person.T_BA_TECH) {
+                        if (!person.getPrimaryRole().isTech() || !person.getPrimaryRole().isVesselCrew()) {
                             cbMenuItem.setForeground(new Color(150, 150, 150));
                         }
                         cbMenuItem.addActionListener(this);
                         menu.add(cbMenuItem);
+
                         cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerFailedRefit.text"));
                         cbMenuItem.setSelected(person.getOptions()
                                 .booleanOption(PersonnelOptions.EDGE_REPAIR_FAILED_REFIT));
                         cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, PersonnelOptions.EDGE_REPAIR_FAILED_REFIT));
-                        if (person.getPrimaryRole() != Person.T_SPACE_CREW
-                                && person.getPrimaryRole() != Person.T_MECH_TECH
-                                && person.getPrimaryRole() != Person.T_MECHANIC
-                                && person.getPrimaryRole() != Person.T_AERO_TECH
-                                && person.getPrimaryRole() != Person.T_BA_TECH) {
+                        if (!person.getPrimaryRole().isTech() || !person.getPrimaryRole().isVesselCrew()) {
                             cbMenuItem.setForeground(new Color(150, 150, 150));
                         }
                         cbMenuItem.addActionListener(this);
                         menu.add(cbMenuItem);
+
                         //Admins
                         cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAcquireCheck.text"));
                         cbMenuItem.setSelected(person.getOptions()
                                 .booleanOption(PersonnelOptions.EDGE_ADMIN_ACQUIRE_FAIL));
                         cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, PersonnelOptions.EDGE_ADMIN_ACQUIRE_FAIL));
-                        if (person.getPrimaryRole() != Person.T_ADMIN_COM
-                                && person.getPrimaryRole() != Person.T_ADMIN_LOG
-                                && person.getPrimaryRole() != Person.T_ADMIN_TRA
-                                && person.getPrimaryRole() != Person.T_ADMIN_HR) {
+                        if (!person.getPrimaryRole().isAdministrator()) {
                             cbMenuItem.setForeground(new Color(150, 150, 150));
                         }
                         cbMenuItem.addActionListener(this);
                         menu.add(cbMenuItem);
                     }
 
-                    popup.add(menu);
+                    JMenuHelpers.addMenuIfNonEmpty(popup, menu);
                 }
 
                 menu = new JMenu(resourceMap.getString("specialFlags.text"));
@@ -2286,11 +2259,13 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 cbMenuItem.setActionCommand(CMD_DEPENDENT);
                 cbMenuItem.addActionListener(this);
                 menu.add(cbMenuItem);
+
                 cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("commander.text"));
                 cbMenuItem.setSelected(person.isCommander());
                 cbMenuItem.setActionCommand(CMD_COMMANDER);
                 cbMenuItem.addActionListener(this);
                 menu.add(cbMenuItem);
+
                 cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("tryingToMarry.text"));
                 cbMenuItem.setToolTipText(resourceMap.getString("tryingToMarry.toolTipText"));
                 cbMenuItem.setSelected(person.isTryingToMarry());

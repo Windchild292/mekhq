@@ -19,8 +19,11 @@
 package mekhq.campaign.personnel.enums;
 
 import megamek.common.util.EncodeControl;
+import mekhq.campaign.personnel.Person;
 
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public enum PersonnelRole {
@@ -246,17 +249,23 @@ public enum PersonnelRole {
     }
 
     public boolean isTech() {
-        return isMechTech() || isMechanic() || isAeroTech() || isBATech() || isAstech();
+        return isMechTech() || isMechanic() || isAeroTech() || isBATech();
     }
 
     public boolean isMedicalStaff() {
         return isDoctor() || isMedic();
     }
-
-    public boolean is
-
     //endregion Boolean Comparisons
 
+    public static List<PersonnelRole> getAdministratorRoles() {
+        List<PersonnelRole> administratorRoles = new ArrayList<>();
+        for (PersonnelRole role : values()) {
+            if (role.isAdministrator()) {
+                administratorRoles.add(role);
+            }
+        }
+        return administratorRoles;
+    }
     @Override
     public String toString() {
         return name;

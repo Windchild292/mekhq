@@ -714,13 +714,14 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.primaryRole = role;
         //you can't be primary tech and a secondary astech
         //you can't be a primary astech and a secondary tech
-        if ((isTechPrimary() && secondaryRole == T_ASTECH)
-            || (isTechSecondary() && primaryRole == T_ASTECH)) {
-            secondaryRole = T_NONE;
+        if ((isTechPrimary() && secondaryRole.isAstech())
+                || (isTechSecondary() && primaryRole.isAstech())) {
+            secondaryRole = PersonnelRole.NONE;
         }
-        if ((primaryRole.isDoctor() && secondaryRole == T_MEDIC)
-            || (secondaryRole == T_DOCTOR && primaryRole == T_MEDIC)) {
-            secondaryRole = T_NONE;
+
+        if ((primaryRole.isDoctor() && secondaryRole.isMedic())
+                || (secondaryRole.isDoctor() && primaryRole.isMedic())) {
+            secondaryRole = PersonnelRole.NONE;
         }
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
@@ -1069,7 +1070,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return bgPrefix + getPrimaryRole().getName(isClanner());
     }
 
-    public boolean canPerformRole(int role) {
+    public boolean canPerformRole(PersonnelRole role) {
         switch (role) {
             case (T_NONE):
                 return true;

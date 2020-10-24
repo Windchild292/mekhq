@@ -18,7 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.finances;
 
 import java.util.UUID;
@@ -69,7 +68,7 @@ public class Accountant {
         Money salaries = Money.zero();
         for (Person p : getCampaign().getActivePersonnel()) {
             // Optionized infantry (Unofficial)
-            if (!(noInfantry && (p.getPrimaryRole() == Person.T_INFANTRY))) {
+            if (!(noInfantry && (p.getPrimaryRole().isSoldier()))) {
                 salaries = salaries.plus(p.getSalary());
             }
         }

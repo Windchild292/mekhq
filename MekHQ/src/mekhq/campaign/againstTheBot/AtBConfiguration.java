@@ -37,6 +37,7 @@ import javax.xml.parsers.DocumentBuilder;
 
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -110,14 +111,14 @@ public class AtBConfiguration implements Serializable {
 
     private WeightedTable<String> getDefaultForceTable(String key, int index) {
         if (index < 0) {
-            MekHQ.getLogger().error(this, "Default force tables don't support negative weights, limiting to 0");
+            MekHQ.getLogger().error("Default force tables don't support negative weights, limiting to 0");
             index = 0;
         }
         String property = defaultProperties.getString(key);
         String[] fields = property.split("\\|");
         if (index >= fields.length) {
             // Deal with too short field lengths
-            MekHQ.getLogger().error(this, String.format("Default force tables have %d weight entries; limiting the original value of %d.", fields.length, index));
+            MekHQ.getLogger().error(String.format("Default force tables have %d weight entries; limiting the original value of %d.", fields.length, index));
             index = fields.length - 1;
         }
         return parseDefaultWeightedTable(fields[index]);
@@ -148,7 +149,7 @@ public class AtBConfiguration implements Serializable {
                 case "botForce.IS":
                 case "botForce.CLAN":
                 case "botForce.CS":
-                    ArrayList<WeightedTable<String>> list = new ArrayList<>();
+                    List<WeightedTable<String>> list = new ArrayList<>();
                     for (String entry : property.split("\\|")) {
                         list.add(parseDefaultWeightedTable(entry));
                     }
@@ -179,13 +180,13 @@ public class AtBConfiguration implements Serializable {
                     shipSearchLengthWeeks = Integer.parseInt(property);
                     break;
                 case "shipSearchTarget.Dropship":
-                    dropshipSearchTarget = property.matches("\\d+")? Integer.valueOf(property) : null;
+                    dropshipSearchTarget = property.matches("\\d+") ? Integer.valueOf(property) : null;
                     break;
                 case "shipSearchTarget.Jumpship":
-                    jumpshipSearchTarget = property.matches("\\d+")? Integer.valueOf(property) : null;
+                    jumpshipSearchTarget = property.matches("\\d+") ? Integer.valueOf(property) : null;
                     break;
                 case "shipSearchTarget.Warship":
-                    warshipSearchTarget = property.matches("\\d+")? Integer.valueOf(property) : null;
+                    warshipSearchTarget = property.matches("\\d+") ? Integer.valueOf(property) : null;
                     break;
                 case "ships.Dropship":
                     dsTable = parseDefaultWeightedTable(property);
@@ -229,20 +230,20 @@ public class AtBConfiguration implements Serializable {
             int weightClassIndex = weightClassIndex(weightClass);
             WeightedTable<String> table;
             if ((weightClassIndex < 0) || (weightClassIndex >= botForceTable.size())) {
-                MekHQ.getLogger().error(this, String.format("Bot force tables for organization \"%s\" don't have an entry for weight class %d, limiting to valid values", org, weightClass));
+                MekHQ.getLogger().error(String.format("Bot force tables for organization \"%s\" don't have an entry for weight class %d, limiting to valid values", org, weightClass));
                 weightClassIndex = Math.max(0, Math.min(weightClassIndex, botForceTable.size() - 1));
             }
             table = botForceTable.get(weightClassIndex);
             if (null == table) {
                 table = getDefaultForceTable("botForce." + org, weightClassIndex);
                 if (null == table) {
-                    MekHQ.getLogger().error(this, String.format("Default (fallback) bot force table for organization \"%s\" and weight class %d doesn't exist, ignoring", org, weightClass));
+                    MekHQ.getLogger().error(String.format("Default (fallback) bot force table for organization \"%s\" and weight class %d doesn't exist, ignoring", org, weightClass));
                     return null;
                 }
             }
             return table.select(rollMod);
         } else {
-            MekHQ.getLogger().error(this, String.format("Bot force tables for organization \"%s\" not found, ignoring", org));
+            MekHQ.getLogger().error(String.format("Bot force tables for organization \"%s\" not found, ignoring", org));
             return null;
         }
     }
@@ -352,12 +353,11 @@ public class AtBConfiguration implements Serializable {
             return new TargetRoll(TargetRoll.IMPOSSIBLE, "Base");
         }
         TargetRoll target = new TargetRoll(shipSearchTargetBase(unitType), "Base");
-        Person adminLog = campaign.findBestInRole(Person.T_ADMIN_LOG, SkillType.S_ADMIN);
-        int adminLogExp = (adminLog == null)?SkillType.EXP_ULTRA_GREEN:adminLog.getSkill(SkillType.S_ADMIN).getExperienceLevel();
+        Person adminLog = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_LOGISTICS, SkillType.S_ADMIN);
+        int adminLogExp = (adminLog == null) ? SkillType.EXP_ULTRA_GREEN : adminLog.getSkill(SkillType.S_ADMIN).getExperienceLevel();
         for (Person p : campaign.getAdmins()) {
-            if ((p.getPrimaryRole() == Person.T_ADMIN_LOG ||
-                    p.getSecondaryRole() == Person.T_ADMIN_LOG) &&
-                    p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp) {
+            if ((p.getPrimaryRole().isAdministratorLogistics() || p.getSecondaryRole().isAdministratorLogistics())
+                    && (p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp)) {
                 adminLogExp = p.getSkill(SkillType.S_ADMIN).getExperienceLevel();
             }
         }
@@ -389,7 +389,7 @@ public class AtBConfiguration implements Serializable {
     public static AtBConfiguration loadFromXml() {
         AtBConfiguration retVal = new AtBConfiguration();
 
-        MekHQ.getLogger().info(AtBConfiguration.class, "Starting load of AtB configuration data from XML...");
+        MekHQ.getLogger().info("Starting load of AtB configuration data from XML...");
 
         Document xmlDoc;
         try (InputStream is = new FileInputStream("data/universe/atbconfig.xml")) {
@@ -397,11 +397,11 @@ public class AtBConfiguration implements Serializable {
 
             xmlDoc = db.parse(is);
         } catch (FileNotFoundException ex) {
-            MekHQ.getLogger().info(AtBConfiguration.class, "File data/universe/atbconfig.xml not found. Loading defaults.");
+            MekHQ.getLogger().info("File data/universe/atbconfig.xml not found. Loading defaults.");
             retVal.setAllValuesToDefaults();
             return retVal;
         } catch (Exception ex) {
-            MekHQ.getLogger().error(AtBConfiguration.class, ex);
+            MekHQ.getLogger().error(ex);
             return retVal;
         }
 
@@ -476,7 +476,7 @@ public class AtBConfiguration implements Serializable {
                     }
                     retVal.set(weightClass, loadWeightedTableFromXml(wn));
                 } catch (Exception ex) {
-                    MekHQ.getLogger().error(this, "Could not parse weight class attribute for enemy forces table", ex);
+                    MekHQ.getLogger().error("Could not parse weight class attribute for enemy forces table", ex);
                 }
             }
         }

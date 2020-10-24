@@ -6050,7 +6050,7 @@ public class Campaign implements Serializable, ITechManager {
         } else {
             searchCat_Gender += "Male/";
         }
-        String searchCat_Role = Person.getRoleDesc(p.getPrimaryRole(), true) + "/";
+        String searchCat_Role = p.getPrimaryRole().getName(p.isClanner()) + "/";
         String searchCat_RoleGroup = "";
         String searchCat_CombatSupport = "";
         if (p.getPrimaryRole().isAdministrator()) {
@@ -7128,9 +7128,8 @@ public class Campaign implements Serializable, ITechManager {
                 if ((join != null) && join.equals(founding)) {
                     p.setFounder(true);
                 }
-                if (p.getPrimaryRole() == Person.T_MECHWARRIOR
-                        || (p.getPrimaryRole() == Person.T_AERO_PILOT && getCampaignOptions().getAeroRecruitsHaveUnits())
-                        || p.getPrimaryRole() == Person.T_PROTO_PILOT) {
+                if (p.getPrimaryRole().isMechWarrior() || p.getPrimaryRole().isProtoMechPilot()
+                        || (p.getPrimaryRole().isAerospacePilot() && getCampaignOptions().getAeroRecruitsHaveUnits())) {
                     for (LogEntry e : p.getPersonnelLog()) {
                         if (e.getDate().equals(join) && e.getDesc().startsWith("Assigned to ")) {
                             String mech = e.getDesc().substring(12);

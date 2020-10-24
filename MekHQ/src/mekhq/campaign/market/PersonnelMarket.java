@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -263,9 +264,7 @@ public class PersonnelMarket {
                     try {
                         en = new MechFileParser(ms.getSourceFile(), ms.getEntryName()).getEntity();
                     } catch (EntityLoadingException ex) {
-                        MekHQ.getLogger().error(PersonnelMarket.class,
-                                "Unable to load entity: " + ms.getSourceFile() + ": " + ms.getEntryName() + ": " + ex.getMessage());
-                        MekHQ.getLogger().error(PersonnelMarket.class, ex);
+                        MekHQ.getLogger().error("Unable to load entity: " + ms.getSourceFile() + ": " + ms.getEntryName() + ": " + ex.getMessage(), ex);
                     }
                     if (null != en) {
                         retVal.attachedEntities.put(id, en);
@@ -279,7 +278,7 @@ public class PersonnelMarket {
                 } else  {
                     // Error condition of sorts!
                     // Errr, what should we do here?
-                    MekHQ.getLogger().error(PersonnelMarket.class, "Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
+                    MekHQ.getLogger().error("Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
                 }
             }
 
@@ -294,7 +293,7 @@ public class PersonnelMarket {
             // Errrr, apparently either the class name was invalid...
             // Or the listed name doesn't exist.
             // Doh!
-            MekHQ.getLogger().error(PersonnelMarket.class, ex);
+            MekHQ.getLogger().error(ex);
         }
 
         return retVal;
@@ -410,19 +409,17 @@ public class PersonnelMarket {
     }
 
     public TargetRoll getShipSearchTarget(Campaign campaign, boolean jumpship) {
-        TargetRoll target = new TargetRoll(jumpship?12:10, "Base");
-        Person adminLog = campaign.findBestInRole(Person.T_ADMIN_LOG, SkillType.S_ADMIN);
-        int adminLogExp = (adminLog == null)?SkillType.EXP_ULTRA_GREEN:adminLog.getSkill(SkillType.S_ADMIN).getExperienceLevel();
+        TargetRoll target = new TargetRoll(jumpship ? 12 : 10, "Base");
+        Person adminLog = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_LOGISTICS, SkillType.S_ADMIN);
+        int adminLogExp = (adminLog == null) ? SkillType.EXP_ULTRA_GREEN : adminLog.getSkill(SkillType.S_ADMIN).getExperienceLevel();
         for (Person p : campaign.getAdmins()) {
-            if ((p.getPrimaryRole() == Person.T_ADMIN_LOG ||
-                    p.getSecondaryRole() == Person.T_ADMIN_LOG) &&
-                    p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp) {
+            if ((p.getPrimaryRole().isAdministratorLogistics() || p.getSecondaryRole().isAdministratorLogistics())
+                    && (p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp)) {
                 adminLogExp = p.getSkill(SkillType.S_ADMIN).getExperienceLevel();
             }
         }
         target.addModifier(SkillType.EXP_REGULAR - adminLogExp, "Admin/Logistics");
-        target.addModifier(IUnitRating.DRAGOON_C - campaign.getUnitRatingMod(),
-                "Unit Rating");
+        target.addModifier(IUnitRating.DRAGOON_C - campaign.getUnitRatingMod(), "Unit Rating");
         return target;
     }
 }
