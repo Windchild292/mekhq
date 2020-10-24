@@ -2179,8 +2179,8 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroLuckyCrit.text"));
                     cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_LUCKY_CRIT));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_LUCKY_CRIT));
-                    if (!person.getPrimaryRole().isVesselPilot() || !person.getPrimaryRole().isVesselGunner()
-                            || !person.getPrimaryRole().isAerospacePilot()) {
+                    if (!person.getPrimaryRole().isVesselPilot() && !person.getPrimaryRole().isVesselGunner()
+                            && !person.getPrimaryRole().isAerospacePilot()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
@@ -2189,7 +2189,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                     cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("edgeTriggerAeroNukeCrit.text"));
                     cbMenuItem.setSelected(person.getOptions().booleanOption(OPT_EDGE_WHEN_AERO_NUKE_CRIT));
                     cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, OPT_EDGE_WHEN_AERO_NUKE_CRIT));
-                    if (!person.getPrimaryRole().isVesselPilot() || !person.getPrimaryRole().isVesselGunner()) {
+                    if (!person.getPrimaryRole().isVesselPilot() && !person.getPrimaryRole().isVesselGunner()) {
                         cbMenuItem.setForeground(new Color(150, 150, 150));
                     }
                     cbMenuItem.addActionListener(this);
@@ -2222,7 +2222,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                         cbMenuItem.setSelected(person.getOptions()
                                 .booleanOption(PersonnelOptions.EDGE_REPAIR_BREAK_PART));
                         cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, PersonnelOptions.EDGE_REPAIR_BREAK_PART));
-                        if (!person.getPrimaryRole().isTech() || !person.getPrimaryRole().isVesselCrew()) {
+                        if (!person.getPrimaryRole().isTech() && !person.getPrimaryRole().isVesselCrew()) {
                             cbMenuItem.setForeground(new Color(150, 150, 150));
                         }
                         cbMenuItem.addActionListener(this);
@@ -2232,7 +2232,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                         cbMenuItem.setSelected(person.getOptions()
                                 .booleanOption(PersonnelOptions.EDGE_REPAIR_FAILED_REFIT));
                         cbMenuItem.setActionCommand(makeCommand(CMD_EDGE_TRIGGER, PersonnelOptions.EDGE_REPAIR_FAILED_REFIT));
-                        if (!person.getPrimaryRole().isTech() || !person.getPrimaryRole().isVesselCrew()) {
+                        if (!person.getPrimaryRole().isTech() && !person.getPrimaryRole().isVesselCrew()) {
                             cbMenuItem.setForeground(new Color(150, 150, 150));
                         }
                         cbMenuItem.addActionListener(this);

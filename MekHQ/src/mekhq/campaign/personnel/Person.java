@@ -68,38 +68,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     //region Variable Declarations
     private static final long serialVersionUID = -847642980395311152L;
 
-    public static final int T_NONE = 0; // Support Role
-    public static final int T_MECHWARRIOR = 1; // Start of Combat Roles
-    public static final int T_LAM_PILOT = 26;
-    public static final int T_GVEE_DRIVER = 3;
-    public static final int T_NVEE_DRIVER = 4;
-    public static final int T_VTOL_PILOT = 5;
-    public static final int T_VEE_GUNNER = 6;
-    public static final int T_VEHICLE_CREW = 27; // non-gunner/non-driver support vehicle crew
-    public static final int T_AERO_PILOT = 2;
-    public static final int T_CONV_PILOT = 10;
-    public static final int T_PROTO_PILOT = 9;
-    public static final int T_BA = 7;
-    public static final int T_INFANTRY = 8;
-    public static final int T_SPACE_PILOT = 11;
-    public static final int T_SPACE_CREW = 12;
-    public static final int T_SPACE_GUNNER = 13;
-    public static final int T_NAVIGATOR = 14; // End of Combat Roles
-    public static final int T_MECH_TECH = 15; // Start of Support Roles
-    public static final int T_MECHANIC = 16;
-    public static final int T_AERO_TECH = 17;
-    public static final int T_BA_TECH = 18;
-    public static final int T_ASTECH = 19;
-    public static final int T_DOCTOR = 20;
-    public static final int T_MEDIC = 21;
-    public static final int T_ADMIN_COM = 22;
-    public static final int T_ADMIN_LOG = 23;
-    public static final int T_ADMIN_TRA = 24;
-    public static final int T_ADMIN_HR = 25; // End of support roles
-
-    // This value should always be +1 of the last defined role
-    public static final int T_NUM = 28;
-
     private static final Map<Integer, Money> MECHWARRIOR_AERO_RANSOM_VALUES;
     private static final Map<Integer, Money> OTHER_RANSOM_VALUES;
 
