@@ -91,6 +91,7 @@ import mekhq.campaign.personnel.Ranks;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.SpecialAbility;
 import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
@@ -4988,8 +4989,8 @@ public class CampaignOptionsDialog extends JDialog {
         campaign.getGameOptions().getOption("techlevel").setValue((String)choiceTechLevel.getSelectedItem());
 
         rSkillPrefs.setOverallRecruitBonus((Integer) spnOverallRecruitBonus.getModel().getValue());
-        for (int i = 0; i < Person.T_NUM; i++) {
-            rSkillPrefs.setRecruitBonus(i, (Integer) spnTypeRecruitBonus[i].getModel().getValue());
+        for (PersonnelRole role : PersonnelRole.values()) {
+            rSkillPrefs.setRecruitBonus(role, (Integer) spnTypeRecruitBonus[role.ordinal()].getModel().getValue());
         }
         rSkillPrefs.setRandomizeSkill(chkExtraRandom.isSelected());
         rSkillPrefs.setAntiMekProb((Integer) spnProbAntiMek.getModel().getValue());

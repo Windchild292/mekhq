@@ -673,7 +673,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     //region Personnel Roles
-    // TODO : Move me into an enum with checks for hasAdministratorRole, hasTechRole, hasMedicalRole, etc.
     public PersonnelRole getPrimaryRole() {
         return primaryRole;
     }
@@ -682,13 +681,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.primaryRole = role;
         //you can't be primary tech and a secondary astech
         //you can't be a primary astech and a secondary tech
-        if ((isTechPrimary() && secondaryRole.isAstech())
-                || (isTechSecondary() && primaryRole.isAstech())) {
-            secondaryRole = PersonnelRole.NONE;
-        }
-
-        if ((primaryRole.isDoctor() && secondaryRole.isMedic())
-                || (secondaryRole.isDoctor() && primaryRole.isMedic())) {
+        if ((getPrimaryRole().isTech() && getSecondaryRole().isAstech())
+                || (getSecondaryRole().isTechSecondary() && getPrimaryRole().isAstech())
+                || (getPrimaryRole().isDoctor() && getSecondaryRole().isMedic())
+                || (getSecondaryRole().isDoctor() && getPrimaryRole().isMedic())) {
             secondaryRole = PersonnelRole.NONE;
         }
         MekHQ.triggerEvent(new PersonChangedEvent(this));
@@ -714,44 +710,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     /**
-     * @param role the role to determine
-     * @return true if the person has the specific role as their primary role
-     */
-    public boolean hasPrimaryRole(int role) {
-        return getPrimaryRole() == role;
-    }
-
-    /**
-     * This is used to determine whether the person has either a primary or secondary role within the
-     * two bounds. This is inclusive of the two bounds
-     * @param minimumRole the minimum role bound (inclusive)
-     * @param maximumRole the maximum role bound (inclusive)
-     * @return true if they have a role within the bounds (inclusive), otherwise false.
-     */
-    public boolean hasRoleWithin(int minimumRole, int maximumRole) {
-        return hasPrimaryRoleWithin(minimumRole, maximumRole)
-                || hasSecondaryRoleWithin(minimumRole, maximumRole);
-    }
-
-    /**
-     * @param minimumRole the minimum role bound (inclusive)
-     * @param maximumRole the maximum role bound (inclusive)
-     * @return true if they have a primary role within the bounds (inclusive), otherwise false
-     */
-    public boolean hasPrimaryRoleWithin(int minimumRole, int maximumRole) {
-        return (getPrimaryRole() >= minimumRole) && (getPrimaryRole() <= maximumRole);
-    }
-
-    /**
-     * @param minimumRole the minimum role bound (inclusive)
-     * @param maximumRole the maximum role bound (inclusive)
-     * @return true if they have a secondary role within the bounds (inclusive), otherwise false
-     */
-    public boolean hasSecondaryRoleWithin(int minimumRole, int maximumRole) {
-        return (getSecondaryRole() >= minimumRole) && (getSecondaryRole() <= maximumRole);
-    }
-
-    /**
      * @return true if the person has a primary or secondary combat role
      */
     public boolean hasCombatRole() {
@@ -765,38 +723,15 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return !getPrimaryRole().isCombat() || (!getSecondaryRole().isCombat() && !getSecondaryRole().isNone());
     }
 
-
-    /**
-     * @param role A value that can be used for a person's primary or secondary role.
-     * @return     Whether the role is considered a support role
-     */
-    public static boolean isSupportRole(int role) {
-        return (role >= T_MECH_TECH) && (role < T_LAM_PILOT);
-    }
-
     public boolean isTech() {
-        //type must be correct and you must be more than ultra-green in the skill
-        boolean isMechTech = hasSkill(SkillType.S_TECH_MECH) && getSkill(SkillType.S_TECH_MECH).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-        boolean isAeroTech = hasSkill(SkillType.S_TECH_AERO) && getSkill(SkillType.S_TECH_AERO).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-        boolean isMechanic = hasSkill(SkillType.S_TECH_MECHANIC) && getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-        boolean isBATech = hasSkill(SkillType.S_TECH_BA) && getSkill(SkillType.S_TECH_BA).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-        // At some point we may want to re-write things to include this
-        /*boolean isEngineer = hasSkill(SkillType.S_TECH_VESSEL) && getSkill(SkillType.S_TECH_VESSEL).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN
-                && campaign.getUnit(getUnitId()).getEngineer() != null
-                && campaign.getUnit(getUnitId()).getEngineer().equals(this);*/
-        return (isTechPrimary() || isTechSecondary()) && (isMechTech || isAeroTech || isMechanic || isBATech);
+        return getPrimaryRole().isTech() || getSecondaryRole().isTechSecondary();
     }
 
-    public boolean isTechPrimary() {
-        return primaryRole == T_MECH_TECH || primaryRole == T_AERO_TECH || primaryRole == T_MECHANIC || primaryRole == T_BA_TECH || primaryRole == T_SPACE_CREW;
+    public boolean isDoctor() {
+        return getPrimaryRole().isDoctor() || getSecondaryRole().isDoctor();
     }
 
-    public boolean isTechSecondary() {
-        return secondaryRole == T_MECH_TECH || secondaryRole == T_AERO_TECH || secondaryRole == T_MECHANIC || secondaryRole == T_BA_TECH;
-    }
-
-
-    public boolean isAdmin() {
+    public boolean isAdministrator() {
         return getPrimaryRole().isAdministrator() || getSecondaryRole().isAdministrator();
     }
     //endregion Personnel Roles
@@ -988,56 +923,60 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public boolean canPerformRole(PersonnelRole role) {
         switch (role) {
-            case (T_NONE):
-                return true;
-            case (T_MECHWARRIOR):
+            case MECHWARRIOR:
                 return hasSkill(SkillType.S_GUN_MECH) && hasSkill(SkillType.S_PILOT_MECH);
-            case (T_GVEE_DRIVER):
+            case LAM_PILOT:
+                return hasSkill(SkillType.S_GUN_MECH) && hasSkill(SkillType.S_PILOT_MECH)
+                        && hasSkill(SkillType.S_GUN_AERO) && hasSkill(SkillType.S_PILOT_AERO);
+            case GROUND_VEHICLE_DRIVER:
                 return hasSkill(SkillType.S_PILOT_GVEE);
-            case (T_NVEE_DRIVER):
+            case NAVAL_VEHICLE_DRIVER:
                 return hasSkill(SkillType.S_PILOT_NVEE);
-            case (T_VTOL_PILOT):
+            case VTOL_PILOT:
                 return hasSkill(SkillType.S_PILOT_VTOL);
-            case (T_VEE_GUNNER):
+            case VEHICLE_GUNNER:
                 return hasSkill(SkillType.S_GUN_VEE);
-            case (T_AERO_PILOT):
+            case AEROSPACE_PILOT:
                 return hasSkill(SkillType.S_GUN_AERO) && hasSkill(SkillType.S_PILOT_AERO);
-            case (T_CONV_PILOT):
+            case CONVENTIONAL_AIRCRAFT_PILOT:
                 return hasSkill(SkillType.S_GUN_JET) && hasSkill(SkillType.S_PILOT_JET);
-            case (T_PROTO_PILOT):
+            case PROTOMECH_PILOT:
                 return hasSkill(SkillType.S_GUN_PROTO);
-            case (T_BA):
+            case BATTLE_ARMOUR:
                 return hasSkill(SkillType.S_GUN_BA);
-            case (T_INFANTRY):
+            case SOLDIER:
                 return hasSkill(SkillType.S_SMALL_ARMS);
-            case (T_SPACE_PILOT):
+            case VESSEL_PILOT:
                 return hasSkill(SkillType.S_PILOT_SPACE);
-            case (T_SPACE_CREW):
+            case VESSEL_CREW:
                 return hasSkill(SkillType.S_TECH_VESSEL);
-            case (T_SPACE_GUNNER):
+            case VESSEL_GUNNER:
                 return hasSkill(SkillType.S_GUN_SPACE);
-            case (T_NAVIGATOR):
+            case VESSEL_NAVIGATOR:
                 return hasSkill(SkillType.S_NAV);
-            case (T_MECH_TECH):
+            case MECH_TECH:
                 return hasSkill(SkillType.S_TECH_MECH) && getSkill(SkillType.S_TECH_MECH).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_MECHANIC):
-            case T_VEHICLE_CREW:
+            case MECHANIC:
+            case VEHICLE_CREW:
                 return hasSkill(SkillType.S_TECH_MECHANIC) && getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_AERO_TECH):
+            case AERO_TECH:
                 return hasSkill(SkillType.S_TECH_AERO) && getSkill(SkillType.S_TECH_AERO).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_BA_TECH):
+            case BA_TECH:
                 return hasSkill(SkillType.S_TECH_BA) && getSkill(SkillType.S_TECH_BA).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_ASTECH):
+            case ASTECH:
                 return hasSkill(SkillType.S_ASTECH);
-            case (T_DOCTOR):
+            case DOCTOR:
                 return hasSkill(SkillType.S_DOCTOR) && getSkill(SkillType.S_DOCTOR).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-            case (T_MEDIC):
+            case MEDIC:
                 return hasSkill(SkillType.S_MEDTECH);
-            case (T_ADMIN_COM):
-            case (T_ADMIN_LOG):
-            case (T_ADMIN_TRA):
-            case (T_ADMIN_HR):
+            case ADMINISTRATOR_COMMAND:
+            case ADMINISTRATOR_LOGISTICS:
+            case ADMINISTRATOR_TRANSPORT:
+            case ADMINISTRATOR_HR:
                 return hasSkill(SkillType.S_ADMIN);
+            case DEPENDENT:
+            case NONE:
+                return true;
             default:
                 return false;
         }
@@ -1918,7 +1857,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
 
                         if (!wn3.getNodeName().equalsIgnoreCase("id")) {
-                            MekHQ.getLogger().error(Person.class, "Unknown node type not loaded in techUnitIds nodes: " + wn3.getNodeName());
+                            MekHQ.getLogger().error("Unknown node type not loaded in techUnitIds nodes: " + wn3.getNodeName());
                             continue;
                         }
                         retVal.addTechUnitID(UUID.fromString(wn3.getTextContent()));
@@ -1933,7 +1872,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
 
                         if (!wn3.getNodeName().equalsIgnoreCase("logEntry")) {
-                            MekHQ.getLogger().error(Person.class, "Unknown node type not loaded in personnel log nodes: " + wn3.getNodeName());
+                            MekHQ.getLogger().error("Unknown node type not loaded in personnel log nodes: " + wn3.getNodeName());
                             continue;
                         }
 
@@ -1962,7 +1901,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
 
                         if (!wn3.getNodeName().equalsIgnoreCase("logEntry")) {
-                            MekHQ.getLogger().error(Person.class, "Unknown node type not loaded in mission log nodes: " + wn3.getNodeName());
+                            MekHQ.getLogger().error("Unknown node type not loaded in mission log nodes: " + wn3.getNodeName());
                             continue;
                         }
                         retVal.addMissionLogEntry(LogEntryFactory.getInstance().generateInstanceFromXML(wn3));
@@ -1978,7 +1917,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
 
                         if (!wn3.getNodeName().equalsIgnoreCase("award")) {
-                            MekHQ.getLogger().error(Person.class, "Unknown node type not loaded in personnel log nodes: " + wn3.getNodeName());
+                            MekHQ.getLogger().error("Unknown node type not loaded in personnel log nodes: " + wn3.getNodeName());
                             continue;
                         }
 
@@ -1995,7 +1934,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         }
 
                         if (!wn3.getNodeName().equalsIgnoreCase("injury")) {
-                            MekHQ.getLogger().error(Person.class, "Unknown node type not loaded in injury nodes: " + wn3.getNodeName());
+                            MekHQ.getLogger().error("Unknown node type not loaded in injury nodes: " + wn3.getNodeName());
                             continue;
                         }
                         retVal.injuries.add(Injury.generateInstanceFromXML(wn3));
@@ -2053,42 +1992,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 }
             }
 
-            if (version.getMajorVersion() == 0 && version.getMinorVersion() < 2 && version.getSnapshot() < 13) {
-                if (retVal.primaryRole > T_INFANTRY) {
-                    retVal.primaryRole += 4;
-
-                }
-                if (retVal.secondaryRole > T_INFANTRY) {
-                    retVal.secondaryRole += 4;
-                }
-            }
-
-            if (version.getMajorVersion() == 0 && version.getMinorVersion() == 2) {
-                //adjust for conventional fighter pilots
-                if (retVal.primaryRole >= T_CONV_PILOT) {
-                    retVal.primaryRole += 1;
-                }
-                if (retVal.secondaryRole >= T_CONV_PILOT) {
-                    retVal.secondaryRole += 1;
-                }
-            }
-
-            if (version.getMajorVersion() == 0 && version.getMinorVersion() == 3 && version.getSnapshot() < 1) {
-                //adjust for conventional fighter pilots
-                if (retVal.primaryRole == T_CONV_PILOT && retVal.hasSkill(SkillType.S_PILOT_SPACE) && !retVal.hasSkill(SkillType.S_PILOT_JET)) {
-                    retVal.primaryRole += 1;
-                }
-                if (retVal.secondaryRole == T_CONV_PILOT && retVal.hasSkill(SkillType.S_PILOT_SPACE) && !retVal.hasSkill(SkillType.S_PILOT_JET)) {
-                    retVal.secondaryRole += 1;
-                }
-                if (retVal.primaryRole == T_AERO_PILOT && !retVal.hasSkill(SkillType.S_PILOT_SPACE) && retVal.hasSkill(SkillType.S_PILOT_JET)) {
-                    retVal.primaryRole += 8;
-                }
-                if (retVal.secondaryRole == T_AERO_PILOT && !retVal.hasSkill(SkillType.S_PILOT_SPACE) && retVal.hasSkill(SkillType.S_PILOT_JET)) {
-                    retVal.secondaryRole += 8;
-                }
-            }
-
             if ((null != advantages) && (advantages.trim().length() > 0)) {
                 StringTokenizer st = new StringTokenizer(advantages, "::");
                 while (st.hasMoreTokens()) {
@@ -2127,7 +2030,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     try {
                         retVal.getOptions().getOption(advName).setValue(value);
                     } catch (Exception e) {
-                        MekHQ.getLogger().error(Person.class, "Error restoring implants: " + adv);
+                        MekHQ.getLogger().error("Error restoring implants: " + adv);
                     }
                 }
             }
@@ -3290,10 +3193,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public UUID getDoctorId() {
         return doctorId;
-    }
-
-    public boolean isDoctor() {
-        return hasSkill(SkillType.S_DOCTOR) && (primaryRole.isDoctor() || secondaryRole.isDoctor());
     }
 
     public int getToughness() {

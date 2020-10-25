@@ -25,6 +25,7 @@ import megamek.common.Compute;
 import megamek.common.Entity;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 
 /**
  * Personnel market generation method that uses Dylan's method
@@ -72,33 +73,30 @@ public class PersonnelMarketDylan extends PersonnelMarketRandom {
             long choice = mtf.get(Compute.randomInt(Math.max(mtf.size() - 1, 1)));
             if (Compute.randomInt(99) < weight) {
                 if (choice == Entity.ETYPE_MECH) {
-                    p = c.newPerson(Person.T_MECHWARRIOR);
+                    p = c.newPerson(PersonnelRole.MECHWARRIOR);
                 } else if (choice == Entity.ETYPE_TANK) {
-                    if (Compute.d6() < 3) {
-                        p = c.newPerson(Person.T_GVEE_DRIVER);
-                    } else {
-                        p = c.newPerson(Person.T_VEE_GUNNER);
-                    }
+                    p = c.newPerson((Compute.d6() < 3) ? PersonnelRole.GROUND_VEHICLE_DRIVER
+                            : PersonnelRole.VEHICLE_GUNNER);
                 } else if (choice == Entity.ETYPE_AERO) {
-                    p = c.newPerson(Person.T_AERO_PILOT);
+                    p = c.newPerson(PersonnelRole.AEROSPACE_PILOT);
                 } else if (choice == Entity.ETYPE_BATTLEARMOR) {
-                    p = c.newPerson(Person.T_BA);
+                    p = c.newPerson(PersonnelRole.T_BA);
                 } else if (choice == Entity.ETYPE_INFANTRY) {
-                    p = c.newPerson(Person.T_INFANTRY);
+                    p = c.newPerson(PersonnelRole.T_INFANTRY);
                 } else if (choice == Entity.ETYPE_PROTOMECH) {
-                    p = c.newPerson(Person.T_PROTO_PILOT);
+                    p = c.newPerson(PersonnelRole.T_PROTO_PILOT);
                 } else if (choice == Entity.ETYPE_CONV_FIGHTER) {
-                    p = c.newPerson(Person.T_CONV_PILOT);
+                    p = c.newPerson(PersonnelRole.T_CONV_PILOT);
                 } else if (choice == Entity.ETYPE_SMALL_CRAFT) {
-                    p = c.newPerson(Person.T_SPACE_PILOT);
+                    p = c.newPerson(PersonnelRole.T_SPACE_PILOT);
                 } else if (choice == Entity.ETYPE_DROPSHIP) {
-                    int space = Compute.randomInt(Person.T_SPACE_GUNNER);
+                    int space = Compute.randomInt(PersonnelRole.T_SPACE_GUNNER);
                     while (space < Person.T_SPACE_PILOT) {
-                        space = Compute.randomInt(Person.T_SPACE_GUNNER);
+                        space = Compute.randomInt(PersonnelRole.T_SPACE_GUNNER);
                     }
                     p = c.newPerson(space);
                 } else {
-                    p = c.newPerson(Person.T_NONE);
+                    p = c.newPerson(PersonnelRole.NONE);
                 }
             } else {
                 int roll = Compute.randomInt(Person.T_NUM - 1);

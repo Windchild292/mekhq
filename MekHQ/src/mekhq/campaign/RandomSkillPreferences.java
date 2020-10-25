@@ -25,7 +25,6 @@ import java.io.Serializable;
 
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
-import mekhq.campaign.personnel.Person;
 
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +35,7 @@ import org.w3c.dom.NodeList;
  * @author Jay Lawson
  */
 public class RandomSkillPreferences implements Serializable {
+    //region Variable Declarations
     private static final long serialVersionUID = 5698008431749303602L;
 
     private int overallRecruitBonus;
@@ -51,12 +51,11 @@ public class RandomSkillPreferences implements Serializable {
     private int artilleryBonus;
     private int secondSkillProb;
     private int secondSkillBonus;
-
-    //special abilities
+    //endregion Variable Declarations
 
     public RandomSkillPreferences() {
         overallRecruitBonus = 0;
-        recruitBonuses = new int[Person.T_NUM];
+        recruitBonuses = new int[PersonnelRole.values().length];
         randomizeSkill = true;
         useClanBonuses = true;
         antiMekProb = 10;
@@ -78,14 +77,12 @@ public class RandomSkillPreferences implements Serializable {
         overallRecruitBonus = b;
     }
 
-    public int getRecruitBonus(PersonnelRole type) {
-        return (type < recruitBonuses.length) ? recruitBonuses[type] : 0;
+    public int getRecruitBonus(PersonnelRole role) {
+        return recruitBonuses[role.ordinal()];
     }
 
-    public void setRecruitBonus(int type, int bonus) {
-        if (type < recruitBonuses.length) {
-            recruitBonuses[type] = bonus;
-        }
+    public void setRecruitBonus(PersonnelRole role, int bonus) {
+        recruitBonuses[role.ordinal()] = bonus;
     }
 
     public int getSpecialAbilBonus(int type) {

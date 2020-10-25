@@ -20,6 +20,7 @@ package mekhq.module.atb;
 
 import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.List;
 
 import megamek.client.ratgenerator.MissionRole;
 import megamek.common.Compute;
@@ -41,6 +42,7 @@ import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.Transaction;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.rating.IUnitRating;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.IUnitGenerator;
@@ -81,17 +83,17 @@ public class AtBEventProcessor {
     private void doPaidRecruitment(Campaign campaign) {
         int mod;
         switch (campaign.getPersonnelMarket().getPaidRecruitType()) {
-            case Person.T_MECHWARRIOR:
+            case MECHWARRIOR:
                 mod = -2;
                 break;
-            case Person.T_INFANTRY:
+            case SOLDIER:
                 mod = 2;
                 break;
-            case Person.T_MECH_TECH:
-            case Person.T_AERO_TECH:
-            case Person.T_MECHANIC:
-            case Person.T_BA_TECH:
-            case Person.T_DOCTOR:
+            case MECH_TECH:
+            case AERO_TECH:
+            case MECHANIC:
+            case BA_TECH:
+            case DOCTOR:
                 mod = 1;
                 break;
             default:
@@ -104,7 +106,7 @@ public class AtBEventProcessor {
             mod -= 3;
         }
 
-        Person adminHR = campaign.findBestInRole(Person.T_ADMIN_HR, SkillType.S_ADMIN);
+        Person adminHR = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_HR, SkillType.S_ADMIN);
         int adminHRExp = (adminHR == null) ? SkillType.EXP_ULTRA_GREEN
                 : adminHR.getSkill(SkillType.S_ADMIN).getExperienceLevel();
         mod += adminHRExp - 2;
@@ -148,48 +150,43 @@ public class AtBEventProcessor {
 
         int unitType;
         switch (p.getPrimaryRole()) {
-            case Person.T_MECHWARRIOR:
+            case MECHWARRIOR:
                 unitType = UnitType.MEK;
                 break;
-            case Person.T_GVEE_DRIVER:
-            case Person.T_VEE_GUNNER:
-            case Person.T_VTOL_PILOT:
-                return;
-            case Person.T_AERO_PILOT:
+            case AEROSPACE_PILOT:
                 if (!campaign.getCampaignOptions().getAeroRecruitsHaveUnits()) {
                     return;
                 }
                 unitType = UnitType.AERO;
                 break;
-            case Person.T_INFANTRY:
+            case SOLDIER:
                 unitType = UnitType.INFANTRY;
 
                 // infantry will have a 1/3 chance of being field guns
-                if(Compute.d6() <= 2) {
+                if (Compute.d6() <= 2) {
                     params.getMissionRoles().add(MissionRole.FIELD_GUN);
                     params.getMovementModes().addAll(IUnitGenerator.ALL_INFANTRY_MODES);
                 }
-
                 break;
-            case Person.T_BA:
+            case BATTLE_ARMOUR:
                 unitType = UnitType.BATTLE_ARMOR;
                 break;
-            case Person.T_PROTO_PILOT:
+            case PROTOMECH_PILOT:
                 unitType = UnitType.PROTOMEK;
                 break;
+            case GROUND_VEHICLE_DRIVER:
+            case VEHICLE_GUNNER:
+            case VTOL_PILOT:
             default:
                 return;
         }
 
         int weight = -1;
-        if (unitType == UnitType.MEK
-                || unitType == UnitType.TANK
-                || unitType == UnitType.AERO) {
+        if ((unitType == UnitType.MEK) || (unitType == UnitType.AERO)) {
             int roll = Compute.d6(2);
             if (roll < 8) {
                 return;
-            }
-            if (roll < 10) {
+            } else if (roll < 10) {
                 weight = EntityWeightClass.WEIGHT_LIGHT;
             } else if (roll < 12) {
                 weight = EntityWeightClass.WEIGHT_MEDIUM;
@@ -212,56 +209,53 @@ public class AtBEventProcessor {
             if (Faction.getFaction(faction).isClan() && ms.getName().matches(".*Platoon.*")) {
                 String name = "Clan " + ms.getName().replaceAll("Platoon", "Point");
                 ms = MechSummaryCache.getInstance().getMech(name);
-                MekHQ.getLogger().info(this, "looking for Clan infantry " + name);
+                MekHQ.getLogger().info("looking for Clan infantry " + name);
             }
             try {
                 en = new MechFileParser(ms.getSourceFile(), ms.getEntryName()).getEntity();
             } catch (EntityLoadingException ex) {
                 en = null;
-                MekHQ.getLogger().error(this, "Unable to load entity: "
+                MekHQ.getLogger().error("Unable to load entity: "
                         + ms.getSourceFile() + ": " + ms.getEntryName() + ": " + ex.getMessage(), ex);
             }
         } else {
-            MekHQ.getLogger().error(this, "Personnel market could not find "
+            MekHQ.getLogger().error("Personnel market could not find "
                     + UnitType.getTypeName(unitType) + " for recruit from faction " + faction);
             return;
         }
 
-        if (null != en) {
+        if (en != null) {
             campaign.getPersonnelMarket().addAttachedEntity(p.getId(), en);
             /* adjust vehicle pilot roles according to the type of vehicle rolled */
             if ((en.getEntityType() & Entity.ETYPE_TANK) != 0) {
-                if (en.getMovementMode() == EntityMovementMode.TRACKED ||
-                        en.getMovementMode() == EntityMovementMode.WHEELED ||
-                        en.getMovementMode() == EntityMovementMode.HOVER ||
-                        en.getMovementMode() == EntityMovementMode.WIGE) {
-                    if (p.getPrimaryRole() == Person.T_VTOL_PILOT) {
+                if ((en.getMovementMode() == EntityMovementMode.TRACKED)
+                        || (en.getMovementMode() == EntityMovementMode.WHEELED)
+                        || (en.getMovementMode() == EntityMovementMode.HOVER)
+                        || (en.getMovementMode() == EntityMovementMode.WIGE)) {
+                    if (p.getPrimaryRole().isVTOLPilot()) {
                         swapSkills(p, SkillType.S_PILOT_VTOL, SkillType.S_PILOT_GVEE);
-                        p.setPrimaryRole(Person.T_GVEE_DRIVER);
-                    }
-                    if (p.getPrimaryRole() == Person.T_NVEE_DRIVER) {
+                        p.setPrimaryRole(PersonnelRole.GROUND_VEHICLE_DRIVER);
+                    } else if (p.getPrimaryRole().isNavalVehicleDriver()) {
                         swapSkills(p, SkillType.S_PILOT_NVEE, SkillType.S_PILOT_GVEE);
-                        p.setPrimaryRole(Person.T_GVEE_DRIVER);
+                        p.setPrimaryRole(PersonnelRole.GROUND_VEHICLE_DRIVER);
                     }
                 } else if (en.getMovementMode() == EntityMovementMode.VTOL) {
-                    if (p.getPrimaryRole() == Person.T_GVEE_DRIVER) {
+                    if (p.getPrimaryRole().isGroundVehicleDriver()) {
                         swapSkills(p, SkillType.S_PILOT_GVEE, SkillType.S_PILOT_VTOL);
-                        p.setPrimaryRole(Person.T_VTOL_PILOT);
-                    }
-                    if (p.getPrimaryRole() == Person.T_NVEE_DRIVER) {
+                        p.setPrimaryRole(PersonnelRole.VTOL_PILOT);
+                    } else if (p.getPrimaryRole().isNavalVehicleDriver()) {
                         swapSkills(p, SkillType.S_PILOT_NVEE, SkillType.S_PILOT_VTOL);
-                        p.setPrimaryRole(Person.T_VTOL_PILOT);
+                        p.setPrimaryRole(PersonnelRole.VTOL_PILOT);
                     }
-                } else if (en.getMovementMode() == EntityMovementMode.NAVAL ||
-                        en.getMovementMode() == EntityMovementMode.HYDROFOIL ||
-                        en.getMovementMode() == EntityMovementMode.SUBMARINE) {
-                    if (p.getPrimaryRole() == Person.T_GVEE_DRIVER) {
+                } else if ((en.getMovementMode() == EntityMovementMode.NAVAL)
+                        || (en.getMovementMode() == EntityMovementMode.HYDROFOIL)
+                        || (en.getMovementMode() == EntityMovementMode.SUBMARINE)) {
+                    if (p.getPrimaryRole().isGroundVehicleDriver()) {
                         swapSkills(p, SkillType.S_PILOT_GVEE, SkillType.S_PILOT_NVEE);
-                        p.setPrimaryRole(Person.T_NVEE_DRIVER);
-                    }
-                    if (p.getPrimaryRole() == Person.T_VTOL_PILOT) {
+                        p.setPrimaryRole(PersonnelRole.NAVAL_VEHICLE_DRIVER);
+                    } else if (p.getPrimaryRole().isVTOLPilot()) {
                         swapSkills(p, SkillType.S_PILOT_VTOL, SkillType.S_PILOT_NVEE);
-                        p.setPrimaryRole(Person.T_NVEE_DRIVER);
+                        p.setPrimaryRole(PersonnelRole.NAVAL_VEHICLE_DRIVER);
                     }
                 }
             }
@@ -269,15 +263,16 @@ public class AtBEventProcessor {
     }
 
     private void swapSkills(Person p, String skill1, String skill2) {
-        int s1 = p.hasSkill(skill1)?p.getSkill(skill1).getLevel():0;
-        int b1 = p.hasSkill(skill1)?p.getSkill(skill1).getBonus():0;
-        int s2 = p.hasSkill(skill2)?p.getSkill(skill2).getLevel():0;
-        int b2 = p.hasSkill(skill2)?p.getSkill(skill2).getBonus():0;
+        int s1 = p.hasSkill(skill1) ? p.getSkill(skill1).getLevel() : 0;
+        int b1 = p.hasSkill(skill1) ? p.getSkill(skill1).getBonus() : 0;
+        int s2 = p.hasSkill(skill2) ? p.getSkill(skill2).getLevel() : 0;
+        int b2 = p.hasSkill(skill2) ? p.getSkill(skill2).getBonus() : 0;
         p.addSkill(skill1, s2, b2);
         p.addSkill(skill2, s1, b1);
         if (p.getSkill(skill1).getLevel() == 0) {
             p.removeSkill(skill1);
         }
+
         if (p.getSkill(skill2).getLevel() == 0) {
             p.removeSkill(skill2);
         }
@@ -286,7 +281,7 @@ public class AtBEventProcessor {
     public static String getRecruitFaction(Campaign c) {
         if (c.getFactionCode().equals("MERC")) {
             if ((c.getGameYear() > 3055) && (Compute.randomInt(20) == 0)) {
-                ArrayList<String> clans = new ArrayList<>();
+                List<String> clans = new ArrayList<>();
                 for (String f : RandomFactionGenerator.getInstance().getCurrentFactions()) {
                     if (Faction.getFaction(f).isClan()) {
                         clans.add(f);

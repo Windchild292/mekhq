@@ -1980,7 +1980,7 @@ public class Campaign implements Serializable, ITechManager {
     public List<Person> getAdmins() {
         List<Person> admins = new ArrayList<>();
         for (Person p : getActivePersonnel()) {
-            if (p.isAdmin()) {
+            if (p.isAdministrator()) {
                 admins.add(p);
             }
         }
@@ -2111,7 +2111,7 @@ public class Campaign implements Serializable, ITechManager {
             return admin;
         } else if (skill.equals(CampaignOptions.S_TECH)) {
             for (Person p : getActivePersonnel()) {
-                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole(false)) {
+                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole()) {
                     continue;
                 }
                 if (maxAcquisitions > 0 && (p.getAcquisitions() >= maxAcquisitions)) {
@@ -2124,7 +2124,7 @@ public class Campaign implements Serializable, ITechManager {
             }
         } else {
             for (Person p : getActivePersonnel()) {
-                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole(false)) {
+                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole()) {
                     continue;
                 }
                 if (maxAcquisitions > 0 && (p.getAcquisitions() >= maxAcquisitions)) {
@@ -2152,7 +2152,7 @@ public class Campaign implements Serializable, ITechManager {
             List<Person> logisticsPersonnel = new ArrayList<>();
             int maxAcquisitions = getCampaignOptions().getMaxAcquisitions();
             for (Person p : getActivePersonnel()) {
-                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole(false)) {
+                if (getCampaignOptions().isAcquisitionSupportStaffOnly() && !p.hasSupportRole()) {
                     continue;
                 }
                 if ((maxAcquisitions > 0) && (p.getAcquisitions() >= maxAcquisitions)) {
@@ -3277,7 +3277,7 @@ public class Campaign implements Serializable, ITechManager {
             // TODO : p.isEngineer will need to stay, however
             // Reset edge points to the purchased value each week. This should only
             // apply for support personnel - combat troops reset with each new mm game
-            if ((p.isAdmin() || p.isDoctor() || p.isEngineer() || p.isTech())
+            if ((p.isAdministrator() || p.isDoctor() || p.isEngineer() || p.isTech())
                     && (getLocalDate().getDayOfWeek() == DayOfWeek.MONDAY)) {
                 p.resetCurrentEdge();
             }

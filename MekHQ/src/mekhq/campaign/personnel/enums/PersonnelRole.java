@@ -54,6 +54,9 @@ public enum PersonnelRole {
     ADMINISTRATOR_LOGISTICS("PersonnelRole.ADMINISTRATOR_LOGISTICS.text", KeyEvent.VK_L),
     ADMINISTRATOR_TRANSPORT("PersonnelRole.ADMINISTRATOR_TRANSPORT.text", KeyEvent.VK_R),
     ADMINISTRATOR_HR("PersonnelRole.ADMINISTRATOR_HR.text", KeyEvent.VK_H),
+
+    // Anything following are ignored during Personnel Market Generation. If you add a role here you
+    // MUST increase the value in getGenerationIgnoredCount by one
     DEPENDENT("PersonnelRole.DEPENDENT.text", KeyEvent.VK_UNDEFINED),
     NONE("PersonnelRole.NONE.text", KeyEvent.VK_UNDEFINED);
     //endregion Enum Declarations
@@ -248,11 +251,28 @@ public enum PersonnelRole {
     }
 
     public boolean isTech() {
+        return isMechTech() || isMechanic() || isAeroTech() || isBATech() || isVesselCrew();
+    }
+
+    public boolean isTechSecondary() {
         return isMechTech() || isMechanic() || isAeroTech() || isBATech();
     }
 
     public boolean isMedicalStaff() {
         return isDoctor() || isMedic();
+    }
+
+    public boolean isMechWarriorGrouping() {
+        return isMechWarrior() || isLAMPilot();
+    }
+
+    public boolean isVehicleCrewmember() {
+        return isGroundVehicleDriver() || isNavalVehicleDriver() || isVTOLPilot()
+                || isVehicleGunner() || isVehicleCrew();
+    }
+
+    public boolean isVesselCrewmember() {
+        return isVesselPilot() || isVesselGunner() || isVesselCrew() || isVesselNavigator();
     }
     //endregion Boolean Comparisons
 
@@ -264,6 +284,10 @@ public enum PersonnelRole {
             }
         }
         return administratorRoles;
+    }
+
+    public static int getGenerationIgnoredCount() {
+        return 2;
     }
 
     public static PersonnelRole parseFromString(String text) {

@@ -52,12 +52,12 @@ public class XPHandler {
             if (person.getPrimaryRole().isAdministrator()) {
                 if (adminXPPeriod > 1) {
                     Integer weeksLeft = person.getExtraData().get(NEXT_ADMIN_XP_DELAY);
-                    if (null == weeksLeft) {
+                    if (weeksLeft == null) {
                         // Assign a random value between 1 and the max
                         weeksLeft = Compute.randomInt(adminXPPeriod) + 1;
                     }
-                    --weeksLeft;
-                    if (weeksLeft == 0) {
+
+                    if (--weeksLeft == 0) {
                         person.awardXP(adminXP);
                         weeksLeft = adminXPPeriod;
                     }

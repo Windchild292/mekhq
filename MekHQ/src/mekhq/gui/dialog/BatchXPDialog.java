@@ -53,6 +53,7 @@ import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.log.PersonalLogger;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.generator.SingleSpecialAbilityGenerator;
 import mekhq.campaign.personnel.Skill;
 import mekhq.campaign.personnel.SkillType;
@@ -219,15 +220,14 @@ public final class BatchXPDialog extends JDialog {
         choiceType.setMaximumSize(new Dimension(Short.MAX_VALUE, (int) choiceType.getPreferredSize().getHeight()));
         DefaultComboBoxModel<PersonTypeItem> personTypeModel = new DefaultComboBoxModel<>();
         personTypeModel.addElement(new PersonTypeItem(resourceMap.getString("primaryRole.choice.text"), null));
-        for (int i = 1; i < Person.T_NUM; ++ i) {
-            personTypeModel.addElement(new PersonTypeItem(Person.getRoleDesc(i,campaign.getFaction().isClan()), i));
+        for (PersonnelRole role : PersonnelRole.values()) {
+            personTypeModel.addElement(new PersonTypeItem(role.getName(campaign.getFaction().isClan()), Person.getRoleDesc(i, campaign.getFaction().isClan()), i));
         }
-        personTypeModel.addElement(new PersonTypeItem(Person.getRoleDesc(0, campaign.getFaction().isClan()), 0));
         // Add "none" for generic AsTechs
         choiceType.setModel(personTypeModel);
         choiceType.setSelectedIndex(0);
         choiceType.addActionListener(e -> {
-            personnelFilter.setPrimaryRole(((PersonTypeItem) choiceType.getSelectedItem()).getId());
+            personnelFilter.setPrimaryRole(((PersonTypeItem) Objects.requireNonNull(choiceType.getSelectedItem())).getId());
             updatePersonnelTable();
         });
         panel.add(choiceType);
