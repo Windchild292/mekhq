@@ -66,7 +66,7 @@ public class PersonnelMarket {
     private Map<UUID, Entity> attachedEntities = new LinkedHashMap<>();
     /* Alternate types of rolls, set by PersonnelMarketDialog */
     private boolean paidRecruitment = false;
-    private int paidRecruitType = Person.T_MECHWARRIOR; // Default value to avoid errors from missing type
+    private PersonnelRole paidRecruitType = PersonnelRole.MECHWARRIOR; // Default value to avoid errors from missing type
 
     public PersonnelMarket() {
         method = new PersonnelMarketRandom();
@@ -201,12 +201,12 @@ public class PersonnelMarket {
         paidRecruitment = pr;
     }
 
-    public int getPaidRecruitType() {
+    public PersonnelRole getPaidRecruitType() {
         return paidRecruitType;
     }
 
-    public void setPaidRecruitType(int pr) {
-        paidRecruitType = pr;
+    public void setPaidRecruitType(PersonnelRole paidRecruitType) {
+        this.paidRecruitType = paidRecruitType;
     }
 
     public void writeToXml(PrintWriter pw1, int indent) {
@@ -220,7 +220,7 @@ public class PersonnelMarket {
         if (paidRecruitment) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<paidRecruitment/>");
         }
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "paidRecruitType", paidRecruitType);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "paidRecruitType", paidRecruitType.name());
 
         for (UUID id : attachedEntities.keySet()) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)
@@ -272,7 +272,7 @@ public class PersonnelMarket {
                 } else if (wn2.getNodeName().equalsIgnoreCase("paidRecruitment")) {
                     retVal.paidRecruitment = true;
                 } else if (wn2.getNodeName().equalsIgnoreCase("paidRecruitType")) {
-                    retVal.paidRecruitType = Integer.parseInt(wn2.getTextContent());
+                    retVal.setPaidRecruitType(PersonnelRole.parseFromString(wn2.getTextContent().trim()));
                 } else if (null != retVal.method) {
                     retVal.method.loadFieldsFromXml(wn2);
                 } else  {

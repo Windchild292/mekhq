@@ -12,11 +12,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.report;
 
@@ -29,17 +29,17 @@ import javax.swing.JTextPane;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 
 /**
  * @author Jay Lawson
  */
 public class PersonnelReport extends Report {
-
-
     public PersonnelReport(Campaign c) {
         super(c);
     }
 
+    @Override
     public String getTitle() {
         return "Personnel Report";
     }
@@ -60,6 +60,7 @@ public class PersonnelReport extends Report {
         return txtSupport;
     }
 
+    @Override
     public JTextPane getReport() {
         // SplitPane them
         JSplitPane splitOverviewPersonnel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getCombatPersonnelReport(), getSupportPersonnelReport());
@@ -75,7 +76,7 @@ public class PersonnelReport extends Report {
     }
 
     public String getCombatPersonnelDetails() {
-        int[] countPersonByType = new int[Person.T_NUM];
+        int[] countPersonByType = new int[PersonnelRole.values().length];
         int countTotal = 0;
         int countInjured = 0;
         int countMIA = 0;
@@ -85,13 +86,13 @@ public class PersonnelReport extends Report {
         Money salary = Money.zero();
 
         for (Person p : getCampaign().getPersonnel()) {
-            if (!p.hasPrimaryCombatRole() || !p.getPrisonerStatus().isFree()) {
+            if (!p.getPrimaryRole().isCombat() || !p.getPrisonerStatus().isFree()) {
                 continue;
             }
 
             // Add them to the total count
             if (p.getStatus().isActive()) {
-                countPersonByType[p.getPrimaryRole()]++;
+                countPersonByType[p.getPrimaryRole().ordinal()]++;
                 countTotal++;
                 if (getCampaign().getCampaignOptions().useAdvancedMedical() && (p.getInjuries().size() > 0)) {
                     countInjured++;
@@ -115,10 +116,10 @@ public class PersonnelReport extends Report {
 
         sb.append(String.format("%-30s        %4s\n", "Total Combat Personnel", countTotal));
 
-        for (int i = 0; i < Person.T_NUM; i++) {
-            if (Person.isCombatRole(i)) {
+        for (PersonnelRole role : PersonnelRole.values()) {
+            if (role.isCombat()) {
                 sb.append(String.format("    %-30s    %4s\n",
-                        Person.getRoleDesc(i, getCampaign().getFaction().isClan()), countPersonByType[i]));
+                        role.getName(getCampaign().getFaction().isClan()), countPersonByType[role.ordinal()]));
             }
         }
 
@@ -134,7 +135,7 @@ public class PersonnelReport extends Report {
     }
 
     public String getSupportPersonnelDetails() {
-        int[] countPersonByType = new int[Person.T_NUM];
+        int[] countPersonByType = new int[PersonnelRole.values().length];
         int countTotal = 0;
         int countInjured = 0;
         int countMIA = 0;
@@ -148,10 +149,10 @@ public class PersonnelReport extends Report {
 
         for (Person p : getCampaign().getPersonnel()) {
             // Add them to the total count
-            boolean primarySupport = p.hasPrimarySupportRole(false);
+            boolean primarySupport = !p.getPrimaryRole().isCombat();
 
             if (primarySupport && p.getPrisonerStatus().isFree() && p.getStatus().isActive()) {
-                countPersonByType[p.getPrimaryRole()]++;
+                countPersonByType[p.getPrimaryRole().ordinal()]++;
                 countTotal++;
                 if ((p.getInjuries().size() > 0) || (p.getHits() > 0)) {
                     countInjured++;
@@ -187,10 +188,10 @@ public class PersonnelReport extends Report {
 
         sb.append(String.format("%-30s        %4s\n", "Total Support Personnel", countTotal));
 
-        for (int i = 0; i < Person.T_NUM; i++) {
-            if (Person.isSupportRole(i)) {
+        for (PersonnelRole role : PersonnelRole.values()) {
+            if (!role.isCombat()) {
                 sb.append(String.format("    %-30s    %4s\n",
-                        Person.getRoleDesc(i, getCampaign().getFaction().isClan()), countPersonByType[i]));
+                        role.getName(getCampaign().getFaction().isClan()), countPersonByType[role.ordinal()]));
             }
         }
 

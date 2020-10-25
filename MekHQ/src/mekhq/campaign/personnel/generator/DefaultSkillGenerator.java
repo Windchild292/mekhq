@@ -55,35 +55,33 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
 
         // roll small arms skill
         if (!person.getSkills().hasSkill(SkillType.S_SMALL_ARMS)) {
-            int sarmsLvl = -12;
-            if (Person.isSupportRole(type) || Person.isSupportRole(secondary)) {
+            int sarmsLvl;
+            if (!type.isCombat() || !secondary.isCombat()) {
                 sarmsLvl = Utilities.generateExpLevel(rskillPrefs.getSupportSmallArmsBonus());
             } else {
                 sarmsLvl = Utilities.generateExpLevel(rskillPrefs.getCombatSmallArmsBonus());
             }
+
             if (sarmsLvl > SkillType.EXP_ULTRA_GREEN) {
-                addSkill(person, SkillType.S_SMALL_ARMS, sarmsLvl,
-                        rskillPrefs.randomizeSkill(), bonus);
+                addSkill(person, SkillType.S_SMALL_ARMS, sarmsLvl, rskillPrefs.randomizeSkill(), bonus);
             }
         }
 
         // roll tactics skill
-        if (!(Person.isSupportRole(type) || Person.isSupportRole(secondary))) {
+        if (type.isCombat() || secondary.isCombat()) {
             int tacLvl = Utilities.generateExpLevel(rskillPrefs.getTacticsMod(expLvl));
             if (tacLvl > SkillType.EXP_ULTRA_GREEN) {
-                addSkill(person, SkillType.S_TACTICS, tacLvl,
-                        rskillPrefs.randomizeSkill(), bonus);
+                addSkill(person, SkillType.S_TACTICS, tacLvl, rskillPrefs.randomizeSkill(), bonus);
             }
         }
 
         // roll artillery skill
         if (getCampaignOptions(person).useArtillery()
-                && (type == Person.T_MECHWARRIOR || type == Person.T_VEE_GUNNER || type == Person.T_INFANTRY)
+                && (type.isMechWarrior() || type.isVehicleGunner() || type.isSoldier())
                 && Utilities.rollProbability(rskillPrefs.getArtilleryProb())) {
             int artyLvl = Utilities.generateExpLevel(rskillPrefs.getArtilleryBonus());
             if (artyLvl > SkillType.EXP_ULTRA_GREEN) {
-                addSkill(person, SkillType.S_ARTILLERY, artyLvl,
-                        rskillPrefs.randomizeSkill(), bonus);
+                addSkill(person, SkillType.S_ARTILLERY, artyLvl, rskillPrefs.randomizeSkill(), bonus);
             }
         }
 
@@ -97,8 +95,7 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
             }
             String selSkill = possibleSkills.get(Compute.randomInt(possibleSkills.size()));
             int secondLvl = Utilities.generateExpLevel(rskillPrefs.getSecondSkillBonus());
-            addSkill(person, selSkill, secondLvl, rskillPrefs.randomizeSkill(),
-                    bonus);
+            addSkill(person, selSkill, secondLvl, rskillPrefs.randomizeSkill(), bonus);
         }
     }
 

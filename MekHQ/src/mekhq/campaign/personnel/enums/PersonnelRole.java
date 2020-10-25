@@ -19,7 +19,6 @@
 package mekhq.campaign.personnel.enums;
 
 import megamek.common.util.EncodeControl;
-import mekhq.campaign.personnel.Person;
 
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -266,6 +265,11 @@ public enum PersonnelRole {
         }
         return administratorRoles;
     }
+
+    public static PersonnelRole parseFromString(String text) {
+        return NONE;
+    }
+
     @Override
     public String toString() {
         return name;

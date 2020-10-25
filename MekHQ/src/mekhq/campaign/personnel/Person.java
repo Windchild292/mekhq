@@ -709,8 +709,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @param role the role to determine
      * @return true if the person has the specific role either as their primary or secondary role
      */
-    public boolean hasRole(int role) {
-        return hasPrimaryRole(role) || hasSecondaryRole(role);
+    public boolean hasRole(PersonnelRole role) {
+        return (getPrimaryRole() == role) || (getSecondaryRole() == role);
     }
 
     /**
@@ -719,14 +719,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
      */
     public boolean hasPrimaryRole(int role) {
         return getPrimaryRole() == role;
-    }
-
-    /**
-     * @param role the role to determine
-     * @return true if the person has the specific role as their secondary role
-     */
-    public boolean hasSecondaryRole(int role) {
-        return getSecondaryRole() == role;
     }
 
     /**
@@ -763,60 +755,16 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return true if the person has a primary or secondary combat role
      */
     public boolean hasCombatRole() {
-        return hasPrimaryCombatRole() || hasSecondaryCombatRole();
+        return getPrimaryRole().isCombat() || getSecondaryRole().isCombat();
     }
 
     /**
-     * @return true if the person has a primary combat role
+     * @return true if the person has a primary or secondary support role
      */
-    public boolean hasPrimaryCombatRole() {
-        return hasPrimaryRoleWithin(T_MECHWARRIOR, T_SPACE_GUNNER)
-                || hasPrimaryRoleWithin(T_LAM_PILOT, T_VEHICLE_CREW);
+    public boolean hasSupportRole() {
+        return !getPrimaryRole().isCombat() || (!getSecondaryRole().isCombat() && !getSecondaryRole().isNone());
     }
 
-    /**
-     * @return true if the person has a secondary combat role
-     */
-    public boolean hasSecondaryCombatRole() {
-        return hasSecondaryRoleWithin(T_MECHWARRIOR, T_SPACE_GUNNER)
-                || hasSecondaryRoleWithin(T_LAM_PILOT, T_VEHICLE_CREW);
-    }
-
-    /**
-     * @param includeNoRole whether to include T_NONE in the primary check or not
-     * @return true if the person has a primary or secondary support role, except for secondary T_NONE
-     */
-    public boolean hasSupportRole(boolean includeNoRole) {
-        return hasPrimarySupportRole(includeNoRole) || hasSecondarySupportRole();
-    }
-
-    /**
-     * @param includeNoRole whether to include T_NONE in the check check or not
-     * @return true if the person has a primary support role
-     */
-    public boolean hasPrimarySupportRole(boolean includeNoRole) {
-        return hasPrimaryRoleWithin(T_MECH_TECH, T_ADMIN_HR) || (includeNoRole && hasPrimaryRole(T_NONE));
-    }
-
-    /**
-     * @return true if the person has a secondary support role. Note that T_NONE is NOT a support
-     * role if it is a secondary role
-     */
-    public boolean hasSecondarySupportRole() {
-        return hasSecondaryRoleWithin(T_MECH_TECH, T_ADMIN_HR);
-    }
-
-    /**
-     * Determines whether a role is considered a combat role. Note that T_LAM_PILOT is a special
-     * placeholder which is not used for either primary or secondary role and will return false.
-     *
-     * @param role A value that can be used for a person's primary or secondary role.
-     * @return     Whether the role is considered a combat role
-     */
-    public static boolean isCombatRole(int role) {
-        return ((role > T_NONE) && (role <= T_NAVIGATOR))
-                || (role == T_VEHICLE_CREW);
-    }
 
     /**
      * @param role A value that can be used for a person's primary or secondary role.
@@ -1709,7 +1657,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "edge",
                         getOptionList("::", PilotOptions.EDGE_ADVANTAGES));
                 // For support personnel, write an available edge value
-                if (hasSupportRole(false) || isEngineer()) {
+                if (hasSupportRole() || isEngineer()) {
                     MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "edgeAvailable", getCurrentEdge());
                 }
             }
@@ -1830,9 +1778,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("biography")) {
                     retVal.biography = wn2.getTextContent();
                 } else if (wn2.getNodeName().equalsIgnoreCase("primaryRole")) {
-                    retVal.primaryRole = Integer.parseInt(wn2.getTextContent());
+                    retVal.primaryRole = PersonnelRole.parseFromString(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("secondaryRole")) {
-                    retVal.secondaryRole = Integer.parseInt(wn2.getTextContent());
+                    retVal.secondaryRole = PersonnelRole.parseFromString(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("acquisitions")) {
                     retVal.acquisitions = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("primaryDesignator")) {
@@ -3345,7 +3293,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public boolean isDoctor() {
-        return hasSkill(SkillType.S_DOCTOR) && (primaryRole == T_DOCTOR || secondaryRole == T_DOCTOR);
+        return hasSkill(SkillType.S_DOCTOR) && (primaryRole.isDoctor() || secondaryRole.isDoctor());
     }
 
     public int getToughness() {
@@ -3516,39 +3464,42 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return getProfessionFromPrimaryRole(primaryRole);
     }
 
-    public static int getProfessionFromPrimaryRole(int role) {
+    public static int getProfessionFromPrimaryRole(PersonnelRole role) {
         switch (role) {
-            case T_AERO_PILOT:
-            case T_CONV_PILOT:
+            case AEROSPACE_PILOT:
+            case CONVENTIONAL_AIRCRAFT_PILOT:
                 return Ranks.RPROF_ASF;
-            case T_GVEE_DRIVER:
-            case T_NVEE_DRIVER:
-            case T_VTOL_PILOT:
-            case T_VEE_GUNNER:
-            case T_VEHICLE_CREW:
+            case GROUND_VEHICLE_DRIVER:
+            case NAVAL_VEHICLE_DRIVER:
+            case VTOL_PILOT:
+            case VEHICLE_GUNNER:
+            case VEHICLE_CREW:
                 return Ranks.RPROF_VEE;
-            case T_BA:
-            case T_INFANTRY:
+            case BATTLE_ARMOUR:
+            case SOLDIER:
                 return Ranks.RPROF_INF;
-            case T_SPACE_PILOT:
-            case T_SPACE_CREW:
-            case T_SPACE_GUNNER:
-            case T_NAVIGATOR:
+            case VESSEL_PILOT:
+            case VESSEL_CREW:
+            case VESSEL_GUNNER:
+            case VESSEL_NAVIGATOR:
                 return Ranks.RPROF_NAVAL;
-            case T_MECH_TECH:
-            case T_MECHANIC:
-            case T_AERO_TECH:
-            case T_BA_TECH:
-            case T_ASTECH:
-            case T_ADMIN_COM:
-            case T_ADMIN_LOG:
-            case T_ADMIN_TRA:
-            case T_ADMIN_HR:
+            case MECH_TECH:
+            case MECHANIC:
+            case AERO_TECH:
+            case BA_TECH:
+            case ASTECH:
+            case ADMINISTRATOR_COMMAND:
+            case ADMINISTRATOR_LOGISTICS:
+            case ADMINISTRATOR_HR:
+            case ADMINISTRATOR_TRANSPORT:
                 return Ranks.RPROF_TECH;
-            case T_MECHWARRIOR:
-            case T_PROTO_PILOT:
-            case T_DOCTOR:
-            case T_MEDIC:
+            case MECHWARRIOR:
+            case LAM_PILOT:
+            case PROTOMECH_PILOT:
+            case DOCTOR:
+            case MEDIC:
+            case DEPENDENT:
+            case NONE:
             default:
                 return Ranks.RPROF_MW;
         }
@@ -3608,7 +3559,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      */
     public int getNumShares(boolean sharesForAll) {
         if (!getStatus().isActive() || !getPrisonerStatus().isFree()
-                || (!sharesForAll && !hasRole(T_MECHWARRIOR))) {
+                || (!sharesForAll && !hasRole(PersonnelRole.MECHWARRIOR))) {
             return 0;
         }
         int shares = 1;
@@ -3654,10 +3605,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      */
     public Money getRansomValue() {
         // MechWarriors and aero pilots are worth more than the other types of scrubs
-        if ((primaryRole == T_MECHWARRIOR) || (primaryRole == T_AERO_PILOT)) {
-            return MECHWARRIOR_AERO_RANSOM_VALUES.get(getExperienceLevel(false));
-        } else {
-            return OTHER_RANSOM_VALUES.get(getExperienceLevel(false));
-        }
+        return (getPrimaryRole().isMechWarrior() || getPrimaryRole().isAerospacePilot()
+                ? MECHWARRIOR_AERO_RANSOM_VALUES : OTHER_RANSOM_VALUES).get(getExperienceLevel(false));
     }
 }

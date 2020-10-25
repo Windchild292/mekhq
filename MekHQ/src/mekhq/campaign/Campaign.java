@@ -1215,7 +1215,7 @@ public class Campaign implements Serializable, ITechManager {
     /**
      * Generate a new {@link Person} of the given type, using the supplied {@link AbstractPersonnelGenerator}
      * @param role The primary role of the {@link Person}.
-     * @param secondaryRole The secondary role, or {@link Person#T_NONE}, of the {@link Person}.
+     * @param secondaryRole The secondary role, or {@link PersonnelRole}.NONE, of the {@link Person}.
      * @param personnelGenerator The {@link AbstractPersonnelGenerator} to use when creating the {@link Person}.
      * @param gender The gender of the person to be generated, or a randomize it value
      * @return A new {@link Person} configured using {@code personnelGenerator}.
@@ -6052,24 +6052,14 @@ public class Campaign implements Serializable, ITechManager {
         }
         String searchCat_Role = p.getPrimaryRole().getName(p.isClanner()) + "/";
         String searchCat_RoleGroup = "";
-        String searchCat_CombatSupport = "";
         if (p.getPrimaryRole().isAdministrator()) {
             searchCat_RoleGroup = "Admin/";
-        }
-        if (p.getPrimaryRole().isTech()) {
+        } else if (p.getPrimaryRole().isTech()) {
             searchCat_RoleGroup = "Tech/";
-        }
-        if (p.getPrimaryRole().isMedicalStaff()) {
+        } else if (p.getPrimaryRole().isMedicalStaff()) {
             searchCat_RoleGroup = "Medical/";
-        }
-        if (p.getPrimaryRole().isVesselCrew()) {
+        } else if (p.getPrimaryRole().isVesselCrew()) {
             searchCat_RoleGroup = "Vessel Crew/";
-        }
-
-        if (p.hasPrimarySupportRole(true)) {
-            searchCat_CombatSupport = "Support/";
-        } else {
-            searchCat_CombatSupport = "Combat/";
         }
 
         possiblePortraits = getPossibleRandomPortraits(existingPortraits, searchCat_Gender + searchCat_Role);
@@ -6077,12 +6067,16 @@ public class Campaign implements Serializable, ITechManager {
         if (possiblePortraits.isEmpty() && !searchCat_RoleGroup.isEmpty()) {
             possiblePortraits = getPossibleRandomPortraits(existingPortraits, searchCat_Gender + searchCat_RoleGroup);
         }
+
         if (possiblePortraits.isEmpty()) {
-            possiblePortraits = getPossibleRandomPortraits(existingPortraits, searchCat_Gender + searchCat_CombatSupport);
+            possiblePortraits = getPossibleRandomPortraits(existingPortraits,
+                    searchCat_Gender + (p.getPrimaryRole().isCombat() ? "Combat/" : "Support/"));
         }
+
         if (possiblePortraits.isEmpty()) {
             possiblePortraits = getPossibleRandomPortraits(existingPortraits, searchCat_Gender);
         }
+
         if (!possiblePortraits.isEmpty()) {
             String chosenPortrait = possiblePortraits.get(Compute.randomInt(possiblePortraits.size()));
             String[] temp = chosenPortrait.split(":");

@@ -79,7 +79,6 @@ public class CampaignSummary {
      * be run before pulling out any reports
      */
     public void updateInformation() {
-
         //personnel
         totalCombatPersonnel = 0;
         totalSupportPersonnel = 0;
@@ -92,9 +91,9 @@ public class CampaignSummary {
             if (p.getHits() > 0) {
                 totalInjuries++;
             }
-            if (p.hasPrimaryCombatRole()) {
+            if (p.getPrimaryRole().isCombat()) {
                 totalCombatPersonnel++;
-            } else if (p.hasPrimarySupportRole(false)) {
+            } else {
                 totalSupportPersonnel++;
             }
         }
