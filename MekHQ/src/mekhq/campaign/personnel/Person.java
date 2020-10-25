@@ -854,57 +854,6 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.daysToWaitForHealing = d;
     }
 
-    public static String getRoleDesc(int type, boolean clan) {
-        switch (type) {
-            case (T_NONE):
-            case (T_MECHWARRIOR):
-            case (T_GVEE_DRIVER):
-            case (T_NVEE_DRIVER):
-            case (T_VTOL_PILOT):
-            case (T_VEE_GUNNER):
-            case (T_CONV_PILOT):
-            case (T_AERO_PILOT):
-            case (T_PROTO_PILOT):
-            case (T_BA):
-            case (T_INFANTRY):
-            case (T_SPACE_PILOT):
-            case (T_SPACE_CREW):
-                return "Vessel Crewmember";
-            case (T_SPACE_GUNNER):
-                return "Vessel Gunner";
-            case (T_NAVIGATOR):
-                return "Hyperspace Navigator";
-            case (T_MECH_TECH):
-                return "Mech Tech";
-            case (T_MECHANIC):
-                return "Mechanic";
-            case (T_AERO_TECH):
-                return "Aero Tech";
-            case (T_BA_TECH):
-                return "Battle Armor Tech";
-            case (T_ASTECH):
-                return "Astech";
-            case (T_DOCTOR):
-                return "Doctor";
-            case (T_MEDIC):
-                return "Medic";
-            case (T_ADMIN_COM):
-                return "Admin/Command";
-            case (T_ADMIN_LOG):
-                return "Admin/Logistical";
-            case (T_ADMIN_TRA):
-                return "Admin/Transport";
-            case (T_ADMIN_HR):
-                return "Admin/HR";
-            case (T_LAM_PILOT):
-                return "LAM Pilot";
-            case (T_VEHICLE_CREW):
-                return "Vehicle Crew";
-            default:
-                return "??";
-        }
-    }
-
     public String getRoleDesc() {
         String role = getPrimaryRoleDesc();
         if (getSecondaryRole().isNone()) {

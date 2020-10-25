@@ -1729,10 +1729,9 @@ public class Campaign implements Serializable, ITechManager {
             return null;
         }
         // Makes no sense buying those separately from the chasis
-        if((p instanceof EquipmentPart)
+        if ((p instanceof EquipmentPart)
                 && ((EquipmentPart) p).getType() != null
-                && (((EquipmentPart) p).getType().hasFlag(MiscType.F_CHASSIS_MODIFICATION)))
-        {
+                && (((EquipmentPart) p).getType().hasFlag(MiscType.F_CHASSIS_MODIFICATION))) {
             return null;
         }
         // Replace a "missing" part with a corresponding "new" one.
@@ -1958,8 +1957,8 @@ public class Campaign implements Serializable, ITechManager {
 
                 // Set up booleans to know if the tech is secondary only
                 // this is to get the skill from getExperienceLevel(boolean) properly
-                boolean p1Secondary = !person1.isTechPrimary() && person1.isTechSecondary();
-                boolean p2Secondary = !person2.isTechPrimary() && person2.isTechSecondary();
+                boolean p1Secondary = !person1.getPrimaryRole().isTech() && person1.getSecondaryRole().isTechSecondary();
+                boolean p2Secondary = !person2.getPrimaryRole().isTech() && person2.getSecondaryRole().isTechSecondary();
 
                 if (person1.getExperienceLevel(p1Secondary) > person2.getExperienceLevel(p2Secondary)) {
                     // Person 1 is better than Person 2.

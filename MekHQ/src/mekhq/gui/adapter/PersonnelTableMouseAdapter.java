@@ -1323,9 +1323,8 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 if (role.isNone() || (person.canPerformRole(role) && (person.getPrimaryRole() != role))) {
                     // you cant be an astech if you are a tech, or a medic
                     // if you are a doctor
-                    if (person.isTechPrimary() && role.isAstech()) {
-                        continue;
-                    } else if (person.getPrimaryRole().isDoctor() && role.isMedic()) {
+                    if ((person.getPrimaryRole().isTech() && role.isAstech())
+                        || (person.getPrimaryRole().isDoctor() && role.isMedic())) {
                         continue;
                     }
                     cbMenuItem = new JCheckBoxMenuItem(role.getName(gui.getCampaign().getFaction().isClan()));

@@ -32,28 +32,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JToggleButton;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
@@ -69,6 +48,7 @@ import mekhq.campaign.finances.Transaction;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.RetirementDefectionTracker;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.enums.PersonnelFilter;
@@ -529,10 +509,9 @@ public class RetirementDefectionDialog extends JDialog {
         for (UUID id : rdTracker.getRetirees(contract)) {
             Person p = hqView.getCampaign().getPerson(id);
             if (rdTracker.getPayout(id).hasStolenUnit()) {
-                boolean unassignedAvailable = (unassignedMechs.size() > 0 &&
-                        p.getPrimaryRole() == Person.T_MECHWARRIOR) ||
-                        (unassignedASF.size() > 0 &&
-                                p.getPrimaryRole() == Person.T_AERO_PILOT);
+                boolean unassignedAvailable =
+                        ((unassignedMechs.size() > 0) && p.getPrimaryRole().isMechWarrior())
+                        || ((unassignedASF.size() > 0) && p.getPrimaryRole().isAerospacePilot());
                 /* If a unit has previously been assigned, check that it is still available
                  * and either assigned to the current player or unassigned. If so, keep
                  * the previous value.
@@ -546,14 +525,13 @@ public class RetirementDefectionDialog extends JDialog {
                         && ((Compute.d6() < 4) || !unassignedAvailable)) {
                     unitAssignments.put(id, p.getUnitId());
                 } else if (unassignedAvailable) {
-                    if (p.getPrimaryRole() == Person.T_MECHWARRIOR) {
+                    if (p.getPrimaryRole().isMechWarrior()) {
                         int roll = Compute.randomInt(unassignedMechs.size());
                         unitAssignments.put(id, unassignedMechs.get(roll));
                         rdTracker.getPayout(id).setStolenUnitId(unassignedMechs.get(roll));
                         availableUnits.remove(unassignedMechs.get(roll));
                         unassignedMechs.remove(roll);
-                    }
-                    if (p.getPrimaryRole() == Person.T_AERO_PILOT) {
+                    } else if (p.getPrimaryRole().isAerospacePilot()) {
                         int roll = Compute.randomInt(unassignedASF.size());
                         unitAssignments.put(id, unassignedASF.get(roll));
                         rdTracker.getPayout(id).setStolenUnitId(unassignedASF.get(roll));
@@ -585,7 +563,7 @@ public class RetirementDefectionDialog extends JDialog {
              * entire unit. Unassigned infantry can retire individually.
              */
             if ((p.getUnitId() != null)
-                    && ((p.getPrimaryRole() == Person.T_INFANTRY) || (p.getPrimaryRole() == Person.T_BA))) {
+                    && (p.getPrimaryRole().isSoldier() || p.getPrimaryRole().isBattleArmour())) {
                 unitAssignments.put(id, p.getUnitId());
             }
             ((UnitAssignmentTableModel) unitAssignmentTable.getModel()).setData(availableUnits);
@@ -809,8 +787,8 @@ public class RetirementDefectionDialog extends JDialog {
                     !btnEdit.isSelected()) {
                 btnAddUnit.setEnabled(false);
                 btnRemoveUnit.setEnabled(false);
-            } else if (hqView.getCampaign().getPerson(pid).getPrimaryRole() == Person.T_INFANTRY ||
-                    hqView.getCampaign().getPerson(pid).getPrimaryRole() == Person.T_BA) {
+            } else if (hqView.getCampaign().getPerson(pid).getPrimaryRole().isSoldier()
+                    || hqView.getCampaign().getPerson(pid).getPrimaryRole().isBattleArmour()) {
                 btnAddUnit.setEnabled(false);
                 btnRemoveUnit.setEnabled(false);
             } else if (unitAssignments.containsKey(pid)) {
@@ -866,32 +844,32 @@ public class RetirementDefectionDialog extends JDialog {
             Person p = ((RetirementTableModel) retireeTable.getModel())
                     .getPerson(retireeTable.convertRowIndexToModel(retireeTable.getSelectedRow()));
             switch (p.getPrimaryRole()) {
-                case Person.T_MECHWARRIOR:
+                case MECHWARRIOR:
                     cbUnitCategory.setSelectedIndex(UnitType.MEK + 1);
                     break;
-                case Person.T_GVEE_DRIVER:
-                case Person.T_VEE_GUNNER:
+                case GROUND_VEHICLE_DRIVER:
+                case VEHICLE_GUNNER:
                     cbUnitCategory.setSelectedIndex(UnitType.TANK + 1);
                     break;
-                case Person.T_BA:
+                case BATTLE_ARMOUR:
                     cbUnitCategory.setSelectedIndex(UnitType.BATTLE_ARMOR + 1);
                     break;
-                case Person.T_INFANTRY:
+                case SOLDIER:
                     cbUnitCategory.setSelectedIndex(UnitType.INFANTRY + 1);
                     break;
-                case Person.T_PROTO_PILOT:
+                case PROTOMECH_PILOT:
                     cbUnitCategory.setSelectedIndex(UnitType.PROTOMEK + 1);
                     break;
-                case Person.T_VTOL_PILOT:
+                case VTOL_PILOT:
                     cbUnitCategory.setSelectedIndex(UnitType.VTOL + 1);
                     break;
-                case Person.T_NVEE_DRIVER:
+                case NAVAL_VEHICLE_DRIVER:
                     cbUnitCategory.setSelectedIndex(UnitType.NAVAL + 1);
                     break;
-                case Person.T_CONV_PILOT:
+                case CONVENTIONAL_AIRCRAFT_PILOT:
                     cbUnitCategory.setSelectedIndex(UnitType.CONV_FIGHTER + 1);
                     break;
-                case Person.T_AERO_PILOT:
+                case AEROSPACE_PILOT:
                     cbUnitCategory.setSelectedIndex(UnitType.AERO + 1);
                     break;
                 default:
@@ -953,12 +931,24 @@ class RetirementTable extends JTable {
         getColumnModel().getColumn(convertColumnIndexToView(RetirementTableModel.COL_MISC_MOD))
                 .setCellEditor(new SpinnerEditor());
 
-        JComboBox<String> cbRecruitType = new JComboBox<>();
-        for (int i = Person.T_NONE; i < Person.T_NUM; i++) {
-            cbRecruitType.addItem(Person.getRoleDesc(i, hqView.getCampaign().getFaction().isClan()));
+        JComboBox<PersonnelRole> cbRecruitType = new JComboBox<>();
+        for (PersonnelRole role : PersonnelRole.values()) {
+            cbRecruitType.addItem(role);
         }
-        getColumnModel().getColumn(convertColumnIndexToView(RetirementTableModel.COL_RECRUIT)).
-            setCellEditor(new DefaultCellEditor(cbRecruitType));
+        cbRecruitType.setRenderer(new DefaultListCellRenderer() {
+            private static final long serialVersionUID = -543354619818226314L;
+
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setText((value instanceof PersonnelRole) ? ((PersonnelRole) value).getName(hqView.getCampaign().getFaction().isClan()) : "");
+
+                return this;
+            }
+        });
+        getColumnModel().getColumn(convertColumnIndexToView(RetirementTableModel.COL_RECRUIT))
+                .setCellEditor(new DefaultCellEditor(cbRecruitType));
     }
 
     public void setGeneralMod(int mod) {

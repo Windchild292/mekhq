@@ -250,7 +250,7 @@ public enum PersonnelFilter {
                         ? person.getPrimaryRole().isVesselNavigator() : person.hasRole(PersonnelRole.VESSEL_NAVIGATOR));
             case TECH:
                 return active && (MekHQ.getMekHQOptions().getPersonnelFilterOnPrimaryRole()
-                        ? person.isTechPrimary() : person.isTech());
+                        ? person.getPrimaryRole().isTech() : person.isTech());
             case MECH_TECH:
                 return active && (MekHQ.getMekHQOptions().getPersonnelFilterOnPrimaryRole()
                         ? person.getPrimaryRole().isMechTech() : person.hasRole(PersonnelRole.MECH_TECH));

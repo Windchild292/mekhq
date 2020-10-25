@@ -54,17 +54,15 @@ public enum PersonnelRole {
     ADMINISTRATOR_LOGISTICS("PersonnelRole.ADMINISTRATOR_LOGISTICS.text", KeyEvent.VK_L),
     ADMINISTRATOR_TRANSPORT("PersonnelRole.ADMINISTRATOR_TRANSPORT.text", KeyEvent.VK_R),
     ADMINISTRATOR_HR("PersonnelRole.ADMINISTRATOR_HR.text", KeyEvent.VK_H),
-
-    // Anything following are ignored during Personnel Market Generation. If you add a role here you
-    // MUST increase the value in getGenerationIgnoredCount by one
-    DEPENDENT("PersonnelRole.DEPENDENT.text", KeyEvent.VK_UNDEFINED),
-    NONE("PersonnelRole.NONE.text", KeyEvent.VK_UNDEFINED);
+    DEPENDENT("PersonnelRole.DEPENDENT.text", KeyEvent.VK_UNDEFINED, false),
+    NONE("PersonnelRole.NONE.text", KeyEvent.VK_UNDEFINED, false);
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
     private final String clanName;
     private final int mnemonic; // Unused: J, K, Q, X, Z
+    private final boolean marketable;
 
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
@@ -74,10 +72,19 @@ public enum PersonnelRole {
         this(name, null, mnemonic);
     }
 
+    PersonnelRole(String name, int mnemonic, boolean marketable) {
+        this(name, null, mnemonic, marketable);
+    }
+
     PersonnelRole(String name, String clanName, int mnemonic) {
+        this(name, clanName, mnemonic, true);
+    }
+
+    PersonnelRole(String name, String clanName, int mnemonic, boolean marketable) {
         this.name = resources.getString(name);
         this.clanName = (clanName != null) ? resources.getString(clanName) : this.name;
         this.mnemonic = mnemonic;
+        this.marketable = marketable;
     }
     //endregion Constructors
 
@@ -88,6 +95,10 @@ public enum PersonnelRole {
 
     public int getMnemonic() {
         return mnemonic;
+    }
+
+    public boolean isMarketable() {
+        return marketable;
     }
     //endregion Getters
 
@@ -276,6 +287,16 @@ public enum PersonnelRole {
     }
     //endregion Boolean Comparisons
 
+    public static List<PersonnelRole> getMarketableRoles() {
+        List<PersonnelRole> marketableRoles = new ArrayList<>();
+        for (PersonnelRole role : values()) {
+            if (role.isMarketable()) {
+                marketableRoles.add(role);
+            }
+        }
+        return marketableRoles;
+    }
+
     public static List<PersonnelRole> getAdministratorRoles() {
         List<PersonnelRole> administratorRoles = new ArrayList<>();
         for (PersonnelRole role : values()) {
@@ -286,8 +307,14 @@ public enum PersonnelRole {
         return administratorRoles;
     }
 
-    public static int getGenerationIgnoredCount() {
-        return 2;
+    public static int getUnmarketableCount() {
+        int unmarketable = 0;
+        for (PersonnelRole role : values()) {
+            if (!role.isMarketable()) {
+                unmarketable++;
+            }
+        }
+        return unmarketable;
     }
 
     public static PersonnelRole parseFromString(String text) {

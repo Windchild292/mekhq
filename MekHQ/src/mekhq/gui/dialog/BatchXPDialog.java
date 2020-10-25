@@ -221,7 +221,7 @@ public final class BatchXPDialog extends JDialog {
         DefaultComboBoxModel<PersonTypeItem> personTypeModel = new DefaultComboBoxModel<>();
         personTypeModel.addElement(new PersonTypeItem(resourceMap.getString("primaryRole.choice.text"), null));
         for (PersonnelRole role : PersonnelRole.values()) {
-            personTypeModel.addElement(new PersonTypeItem(role.getName(campaign.getFaction().isClan()), Person.getRoleDesc(i, campaign.getFaction().isClan()), i));
+            personTypeModel.addElement(new PersonTypeItem(role.getName(campaign.getFaction().isClan()), i));
         }
         // Add "none" for generic AsTechs
         choiceType.setModel(personTypeModel);

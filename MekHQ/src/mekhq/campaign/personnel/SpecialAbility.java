@@ -34,6 +34,7 @@ import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -626,10 +627,10 @@ public class SpecialAbility implements MekHqXmlSerializable {
      * Worker function that determines if a piece of equipment is eligible
      * for being selected for an SPA.
      * @param et Equipment type to check
-     * @param type Person role, e.g. Person.T_MECHWARRIOR. This check is ignored if Person.T_NONE is passed in.
+     * @param role Person's primary role. This check is ignored if PersonnelRole.NONE is passed in.
      * @param clusterOnly All weapon types or just ones that do rolls on the cluster table
      */
-    public static boolean isWeaponEligibleForSPA(EquipmentType et, int type, boolean clusterOnly) {
+    public static boolean isWeaponEligibleForSPA(EquipmentType et, PersonnelRole role, boolean clusterOnly) {
         if (!(et instanceof WeaponType)) {
             return false;
         }

@@ -1,9 +1,29 @@
+/*
+ * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MekHQ.
+ *
+ * MekHQ is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MekHQ is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
+ */
 package mekhq.gui.model;
 
 import java.awt.Component;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.swing.JTable;
@@ -24,6 +44,7 @@ import mekhq.campaign.finances.Money;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.RetirementDefectionTracker;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.BasicInfo;
 import mekhq.gui.MekHqColors;
@@ -54,13 +75,13 @@ public class RetirementTableModel extends AbstractTableModel {
 
     private final Campaign campaign;
     private final MekHqColors colors = new MekHqColors();
-    private ArrayList<UUID> data;
-    private HashMap<UUID, TargetRoll> targets;
-    private HashMap<UUID, Boolean> payBonus;
-    private HashMap<UUID, Integer> miscMods;
+    private List<UUID> data;
+    private Map<UUID, TargetRoll> targets;
+    private Map<UUID, Boolean> payBonus;
+    private Map<UUID, Integer> miscMods;
     private int generalMod;
-    private HashMap<UUID, UUID> unitAssignments;
-    private HashMap<UUID, Money> altPayout;
+    private Map<UUID, UUID> unitAssignments;
+    private Map<UUID, Money> altPayout;
     boolean editPayout;
 
     public RetirementTableModel(Campaign c) {
@@ -74,7 +95,7 @@ public class RetirementTableModel extends AbstractTableModel {
         editPayout = false;
     }
 
-    public void setData(ArrayList<UUID> list, HashMap<UUID, UUID> unitAssignments) {
+    public void setData(List<UUID> list, HashMap<UUID, UUID> unitAssignments) {
         this.unitAssignments = Utilities.nonNull(unitAssignments, new HashMap<>());
         data = list;
         fireTableDataChanged();
@@ -168,7 +189,7 @@ public class RetirementTableModel extends AbstractTableModel {
         try {
             retVal = getValueAt(0, col).getClass();
         } catch (NullPointerException e) {
-            MekHQ.getLogger().error(RetirementTableModel.class, "getColumnClass", e);
+            MekHQ.getLogger().error(e);
         }
         return retVal;
     }
@@ -302,8 +323,7 @@ public class RetirementTableModel extends AbstractTableModel {
                 if (pay.getDependents() > 0) {
                     return pay.getDependents() + " Dependents";
                 } else if (pay.hasRecruit()) {
-                    return Person.getRoleDesc(pay.getRecruitType(),
-                            campaign.getFaction().isClan());
+                    return pay.getRecruitType().getName(campaign.getFaction().isClan());
                 } else if (pay.hasHeir()) {
                     return "Heir";
                 } else {
@@ -336,9 +356,9 @@ public class RetirementTableModel extends AbstractTableModel {
                 unitAssignments.put(getPerson(row).getId(), (UUID)value);
             }
         } else if (col == COL_RECRUIT) {
-            for (int i = 0; i < Person.T_NUM; i++) {
-                if (Person.getRoleDesc(i, campaign.getFaction().isClan()).equals(value)) {
-                    campaign.getRetirementDefectionTracker().getPayout(data.get(row)).setRecruitType(i);
+            for (PersonnelRole role : PersonnelRole.values()) {
+                if (role.getName(campaign.getFaction().isClan()).equals(value)) {
+                    campaign.getRetirementDefectionTracker().getPayout(data.get(row)).setRecruitType(role);
                     break;
                 }
             }
@@ -363,7 +383,7 @@ public class RetirementTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
-    public HashMap<UUID, Money> getAltPayout() {
+    public Map<UUID, Money> getAltPayout() {
         return altPayout;
     }
 
@@ -372,24 +392,16 @@ public class RetirementTableModel extends AbstractTableModel {
     }
 
     public TableCellRenderer getRenderer(int col) {
-        if (col < COL_TARGET) {
-            return new VisualRenderer();
-        } else {
-            return new TextRenderer();
-        }
+        return (col < COL_TARGET) ? new VisualRenderer() : new TextRenderer();
     }
 
     public class TextRenderer extends MekHqTableCellRenderer {
-        /**
-         *
-         */
          private static final long serialVersionUID = 770305943352316265L;
 
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus,
-                int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected,
-                    hasFocus, row, column);
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             int actualRow = table.convertRowIndexToModel(row);
             int actualCol = table.convertColumnIndexToModel(column);
             Person p = getPerson(actualRow);
@@ -422,8 +434,7 @@ public class RetirementTableModel extends AbstractTableModel {
             if (actualCol == COL_PERSON) {
                 setPortrait(p);
                 setText(p.getFullDesc());
-            }
-            if (actualCol == COL_ASSIGN) {
+            } else if (actualCol == COL_ASSIGN) {
                 Unit u = campaign.getUnit(p.getUnitId());
                 if (!p.getTechUnitIDs().isEmpty()) {
                     u = campaign.getUnit(p.getTechUnitIDs().get(0));
@@ -445,8 +456,7 @@ public class RetirementTableModel extends AbstractTableModel {
                 } else {
                     clearImage();
                 }
-            }
-            if (actualCol == COL_FORCE) {
+            } else if (actualCol == COL_FORCE) {
                 Force force = campaign.getForceFor(p);
                 if (null != force) {
                     String desc = "<html><b>" + force.getName() + "</b>";

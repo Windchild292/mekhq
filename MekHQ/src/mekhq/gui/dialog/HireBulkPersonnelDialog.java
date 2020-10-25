@@ -113,7 +113,7 @@ public class HireBulkPersonnelDialog extends JDialog {
 
         getContentPane().add(new JLabel(resourceMap.getString("lblType.text")), newConstraints(0, 0)); //$NON-NLS-1$
 
-        DefaultComboBoxModel<PersonTypeItem> personTypeModel = new DefaultComboBoxModel<PersonTypeItem>();
+        DefaultComboBoxModel<PersonTypeItem> personTypeModel = new DefaultComboBoxModel<>();
         for(int i = 1; i < Person.T_NUM; i++) {
             personTypeModel.addElement(new PersonTypeItem(Person.getRoleDesc(i,campaign.getFaction().isClan()), i));
         }
@@ -124,16 +124,13 @@ public class HireBulkPersonnelDialog extends JDialog {
         gridBagConstraints = newConstraints(1, 0, GridBagConstraints.HORIZONTAL);
         gridBagConstraints.weightx = 1.0;
         choiceType.setSelectedIndex(0);
-        choiceType.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                // If we change the type, we need to setup the ranks for that type
-                refreshRanksCombo();
-            }
+        choiceType.addActionListener(evt -> {
+            // If we change the type, we need to setup the ranks for that type
+            refreshRanksCombo();
         });
         getContentPane().add(choiceType, gridBagConstraints);
 
-        getContentPane().add(new JLabel(resourceMap.getString("lblRank.text")), newConstraints(0, 1)); //$NON-NLS-1$
+        getContentPane().add(new JLabel(resourceMap.getString("lblRank.text")), newConstraints(0, 1));
 
         rankModel = new DefaultComboBoxModel<String>();
         choiceRanks.setModel(rankModel);
@@ -153,7 +150,7 @@ public class HireBulkPersonnelDialog extends JDialog {
         	@Override
         	public void keyReleased(KeyEvent e) {
                 try {
-                    Integer newValue = Integer.valueOf(jtf.getText());
+                    int newValue = Integer.parseInt(jtf.getText());
                     if (newValue > CampaignGUI.MAX_QUANTITY_SPINNER) {
                     	spnNumber.setValue(CampaignGUI.MAX_QUANTITY_SPINNER);
                     	jtf.setText(String.valueOf(CampaignGUI.MAX_QUANTITY_SPINNER));
@@ -164,7 +161,7 @@ public class HireBulkPersonnelDialog extends JDialog {
                     	spnNumber.setValue(newValue);
                     	jtf.setText(String.valueOf(newValue));
                     }
-                } catch(NumberFormatException ex) {
+                } catch (NumberFormatException ex) {
                     //Not a number in text field
                 	spnNumber.setValue(sn_min);
                 	jtf.setText(String.valueOf(sn_min));
