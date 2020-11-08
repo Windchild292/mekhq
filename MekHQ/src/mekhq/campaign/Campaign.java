@@ -48,6 +48,7 @@ import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
 import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
 import mekhq.campaign.personnel.generator.RandomPortraitGenerator;
+import mekhq.icons.StandardForceIcon;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
 
@@ -225,9 +226,7 @@ public class Campaign implements Serializable, ITechManager {
     private String camoFileName = null;
     private int colorIndex = 0;
 
-    //unit icon
-    private String iconCategory = AbstractIcon.ROOT_CATEGORY;
-    private String iconFileName = AbstractIcon.DEFAULT_ICON_FILENAME;
+    private AbstractIcon unitIcon = new StandardForceIcon();
 
     private Finances finances;
 
@@ -4050,20 +4049,12 @@ public class Campaign implements Serializable, ITechManager {
         colorIndex = index;
     }
 
-    public String getIconCategory() {
-        return iconCategory;
+    public AbstractIcon getUnitIcon() {
+        return unitIcon;
     }
 
-    public void setIconCategory(String s) {
-        this.iconCategory = s;
-    }
-
-    public String getIconFileName() {
-        return iconFileName;
-    }
-
-    public void setIconFileName(String s) {
-        this.iconFileName = s;
+    public void setUnitIcon(AbstractIcon unitIcon) {
+        this.unitIcon = unitIcon;
     }
 
     public void addFunds(Money quantity) {
@@ -4361,8 +4352,8 @@ public class Campaign implements Serializable, ITechManager {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "medicPool", medicPool);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoCategory", camoCategory);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoFileName", camoFileName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", iconCategory);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", iconFileName);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", getUnitIcon().getCategory());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", getUnitIcon().getFilename());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "colorIndex", colorIndex);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastForceId", lastForceId);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastMissionId", lastMissionId);
