@@ -24,7 +24,6 @@ package mekhq.gui.view;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
@@ -38,7 +37,6 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -60,8 +58,6 @@ import megamek.client.ui.swing.UnitEditorDialog;
 import megamek.common.IStartingPositions;
 import megamek.common.PlanetaryConditions;
 import megamek.common.util.EncodeControl;
-import mekhq.MHQStaticDirectoryManager;
-import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.force.ForceStub;
 import mekhq.campaign.force.UnitStub;
@@ -816,18 +812,12 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
 
         @Override
         public int getChildCount(Object parent) {
-            if (parent instanceof ForceStub) {
-                return ((ForceStub)parent).getAllChildren().size();
-            }
-            return 0;
+            return (parent instanceof ForceStub) ? ((ForceStub) parent).getAllChildren().size() : 0;
         }
 
         @Override
         public int getIndexOfChild(Object parent, Object child) {
-            if (parent instanceof ForceStub) {
-                return ((ForceStub)parent).getAllChildren().indexOf(child);
-            }
-            return 0;
+            return (parent instanceof ForceStub) ? ((ForceStub) parent).getAllChildren().indexOf(child) : 0;
         }
 
         @Override
@@ -842,23 +832,22 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
 
         @Override
         public void valueForPathChanged(TreePath arg0, Object arg1) {
-            //  Auto-generated method stub
 
         }
 
         @Override
-        public void addTreeModelListener( TreeModelListener listener ) {
-              if ( listener != null && !listeners.contains( listener ) ) {
-                 listeners.addElement( listener );
-              }
-           }
+        public void addTreeModelListener(TreeModelListener listener) {
+            if ((listener != null) && !listeners.contains(listener)) {
+                listeners.addElement(listener);
+            }
+        }
 
         @Override
-        public void removeTreeModelListener( TreeModelListener listener ) {
-              if ( listener != null ) {
-                 listeners.removeElement( listener );
-              }
-           }
+        public void removeTreeModelListener(TreeModelListener listener) {
+            if (listener != null) {
+                listeners.removeElement(listener);
+            }
+        }
     }
 
     protected static class ForceStubRenderer extends DefaultTreeCellRenderer {
@@ -869,20 +858,11 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         }
 
         @Override
-        public Component getTreeCellRendererComponent(
-                            JTree tree,
-                            Object value,
-                            boolean sel,
-                            boolean expanded,
-                            boolean leaf,
-                            int row,
-                            boolean hasFocus) {
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
+                                                      boolean expanded, boolean leaf, int row,
+                                                      boolean hasFocus) {
 
-            super.getTreeCellRendererComponent(
-                            tree, value, sel,
-                            expanded, leaf, row,
-                            hasFocus);
-            //setOpaque(true);
+            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             setIcon(getIcon(value));
 
             return this;
@@ -892,22 +872,11 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
             if (node instanceof UnitStub) {
                 return ((UnitStub) node).getPortrait().getImageIcon(50);
             } else if (node instanceof ForceStub) {
-                return getIconFrom((ForceStub) node);
+                return ((ForceStub) node).getForceIcon().getImageIcon(58);
             } else {
                 return null;
             }
         }
-
-        protected Icon getIconFrom(ForceStub force) {
-            try {
-                return new ImageIcon(MHQStaticDirectoryManager.buildForceIcon(force.getIconCategory(),
-                        force.getIconFileName(), force.getIconMap())
-                        .getScaledInstance(58, -1, Image.SCALE_SMOOTH));
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
-                return null;
-            }
-       }
     }
 
     protected static class EntityListModel implements TreeModel {

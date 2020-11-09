@@ -355,7 +355,7 @@ public class UnitTableModel extends DataTableModel {
                 case COL_PILOT: {
                     Person p = u.getCommander();
                     if (p != null) {
-                        setPortrait(p);
+                        setImage(p.getPortrait().getImage(54));
                         setText(p.getFullDesc());
                     } else {
                         clearImage();
@@ -377,7 +377,7 @@ public class UnitTableModel extends DataTableModel {
                         }
                         desc.append("</html>");
                         setHtmlText(desc.toString());
-                        Image forceImage = getImageFor(force);
+                        Image forceImage = force.getForceIcon().getImage(54);
                         if (forceImage != null) {
                             setImage(forceImage);
                         } else {
@@ -391,7 +391,7 @@ public class UnitTableModel extends DataTableModel {
                 case COL_TECH_CRW: {
                     Person p = u.getTech();
                     if (p != null) {
-                        setPortrait(p);
+                        setImage(p.getPortrait().getImage(54));
                         setText(p.getFullDesc());
                     } else {
                         clearImage();

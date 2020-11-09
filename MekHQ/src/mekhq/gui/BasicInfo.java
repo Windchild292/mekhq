@@ -34,7 +34,6 @@ import megamek.client.ui.swing.tileset.EntityImage;
 import megamek.client.ui.swing.util.PlayerColors;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
-import mekhq.campaign.force.Force;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
 
@@ -155,16 +154,5 @@ public class BasicInfo extends JPanel {
 
     protected void setPortrait(Person p) {
         setImage(p.getPortrait().getImage(54));
-    }
-
-    protected Image getImageFor(Force force) {
-        try {
-            return MHQStaticDirectoryManager.buildForceIcon(force.getIconCategory(),
-                    force.getIconFileName(), force.getIconMap())
-                    .getScaledInstance(54, -1, Image.SCALE_SMOOTH);
-        } catch (Exception e) {
-            MekHQ.getLogger().error("Failed to build force icon", e);
-            return null;
-        }
     }
 }

@@ -134,7 +134,7 @@ public class CampaignXmlParser {
      * @throws NullEntityException Thrown when an entity is referenced but cannot be loaded or found
      */
     public Campaign parse() throws CampaignXmlParseException, NullEntityException {
-        MekHQ.getLogger().info(CampaignXmlParser.class, "Starting load of campaign file from XML...");
+        MekHQ.getLogger().info("Starting load of campaign file from XML...");
         // Initialize variables.
         Campaign retVal = new Campaign();
         retVal.setApp(app);
@@ -148,7 +148,7 @@ public class CampaignXmlParser {
             // Parse using builder to get DOM representation of the XML file
             xmlDoc = db.parse(is);
         } catch (Exception ex) {
-            MekHQ.getLogger().error(CampaignXmlParser.class, ex);
+            MekHQ.getLogger().error(ex);
 
             throw new CampaignXmlParseException(ex);
         }
@@ -798,21 +798,9 @@ public class CampaignXmlParser {
                 } else if (xn.equalsIgnoreCase("colorIndex")) {
                     retVal.setColorIndex(Integer.parseInt(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase("iconCategory")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (val.equals("null")) {
-                        retVal.setIconCategory(null);
-                    } else {
-                        retVal.setIconCategory(val);
-                    }
+                    retVal.getUnitIcon().setCategory(wn.getTextContent().trim());
                 } else if (xn.equalsIgnoreCase("iconFileName")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (val.equals("null")) {
-                        retVal.setIconFileName(null);
-                    } else {
-                        retVal.setIconFileName(val);
-                    }
+                    retVal.getUnitIcon().setFilename(wn.getTextContent().trim());
                 } else if (xn.equalsIgnoreCase("nameGen")) {
                     // First, get all the child nodes;
                     NodeList nl2 = wn.getChildNodes();

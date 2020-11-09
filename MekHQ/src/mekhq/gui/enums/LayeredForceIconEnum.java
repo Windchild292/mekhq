@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public enum LayeredForceIcon {
+public enum LayeredForceIconEnum {
     //region Enum Declarations
     TYPE("LayeredForceIcon.types", "Pieces/Type/", "tableTypes", ListSelectionModel.SINGLE_SELECTION),
     FORMATION("LayeredForceIcon.formations", "Pieces/Formations/", "tableFormations", ListSelectionModel.SINGLE_SELECTION),
@@ -44,7 +44,7 @@ public enum LayeredForceIcon {
     private final int listSelectionModel; // The int used to determine how the selection
     //endregion Variable Declarations
 
-    LayeredForceIcon(String name, String layerPath, String tableName, int listSelectionModel) {
+    LayeredForceIconEnum(String name, String layerPath, String tableName, int listSelectionModel) {
         this.name = ResourceBundle.getBundle("mekhq.resources.GUIEnums", new EncodeControl())
                 .getString(name);
         this.layerPath = layerPath;
@@ -67,8 +67,8 @@ public enum LayeredForceIcon {
     /**
      * @return the layered force icon enum values in the order they are drawn in
      */
-    public static List<LayeredForceIcon> getInDrawOrder() {
-        List<LayeredForceIcon> drawOrder = new ArrayList<>();
+    public static List<LayeredForceIconEnum> getInDrawOrder() {
+        List<LayeredForceIconEnum> drawOrder = new ArrayList<>();
         drawOrder.add(BACKGROUND);
         drawOrder.add(FRAME);
         drawOrder.add(TYPE);

@@ -102,6 +102,7 @@ import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.RATManager;
 import mekhq.gui.FileDialogs;
 import mekhq.gui.SpecialAbilityPanel;
+import mekhq.gui.dialog.icons.StandardForceIconChooser;
 import mekhq.gui.model.RankTableModel;
 import mekhq.gui.model.SortedComboBoxModel;
 import mekhq.gui.preferences.JWindowPreference;
@@ -125,8 +126,7 @@ public class CampaignOptionsDialog extends JDialog {
     private String camoCategory;
     private String camoFileName;
     private int colorIndex;
-    private String iconCategory;
-    private String iconFileName;
+    private AbstractIcon unitIcon;
     private Hashtable<String, JSpinner> hashSkillTargets;
     private Hashtable<String, JSpinner> hashGreenSkill;
     private Hashtable<String, JSpinner> hashRegSkill;
@@ -502,8 +502,7 @@ public class CampaignOptionsDialog extends JDialog {
         this.camoCategory = campaign.getCamoCategory();
         this.camoFileName = campaign.getCamoFileName();
         this.colorIndex = campaign.getColorIndex();
-        this.iconCategory = campaign.getIconCategory();
-        this.iconFileName = campaign.getIconFileName();
+        this.unitIcon = campaign.getUnitIcon();
         hashSkillTargets = new Hashtable<>();
         hashGreenSkill = new Hashtable<>();
         hashRegSkill = new Hashtable<>();
@@ -514,7 +513,7 @@ public class CampaignOptionsDialog extends JDialog {
         initComponents();
         setOptions(c.getCampaignOptions(), c.getRandomSkillPreferences());
         setCamoIcon();
-        setForceIcon();
+        btnIcon.setIcon(unitIcon.getImageIcon(75));
         setLocationRelativeTo(parent);
 
         setUserPreferences();
@@ -4843,8 +4842,7 @@ public class CampaignOptionsDialog extends JDialog {
         campaign.setCamoFileName(camoFileName);
         campaign.setColorIndex(colorIndex);
 
-        campaign.setIconCategory(iconCategory);
-        campaign.setIconFileName(iconFileName);
+        campaign.setUnitIcon(unitIcon);
 
         for (int i = 0; i < chkUsePortrait.length; i++) {
             options.setUsePortraitForType(i, chkUsePortrait[i].isSelected());
@@ -5231,14 +5229,13 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private void btnIconActionPerformed(ActionEvent evt) {
-        ImageChoiceDialog pcd = new ImageChoiceDialog(frame, true, iconCategory, iconFileName,
-                MHQStaticDirectoryManager.getForceIcons());
-        pcd.setVisible(true);
-        if (pcd.isChanged()) {
-            iconCategory = pcd.getCategory();
-            iconFileName = pcd.getFileName();
+        StandardForceIconChooser standardForceIconChooser = new StandardForceIconChooser(frame, unitIcon);
+        if ((standardForceIconChooser.showDialog() == JOptionPane.OK_OPTION)
+                && (standardForceIconChooser.getSelectedItem() != null)) {
+            unitIcon = standardForceIconChooser.getSelectedItem();
         }
-        setForceIcon();
+
+        btnIcon.setIcon(unitIcon.getImageIcon(75));
     }
 
     private void btnCamoActionPerformed(ActionEvent evt) {
@@ -5381,32 +5378,6 @@ public class CampaignOptionsDialog extends JDialog {
             camoCategory = Camouflage.NO_CAMOUFLAGE;
             colorIndex = 0;
             setCamoIcon();
-        }
-    }
-
-    public void setForceIcon() {
-        if (null == iconCategory) {
-            return;
-        }
-
-        if (AbstractIcon.DEFAULT_ICON_FILENAME.equals(iconFileName)) {
-            btnIcon.setIcon(null);
-            btnIcon.setText("None");
-            return;
-        }
-
-        // Try to get the root file.
-        try {
-            // Translate the root icon directory name.
-            if (AbstractIcon.ROOT_CATEGORY.equals(iconCategory)) {
-                iconCategory = "";
-            }
-            Image icon = (Image) MHQStaticDirectoryManager.getForceIcons().getItem(iconCategory, iconFileName);
-            icon = icon.getScaledInstance(75, -1, Image.SCALE_DEFAULT);
-            btnIcon.setIcon(new ImageIcon(icon));
-        } catch (Exception err) {
-            iconFileName = AbstractIcon.DEFAULT_ICON_FILENAME;
-            setForceIcon();
         }
     }
 

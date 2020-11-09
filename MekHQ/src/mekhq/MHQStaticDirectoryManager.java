@@ -21,17 +21,10 @@ package mekhq;
 import megamek.MegaMek;
 import megamek.client.ui.swing.tileset.MMStaticDirectoryManager;
 import megamek.common.annotations.Nullable;
-import megamek.common.icons.AbstractIcon;
 import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.fileUtils.ImageFileFactory;
-import mekhq.campaign.force.Force;
-import mekhq.gui.enums.LayeredForceIcon;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.Vector;
 
 public class MHQStaticDirectoryManager extends MMStaticDirectoryManager {
     //region Variable Declarations

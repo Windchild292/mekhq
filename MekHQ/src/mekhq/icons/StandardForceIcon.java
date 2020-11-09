@@ -18,6 +18,7 @@
  */
 package mekhq.icons;
 
+import megamek.common.annotations.Nullable;
 import megamek.common.icons.AbstractIcon;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
@@ -31,14 +32,18 @@ public class StandardForceIcon extends AbstractIcon {
     //endregion Variable Declarations
 
     //region Constructors
-    public StandardForceIcon() {
-        super();
-    }
-
     public StandardForceIcon(String category, String filename) {
         super(category, filename);
     }
     //endregion Constructors
+
+    //region Getters/Setters
+    @Override
+    public void setFilename(@Nullable String filename) {
+        // We allow filename to be null here as part of the UnitIcon Code
+        this.filename = filename;
+    }
+    //endregion Getters/Setters
 
     //region Boolean Methods
     @Override
@@ -48,15 +53,25 @@ public class StandardForceIcon extends AbstractIcon {
     //endregion Boolean Methods
 
     @Override
+    public Image getImage(int width, int height) {
+        if (getFilename() == null) {
+            return null;
+        }
+
+        Image image = getBaseImage();
+
+        return (image == null) ? null : super.getImage(image, width, height);
+    }
+
+    @Override
     public Image getBaseImage() {
         // If we can't create the force icon directory, return null
         if (MHQStaticDirectoryManager.getForceIcons() == null) {
             return null;
         }
 
-        String category = (hasDefaultCategory() || (getCategory() == null)) ? "" : getCategory();
-        String filename = (hasDefaultFilename() || (getFilename() == null))
-                ? DEFAULT_FORCE_ICON_FILENAME : getFilename();
+        String category = hasDefaultCategory() ? "" : getCategory();
+        String filename = hasDefaultFilename() ? DEFAULT_FORCE_ICON_FILENAME : getFilename();
 
         // Try to get the player's force icon file.
         Image forceIcon = null;

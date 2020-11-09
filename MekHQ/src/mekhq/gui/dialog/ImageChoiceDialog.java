@@ -22,35 +22,23 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import megamek.common.icons.AbstractIcon;
-import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.EncodeControl;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
 import mekhq.campaign.force.Force;
-import mekhq.gui.enums.LayeredForceIcon;
+import mekhq.gui.enums.LayeredForceIconEnum;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.gui.utilities.MekHqTableCellRenderer;
+import mekhq.icons.LayeredForceIcon;
 import mekhq.preferences.PreferencesNode;
 
 /**
@@ -66,13 +54,10 @@ public class ImageChoiceDialog extends JDialog {
     /**
      * The categorized image patterns.
      */
-    private DirectoryItems imageItems;
     private ImageTableModel imageTableModel = new ImageTableModel();
-    private String category;
-    private String filename;
-    private LinkedHashMap<String, Vector<String>> iconMap; // Key = Image Category, Value = Vector of Image Filenames
+    private LayeredForceIcon forceIcon;
     private ImageTableMouseAdapter imagesMouseAdapter;
-    private boolean force;
+
     private JTable tableImages;
     private boolean changed = false;
 
@@ -88,46 +73,33 @@ public class ImageChoiceDialog extends JDialog {
     //endregion Variable Declarations
 
     //region Constructors
-    public ImageChoiceDialog(Frame parent, boolean modal, String category, String filename,
-                             DirectoryItems items) {
-        this(parent, modal, category, filename, null, items, false);
-    }
-
-    public ImageChoiceDialog(Frame parent, boolean modal, String category, String filename,
-                             LinkedHashMap<String, Vector<String>> iconMap, DirectoryItems items,
-                             boolean force) {
+    public ImageChoiceDialog(JFrame parent, boolean modal, LayeredForceIcon forceIcon) {
         super(parent, modal);
-        this.category = category;
-        this.filename = filename;
         imagesMouseAdapter = new ImageTableMouseAdapter();
-        this.imageItems = items;
-        this.force = force;
+        setForceIcon(forceIcon.clone());
 
-        // Clone the input iconMap
-        this.iconMap = new LinkedHashMap<>();
-        if ((iconMap != null) && !iconMap.isEmpty()) {
-            for (Map.Entry<String, Vector<String>> entry : iconMap.entrySet()) {
-                if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
-                    this.iconMap.put(entry.getKey(), new Vector<>(entry.getValue()));
-                }
-            }
+        if (MHQStaticDirectoryManager.getForceIcons() == null) {
+            return;
         }
 
+        /*
         initComponents();
 
         setLocationRelativeTo(parent);
         setUserPreferences();
+         */
     }
     //endregion Constructors
+        /*
 
     private void initComponents() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ImageChoiceDialog", new EncodeControl()); //$NON-NLS-1$
+        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ImageChoiceDialog", new EncodeControl());
         GridBagConstraints gbc;
 
         getContentPane().setLayout(new GridBagLayout());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Form"); // NOI18N
-        setTitle(force ? resourceMap.getString("Force.title") : resourceMap.getString("Portrait.title"));
+        setName("Form");
+        setTitle(resourceMap.getString("Force.title"));
 
         JPanel imagesPanel = new JPanel();
         imagesPanel.setLayout(new GridBagLayout());
@@ -136,13 +108,12 @@ public class ImageChoiceDialog extends JDialog {
         DefaultComboBoxModel<String> categoryModel = new DefaultComboBoxModel<>();
         String match = null;
         categoryModel.addElement(AbstractIcon.ROOT_CATEGORY);
-        Iterator<String> names = (imageItems != null)
-                ? imageItems.getCategoryNames() : Collections.emptyIterator();
+        Iterator<String> names = MHQStaticDirectoryManager.getForceIcons().getCategoryNames();
         while (names.hasNext()) {
             String name = names.next();
             if (!"".equals(name)) {
                 categoryModel.addElement(name);
-                if (category.equals(name)) {
+                if (getForceIcon().getCategory().equals(name)) {
                     match = name;
                 }
             }
@@ -182,145 +153,120 @@ public class ImageChoiceDialog extends JDialog {
         fillTable((String) comboCategories.getSelectedItem());
         // Determine the initial value for the selected image, if any
         for (int i = 0; i < imageTableModel.getRowCount(); i++) {
-            if (imageTableModel.getValueAt(i, 0).equals(filename)) {
+            if (imageTableModel.getValueAt(i, 0).equals(getForceIcon().getFilename())) {
                 tableImages.setRowSelectionInterval(i, i);
                 break;
             }
         }
 
-        if (force) {
-            // Background setup for the layered options
-            gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
+        // Background setup for the layered options
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
 
-            // We need to ensure that the state that it comes into is saved, as we need to add the
-            // default frame icon otherwise
-            final boolean emptyInitialIconMap = iconMap.isEmpty();
+        LayeredForceIconEnum[] layeredForceIconEnums = LayeredForceIconEnum.values();
+        layeredTables = new JTable[layeredForceIconEnums.length];
 
-            // Add the default frame icon
-            if (emptyInitialIconMap) {
-                Vector<String> initFrame = new Vector<>();
-                initFrame.add("Frame.png");
-                iconMap.put(LayeredForceIcon.FRAME.getLayerPath(), initFrame);
+        for (int i = 0; i < layeredForceIconEnums.length; i++) {
+            JScrollPane scrollPane = new JScrollPane();
+            layeredTables[i] = new JTable();
+            ImageTableModel tableModel = new ImageTableModel();
+            JPanel panel = new JPanel();
+
+            layeredTables[i].setModel(tableModel);
+            layeredTables[i].setName(layeredForceIconEnums[i].getTableName());
+            layeredTables[i].setSelectionMode(layeredForceIconEnums[i].getListSelectionModel());
+            layeredTables[i].setRowHeight(76);
+            layeredTables[i].getColumnModel().getColumn(0).setCellRenderer(tableModel.getRenderer());
+            layeredTables[i].addMouseListener(new ImageTableMouseAdapter());
+            scrollPane.setViewportView(layeredTables[i]);
+            panel.add(scrollPane, gbc);
+            tableModel.reset();
+            tableModel.setCategory(layeredForceIconEnums[i].getLayerPath());
+            tableModel.addImage(AbstractIcon.DEFAULT_ICON_FILENAME);
+            Iterator<String> imageIterator = MHQStaticDirectoryManager.getForceIcons()
+                    .getItemNames(layeredForceIconEnums[i].getLayerPath());
+            while (imageIterator.hasNext()) {
+                tableModel.addImage(imageIterator.next());
             }
+            layerTabs.addTab(layeredForceIconEnums[i].toString(), panel);
 
-            LayeredForceIcon[] layeredForceIcons = LayeredForceIcon.values();
-            layeredTables = new JTable[layeredForceIcons.length];
-
-            for (int i = 0; i < layeredForceIcons.length; i++) {
-                JScrollPane scrollPane = new JScrollPane();
-                layeredTables[i] = new JTable();
-                ImageTableModel tableModel = new ImageTableModel();
-                JPanel panel = new JPanel();
-
-                layeredTables[i].setModel(tableModel);
-                layeredTables[i].setName(layeredForceIcons[i].getTableName());
-                layeredTables[i].setSelectionMode(layeredForceIcons[i].getListSelectionModel());
-                layeredTables[i].setRowHeight(76);
-                layeredTables[i].getColumnModel().getColumn(0).setCellRenderer(tableModel.getRenderer());
-                layeredTables[i].addMouseListener(new ImageTableMouseAdapter());
-                scrollPane.setViewportView(layeredTables[i]);
-                panel.add(scrollPane, gbc);
-                tableModel.reset();
-                tableModel.setCategory(layeredForceIcons[i].getLayerPath());
-                tableModel.addImage(AbstractIcon.DEFAULT_ICON_FILENAME);
-                Iterator<String> imageIterator = (imageItems != null)
-                        ? imageItems.getItemNames(layeredForceIcons[i].getLayerPath())
-                        : Collections.emptyIterator();
-                while (imageIterator.hasNext()) {
-                    tableModel.addImage(imageIterator.next());
-                }
-                layerTabs.addTab(layeredForceIcons[i].toString(), panel);
-
-                // Initialize Initial Values, provided the Icon Map is not empty on input or it
-                // is the frame (as we set that value otherwise)
-                if (!emptyInitialIconMap || (layeredForceIcons[i] == LayeredForceIcon.FRAME)) {
-                    if (iconMap.containsKey(layeredForceIcons[i].getLayerPath())) {
-                        if (layeredForceIcons[i].getListSelectionModel() == ListSelectionModel.SINGLE_SELECTION) {
-                            // Determine the current selected value
-                            String selected = iconMap.get(layeredForceIcons[i].getLayerPath()).get(0);
-                            for (int k = 0; k < tableModel.getRowCount(); k++) {
-                                if (tableModel.getValueAt(k, 0).equals(selected)) {
-                                    // This adds k as a selected row, with the backend considering it
-                                    // as selecting the interval between k and k, inclusively
-                                    layeredTables[i].setRowSelectionInterval(k, k);
-                                    break;
-                                }
+            // Initialize Initial Values, provided the Icon Map is not empty on input or it
+            // is the frame (as we set that value otherwise)
+            if (!emptyInitialIconMap || (layeredForceIconEnums[i] == LayeredForceIconEnum.FRAME)) {
+                if (iconMap.containsKey(layeredForceIconEnums[i].getLayerPath())) {
+                    if (layeredForceIconEnums[i].getListSelectionModel() == ListSelectionModel.SINGLE_SELECTION) {
+                        // Determine the current selected value
+                        String selected = iconMap.get(layeredForceIconEnums[i].getLayerPath()).get(0);
+                        for (int k = 0; k < tableModel.getRowCount(); k++) {
+                            if (tableModel.getValueAt(k, 0).equals(selected)) {
+                                // This adds k as a selected row, with the backend considering it
+                                // as selecting the interval between k and k, inclusively
+                                layeredTables[i].setRowSelectionInterval(k, k);
+                                break;
                             }
-                        } else {
-                            Vector<String> mapVector = iconMap.get(layeredForceIcons[i].getLayerPath());
-                            for (int k = 0; k < tableModel.getRowCount(); k++) {
-                                if (mapVector.contains((String) tableModel.getValueAt(k, 0))) {
-                                    // This adds k as a selected row, with the backend considering it
-                                    // as selecting the interval between k and k, inclusively
-                                    layeredTables[i].addRowSelectionInterval(k, k);
-                                }
+                        }
+                    } else {
+                        Vector<String> mapVector = iconMap.get(layeredForceIconEnums[i].getLayerPath());
+                        for (int k = 0; k < tableModel.getRowCount(); k++) {
+                            if (mapVector.contains((String) tableModel.getValueAt(k, 0))) {
+                                // This adds k as a selected row, with the backend considering it
+                                // as selecting the interval between k and k, inclusively
+                                layeredTables[i].addRowSelectionInterval(k, k);
                             }
                         }
                     }
                 }
             }
-
-            // Put it all together nice and pretty on the layerPanel
-            layerPanel.setLayout(new GridBagLayout());
-            layerPanel.add(layerTabs, gbc);
-            gbc.gridx = 0;
-            gbc.gridy = 1;
-            gbc.fill = GridBagConstraints.NONE;
-            gbc.anchor = GridBagConstraints.SOUTH;
-            gbc.weighty = 0.0;
-            preview.setMaximumSize(new Dimension(Integer.MAX_VALUE, 225));
-            preview.setMinimumSize(new Dimension(300, 225));
-            layerPanel.add(preview, gbc);
-            layerPanel.setName(PANEL_LAYERED);
-
-            // Add single and layered options to the dialog
-            tabbedPane.addTab(resourceMap.getString("Force.single"), imagesPanel);
-            tabbedPane.addTab(resourceMap.getString("Force.layered"), layerPanel);
-
-            // Set currently selected tab based on the initial category
-            if (!emptyInitialIconMap) {
-                tabbedPane.setSelectedComponent(layerPanel);
-            }
-
-            // Add the tabbed pane to the content pane
-            gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
-            gbc.gridwidth = 2;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            getContentPane().add(tabbedPane, gbc);
-
-            // Then trigger the initial refresh
-            refreshLayeredPreview();
-
-            // And add the missing ListSelectionListeners, which must be done after the initial refresh
-            for (JTable table : layeredTables) {
-                table.getSelectionModel().addListSelectionListener(event -> refreshLayeredPreview());
-            }
-        } else {
-            // Add the image panel to the content pane
-            gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
-            gbc.gridwidth = 2;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            getContentPane().add(imagesPanel, gbc);
         }
 
-        JButton btnSelect = new JButton(resourceMap.getString("btnSelect.text")); // NOI18N
-        btnSelect.setName("btnSelect"); // NOI18N
+        // Put it all together nice and pretty on the layerPanel
+        layerPanel.setLayout(new GridBagLayout());
+        layerPanel.add(layerTabs, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.SOUTH;
+        gbc.weighty = 0.0;
+        preview.setMaximumSize(new Dimension(Integer.MAX_VALUE, 225));
+        preview.setMinimumSize(new Dimension(300, 225));
+        layerPanel.add(preview, gbc);
+        layerPanel.setName(PANEL_LAYERED);
+
+        // Add single and layered options to the dialog
+        tabbedPane.addTab(resourceMap.getString("Force.single"), imagesPanel);
+        tabbedPane.addTab(resourceMap.getString("Force.layered"), layerPanel);
+
+        // Set currently selected tab based on the initial category
+        if (!emptyInitialIconMap) {
+            tabbedPane.setSelectedComponent(layerPanel);
+        }
+
+        // Add the tabbed pane to the content pane
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        getContentPane().add(tabbedPane, gbc);
+
+        // Then trigger the initial refresh
+        refreshLayeredPreview();
+
+        // And add the missing ListSelectionListeners, which must be done after the initial refresh
+        for (JTable table : layeredTables) {
+            table.getSelectionModel().addListSelectionListener(event -> refreshLayeredPreview());
+        }
+
+        JButton btnSelect = new JButton(resourceMap.getString("btnSelect.text"));
+        btnSelect.setName("btnSelect");
         btnSelect.addActionListener(this::btnSelectActionPerformed);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -328,8 +274,8 @@ public class ImageChoiceDialog extends JDialog {
         gbc.weightx = 0.5;
         getContentPane().add(btnSelect, gbc);
 
-        JButton btnCancel = new JButton(resourceMap.getString("btnCancel.text")); // NOI18N
-        btnCancel.setName("btnCancel"); // NOI18N
+        JButton btnCancel = new JButton(resourceMap.getString("btnCancel.text"));
+        btnCancel.setName("btnCancel");
         btnCancel.addActionListener(this::btnCancelActionPerformed);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
@@ -364,9 +310,6 @@ public class ImageChoiceDialog extends JDialog {
         setVisible(false);
     }
 
-    /**
-     * @return the changed
-     */
     public boolean isChanged() {
         return changed;
     }
@@ -376,37 +319,33 @@ public class ImageChoiceDialog extends JDialog {
             fillTable((String) evt.getItem());
         }
     }
-
-    public String getCategory() {
-        return category;
+*/
+    public LayeredForceIcon getForceIcon() {
+        return forceIcon;
     }
 
-    public String getFileName() {
-        return filename;
+    public void setForceIcon(LayeredForceIcon forceIcon) {
+        this.forceIcon = forceIcon;
     }
-
-    public LinkedHashMap<String, Vector<String>> getIconMap() {
-        return iconMap;
-    }
-
+/*
     private void refreshLayeredPreview() {
         // Clear the icon map
         iconMap.clear();
 
         // Check each table for what is, or is not, selected
         Vector<String> temp;
-        LayeredForceIcon[] layeredForceIcons = LayeredForceIcon.values();
+        LayeredForceIconEnum[] layeredForceIconEnums = LayeredForceIconEnum.values();
         for (int i = 0; i < layeredTables.length; i++) {
             // If we are in the first row, we have the None option selected. Therefore, we need to
             // Ignore the selected index.
             if (layeredTables[i].getSelectedRow() <= 0) {
-                iconMap.remove(layeredForceIcons[i].getLayerPath());
+                iconMap.remove(layeredForceIconEnums[i].getLayerPath());
             } else {
                 temp = new Vector<>();
                 for (int index : layeredTables[i].getSelectedRows()) {
                     temp.add((String) layeredTables[i].getValueAt(index, 0));
                 }
-                iconMap.put(layeredForceIcons[i].getLayerPath(), temp);
+                iconMap.put(layeredForceIconEnums[i].getLayerPath(), temp);
             }
         }
 
@@ -414,8 +353,7 @@ public class ImageChoiceDialog extends JDialog {
         filename = AbstractIcon.DEFAULT_ICON_FILENAME;
 
         // Build the layered image
-        Image forceImage = MHQStaticDirectoryManager.buildForceIcon(category, filename, iconMap);
-        ImageIcon imageIcon = new ImageIcon(forceImage);
+        ImageIcon imageIcon = getForceIcon().getImageIcon();
 
         // Disable selection of a static icon
         tableImages.clearSelection();
@@ -432,11 +370,9 @@ public class ImageChoiceDialog extends JDialog {
         Iterator<String> imageNames;
         if (AbstractIcon.ROOT_CATEGORY.equals(category)) {
             imageTableModel.addImage(AbstractIcon.DEFAULT_ICON_FILENAME);
-            imageNames = (imageItems != null)
-                    ? imageItems.getItemNames("") : Collections.emptyIterator();
+            imageNames = MHQStaticDirectoryManager.getForceIcons().getItemNames("");
         } else {
-            imageNames = (imageItems != null)
-                    ? imageItems.getItemNames(category) : Collections.emptyIterator();
+            imageNames = MHQStaticDirectoryManager.getForceIcons().getItemNames(category);
         }
 
         // Get the image names for this category.
@@ -512,21 +448,21 @@ public class ImageChoiceDialog extends JDialog {
         }
 
         public ImageTableModel.Renderer getRenderer() {
-            return new ImageTableModel.Renderer(imageItems);
+            return new ImageTableModel.Renderer();
         }
 
         public class Renderer extends ImagePanel implements TableCellRenderer {
             private static final long serialVersionUID = -6025788865509594987L;
 
-            public Renderer(DirectoryItems images) {
-                super(images);
+            public Renderer() {
+                super();
             }
 
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                String name = getValueAt(row, column).toString();
-                setText(getValueAt(row, column).toString());
-                setImage(category, name);
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                           boolean hasFocus, int row, int column) {
+                lblImage.setText(getValueAt(row, column).toString());
+                lblImage.setIcon(getForceIcon().getImageIcon(getForceIcon().getCategory().startsWith("Pieces") ? 110 : 76));
 
                 MekHqTableCellRenderer.setupTableColors(this, table, isSelected, hasFocus, row);
                 return this;
@@ -541,8 +477,10 @@ public class ImageChoiceDialog extends JDialog {
                 if (tableImages.equals(evt.getSource())) {
                     int row = tableImages.rowAtPoint(evt.getPoint());
                     if (row < imageTableModel.getRowCount()) {
+/*
                         category = imageTableModel.getCategory();
                         filename = (String) imageTableModel.getValueAt(row, 0);
+*/
                         changed = true;
                         setVisible(false);
                     }
@@ -551,13 +489,11 @@ public class ImageChoiceDialog extends JDialog {
         }
     }
 
-    public class ImagePanel extends JPanel {
+    public static class ImagePanel extends JPanel {
         private static final long serialVersionUID = -3724175393116586310L;
-        private DirectoryItems items;
-        private JLabel lblImage;
+        protected JLabel lblImage;
 
-        public ImagePanel(DirectoryItems items) {
-            this.items = items;
+        public ImagePanel() {
             initComponents();
         }
 
@@ -566,11 +502,11 @@ public class ImageChoiceDialog extends JDialog {
 
             lblImage = new JLabel();
 
-            setName("Form"); // NOI18N
+            setName("Form");
             setLayout(new GridBagLayout());
 
-            lblImage.setText(""); // NOI18N
-            lblImage.setName("lblImage"); // NOI18N
+            lblImage.setText("");
+            lblImage.setName("lblImage");
             gbc = new GridBagConstraints();
             gbc.gridx = 0;
             gbc.gridy = 0;
@@ -578,44 +514,6 @@ public class ImageChoiceDialog extends JDialog {
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
             add(lblImage, gbc);
-        }
-
-        public void setText(String text) {
-            lblImage.setText(text);
-        }
-
-        public void setImage(String category, String name) {
-            if ((null == category) || AbstractIcon.DEFAULT_ICON_FILENAME.equals(name)) {
-                int width = force ? 110 : 76;
-                int height = 76;
-
-                BufferedImage noImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                Graphics2D graphics = noImage.createGraphics();
-                graphics.setComposite(AlphaComposite.Clear);
-                graphics.fillRect(0, 0, width, height);
-                lblImage.setIcon(new ImageIcon(noImage));
-                return;
-            }
-
-            // Try to get the image file.
-            try {
-                // Translate the root image directory name.
-                if (AbstractIcon.ROOT_CATEGORY.equals(category)) {
-                    category = ""; //$NON-NLS-1$
-                }
-                Image image = (Image) items.getItem(category, name);
-                if (image != null) {
-                    if (category.startsWith("Pieces/")) {
-                        image = image.getScaledInstance(110, -1, Image.SCALE_SMOOTH);
-                    } else {
-                        image = image.getScaledInstance(-1, 76, Image.SCALE_SMOOTH);
-                    }
-
-                    lblImage.setIcon(new ImageIcon(image));
-                }
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
-            }
         }
     }
 }

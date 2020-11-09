@@ -90,7 +90,7 @@ public class ForceViewPanel extends ScrollablePanel {
 
 
 		lblIcon.setName("lblPortrait"); // NOI18N
-		setIcon(force, lblIcon, 150);
+        lblIcon.setIcon(force.getForceIcon().getImageIcon(150));
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
@@ -143,19 +143,6 @@ public class ForceViewPanel extends ScrollablePanel {
             add(txtDesc, gridBagConstraints);
         }
 	}
-
-	private void setIcon(Force force, JLabel lbl, int scale) {
-	    ImageIcon icon = null;
-	    try {
-            icon = new ImageIcon(MHQStaticDirectoryManager.buildForceIcon(force.getIconCategory(),
-                    force.getIconFileName(), force.getIconMap())
-                    .getScaledInstance(scale, -1, Image.SCALE_SMOOTH));
-        } catch (Exception e) {
-            MekHQ.getLogger().error(e);
-        }
-	    lbl.setIcon(icon);
-	}
-
 
 	private void fillStats() {
     	ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ForceViewPanel", new EncodeControl());
@@ -381,10 +368,9 @@ public class ForceViewPanel extends ScrollablePanel {
 	}
 
 	private void fillSubUnits() {
+		GridBagConstraints gridBagConstraints;
 
-		java.awt.GridBagConstraints gridBagConstraints;
-
-		pnlSubUnits.setLayout(new java.awt.GridBagLayout());
+		pnlSubUnits.setLayout(new GridBagLayout());
 
 		JLabel lblForce;
 
@@ -392,17 +378,17 @@ public class ForceViewPanel extends ScrollablePanel {
 		for (Force subForce : force.getSubForces()) {
 			lblForce = new JLabel();
 			lblForce.setText(getSummaryFor(subForce));
-			setIcon(subForce, lblForce, 72);
+			lblForce.setIcon(subForce.getForceIcon().getImageIcon(72));
 			nexty++;
-			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = nexty;
 			gridBagConstraints.gridwidth = 2;
 			gridBagConstraints.weighty = 1.0;
 			gridBagConstraints.weightx = 1.0;
-			gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-			gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+			gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+			gridBagConstraints.fill = GridBagConstraints.BOTH;
+			gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
 			pnlSubUnits.add(lblForce, gridBagConstraints);
 		}
 		JLabel lblPerson;

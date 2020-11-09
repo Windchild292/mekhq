@@ -33,7 +33,6 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.tree.TreePath;
 
 import megamek.common.util.StringUtil;
-import mekhq.MHQStaticDirectoryManager;
 import mekhq.gui.utilities.JMenuHelpers;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -344,17 +343,16 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                 }
             }
         } else if (command.contains(TOEMouseAdapter.CHANGE_ICON)) {
-            if (null != singleForce) {
+            if (singleForce != null) {
                 ImageChoiceDialog pcd = new ImageChoiceDialog(gui.getFrame(), true,
-                        singleForce.getIconCategory(), singleForce.getIconFileName(),
-                        singleForce.getIconMap(), MHQStaticDirectoryManager.getForceIcons(), true);
+                        singleForce.getForceIcon());
                 pcd.setVisible(true);
+                /*
                 if (pcd.isChanged()) {
-                    singleForce.setIconCategory(pcd.getCategory());
-                    singleForce.setIconFileName(pcd.getFileName());
-                    singleForce.setIconMap(pcd.getCategory().equals(Force.ROOT_LAYERED) ? pcd.getIconMap() : new LinkedHashMap<>());
+                    singleForce.setForceIcon(pcd.getForceIcon());
                     MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
                 }
+                 */
             }
         } else if (command.contains(TOEMouseAdapter.CHANGE_CAMO)) {
             if (null != singleForce) {
@@ -487,9 +485,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                             int optionChoice = JOptionPane.showConfirmDialog(null, TOEMouseAdapter.LOAD_UNITS_DIALOG_TEXT,
                                     TOEMouseAdapter.LOAD_UNITS_DIALOG_TITLE, JOptionPane.YES_NO_OPTION);
                             if (optionChoice == JOptionPane.YES_OPTION) {
-                                for (Unit cargo : unit.getTransportedUnits()) {
-                                    extraUnits.add(cargo);
-                                }
+                                extraUnits.addAll(unit.getTransportedUnits());
                             }
                         }
                         scenario.addUnit(unit.getId());

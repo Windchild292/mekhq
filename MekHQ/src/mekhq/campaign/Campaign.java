@@ -225,7 +225,7 @@ public class Campaign implements Serializable, ITechManager {
     private String camoFileName = null;
     private int colorIndex = 0;
 
-    private AbstractIcon unitIcon = new StandardForceIcon();
+    private AbstractIcon unitIcon = new StandardForceIcon(null, null);
 
     private Finances finances;
 
@@ -4026,7 +4026,6 @@ public class Campaign implements Serializable, ITechManager {
         return getFunds().isGreaterOrEqualThan(cost);
     }
 
-
     public CampaignOptions getCampaignOptions() {
         return campaignOptions;
     }
@@ -4072,8 +4071,13 @@ public class Campaign implements Serializable, ITechManager {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "medicPool", medicPool);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoCategory", camoCategory);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoFileName", camoFileName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", getUnitIcon().getCategory());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", getUnitIcon().getFilename());
+        if (!getUnitIcon().hasDefaultCategory()) {
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", getUnitIcon().getCategory());
+        }
+
+        if (!getUnitIcon().hasDefaultFilename()) {
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", getUnitIcon().getFilename());
+        }
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "colorIndex", colorIndex);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastForceId", lastForceId);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastMissionId", lastMissionId);

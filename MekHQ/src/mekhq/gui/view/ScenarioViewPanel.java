@@ -21,12 +21,10 @@
 package mekhq.gui.view;
 
 import java.awt.Component;
-import java.awt.Image;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.event.TreeModelListener;
@@ -34,8 +32,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-import mekhq.MHQStaticDirectoryManager;
-import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.force.ForceStub;
 import mekhq.campaign.force.UnitStub;
@@ -283,19 +279,8 @@ public class ScenarioViewPanel extends ScrollablePanel {
             if (node instanceof UnitStub) {
                 return ((UnitStub) node).getPortrait().getImageIcon(50);
             } else if (node instanceof ForceStub) {
-                return getIconFrom((ForceStub) node);
+                return ((ForceStub) node).getForceIcon().getImageIcon(58);
             } else {
-                return null;
-            }
-        }
-
-        protected Icon getIconFrom(ForceStub force) {
-            try {
-                return new ImageIcon(MHQStaticDirectoryManager.buildForceIcon(force.getIconCategory(),
-                        force.getIconFileName(), force.getIconMap())
-                        .getScaledInstance(58, -1, Image.SCALE_SMOOTH));
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
                 return null;
             }
         }
