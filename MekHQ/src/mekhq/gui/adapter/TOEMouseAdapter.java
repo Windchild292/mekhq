@@ -33,6 +33,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.tree.TreePath;
 
 import megamek.common.util.StringUtil;
+import mekhq.gui.dialog.icons.LayeredForceIconDialog;
 import mekhq.gui.utilities.JMenuHelpers;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -59,7 +60,6 @@ import mekhq.campaign.unit.Unit;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.dialog.CamoChoiceDialog;
 import mekhq.gui.dialog.ForceTemplateAssignmentDialog;
-import mekhq.gui.dialog.ImageChoiceDialog;
 import mekhq.gui.dialog.MarkdownEditorDialog;
 import mekhq.gui.utilities.StaticChecks;
 
@@ -147,7 +147,6 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
 
     //Other
     private static final String GOTO_PILOT = "GOTO_PILOT";
-
     private static final String COMMAND_GOTO_PILOT = "GOTO_PILOT|UNIT|empty|";
 
     // String tokens for dialog boxes used for transport loading
@@ -344,15 +343,13 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
             }
         } else if (command.contains(TOEMouseAdapter.CHANGE_ICON)) {
             if (singleForce != null) {
-                ImageChoiceDialog pcd = new ImageChoiceDialog(gui.getFrame(), true,
-                        singleForce.getForceIcon());
-                pcd.setVisible(true);
-                /*
-                if (pcd.isChanged()) {
-                    singleForce.setForceIcon(pcd.getForceIcon());
+                LayeredForceIconDialog layeredForceIconDialog = new LayeredForceIconDialog(
+                        gui.getFrame(), true, singleForce.getForceIcon());
+                if ((layeredForceIconDialog.showDialog() == JOptionPane.OK_OPTION)
+                        && (layeredForceIconDialog.getForceIcon() != null)) {
+                    singleForce.setForceIcon(layeredForceIconDialog.getForceIcon());
                     MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
                 }
-                 */
             }
         } else if (command.contains(TOEMouseAdapter.CHANGE_CAMO)) {
             if (null != singleForce) {

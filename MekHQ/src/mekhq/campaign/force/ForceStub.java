@@ -61,11 +61,8 @@ public class ForceStub implements Serializable {
         name = force.getFullName();
         subForces = new Vector<>();
         units = new Vector<>();
-        try {
-            forceIcon = force.getForceIcon().clone();
-        } catch (Exception ignored) {
+        forceIcon = force.getForceIcon().clone();
 
-        }
         for (Force sub : force.getSubForces()) {
             ForceStub stub = new ForceStub(sub, c);
             //stub.setParentForce(this);

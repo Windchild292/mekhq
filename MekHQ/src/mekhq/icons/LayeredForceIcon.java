@@ -67,7 +67,6 @@ public class LayeredForceIcon extends StandardForceIcon {
     //region Getters/Setters
     @Override
     public void setFilename(@Nullable String filename) {
-        // We allow filename to be null here as part of the UnitIcon Code
         this.filename = (filename == null) ? DEFAULT_FORCE_ICON_FILENAME : filename;
     }
 

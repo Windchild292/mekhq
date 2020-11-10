@@ -82,15 +82,12 @@ public class ImageChoiceDialog extends JDialog {
             return;
         }
 
-        /*
         initComponents();
 
         setLocationRelativeTo(parent);
         setUserPreferences();
-         */
     }
     //endregion Constructors
-        /*
 
     private void initComponents() {
         ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ImageChoiceDialog", new EncodeControl());
@@ -286,17 +283,6 @@ public class ImageChoiceDialog extends JDialog {
         pack();
     }
 
-    private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(ImageChoiceDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
-    }
-
-    private void btnCancelActionPerformed(ActionEvent evt) {
-        setVisible(false);
-    }
-
     private void btnSelectActionPerformed(ActionEvent evt) {
         category = ((null != tabbedPane.getSelectedComponent())
                 && PANEL_LAYERED.equals(tabbedPane.getSelectedComponent().getName()))
@@ -319,7 +305,7 @@ public class ImageChoiceDialog extends JDialog {
             fillTable((String) evt.getItem());
         }
     }
-*/
+
     public LayeredForceIcon getForceIcon() {
         return forceIcon;
     }
@@ -327,7 +313,7 @@ public class ImageChoiceDialog extends JDialog {
     public void setForceIcon(LayeredForceIcon forceIcon) {
         this.forceIcon = forceIcon;
     }
-/*
+
     private void refreshLayeredPreview() {
         // Clear the icon map
         iconMap.clear();
@@ -384,9 +370,6 @@ public class ImageChoiceDialog extends JDialog {
         }
     }
 
-    /**
-     * A table model for displaying images
-     */
     public class ImageTableModel extends AbstractTableModel {
         private static final long serialVersionUID = -7469653910161174678L;
         private String[] columnNames;
