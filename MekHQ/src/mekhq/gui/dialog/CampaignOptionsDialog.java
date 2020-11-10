@@ -102,7 +102,7 @@ import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.RATManager;
 import mekhq.gui.FileDialogs;
 import mekhq.gui.SpecialAbilityPanel;
-import mekhq.gui.dialog.icons.StandardForceIconChooser;
+import mekhq.gui.dialog.icons.StandardForceIconChooserDialog;
 import mekhq.gui.model.RankTableModel;
 import mekhq.gui.model.SortedComboBoxModel;
 import mekhq.gui.preferences.JWindowPreference;
@@ -5229,7 +5229,7 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private void btnIconActionPerformed(ActionEvent evt) {
-        StandardForceIconChooser standardForceIconChooser = new StandardForceIconChooser(frame, unitIcon);
+        StandardForceIconChooserDialog standardForceIconChooser = new StandardForceIconChooserDialog(frame, unitIcon);
         if ((standardForceIconChooser.showDialog() == JOptionPane.OK_OPTION)
                 && (standardForceIconChooser.getSelectedItem() != null)) {
             unitIcon = standardForceIconChooser.getSelectedItem();

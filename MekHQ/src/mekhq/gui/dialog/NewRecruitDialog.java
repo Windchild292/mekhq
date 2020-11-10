@@ -23,11 +23,10 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 
 import megamek.client.generator.RandomNameGenerator;
-import megamek.client.ui.swing.dialog.imageChooser.AbstractIconChooser;
-import megamek.client.ui.swing.dialog.imageChooser.PortraitChooser;
+import megamek.client.ui.swing.dialog.imageChooser.AbstractIconChooserDialog;
+import megamek.client.ui.swing.dialog.imageChooser.PortraitChooserDialog;
 import megamek.common.enums.Gender;
 import megamek.common.util.EncodeControl;
-import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.Ranks;
@@ -231,7 +230,7 @@ public class NewRecruitDialog extends javax.swing.JDialog {
     }
 
     private void choosePortrait() {
-        AbstractIconChooser portraitDialog = new PortraitChooser(hqView.getFrame(), person.getPortrait());
+        AbstractIconChooserDialog portraitDialog = new PortraitChooserDialog(hqView.getFrame(), person.getPortrait());
         int result = portraitDialog.showDialog();
         if ((result == JOptionPane.OK_OPTION) && (portraitDialog.getSelectedItem() != null)) {
             person.setPortrait(portraitDialog.getSelectedItem());

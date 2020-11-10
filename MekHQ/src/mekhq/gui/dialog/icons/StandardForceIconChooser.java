@@ -19,28 +19,25 @@
 package mekhq.gui.dialog.icons;
 
 import megamek.client.ui.swing.dialog.imageChooser.AbstractIconChooser;
-import megamek.client.ui.swing.dialog.imageChooser.AbstractIconRenderer;
 import megamek.common.icons.AbstractIcon;
-import megamek.common.util.EncodeControl;
 import megamek.common.util.fileUtils.DirectoryItems;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.icons.StandardForceIcon;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ResourceBundle;
 
 public class StandardForceIconChooser extends AbstractIconChooser {
-    private static final long serialVersionUID = 2690083417720266231L;
-
-    /** Creates a dialog that allows players to choose a StandardForceIcon. */
-    public StandardForceIconChooser(Window parent, AbstractIcon icon) {
-        super(parent, icon, ResourceBundle.getBundle("mekhq.resources.GUIDialogs", new EncodeControl())
-                        .getString("StandardForceIconChooser.title"), new AbstractIconRenderer(),
-                new StandardForceIconChooserTree());
+    //region Constructors
+    public StandardForceIconChooser() {
+        this(null);
     }
+
+    public StandardForceIconChooser(AbstractIcon icon) {
+        super(new StandardForceIconChooserTree(), icon);
+    }
+    //endregion Constructors
 
     @Override
     protected DirectoryItems getDirectory() {

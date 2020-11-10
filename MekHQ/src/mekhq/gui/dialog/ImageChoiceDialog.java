@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
  */
+/*
 package mekhq.gui.dialog;
 
 import java.awt.*;
@@ -44,6 +45,7 @@ import mekhq.preferences.PreferencesNode;
 /**
  * @author  Jay Lawson <jaylawson39 at yahoo.com>
  */
+/*
 public class ImageChoiceDialog extends JDialog {
     //region Variable Declarations
     private static final long serialVersionUID = 7316667282566479439L;
@@ -54,12 +56,10 @@ public class ImageChoiceDialog extends JDialog {
     /**
      * The categorized image patterns.
      */
-    private ImageTableModel imageTableModel = new ImageTableModel();
-    private LayeredForceIcon forceIcon;
+/*    private ImageTableModel imageTableModel = new ImageTableModel();
     private ImageTableMouseAdapter imagesMouseAdapter;
 
     private JTable tableImages;
-    private boolean changed = false;
 
     //region Layered Images Support
     private JLabel preview = new JLabel();
@@ -72,23 +72,6 @@ public class ImageChoiceDialog extends JDialog {
     //endregion Layered Images Support
     //endregion Variable Declarations
 
-    //region Constructors
-    public ImageChoiceDialog(JFrame parent, boolean modal, LayeredForceIcon forceIcon) {
-        super(parent, modal);
-        imagesMouseAdapter = new ImageTableMouseAdapter();
-        setForceIcon(forceIcon.clone());
-
-        if (MHQStaticDirectoryManager.getForceIcons() == null) {
-            return;
-        }
-
-        initComponents();
-
-        setLocationRelativeTo(parent);
-        setUserPreferences();
-    }
-    //endregion Constructors
-
     private void initComponents() {
         ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ImageChoiceDialog", new EncodeControl());
         GridBagConstraints gbc;
@@ -97,64 +80,6 @@ public class ImageChoiceDialog extends JDialog {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form");
         setTitle(resourceMap.getString("Force.title"));
-
-        JPanel imagesPanel = new JPanel();
-        imagesPanel.setLayout(new GridBagLayout());
-        imagesPanel.setName(PANEL_IMAGES);
-
-        DefaultComboBoxModel<String> categoryModel = new DefaultComboBoxModel<>();
-        String match = null;
-        categoryModel.addElement(AbstractIcon.ROOT_CATEGORY);
-        Iterator<String> names = MHQStaticDirectoryManager.getForceIcons().getCategoryNames();
-        while (names.hasNext()) {
-            String name = names.next();
-            if (!"".equals(name)) {
-                categoryModel.addElement(name);
-                if (getForceIcon().getCategory().equals(name)) {
-                    match = name;
-                }
-            }
-        }
-        categoryModel.setSelectedItem((match != null) ? match : AbstractIcon.ROOT_CATEGORY);
-        JComboBox<String> comboCategories = new JComboBox<>(categoryModel);
-        comboCategories.setName("comboCategories"); // NOI18N
-        comboCategories.addItemListener(this::comboCategoriesItemStateChanged);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1.0;
-        imagesPanel.add(comboCategories, gbc);
-
-        tableImages = new JTable(imageTableModel);
-        tableImages.setName("tableImages"); // NOI18N
-        tableImages.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableImages.setRowHeight(76);
-        tableImages.getColumnModel().getColumn(0).setCellRenderer(imageTableModel.getRenderer());
-        tableImages.addMouseListener(imagesMouseAdapter);
-        JScrollPane scrImages = new JScrollPane();
-        scrImages.setName("scrImages"); // NOI18N
-        scrImages.setViewportView(tableImages);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        imagesPanel.add(scrImages, gbc);
-
-        // Initialize the imageTableModel
-        fillTable((String) comboCategories.getSelectedItem());
-        // Determine the initial value for the selected image, if any
-        for (int i = 0; i < imageTableModel.getRowCount(); i++) {
-            if (imageTableModel.getValueAt(i, 0).equals(getForceIcon().getFilename())) {
-                tableImages.setRowSelectionInterval(i, i);
-                break;
-            }
-        }
 
         // Background setup for the layered options
         gbc = new GridBagConstraints();
@@ -262,24 +187,6 @@ public class ImageChoiceDialog extends JDialog {
             table.getSelectionModel().addListSelectionListener(event -> refreshLayeredPreview());
         }
 
-        JButton btnSelect = new JButton(resourceMap.getString("btnSelect.text"));
-        btnSelect.setName("btnSelect");
-        btnSelect.addActionListener(this::btnSelectActionPerformed);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.weightx = 0.5;
-        getContentPane().add(btnSelect, gbc);
-
-        JButton btnCancel = new JButton(resourceMap.getString("btnCancel.text"));
-        btnCancel.setName("btnCancel");
-        btnCancel.addActionListener(this::btnCancelActionPerformed);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.weightx = 0.5;
-        getContentPane().add(btnCancel, gbc);
-
         pack();
     }
 
@@ -296,22 +203,11 @@ public class ImageChoiceDialog extends JDialog {
         setVisible(false);
     }
 
-    public boolean isChanged() {
-        return changed;
-    }
 
     private void comboCategoriesItemStateChanged(ItemEvent evt) {
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             fillTable((String) evt.getItem());
         }
-    }
-
-    public LayeredForceIcon getForceIcon() {
-        return forceIcon;
-    }
-
-    public void setForceIcon(LayeredForceIcon forceIcon) {
-        this.forceIcon = forceIcon;
     }
 
     private void refreshLayeredPreview() {
@@ -460,10 +356,8 @@ public class ImageChoiceDialog extends JDialog {
                 if (tableImages.equals(evt.getSource())) {
                     int row = tableImages.rowAtPoint(evt.getPoint());
                     if (row < imageTableModel.getRowCount()) {
-/*
                         category = imageTableModel.getCategory();
                         filename = (String) imageTableModel.getValueAt(row, 0);
-*/
                         changed = true;
                         setVisible(false);
                     }
@@ -500,3 +394,4 @@ public class ImageChoiceDialog extends JDialog {
         }
     }
 }
+*/
