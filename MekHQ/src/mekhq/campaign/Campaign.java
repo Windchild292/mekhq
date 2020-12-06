@@ -48,6 +48,7 @@ import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
 import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
 import mekhq.campaign.personnel.generator.RandomPortraitGenerator;
+import mekhq.campaign.personnel.randomDeath.AbstractRandomDeathMethod;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
 
@@ -3180,6 +3181,15 @@ public class Campaign implements Serializable, ITechManager {
         // furthermore this allows us to add and remove personnel without issue
         for (Person p : getActivePersonnel()) {
             // Random Death
+            if (getCampaignOptions().getRandomDeathMethod().isEnabled()) {
+                AbstractRandomDeathMethod randomDeathMethod = getCampaignOptions()
+                        .getRandomDeathMethod().getMethod(this);
+
+                if (randomDeathMethod.randomDeath(p.getAge(getLocalDate()), p.getGender())) {
+                    p.changeStatus(this, randomDeathMethod.getCause(p, this));
+                    continue;
+                }
+            }
 
             // Random Marriages
             if (getCampaignOptions().useRandomMarriages()) {

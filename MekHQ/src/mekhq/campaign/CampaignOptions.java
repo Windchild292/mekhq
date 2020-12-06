@@ -30,6 +30,7 @@ import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
+import mekhq.campaign.personnel.enums.RandomDeathType;
 import mekhq.service.MassRepairOption;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -231,7 +232,6 @@ public class CampaignOptions implements Serializable {
     private BabySurnameStyle babySurnameStyle;
     private boolean determineFatherAtBirth;
     private FamilialRelationshipDisplayLevel displayFamilyLevel;
-    private boolean keepMarriedNameUponSpouseDeath;
 
     //salary
     private double salaryCommissionMultiplier;
@@ -246,6 +246,19 @@ public class CampaignOptions implements Serializable {
     private boolean prisonerBabyStatus;
     private boolean useAtBPrisonerDefection;
     private boolean useAtBPrisonerRansom;
+
+    //Death
+    private RandomDeathType randomDeathMethod;
+    private double[] randomDeathMaleMValues;
+    private double[] randomDeathMaleNValues;
+    private double[] randomDeathFemaleMValues;
+    private double[] randomDeathFemaleNValues;
+    private boolean enableTeenRandomDeaths;
+    private boolean enablePreteenRandomDeaths;
+    private boolean enableChildRandomDeaths;
+    private boolean enableToddlerRandomDeaths;
+    private boolean enableBabyRandomDeaths;
+    private boolean keepMarriedNameUponSpouseDeath;
     //endregion Personnel Tab
 
     //region Finance tab
@@ -573,7 +586,6 @@ public class CampaignOptions implements Serializable {
         babySurnameStyle = BabySurnameStyle.MOTHERS;
         determineFatherAtBirth = false;
         displayFamilyLevel = FamilialRelationshipDisplayLevel.SPOUSE;
-        keepMarriedNameUponSpouseDeath = true;
 
         //Salary
         salaryAntiMekMultiplier = 1.5;
@@ -621,6 +633,47 @@ public class CampaignOptions implements Serializable {
         prisonerBabyStatus = true;
         useAtBPrisonerDefection = false;
         useAtBPrisonerRansom = false;
+
+        //Death
+        randomDeathMethod = RandomDeathType.NONE;
+        randomDeathMaleMValues = new double[7];
+        randomDeathMaleNValues = new double[7];
+        randomDeathMaleMValues[6] = 7;
+        randomDeathMaleNValues[6] = -12;
+        randomDeathMaleMValues[5] = -2;
+        randomDeathMaleNValues[5] = -9;
+        randomDeathMaleMValues[4] = 2;
+        randomDeathMaleNValues[4] = -7;
+        randomDeathMaleMValues[3] = -7;
+        randomDeathMaleNValues[3] = -6;
+        randomDeathMaleMValues[2] = 2;
+        randomDeathMaleNValues[2] = -4;
+        randomDeathMaleNValues[1] = -1.5;
+        randomDeathMaleNValues[1] = -3;
+        randomDeathMaleMValues[0] = 4.1;
+        randomDeathMaleNValues[0] = -3;
+        randomDeathFemaleMValues = new double[7];
+        randomDeathFemaleNValues = new double[7];
+        randomDeathFemaleMValues[6] = 7;
+        randomDeathFemaleNValues[6] = -12;
+        randomDeathFemaleMValues[5] = -2;
+        randomDeathFemaleNValues[5] = -9;
+        randomDeathFemaleMValues[4] = 2;
+        randomDeathFemaleNValues[4] = -7;
+        randomDeathFemaleMValues[3] = -7;
+        randomDeathFemaleNValues[3] = -6;
+        randomDeathFemaleMValues[2] = 1;
+        randomDeathFemaleNValues[2] = -4;
+        randomDeathFemaleMValues[1] = -1.3;
+        randomDeathFemaleNValues[1] = -3;
+        randomDeathFemaleMValues[0] = 3.4;
+        randomDeathFemaleNValues[0] = -3;
+        enableTeenRandomDeaths = false;
+        enablePreteenRandomDeaths = false;
+        enableChildRandomDeaths = false;
+        enableToddlerRandomDeaths = false;
+        enableBabyRandomDeaths = false;
+        keepMarriedNameUponSpouseDeath = true;
         //endregion Personnel Tab
 
         //region Finances Tab
@@ -1493,20 +1546,6 @@ public class CampaignOptions implements Serializable {
     public void setDisplayFamilyLevel(FamilialRelationshipDisplayLevel displayFamilyLevel) {
         this.displayFamilyLevel = displayFamilyLevel;
     }
-
-    /**
-     * @return whether to keep ones married name upon spouse death or not
-     */
-    public boolean getKeepMarriedNameUponSpouseDeath() {
-        return keepMarriedNameUponSpouseDeath;
-    }
-
-    /**
-     * @param b whether to keep ones married name upon spouse death or not
-     */
-    public void setKeepMarriedNameUponSpouseDeath(boolean b) {
-        keepMarriedNameUponSpouseDeath = b;
-    }
     //endregion family
 
     //region salary
@@ -1613,6 +1652,104 @@ public class CampaignOptions implements Serializable {
         this.useAtBPrisonerRansom = useAtBPrisonerRansom;
     }
     //endregion Prisoners
+
+    //region Death
+    /**
+     * @return the random death method to use
+     */
+    public RandomDeathType getRandomDeathMethod() {
+        return randomDeathMethod;
+    }
+
+    /**
+     * @param randomDeathMethod the random death method to use
+     */
+    public void setRandomDeathMethod(RandomDeathType randomDeathMethod) {
+        this.randomDeathMethod = randomDeathMethod;
+    }
+
+    public double[] getRandomDeathMaleMValues() {
+        return randomDeathMaleMValues;
+    }
+    public double getRandomDeathMaleMValue(int pos) {
+        return randomDeathMaleMValues[pos];
+    }
+
+    public double[] getRandomDeathMaleNValues() {
+        return randomDeathMaleNValues;
+    }
+    public double getRandomDeathMaleNValue(int pos) {
+        return randomDeathMaleNValues[pos];
+    }
+
+    public double[] getRandomDeathFemaleMValues() {
+        return randomDeathFemaleMValues;
+    }
+    public double getRandomDeathFemaleMValue(int pos) {
+        return randomDeathFemaleMValues[pos];
+    }
+
+    public double[] getRandomDeathFemaleNValues() {
+        return randomDeathFemaleNValues;
+    }
+    public double getRandomDeathFemaleNValue(int pos) {
+        return randomDeathFemaleNValues[pos];
+    }
+
+    public boolean teenDeathsEnabled() {
+        return enableTeenRandomDeaths;
+    }
+
+    public void setEnableTeenRandomDeaths(boolean b) {
+        enableTeenRandomDeaths = b;
+    }
+
+    public boolean preteenDeathsEnabled() {
+        return enablePreteenRandomDeaths;
+    }
+
+    public void setEnablePreteenRandomDeaths(boolean b) {
+        enablePreteenRandomDeaths = b;
+    }
+
+    public boolean childDeathsEnabled() {
+        return enableChildRandomDeaths;
+    }
+
+    public void setEnableChildRandomDeaths(boolean b) {
+        enableChildRandomDeaths = b;
+    }
+
+    public boolean toddlerDeathsEnabled() {
+        return enableToddlerRandomDeaths;
+    }
+
+    public void setEnableToddlerRandomDeaths(boolean b) {
+        enableToddlerRandomDeaths = b;
+    }
+
+    public boolean infantMortalityEnabled() {
+        return enableBabyRandomDeaths;
+    }
+
+    public void setEnableBabyRandomDeaths(boolean b) {
+        enableBabyRandomDeaths = b;
+    }
+
+    /**
+     * @return whether to keep ones married name upon spouse death or not
+     */
+    public boolean getKeepMarriedNameUponSpouseDeath() {
+        return keepMarriedNameUponSpouseDeath;
+    }
+
+    /**
+     * @param b whether to keep ones married name upon spouse death or not
+     */
+    public void setKeepMarriedNameUponSpouseDeath(boolean b) {
+        keepMarriedNameUponSpouseDeath = b;
+    }
+    //endregion Death
     //endregion Personnel Tab
 
     //region Finances Tab
@@ -3168,16 +3305,29 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "babySurnameStyle", babySurnameStyle.name());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "determineFatherAtBirth", determineFatherAtBirth);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "displayFamilyLevel", displayFamilyLevel.name());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "keepMarriedNameUponSpouseDeath", keepMarriedNameUponSpouseDeath);
         //endregion family
 
         //region Prisoners
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "prisonerCaptureStyle", prisonerCaptureStyle.name());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "defaultPrisonerStatus", defaultPrisonerStatus.name());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "prisonerBabyStatus", prisonerBabyStatus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useAtBPrisonerDefection", useAtBPrisonerDefection);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useAtBPrisonerRansom", useAtBPrisonerRansom);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, ++indent, "prisonerCaptureStyle", prisonerCaptureStyle.name());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "defaultPrisonerStatus", defaultPrisonerStatus.name());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "prisonerBabyStatus", prisonerBabyStatus);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "useAtBPrisonerDefection", useAtBPrisonerDefection);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "useAtBPrisonerRansom", useAtBPrisonerRansom);
         //endregion Prisoners
+
+        //region Death
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "randomDeathMethod", getRandomDeathMethod().name());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathMaleMValues", getRandomDeathMaleMValues());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathMaleNValues", getRandomDeathMaleNValues());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathFemaleMValues", getRandomDeathFemaleMValues());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathFemaleNValues", getRandomDeathFemaleNValues());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "enableTeenRandomDeaths", teenDeathsEnabled());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "enablePreteenRandomDeaths", preteenDeathsEnabled());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "enableChildRandomDeaths", childDeathsEnabled());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "enableToddlerRandomDeaths", toddlerDeathsEnabled());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "enableInfantRandomDeaths", infantMortalityEnabled());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent--, "keepMarriedNameUponSpouseDeath", getKeepMarriedNameUponSpouseDeath());
+        //endregion Death
         //endregion Personnel Tab
 
         //region Finances Tab
@@ -3640,8 +3790,6 @@ public class CampaignOptions implements Serializable {
                 retVal.setDetermineFatherAtBirth(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("displayFamilyLevel")) {
                 retVal.setDisplayFamilyLevel(FamilialRelationshipDisplayLevel.parseFromString(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("keepMarriedNameUponSpouseDeath")) {
-                retVal.keepMarriedNameUponSpouseDeath = Boolean.parseBoolean(wn2.getTextContent().trim());
             //endregion Family
 
             //region Prisoners
@@ -3664,6 +3812,43 @@ public class CampaignOptions implements Serializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("useAtBPrisonerRansom")) {
                 retVal.setUseAtBPrisonerRansom(Boolean.parseBoolean(wn2.getTextContent().trim()));
             //endregion Prisoners
+
+            //region Death
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMethod")) {
+                retVal.setRandomDeathMethod(RandomDeathType.valueOf(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMaleMValues")) {
+                String[] values = wn2.getTextContent().trim().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathMaleMValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMaleNValues")) {
+                String[] values = wn2.getTextContent().trim().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathMaleNValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathFemaleMValues")) {
+                String[] values = wn2.getTextContent().trim().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathFemaleMValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathFemaleNValues")) {
+                String[] values = wn2.getTextContent().trim().split(",");
+                for (int i = 0; i < values.length; i++) {
+                    retVal.randomDeathFemaleNValues[i] = Double.parseDouble(values[i]);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableTeenRandomDeaths")) {
+                retVal.enableTeenRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("enablePreteenRandomDeaths")) {
+                retVal.enablePreteenRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableChildRandomDeaths")) {
+                retVal.enableChildRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableToddlerRandomDeaths")) {
+                retVal.enableToddlerRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableInfantRandomDeaths")) {
+                retVal.enableBabyRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("keepMarriedNameUponSpouseDeath")) {
+                retVal.setKeepMarriedNameUponSpouseDeath(Boolean.parseBoolean(wn2.getTextContent().trim()));
+            //endregion Death
             //endregion Personnel Tab
 
             //region Finances Tab
