@@ -42,6 +42,7 @@ import mekhq.campaign.event.ScenarioRemovedEvent;
 import mekhq.campaign.finances.*;
 import mekhq.campaign.log.*;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.enums.AgeRange;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
@@ -3181,12 +3182,13 @@ public class Campaign implements Serializable, ITechManager {
         // furthermore this allows us to add and remove personnel without issue
         for (Person p : getActivePersonnel()) {
             // Random Death
-            if (getCampaignOptions().getRandomDeathMethod().isEnabled()) {
-                AbstractRandomDeathMethod randomDeathMethod = getCampaignOptions()
+            if (!getCampaignOptions().getRandomDeathMethod().isNone()) {
+                final AgeRange ageRange = p.getAgeRange(getLocalDate());
+                final AbstractRandomDeathMethod randomDeathMethod = getCampaignOptions()
                         .getRandomDeathMethod().getMethod(this);
 
-                if (randomDeathMethod.randomDeath(p.getAge(getLocalDate()), p.getGender())) {
-                    p.changeStatus(this, randomDeathMethod.getCause(p, this));
+                if (randomDeathMethod.randomDeath(this, ageRange, p.getAge(getLocalDate()), p.getGender())) {
+                    p.changeStatus(this, randomDeathMethod.getCause(p, ageRange, this));
                     continue;
                 }
             }

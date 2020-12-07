@@ -79,11 +79,7 @@ public enum RandomDeathType {
     }
     //endregion Constructors
 
-    @Override
-    public String toString() {
-        return name;
-    }
-
+    //region Getters
     public String getToolTip() {
         return toolTip;
     }
@@ -91,10 +87,13 @@ public enum RandomDeathType {
     public boolean isImplemented() {
         return implemented;
     }
+    //endregion Getters
 
-    public boolean isEnabled() {
-        return this != NONE;
+    //region Boolean Comparison Methods
+    public boolean isNone() {
+        return this == NONE;
     }
+    //endregion Boolean Comparison Methods
 
     public AbstractRandomDeathMethod getMethod(Campaign campaign) {
         switch (this) {
@@ -107,9 +106,9 @@ public enum RandomDeathType {
             case STANDARD:
                 return new SixthOrderDifferentialRandomDeath(campaign);
             case NONE:
-                MekHQ.getLogger().warning("RandomDeath: Error: Attempted to get the method while disabled."
-                        + "Returning the standard sixth order method instead");
             default:
+                MekHQ.getLogger().warning("RandomDeath: Error: Attempted to get the method while disabled."
+                        + "Returning the standard sixth order method, and please report this on our GitHub");
                 return new SixthOrderDifferentialRandomDeath(campaign);
         }
     }
@@ -122,5 +121,10 @@ public enum RandomDeathType {
             }
         }
         return implementedTypes;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

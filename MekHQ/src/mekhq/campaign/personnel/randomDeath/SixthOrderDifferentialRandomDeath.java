@@ -22,6 +22,7 @@ import megamek.common.Compute;
 import megamek.common.enums.Gender;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.personnel.enums.AgeRange;
 import mekhq.campaign.personnel.enums.RandomDeathType;
 
 public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod {
@@ -36,7 +37,6 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
     //region Constructors
     public SixthOrderDifferentialRandomDeath(Campaign campaign) {
         super(RandomDeathType.STANDARD);
-        type = RandomDeathType.STANDARD;
         maleM = campaign.getCampaignOptions().getRandomDeathMaleMValues();
         maleN = campaign.getCampaignOptions().getRandomDeathMaleNValues();
         femaleM = campaign.getCampaignOptions().getRandomDeathFemaleMValues();
@@ -45,7 +45,11 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
     //endregion Constructors
 
     @Override
-    public boolean randomDeath(int age, Gender gender) {
+    public boolean randomDeath(Campaign campaign, AgeRange ageRange, int age, Gender gender) {
+        if (!validateAgeEnabled(campaign, ageRange)) {
+            return false;
+        }
+
         // The chance is calculated in the format:
         // sum from 0 to M.length of m * 10^n * age^i
         double chance = 0.0;
@@ -62,7 +66,7 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
         }
 
         MekHQ.getLogger().warning("The odds of randomly dying were calculated to be " + chance + " for a "
-                + (gender.isFemale() ? "female" : "male") + " person");
+                + (gender.isFemale() ? "female" : "male") + " person of " + age + " years.");
 
         return Compute.randomFloat() < chance;
     }

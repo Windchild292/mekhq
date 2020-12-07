@@ -27,7 +27,7 @@ public enum AgeRange {
     //region Enum Declarations
     ELDER("AgeRange.ELDER.text", 65),
     ADULT("AgeRange.ADULT.text", 20),
-    TEENAGE("AgeRange.TEENAGER.text", 13),
+    TEENAGER("AgeRange.TEENAGER.text", 13),
     PRETEEN("AgeRange.PRETEEN.text", 10),
     CHILD("AgeRange.CHILD.text", 3),
     TODDLER("AgeRange.TODDLER.text", 1),
@@ -52,14 +52,41 @@ public enum AgeRange {
     }
     //endregion Constructors
 
-    @Override
-    public String toString() {
-        return rangeName;
-    }
-
+    //region Getters
     public int getRangeLowerBound() {
         return rangeLowerBound;
     }
+    //endregion Getters
+
+    //region Boolean Comparison Methods
+    public boolean isElder() {
+        return this == ELDER;
+    }
+
+    public boolean isAdult() {
+        return this == ADULT;
+    }
+
+    public boolean isTeenager() {
+        return this == TEENAGER;
+    }
+
+    public boolean isPreteen() {
+        return this == PRETEEN;
+    }
+
+    public boolean isChild() {
+        return this == CHILD;
+    }
+
+    public boolean isToddler() {
+        return this == TODDLER;
+    }
+
+    public boolean isBaby() {
+        return this == BABY;
+    }
+    //endregion Boolean Comparison Methods
 
     public static AgeRange determineAgeRange(int age) {
         if (age > -1) {
@@ -74,5 +101,10 @@ public enum AgeRange {
 
         // This is a default return, which will only happen on error cases
         return ADULT;
+    }
+
+    @Override
+    public String toString() {
+        return rangeName;
     }
 }

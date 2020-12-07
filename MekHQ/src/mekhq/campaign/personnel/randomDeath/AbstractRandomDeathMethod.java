@@ -32,43 +32,89 @@ public abstract class AbstractRandomDeathMethod {
     protected RandomDeathType type;
     //endregion Variable Declarations
 
+    //region Constructors
     protected AbstractRandomDeathMethod(RandomDeathType type) {
         this.type = type;
     }
+    //endregion Constructors
 
-    public abstract boolean randomDeath(int age, Gender gender);
+    /**
+     * @param campaign the campaign the person is in
+     * @param ageRange the person's age range
+     * @param age the person's age
+     * @param gender the person's gender
+     * @return true if the person is selected to randomly die, otherwise false
+     */
+    public abstract boolean randomDeath(Campaign campaign, AgeRange ageRange, int age, Gender gender);
 
-    public PersonnelStatus getCause(Person person, Campaign campaign) {
+    /**
+     * @param campaign the campaign the person is in
+     * @param ageRange the person's age range
+     * @return true if the random death is enabled for the age
+     */
+    public boolean validateAgeEnabled(Campaign campaign, AgeRange ageRange) {
+        switch (ageRange) {
+            case ELDER:
+            case ADULT:
+                return true;
+            case TEENAGER:
+                return campaign.getCampaignOptions().teenDeathsEnabled();
+            case PRETEEN:
+                return campaign.getCampaignOptions().preteenDeathsEnabled();
+            case CHILD:
+                return campaign.getCampaignOptions().childDeathsEnabled();
+            case TODDLER:
+                return campaign.getCampaignOptions().toddlerDeathsEnabled();
+            case BABY:
+                return campaign.getCampaignOptions().infantMortalityEnabled();
+            default:
+                return false;
+        }
+    }
+
+    //region Cause
+    /**
+     * @param person the person who has died
+     * @param ageRange the person's age range
+     * @param campaign the campaign the person is a part of
+     * @return the cause of the Person's random death
+     */
+    public PersonnelStatus getCause(Person person, AgeRange ageRange, Campaign campaign) {
+        if (person.getStatus().isMIA()) {
+            return PersonnelStatus.KIA;
+        } else if (person.hasInjuries(false)) {
+            final PersonnelStatus status = determineIfInjuriesCausedTheDeath(person);
+            if (!status.isActive()) {
+                return status;
+            }
+        }
+
         if (person.isPregnant() && person.getPregnancyWeek(campaign.getLocalDate()) > 22) {
             return PersonnelStatus.PREGNANCY_COMPLICATIONS;
-        } else if (AgeRange.determineAgeRange(person.getAge(campaign.getLocalDate())) == AgeRange.ELDER) {
-            // First, we need to see if they succumb to a disease or injury
-            PersonnelStatus status = determineIfInjuriesCausedTheDeath(person);
-            if (status != null) {
-                return status;
-            }
-
-            // otherwise, they are claimed by old age
+        } else if (ageRange.isElder()) {
             return PersonnelStatus.OLD_AGE;
-        } else if (person.hasInjuries(false)) {
-            PersonnelStatus status = determineIfInjuriesCausedTheDeath(person);
-            if (status != null) {
-                return status;
-            }
         }
 
         return PersonnelStatus.NATURAL_CAUSES;
     }
 
+    /**
+     * @param person the person from whom may have died of injuries
+     * @return the personnel status applicable to the form of injury that caused the death, or
+     * ACTIVE if it wasn't determined that injuries caused the death
+     */
     private PersonnelStatus determineIfInjuriesCausedTheDeath(Person person) {
         for (Injury injury : person.getInjuries()) {
             InjuryLevel level = injury.getLevel();
+
+            // We care about injuries that are major or deadly. We do not want any chronic
+            // conditions nor scratches
             if ((level == InjuryLevel.DEADLY) || (level == InjuryLevel.MAJOR)) {
-                // TODO : add diseases
                 return PersonnelStatus.WOUNDS;
             }
         }
 
-        return null;
+        return PersonnelStatus.ACTIVE;
     }
+    //endregion Cause
 }

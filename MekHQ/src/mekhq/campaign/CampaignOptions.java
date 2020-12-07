@@ -1671,6 +1671,7 @@ public class CampaignOptions implements Serializable {
     public double[] getRandomDeathMaleMValues() {
         return randomDeathMaleMValues;
     }
+
     public double getRandomDeathMaleMValue(int pos) {
         return randomDeathMaleMValues[pos];
     }
@@ -1678,6 +1679,7 @@ public class CampaignOptions implements Serializable {
     public double[] getRandomDeathMaleNValues() {
         return randomDeathMaleNValues;
     }
+
     public double getRandomDeathMaleNValue(int pos) {
         return randomDeathMaleNValues[pos];
     }
@@ -1685,6 +1687,7 @@ public class CampaignOptions implements Serializable {
     public double[] getRandomDeathFemaleMValues() {
         return randomDeathFemaleMValues;
     }
+
     public double getRandomDeathFemaleMValue(int pos) {
         return randomDeathFemaleMValues[pos];
     }
@@ -1692,6 +1695,7 @@ public class CampaignOptions implements Serializable {
     public double[] getRandomDeathFemaleNValues() {
         return randomDeathFemaleNValues;
     }
+
     public double getRandomDeathFemaleNValue(int pos) {
         return randomDeathFemaleNValues[pos];
     }
@@ -3290,10 +3294,7 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useRandomMarriages", useRandomMarriages);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "chanceRandomMarriages", chanceRandomMarriages);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "marriageAgeRange", marriageAgeRange);
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<randomMarriageSurnameWeights>"
-                + StringUtils.join(randomMarriageSurnameWeights, ',')
-                + "</randomMarriageSurnameWeights>");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "randomMarriageSurnameWeights", randomMarriageSurnameWeights);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useRandomSameSexMarriages", useRandomSameSexMarriages);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "chanceRandomSameSexMarriages", chanceRandomSameSexMarriages);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useUnofficialProcreation", useUnofficialProcreation);

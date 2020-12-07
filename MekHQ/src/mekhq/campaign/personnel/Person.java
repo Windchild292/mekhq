@@ -1246,6 +1246,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return Math.toIntExact(ChronoUnit.YEARS.between(getBirthday(), today));
     }
 
+    public AgeRange getAgeRange(LocalDate today) {
+        return AgeRange.determineAgeRange(getAge(today));
+    }
+
     public void setRecruitment(LocalDate date) {
         this.recruitment = date;
     }
