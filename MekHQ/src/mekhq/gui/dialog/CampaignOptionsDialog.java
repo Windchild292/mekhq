@@ -1998,90 +1998,13 @@ public class CampaignOptionsDialog extends JDialog {
         panPersonnel.add(panPrisoners, gridBagConstraints);
         //endregion Prisoners
 
-        //region Death
-        JLabel randomDeathTypeLabel = new JLabel(resourceMap.getString("randomDeathStyleLabel.text"));
-        randomDeathTypeLabel.setToolTipText(resourceMap.getString("randomDeathStyleLabel.toolTipText"));
-
-        DefaultComboBoxModel<RandomDeathType> randomDeathTypeModel = new DefaultComboBoxModel<>();
-        randomDeathTypeModel.addAll(RandomDeathType.getImplementedValues());
-        comboRandomDeathType = new JComboBox<>(randomDeathTypeModel);
-        comboRandomDeathType.setRenderer(new DefaultListCellRenderer() {
-            private static final long serialVersionUID = -543354619818226314L;
-
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                          boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (isSelected && (index > -1) && (list.getSelectedValue() instanceof RandomDeathType)) {
-                    list.setToolTipText(((RandomDeathType) list.getSelectedValue()).getToolTip());
-                }
-
-                return this;
-            }
-        });
-
-        // TODO : Random Death : Male / Female M / N values
-
-        chkEnableTeenRandomDeaths = new JCheckBox(resourceMap.getString("enableTeenRandomDeaths.text"));
-        chkEnableTeenRandomDeaths.setToolTipText(resourceMap.getString("enableTeenRandomDeaths.toolTipText"));
-
-        chkEnablePreteenRandomDeaths = new JCheckBox(resourceMap.getString("enablePreteenRandomDeaths.text"));
-        chkEnablePreteenRandomDeaths.setToolTipText(resourceMap.getString("enablePreteenRandomDeaths.toolTipText"));
-
-        chkEnableChildRandomDeaths = new JCheckBox(resourceMap.getString("enableChildRandomDeaths.text"));
-        chkEnableChildRandomDeaths.setToolTipText(resourceMap.getString("enableChildRandomDeaths.toolTipText"));
-
-        chkEnableToddlerRandomDeaths = new JCheckBox(resourceMap.getString("enableToddlerRandomDeaths.text"));
-        chkEnableToddlerRandomDeaths.setToolTipText(resourceMap.getString("enableToddlerRandomDeaths.toolTipText"));
-
-        chkEnableBabyRandomDeaths = new JCheckBox(resourceMap.getString("enableBabyRandomDeaths.text"));
-        chkEnableBabyRandomDeaths.setToolTipText(resourceMap.getString("enableBabyRandomDeaths.toolTipText"));
-
-        chkKeepMarriedNameUponSpouseDeath = new JCheckBox(resourceMap.getString("keepMarriedNameUponSpouseDeath.text"));
-
-        // Layout the Panel
-        JPanel panDeath = new JPanel();
-        panDeath.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("panDeath.text")));
-        layout = new GroupLayout(panDeath);
-        panDeath.setLayout(layout);
-
-        layout.setAutoCreateGaps(true);
-        layout.setAutoCreateContainerGaps(true);
-
-        layout.setVerticalGroup(
-                layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(randomDeathTypeLabel)
-                                .addComponent(comboRandomDeathType, GroupLayout.Alignment.LEADING))
-                        .addComponent(chkEnableTeenRandomDeaths)
-                        .addComponent(chkEnablePreteenRandomDeaths)
-                        .addComponent(chkEnableChildRandomDeaths)
-                        .addComponent(chkEnableToddlerRandomDeaths)
-                        .addComponent(chkEnableBabyRandomDeaths)
-                        .addComponent(chkKeepMarriedNameUponSpouseDeath)
-        );
-
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addComponent(randomDeathTypeLabel)
-                                .addComponent(comboRandomDeathType))
-                        .addComponent(chkEnableTeenRandomDeaths)
-                        .addComponent(chkEnablePreteenRandomDeaths)
-                        .addComponent(chkEnableChildRandomDeaths)
-                        .addComponent(chkEnableToddlerRandomDeaths)
-                        .addComponent(chkEnableBabyRandomDeaths)
-                        .addComponent(chkKeepMarriedNameUponSpouseDeath)
-        );
-
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 27;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        panPersonnel.add(panDeath, gridBagConstraints);
-        //endregion Death
+        panPersonnel.add(createDeathPanel(), gridBagConstraints);
 
         JScrollPane scrollPersonnel = new JScrollPane(panPersonnel);
         scrollPersonnel.setPreferredSize(new Dimension(500, 400));
@@ -4347,6 +4270,90 @@ public class CampaignOptionsDialog extends JDialog {
 
         pack();
     }
+
+    //region Personnel Tab
+    private JPanel createDeathPanel() {
+        JLabel randomDeathTypeLabel = new JLabel(resources.getString("randomDeathStyleLabel.text"));
+        randomDeathTypeLabel.setToolTipText(resources.getString("randomDeathStyleLabel.toolTipText"));
+
+        DefaultComboBoxModel<RandomDeathType> randomDeathTypeModel = new DefaultComboBoxModel<>();
+        randomDeathTypeModel.addAll(RandomDeathType.getImplementedValues());
+        comboRandomDeathType = new JComboBox<>(randomDeathTypeModel);
+        comboRandomDeathType.setRenderer(new DefaultListCellRenderer() {
+            private static final long serialVersionUID = -543354619818226314L;
+
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (isSelected && (index > -1) && (list.getSelectedValue() instanceof RandomDeathType)) {
+                    list.setToolTipText(((RandomDeathType) list.getSelectedValue()).getToolTip());
+                }
+
+                return this;
+            }
+        });
+
+        // TODO : Random Death : Male / Female M / N values
+        JPanel panSixthOrderDifferential = new JPanel();
+
+        chkEnableTeenRandomDeaths = new JCheckBox(resources.getString("enableTeenRandomDeaths.text"));
+        chkEnableTeenRandomDeaths.setToolTipText(resources.getString("enableTeenRandomDeaths.toolTipText"));
+
+        chkEnablePreteenRandomDeaths = new JCheckBox(resources.getString("enablePreteenRandomDeaths.text"));
+        chkEnablePreteenRandomDeaths.setToolTipText(resources.getString("enablePreteenRandomDeaths.toolTipText"));
+
+        chkEnableChildRandomDeaths = new JCheckBox(resources.getString("enableChildRandomDeaths.text"));
+        chkEnableChildRandomDeaths.setToolTipText(resources.getString("enableChildRandomDeaths.toolTipText"));
+
+        chkEnableToddlerRandomDeaths = new JCheckBox(resources.getString("enableToddlerRandomDeaths.text"));
+        chkEnableToddlerRandomDeaths.setToolTipText(resources.getString("enableToddlerRandomDeaths.toolTipText"));
+
+        chkEnableBabyRandomDeaths = new JCheckBox(resources.getString("enableBabyRandomDeaths.text"));
+        chkEnableBabyRandomDeaths.setToolTipText(resources.getString("enableBabyRandomDeaths.toolTipText"));
+
+        chkKeepMarriedNameUponSpouseDeath = new JCheckBox(resources.getString("keepMarriedNameUponSpouseDeath.text"));
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("panDeath.text")));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(randomDeathTypeLabel)
+                                .addComponent(comboRandomDeathType, GroupLayout.Alignment.LEADING))
+                        .addComponent(panSixthOrderDifferential)
+                        .addComponent(chkEnableTeenRandomDeaths)
+                        .addComponent(chkEnablePreteenRandomDeaths)
+                        .addComponent(chkEnableChildRandomDeaths)
+                        .addComponent(chkEnableToddlerRandomDeaths)
+                        .addComponent(chkEnableBabyRandomDeaths)
+                        .addComponent(chkKeepMarriedNameUponSpouseDeath)
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(randomDeathTypeLabel)
+                                .addComponent(comboRandomDeathType))
+                        .addComponent(panSixthOrderDifferential)
+                        .addComponent(chkEnableTeenRandomDeaths)
+                        .addComponent(chkEnablePreteenRandomDeaths)
+                        .addComponent(chkEnableChildRandomDeaths)
+                        .addComponent(chkEnableToddlerRandomDeaths)
+                        .addComponent(chkEnableBabyRandomDeaths)
+                        .addComponent(chkKeepMarriedNameUponSpouseDeath)
+        );
+
+        return panel;
+    }
+    //endregion Personnel Tab
 
     private void setUserPreferences() {
         PreferencesNode preferences = MekHQ.getPreferences().forClass(CampaignOptionsDialog.class);
