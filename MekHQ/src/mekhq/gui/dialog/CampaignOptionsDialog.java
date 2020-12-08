@@ -500,6 +500,8 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkUseLightConditions;
     private JCheckBox chkUsePlanetaryConditions;
     //endregion Against the Bot Tab
+
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.CampaignOptionsDialog", new EncodeControl());
     //endregion Variable Declarations
 
     public CampaignOptionsDialog(JFrame parent, boolean modal, Campaign c) {
