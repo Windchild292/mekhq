@@ -43,6 +43,7 @@ import megamek.common.*;
 import megamek.common.icons.Camouflage;
 import megamek.common.util.StringUtil;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
+import mekhq.campaign.market.unitMarket.AtBUnitMarket;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -55,7 +56,6 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
-import mekhq.campaign.market.UnitMarket;
 import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
 import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
 import mekhq.campaign.mission.atb.IAtBScenario;
@@ -789,7 +789,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                 for (int i = 0; i < Compute.d6() - 3; i++) {
                     addLance(enemyEntities, getContract(campaign).getEnemyCode(),
                             getContract(campaign).getEnemySkill(), getContract(campaign).getEnemyQuality(),
-                            UnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
+                            AtBUnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
                                 campaign.getCampaignOptions().getRegionalMechVariations()),
                             EntityWeightClass.WEIGHT_ASSAULT, campaign);
                 }

@@ -19,25 +19,49 @@
 package mekhq.campaign.market.enums;
 
 import megamek.common.util.EncodeControl;
+import mekhq.campaign.market.contractMarket.AbstractContractMarket;
+import mekhq.campaign.market.contractMarket.AtBContractMarket;
+import mekhq.campaign.market.unitMarket.AbstractUnitMarket;
+import mekhq.campaign.market.unitMarket.AtBUnitMarket;
 
 import java.util.ResourceBundle;
 
 public enum ContractMarketMethod {
     //region Enum Declarations
+    NONE("ContractMarketMethod.NONE.text"),
     ATB_MONTHLY("ContractMarketMethod.ATB_MONTHLY.text");
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market",
-            new EncodeControl());
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
     ContractMarketMethod(String name) {
         this.name = resources.getString(name);
     }
-    //endregion Constructors
+    //endregion Constructors0
+
+    //region Boolean Comparison Methods
+    public boolean isNone() {
+        return this == NONE;
+    }
+
+    public boolean isAtB() {
+        return this == ATB_MONTHLY;
+    }
+    //endregion Boolean Comparison Methods
+
+    public AbstractContractMarket getContractMarket() {
+        switch (this) {
+            case ATB_MONTHLY:
+                return new AtBContractMarket();
+            case NONE:
+            default:
+                return null;
+        }
+    }
 
     @Override
     public String toString() {

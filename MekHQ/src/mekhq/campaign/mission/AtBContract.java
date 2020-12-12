@@ -32,7 +32,8 @@ import java.util.UUID;
 import megamek.common.icons.Camouflage;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.finances.Money;
-import mekhq.campaign.market.enums.UnitMarketType;
+import mekhq.campaign.market.contractMarket.AtBContractMarket;
+import mekhq.campaign.market.enums.UnitMarketMarketType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -895,8 +896,8 @@ public class AtBContract extends Contract implements Serializable {
                             partsAvailabilityLevel++;
                             break;
                         case 6:
-                            String unit = c.getUnitMarket().addSingleUnit(c, UnitMarketType.EMPLOYER,
-                                UnitType.MEK, getEmployerCode(), IUnitRating.DRAGOON_F, 50);
+                            String unit = c.getUnitMarket().addSingleUnit(c, UnitMarketMarketType.EMPLOYER,
+                                    UnitType.MEK, getEmployerCode(), IUnitRating.DRAGOON_F, 50);
                             if (unit != null) {
                                 text += String.format("Surplus Sale: %s offered by employer on the <a href='UNIT_MARKET'>unit market</a>", unit);
                             }
@@ -1073,12 +1074,18 @@ public class AtBContract extends Contract implements Serializable {
                 || (getMissionType() == AtBContract.MT_RIOTDUTY)) {
             int roll = Compute.d6();
             if (roll == 6) {
-                campaign.getContractMarket().addFollowup(campaign, this);
+                if (campaign.getCampaignOptions().getContractMarketMethod().isAtB()) {
+                    ((AtBContractMarket) campaign.getContractMarket()).addFollowup(campaign, this);
+                } else {
+                    MekHQ.getLogger().error("Illegal Contract Market for AtB of "
+                            + ((campaign.getContractMarket() == null) ? "none" : campaign.getContractMarket().getMethod()));
+                }
                 campaign.addReport("Your employer has offered a follow-up contract (available on the <a href=\"CONTRACT_MARKET\">contract market</a>).");
             }
         }
     }
 
+    @Override
     protected void writeToXmlBegin(PrintWriter pw1, int indent) {
         super.writeToXmlBegin(pw1, indent);
         pw1.println(MekHqXmlUtil.indentStr(indent+1)

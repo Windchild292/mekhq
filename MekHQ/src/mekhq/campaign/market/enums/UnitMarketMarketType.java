@@ -23,7 +23,7 @@ import mekhq.MekHQ;
 
 import java.util.ResourceBundle;
 
-public enum UnitMarketType {
+public enum UnitMarketMarketType {
     //region Enum Declarations
     OPEN("UnitMarketType.OPEN.text"),
     EMPLOYER("UnitMarketType.EMPLOYER.text"),
@@ -34,18 +34,23 @@ public enum UnitMarketType {
 
     //region Variable Declarations
     private final String name;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market",
-            new EncodeControl());
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    UnitMarketType(String name) {
+    UnitMarketMarketType(String name) {
         this.name = resources.getString(name);
     }
     //endregion Constructors
 
+    //region Boolean Comparison Methods
+    public boolean isBlackMarket() {
+        return this == BLACK_MARKET;
+    }
+    //endregion Boolean Comparison Methods
+
     //region File IO
-    public static UnitMarketType parseFromString(String text) {
+    public static UnitMarketMarketType parseFromString(String text) {
         try {
             return valueOf(text);
         } catch (Exception ignored) {
@@ -70,7 +75,7 @@ public enum UnitMarketType {
 
         }
 
-        MekHQ.getLogger().error("Failed to parse " + text + " into a UnitMarketType");
+        MekHQ.getLogger().error("Failed to parse " + text + " into a UnitMarketMarketType");
 
         return OPEN;
     }

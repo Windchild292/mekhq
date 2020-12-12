@@ -19,18 +19,20 @@
 package mekhq.campaign.market.enums;
 
 import megamek.common.util.EncodeControl;
+import mekhq.campaign.market.unitMarket.AbstractUnitMarket;
+import mekhq.campaign.market.unitMarket.AtBUnitMarket;
 
 import java.util.ResourceBundle;
 
 public enum UnitMarketMethod {
     //region Enum Declarations
+    NONE("UnitMarketMethod.NONE.text"),
     ATB_MONTHLY("UnitMarketMethod.ATB_MONTHLY.text");
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market",
-            new EncodeControl());
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
@@ -38,6 +40,26 @@ public enum UnitMarketMethod {
         this.name = resources.getString(name);
     }
     //endregion Constructors
+
+    //region Boolean Comparisons
+    public boolean isNone() {
+        return this == NONE;
+    }
+
+    public boolean isAtB() {
+        return this == ATB_MONTHLY;
+    }
+    //endregion Boolean Comparisons
+
+    public AbstractUnitMarket getUnitMarket() {
+        switch (this) {
+            case ATB_MONTHLY:
+                return new AtBUnitMarket();
+            case NONE:
+            default:
+                return null;
+        }
+    }
 
     @Override
     public String toString() {

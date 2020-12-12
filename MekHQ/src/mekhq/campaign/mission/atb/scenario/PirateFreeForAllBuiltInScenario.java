@@ -25,7 +25,7 @@ import megamek.common.Board;
 import megamek.common.Entity;
 import megamek.common.UnitType;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.unitMarket.AtBUnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBScenario;
 import mekhq.campaign.mission.BotForce;
@@ -83,7 +83,7 @@ public class PirateFreeForAllBuiltInScenario extends AtBScenario {
         for (int i = 0; i < 4; i++) {
             getAlliesPlayer()
                     .add(getEntity(getContract(campaign).getEmployerCode(), getContract(campaign).getAllySkill(),
-                            getContract(campaign).getAllyQuality(), UnitType.MEK, UnitMarket.getRandomAeroWeight(), // max
+                            getContract(campaign).getAllyQuality(), UnitType.MEK, AtBUnitMarket.getRandomAeroWeight(), // max
                                                                                                                     // heavy
                             campaign));
         }
@@ -91,7 +91,7 @@ public class PirateFreeForAllBuiltInScenario extends AtBScenario {
         for (int i = 0; i < 12; i++) {
             enemyEntities.add(getEntity(getContract(campaign).getEnemyCode(), getContract(campaign).getEnemySkill(),
                     getContract(campaign).getEnemyQuality(), UnitType.MEK,
-                    UnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
+                    AtBUnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
                             campaign.getCampaignOptions().getRegionalMechVariations()),
                     campaign));
         }
@@ -102,7 +102,7 @@ public class PirateFreeForAllBuiltInScenario extends AtBScenario {
 
         for (int i = 0; i < 12; i++) {
             otherForce.add(getEntity("PIR", RandomSkillsGenerator.L_REG, IUnitRating.DRAGOON_C, UnitType.MEK,
-                    UnitMarket.getRandomMechWeight(), campaign));
+                    AtBUnitMarket.getRandomMechWeight(), campaign));
         }
 
         addBotForce(new BotForce(PIRATE_FORCE_ID, 3, Board.START_S, otherForce));

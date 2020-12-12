@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-package mekhq.campaign.market;
+package mekhq.campaign.market.personnelMarket;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -58,7 +58,8 @@ public class PersonnelMarket {
     public static final int TYPE_FMMR = 2;
     public static final int TYPE_STRAT_OPS = 3;
     public static final int TYPE_ATB = 4;
-    public static final int TYPE_NUM = 5;
+
+    public static final String NONE = "None";
 
     /* Used by AtB to track Units assigned to recruits; the key
      * is the person UUID. */
@@ -263,9 +264,9 @@ public class PersonnelMarket {
                     try {
                         en = new MechFileParser(ms.getSourceFile(), ms.getEntryName()).getEntity();
                     } catch (EntityLoadingException ex) {
-                        MekHQ.getLogger().error(PersonnelMarket.class,
-                                "Unable to load entity: " + ms.getSourceFile() + ": " + ms.getEntryName() + ": " + ex.getMessage());
-                        MekHQ.getLogger().error(PersonnelMarket.class, ex);
+                        MekHQ.getLogger().error("Unable to load entity: " + ms.getSourceFile() + ": "
+                                + ms.getEntryName() + ": " + ex.getMessage());
+                        MekHQ.getLogger().error(ex);
                     }
                     if (null != en) {
                         retVal.attachedEntities.put(id, en);
@@ -279,7 +280,7 @@ public class PersonnelMarket {
                 } else  {
                     // Error condition of sorts!
                     // Errr, what should we do here?
-                    MekHQ.getLogger().error(PersonnelMarket.class, "Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
+                    MekHQ.getLogger().error("Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
                 }
             }
 
@@ -294,7 +295,7 @@ public class PersonnelMarket {
             // Errrr, apparently either the class name was invalid...
             // Or the listed name doesn't exist.
             // Doh!
-            MekHQ.getLogger().error(PersonnelMarket.class, ex);
+            MekHQ.getLogger().error(ex);
         }
 
         return retVal;

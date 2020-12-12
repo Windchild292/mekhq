@@ -27,6 +27,8 @@ import java.util.List;
 
 import mekhq.Version;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
+import mekhq.campaign.market.enums.ContractMarketMethod;
+import mekhq.campaign.market.enums.UnitMarketMethod;
 import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
@@ -40,7 +42,7 @@ import megamek.common.TechConstants;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
 import mekhq.Utilities;
-import mekhq.campaign.market.PersonnelMarket;
+import mekhq.campaign.market.personnelMarket.PersonnelMarket;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
@@ -320,7 +322,7 @@ public class CampaignOptions implements Serializable {
     private boolean assignPortraitOnRoleChange;
     //endregion Name and Portrait Generation
 
-    //region Personnel Market Tab
+    //region Markets Tab
     private String personnelMarketName;
     private boolean personnelMarketReportRefresh;
     private int personnelMarketRandomEliteRemoval;
@@ -329,14 +331,20 @@ public class CampaignOptions implements Serializable {
     private int personnelMarketRandomGreenRemoval;
     private int personnelMarketRandomUltraGreenRemoval;
     private double personnelMarketDylansWeight;
-    //endregion Personnel Market Tab
+
+    // Unit Market
+    private UnitMarketMethod unitMarketMethod;
+    private boolean instantUnitMarketDelivery;
+    private boolean unitMarketReportRefresh;
+
+    // Contract Market
+    private ContractMarketMethod contractMarketMethod;
+    private boolean contractMarketReportRefresh;
+    //endregion Markets Tab
 
     //region Against the Bot Tab
     private boolean useAtB;
     private int skillLevel;
-
-    // AtB Module: Unit Market // TODO : Fully Implement Me
-    private boolean useAtBUnitMarket;
 
     // Unit Administration
     private boolean useShareSystem;
@@ -354,9 +362,6 @@ public class CampaignOptions implements Serializable {
     private boolean useAero;
     private boolean useVehicles;
     private boolean clanVehicles;
-    private boolean instantUnitMarketDelivery;
-    private boolean contractMarketReportRefresh;
-    private boolean unitMarketReportRefresh;
 
     // Contract Operations
     private int searchRadius;
@@ -711,7 +716,7 @@ public class CampaignOptions implements Serializable {
         assignPortraitOnRoleChange = false;
         //endregion Name and Portrait Generation Tab
 
-        //region Personnel Market Tab
+        //region Markets Tab
         personnelMarketName = PersonnelMarket.getTypeName(PersonnelMarket.TYPE_STRAT_OPS);
         personnelMarketReportRefresh = true;
         personnelMarketRandomEliteRemoval = 10;
@@ -720,14 +725,20 @@ public class CampaignOptions implements Serializable {
         personnelMarketRandomGreenRemoval = 4;
         personnelMarketRandomUltraGreenRemoval = 4;
         personnelMarketDylansWeight = 0.3;
-        //endregion Personnel Market Tab
+
+        // Unit Market
+        unitMarketMethod = UnitMarketMethod.NONE;
+        instantUnitMarketDelivery = false;
+        unitMarketReportRefresh = true;
+
+        // Contract Market
+        contractMarketMethod = ContractMarketMethod.NONE;
+        contractMarketReportRefresh = true;
+        //endregion Markets Tab
 
         //region Against the Bot Tab
         useAtB = false;
         skillLevel = 2;
-
-        // AtB Module: Unit Market
-        useAtBUnitMarket = false;
 
         // Unit Administration
         useShareSystem = false;
@@ -745,9 +756,6 @@ public class CampaignOptions implements Serializable {
         useAero = false;
         useVehicles = true;
         clanVehicles = false;
-        instantUnitMarketDelivery = false;
-        contractMarketReportRefresh = true;
-        unitMarketReportRefresh = true;
 
         // Contract Operations
         searchRadius = 800;
@@ -1900,21 +1908,22 @@ public class CampaignOptions implements Serializable {
         this.useOriginFactionForNames = useOriginFactionForNames;
     }
 
-    // Personnel Market
-    public boolean getPersonnelMarketReportRefresh() {
-        return personnelMarketReportRefresh;
-    }
-
-    public void setPersonnelMarketReportRefresh(boolean b) {
-        personnelMarketReportRefresh = b;
-    }
-
+    //region Markets Tab
+    //region Personnel Market
     public String getPersonnelMarketType() {
         return personnelMarketName;
     }
 
     public void setPersonnelMarketType(String t) {
         personnelMarketName = t;
+    }
+
+    public boolean getPersonnelMarketReportRefresh() {
+        return personnelMarketReportRefresh;
+    }
+
+    public void setPersonnelMarketReportRefresh(boolean b) {
+        personnelMarketReportRefresh = b;
     }
 
     public int getPersonnelMarketRandomEliteRemoval() {
@@ -1964,6 +1973,52 @@ public class CampaignOptions implements Serializable {
     public void setPersonnelMarketDylansWeight(double d) {
         personnelMarketDylansWeight = d;
     }
+    //endregion Personnel Market
+
+    //region Unit Market
+    public UnitMarketMethod getUnitMarketMethod() {
+        return unitMarketMethod;
+    }
+
+    public void setUnitMarketMethod(UnitMarketMethod unitMarketMethod) {
+        this.unitMarketMethod = unitMarketMethod;
+    }
+
+    public boolean getInstantUnitMarketDelivery() {
+        return instantUnitMarketDelivery;
+    }
+
+    public void setInstantUnitMarketDelivery(boolean instant) {
+        instantUnitMarketDelivery = instant;
+    }
+
+    public boolean getUnitMarketReportRefresh() {
+        return unitMarketReportRefresh;
+    }
+
+    public void setUnitMarketReportRefresh(boolean refresh) {
+        unitMarketReportRefresh = refresh;
+    }
+    //endregion Unit Market
+
+    //region Contract Market
+    public ContractMarketMethod getContractMarketMethod() {
+        return contractMarketMethod;
+    }
+
+    public void setContractMarketMethod(ContractMarketMethod contractMarketMethod) {
+        this.contractMarketMethod = contractMarketMethod;
+    }
+
+    public boolean getContractMarketReportRefresh() {
+        return contractMarketReportRefresh;
+    }
+
+    public void setContractMarketReportRefresh(boolean refresh) {
+        contractMarketReportRefresh = refresh;
+    }
+    //endregion Contract Market
+    //endregion Markets Tab
 
     public boolean useQuirks() {
         return useQuirks;
@@ -2028,7 +2083,6 @@ public class CampaignOptions implements Serializable {
     public void setSuccessXP(int b) {
         successXP = b;
     }
-
 
     public boolean limitByYear() {
         return limitByYear;
@@ -2506,14 +2560,6 @@ public class CampaignOptions implements Serializable {
         this.useAtB = useAtB;
     }
 
-    public boolean getUseAtBUnitMarket() {
-        return useAtBUnitMarket;
-    }
-
-    public void setUseAtBUnitMarket(boolean useAtBUnitMarket) {
-        this.useAtBUnitMarket = useAtBUnitMarket;
-    }
-
     public boolean getUseAero() {
         return useAero;
     }
@@ -2754,14 +2800,6 @@ public class CampaignOptions implements Serializable {
         searchRadius = radius;
     }
 
-    public boolean getInstantUnitMarketDelivery() {
-        return instantUnitMarketDelivery;
-    }
-
-    public void setInstantUnitMarketDelivery(boolean instant) {
-        instantUnitMarketDelivery = instant;
-    }
-
     /**
      * @param role the {@link AtBLanceRole} to get the battle chance for
      * @return the chance of having a battle for the specified role
@@ -2886,22 +2924,6 @@ public class CampaignOptions implements Serializable {
 
     public void setLimitLanceNumUnits(boolean limit) {
         limitLanceNumUnits = limit;
-    }
-
-    public boolean getContractMarketReportRefresh() {
-        return contractMarketReportRefresh;
-    }
-
-    public void setContractMarketReportRefresh(boolean refresh) {
-        contractMarketReportRefresh = refresh;
-    }
-
-    public boolean getUnitMarketReportRefresh() {
-        return unitMarketReportRefresh;
-    }
-
-    public void setUnitMarketReportRefresh(boolean refresh) {
-        unitMarketReportRefresh = refresh;
     }
 
     //region Mass Repair/ Mass Salvage
@@ -3217,19 +3239,27 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "timeInRankDisplayFormat", timeInRankDisplayFormat.name());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useRetirementDateTracking", useRetirementDateTracking);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "trackTotalEarnings", trackTotalEarnings);
+
+        //region Markets Tab
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketName", personnelMarketName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomEliteRemoval",
-                                       personnelMarketRandomEliteRemoval);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomVeteranRemoval",
-                                       personnelMarketRandomVeteranRemoval);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomRegularRemoval",
-                                       personnelMarketRandomRegularRemoval);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomGreenRemoval",
-                                       personnelMarketRandomGreenRemoval);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomUltraGreenRemoval",
-                                       personnelMarketRandomUltraGreenRemoval);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketReportRefresh", personnelMarketReportRefresh);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomEliteRemoval", personnelMarketRandomEliteRemoval);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomVeteranRemoval", personnelMarketRandomVeteranRemoval);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomRegularRemoval", personnelMarketRandomRegularRemoval);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomGreenRemoval", personnelMarketRandomGreenRemoval);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketRandomUltraGreenRemoval", personnelMarketRandomUltraGreenRemoval);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "personnelMarketDylansWeight", personnelMarketDylansWeight);
+
+        // Unit Market
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "unitMarketMethod", unitMarketMethod.name());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "instantUnitMarketDelivery", instantUnitMarketDelivery);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "unitMarketReportRefresh", unitMarketReportRefresh);
+
+        // Contract Market
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "contractMarketMethod", contractMarketMethod.name());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "contractMarketReportRefresh", contractMarketReportRefresh);
+        //endregion Markets Tab
+
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "salaryEnlistedMultiplier", salaryEnlistedMultiplier);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "salaryCommissionMultiplier", salaryCommissionMultiplier);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "salaryAntiMekMultiplier", salaryAntiMekMultiplier);
@@ -3272,7 +3302,6 @@ public class CampaignOptions implements Serializable {
                 + "</atbBattleChance>");
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "generateChases", generateChases);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "variableContractLength", variableContractLength);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "instantUnitMarketDelivery", instantUnitMarketDelivery);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useWeatherConditions", useWeatherConditions);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useLightConditions", useLightConditions);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "usePlanetaryConditions", usePlanetaryConditions);
@@ -3284,8 +3313,6 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "restrictPartsByMission", restrictPartsByMission);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "limitLanceWeight", limitLanceWeight);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "limitLanceNumUnits", limitLanceNumUnits);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "contractMarketReportRefresh", contractMarketReportRefresh);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "unitMarketReportRefresh", unitMarketReportRefresh);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "assignPortraitOnRoleChange", assignPortraitOnRoleChange);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "allowOpforAeros", allowOpforAeros);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "allowOpforLocalUnits", allowOpforLocalUnits);
@@ -3344,7 +3371,6 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "usePortraitForType", csv.toString());
 
         //region AtB Options
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "useAtBUnitMarket", useAtBUnitMarket);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "rats", StringUtils.join(rats, ','));
         if (staticRATs) {
             pw1.println(MekHqXmlUtil.indentStr(indent) + "<staticRATs/>");
@@ -3559,11 +3585,6 @@ public class CampaignOptions implements Serializable {
                 retVal.factionIntroDate = Boolean.parseBoolean(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("techLevel")) {
                 retVal.techLevel = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("useUnitRating") // Legacy
-                    || wn2.getNodeName().equalsIgnoreCase("useDragoonRating")) { // Legacy
-                if (!Boolean.parseBoolean(wn2.getTextContent())) {
-                    retVal.setUnitRatingMethod(UnitRatingMethod.NONE);
-                }
             } else if (wn2.getNodeName().equalsIgnoreCase("unitRatingMethod")
                     || wn2.getNodeName().equalsIgnoreCase("dragoonsRatingMethod")) {
                 retVal.setUnitRatingMethod(UnitRatingMethod.parseFromString(wn2.getTextContent().trim()));
@@ -3737,29 +3758,46 @@ public class CampaignOptions implements Serializable {
                 retVal.useRetirementDateTracking = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("trackTotalEarnings")) {
                 retVal.trackTotalEarnings = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("capturePrisoners")) { // Legacy
-                retVal.setPrisonerCaptureStyle(Boolean.parseBoolean(wn2.getTextContent().trim())
-                        ? PrisonerCaptureStyle.TAHARQA : PrisonerCaptureStyle.NONE);
             } else if (wn2.getNodeName().equalsIgnoreCase("useRandomHitsForVees")) {
                 retVal.useRandomHitsForVees = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketType")) { // Legacy
-                retVal.personnelMarketName = PersonnelMarket.getTypeName(Integer.parseInt(wn2.getTextContent().trim()));
+
+            //region Markets
+            //region Personnel Market
             } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketName")) {
-                retVal.personnelMarketName = wn2.getTextContent().trim();
-            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomEliteRemoval")) {
-                retVal.personnelMarketRandomEliteRemoval = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomVeteranRemoval")) {
-                retVal.personnelMarketRandomVeteranRemoval = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomRegularRemoval")) {
-                retVal.personnelMarketRandomRegularRemoval = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomGreenRemoval")) {
-                retVal.personnelMarketRandomGreenRemoval = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomUltraGreenRemoval")) {
-                retVal.personnelMarketRandomUltraGreenRemoval = Integer.parseInt(wn2.getTextContent().trim());
+                retVal.setPersonnelMarketType(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketReportRefresh")) {
-                retVal.personnelMarketReportRefresh = Boolean.parseBoolean(wn2.getTextContent().trim());
+                retVal.setPersonnelMarketReportRefresh(Boolean.parseBoolean(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomEliteRemoval")) {
+                retVal.setPersonnelMarketRandomEliteRemoval(Integer.parseInt(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomVeteranRemoval")) {
+                retVal.setPersonnelMarketRandomVeteranRemoval(Integer.parseInt(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomRegularRemoval")) {
+                retVal.setPersonnelMarketRandomRegularRemoval(Integer.parseInt(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomGreenRemoval")) {
+                retVal.setPersonnelMarketRandomGreenRemoval(Integer.parseInt(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketRandomUltraGreenRemoval")) {
+                retVal.setPersonnelMarketRandomUltraGreenRemoval(Integer.parseInt(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketDylansWeight")) {
-                retVal.personnelMarketDylansWeight = Double.parseDouble(wn2.getTextContent().trim());
+                retVal.setPersonnelMarketDylansWeight(Double.parseDouble(wn2.getTextContent().trim()));
+            //endregion Personnel Market
+
+            //region Unit Market
+            } else if (wn2.getNodeName().equalsIgnoreCase("unitMarketMethod")) {
+                retVal.setUnitMarketMethod(UnitMarketMethod.valueOf(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("instantUnitMarketDelivery")) {
+                retVal.setInstantUnitMarketDelivery(Boolean.parseBoolean(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("unitMarketReportRefresh")) {
+                retVal.setUnitMarketReportRefresh(Boolean.parseBoolean(wn2.getTextContent().trim()));
+            //endregion Unit Market
+
+            //region Contract Market
+            } else if (wn2.getNodeName().equalsIgnoreCase("contractMarketMethod")) {
+                retVal.setContractMarketMethod(ContractMarketMethod.valueOf(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("contractMarketReportRefresh")) {
+                retVal.setContractMarketReportRefresh(Boolean.parseBoolean(wn2.getTextContent().trim()));
+            //endregion Contract Market
+            //endregion Markets
+
             } else if (wn2.getNodeName().equalsIgnoreCase("salaryCommissionMultiplier")) {
                 retVal.salaryCommissionMultiplier = Double.parseDouble(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("salaryEnlistedMultiplier")) {
@@ -3792,8 +3830,6 @@ public class CampaignOptions implements Serializable {
                 retVal.tougherHealing = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useAtB")) {
                 retVal.useAtB = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("useAtBUnitMarket")) {
-                retVal.setUseAtBUnitMarket(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("useAero")) {
                 retVal.useAero = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useVehicles")) {
@@ -3848,13 +3884,6 @@ public class CampaignOptions implements Serializable {
                 retVal.setPlayerControlsAttachedUnits(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("searchRadius")) {
                 retVal.searchRadius = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("intensity")) { // Legacy
-                double intensity = Double.parseDouble(wn2.getTextContent().trim());
-
-                retVal.atbBattleChance[AtBLanceRole.FIGHTING.ordinal()] = (int) Math.round(((40.0 * intensity) / (40.0 * intensity + 60.0)) * 100.0 + 0.5);
-                retVal.atbBattleChance[AtBLanceRole.DEFENCE.ordinal()] = (int) Math.round(((20.0 * intensity) / (20.0 * intensity + 80.0)) * 100.0 + 0.5);
-                retVal.atbBattleChance[AtBLanceRole.SCOUTING.ordinal()] = (int) Math.round(((60.0 * intensity) / (60.0 * intensity + 40.0)) * 100.0 + 0.5);
-                retVal.atbBattleChance[AtBLanceRole.TRAINING.ordinal()] = (int) Math.round(((10.0 * intensity) / (10.0 * intensity + 90.0)) * 100.0 + 0.5);
             } else if (wn2.getNodeName().equalsIgnoreCase("atbBattleChance")) {
                 String[] values = wn2.getTextContent().split(",");
                 for (int i = 0; i < values.length; i++) {
@@ -3871,8 +3900,6 @@ public class CampaignOptions implements Serializable {
                 retVal.setGenerateChases(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("variableContractLength")) {
                 retVal.variableContractLength = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("instantUnitMarketDelivery")) {
-                retVal.instantUnitMarketDelivery = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useWeatherConditions")) {
                 retVal.useWeatherConditions = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useLightConditions")) {
@@ -3895,18 +3922,6 @@ public class CampaignOptions implements Serializable {
                 retVal.limitLanceWeight = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("limitLanceNumUnits")) {
                 retVal.limitLanceNumUnits = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("useAtBCapture")) { // Legacy
-                if (Boolean.parseBoolean(wn2.getTextContent().trim())) {
-                    retVal.setPrisonerCaptureStyle(PrisonerCaptureStyle.ATB);
-                    retVal.setUseAtBPrisonerDefection(true);
-                    retVal.setUseAtBPrisonerRansom(true);
-                }
-            } else if (wn2.getNodeName().equalsIgnoreCase("contractMarketReportRefresh")) {
-                retVal.contractMarketReportRefresh = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("unitMarketReportRefresh")) {
-                retVal.unitMarketReportRefresh = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("startGameDelay")) { // Legacy
-                MekHQ.getMekHQOptions().setStartGameDelay(Integer.parseInt(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("allowOpforLocalUnits")) {
                 retVal.allowOpforLocalUnits = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("allowOpforAeros")) {
@@ -3915,8 +3930,6 @@ public class CampaignOptions implements Serializable {
                 retVal.opforAeroChance = Integer.parseInt(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("opforLocalUnitChance")) {
                 retVal.opforLocalUnitChance = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("historicalDailyLog")) { // Legacy
-                MekHQ.getMekHQOptions().setHistoricalDailyLog(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("rats")) {
                 retVal.rats = MekHqXmlUtil.unEscape(wn2.getTextContent().trim()).split(",");
             } else if (wn2.getNodeName().equalsIgnoreCase("staticRATs")) {
@@ -3943,7 +3956,37 @@ public class CampaignOptions implements Serializable {
                 retVal.massRepairReplacePod = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("massRepairOptions")) {
                 retVal.setMassRepairOptions(MassRepairOption.parseListFromXML(wn2));
+
+            //region Legacy
+            } else if (wn2.getNodeName().equalsIgnoreCase("useAtBCapture")) { // Legacy
+                if (Boolean.parseBoolean(wn2.getTextContent().trim())) {
+                    retVal.setPrisonerCaptureStyle(PrisonerCaptureStyle.ATB);
+                    retVal.setUseAtBPrisonerDefection(true);
+                    retVal.setUseAtBPrisonerRansom(true);
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("intensity")) { // Legacy
+                double intensity = Double.parseDouble(wn2.getTextContent().trim());
+
+                retVal.atbBattleChance[AtBLanceRole.FIGHTING.ordinal()] = (int) Math.round(((40.0 * intensity) / (40.0 * intensity + 60.0)) * 100.0 + 0.5);
+                retVal.atbBattleChance[AtBLanceRole.DEFENCE.ordinal()] = (int) Math.round(((20.0 * intensity) / (20.0 * intensity + 80.0)) * 100.0 + 0.5);
+                retVal.atbBattleChance[AtBLanceRole.SCOUTING.ordinal()] = (int) Math.round(((60.0 * intensity) / (60.0 * intensity + 40.0)) * 100.0 + 0.5);
+                retVal.atbBattleChance[AtBLanceRole.TRAINING.ordinal()] = (int) Math.round(((10.0 * intensity) / (10.0 * intensity + 90.0)) * 100.0 + 0.5);
+            } else if (wn2.getNodeName().equalsIgnoreCase("capturePrisoners")) { // Legacy
+                retVal.setPrisonerCaptureStyle(Boolean.parseBoolean(wn2.getTextContent().trim())
+                        ? PrisonerCaptureStyle.TAHARQA : PrisonerCaptureStyle.NONE);
+            } else if (wn2.getNodeName().equalsIgnoreCase("personnelMarketType")) { // Legacy
+                retVal.personnelMarketName = PersonnelMarket.getTypeName(Integer.parseInt(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("startGameDelay")) { // Legacy
+                MekHQ.getMekHQOptions().setStartGameDelay(Integer.parseInt(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("historicalDailyLog")) { // Legacy
+                MekHQ.getMekHQOptions().setHistoricalDailyLog(Boolean.parseBoolean(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("useUnitRating") // Legacy
+                    || wn2.getNodeName().equalsIgnoreCase("useDragoonRating")) { // Legacy
+                if (!Boolean.parseBoolean(wn2.getTextContent())) {
+                    retVal.setUnitRatingMethod(UnitRatingMethod.NONE);
+                }
             }
+            //endregion Legacy
         }
 
         MekHQ.getLogger().debug("Load Campaign Options Complete!");

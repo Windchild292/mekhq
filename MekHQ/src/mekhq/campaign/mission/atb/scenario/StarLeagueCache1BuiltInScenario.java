@@ -28,7 +28,7 @@ import megamek.common.EntityWeightClass;
 import megamek.common.MechSummary;
 import megamek.common.UnitType;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.unitMarket.AtBUnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBDynamicScenarioFactory;
 import mekhq.campaign.mission.AtBScenario;
@@ -127,7 +127,7 @@ public class StarLeagueCache1BuiltInScenario extends AtBScenario {
                 ms = msl.get(0);
             }
         } else {
-            ms = campaign.getUnitGenerator().generate("SL", UnitType.MEK, UnitMarket.getRandomMechWeight(), 2750,
+            ms = campaign.getUnitGenerator().generate("SL", UnitType.MEK, AtBUnitMarket.getRandomMechWeight(), 2750,
                     (roll == 6) ? IUnitRating.DRAGOON_A : IUnitRating.DRAGOON_D);
         }
         Entity en = (ms == null) ? null

@@ -48,8 +48,8 @@ import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.Transaction;
-import mekhq.campaign.market.UnitMarket;
-import mekhq.campaign.market.enums.UnitMarketType;
+import mekhq.campaign.market.unitMarket.AbstractUnitMarket;
+import mekhq.campaign.market.unitMarket.UnitMarketOffer;
 import mekhq.gui.model.UnitMarketTableModel;
 import mekhq.gui.model.XTableColumnModel;
 import mekhq.gui.preferences.JToggleButtonPreference;
@@ -75,7 +75,7 @@ public class UnitMarketDialog extends JDialog {
 
     private UnitMarketTableModel marketModel;
     private Campaign campaign;
-    private UnitMarket unitMarket;
+    private AbstractUnitMarket unitMarket;
     private Entity selectedEntity = null;
 
     private JButton btnAdd;
@@ -317,15 +317,15 @@ public class UnitMarketDialog extends JDialog {
         if (null != selectedEntity) {
             int transitDays = campaign.getCampaignOptions().getInstantUnitMarketDelivery() ? 0
                     : campaign.calculatePartTransitTime(Compute.d6(2) - 2);
-            UnitMarket.MarketOffer offer = marketModel.getOffer(tableUnits.convertRowIndexToModel(tableUnits.getSelectedRow()));
-            Money cost = Money.of(offer.unit.getCost() * offer.pct / 100.0);
+            UnitMarketOffer offer = marketModel.getOffer(tableUnits.convertRowIndexToModel(tableUnits.getSelectedRow()));
+            Money cost = Money.of(offer.getUnit().getCost() * offer.getPercent() / 100.0);
             if (campaign.getFunds().isLessThan(cost)) {
                  campaign.addReport("<font color='red'><b> You cannot afford this unit. Transaction cancelled</b>.</font>");
                  return;
             }
 
             int roll = Compute.d6();
-            if ((offer.market == UnitMarketType.BLACK_MARKET) && (roll <= 2)) {
+            if (offer.getMarketType().isBlackMarket() && (roll <= 2)) {
                 campaign.getFinances().debit(cost.dividedBy(roll), Transaction.C_UNIT,
                         "Purchased " + selectedEntity.getShortName() + " (lost on black market)",
                         campaign.getLocalDate());
@@ -339,7 +339,7 @@ public class UnitMarketDialog extends JDialog {
                     campaign.addReport("<font color='green'>Unit will be delivered in " + transitDays + " days.</font>");
                 }
             }
-            UnitMarket.MarketOffer selected = ((UnitMarketTableModel) tableUnits.getModel())
+            UnitMarketOffer selected = ((UnitMarketTableModel) tableUnits.getModel())
                     .getOffer(tableUnits.convertRowIndexToModel(tableUnits.getSelectedRow()));
             unitMarket.removeOffer(selected);
             ((UnitMarketTableModel) tableUnits.getModel()).setData(unitMarket.getOffers());
@@ -350,7 +350,7 @@ public class UnitMarketDialog extends JDialog {
     private void addUnit() {
         if (null != selectedEntity) {
             campaign.addNewUnit(selectedEntity, false, 0);
-            UnitMarket.MarketOffer selected = ((UnitMarketTableModel) tableUnits.getModel())
+            UnitMarketOffer selected = ((UnitMarketTableModel) tableUnits.getModel())
                     .getOffer(tableUnits.convertRowIndexToModel(tableUnits.getSelectedRow()));
             unitMarket.removeOffer(selected);
             ((UnitMarketTableModel) tableUnits.getModel()).setData(unitMarket.getOffers());
@@ -367,14 +367,14 @@ public class UnitMarketDialog extends JDialog {
         sorter.setRowFilter(new RowFilter<UnitMarketTableModel,Integer>() {
             @Override
             public boolean include(Entry<? extends UnitMarketTableModel, ? extends Integer> entry) {
-                UnitMarket.MarketOffer offer = marketModel.getOffer(entry.getIdentifier());
+                UnitMarketOffer offer = marketModel.getOffer(entry.getIdentifier());
                 boolean underThreshold = !chkPctThreshold.isSelected()
-                        || (offer.pct <= (Integer) spnThreshold.getValue());
-                if (offer.unitType == UnitType.MEK) {
+                        || (offer.getPercent() <= (Integer) spnThreshold.getValue());
+                if (offer.getUnitType() == UnitType.MEK) {
                     return underThreshold && chkShowMeks.isSelected();
-                } else if (offer.unitType == UnitType.TANK) {
+                } else if (offer.getUnitType() == UnitType.TANK) {
                     return underThreshold && chkShowVees.isSelected();
-                } else if (offer.unitType == UnitType.AERO) {
+                } else if (offer.getUnitType() == UnitType.AERO) {
                     return underThreshold && chkShowAero.isSelected();
                 } else {
                     return false;
@@ -391,7 +391,7 @@ public class UnitMarketDialog extends JDialog {
             refreshOfferView();
             return;
         }
-        MechSummary ms = marketModel.getOffer(tableUnits.convertRowIndexToModel(view)).unit;
+        MechSummary ms = marketModel.getOffer(tableUnits.convertRowIndexToModel(view)).getUnit();
         try {
             selectedEntity = new MechFileParser(ms.getSourceFile(), ms.getEntryName()).getEntity();
         } catch (EntityLoadingException e) {

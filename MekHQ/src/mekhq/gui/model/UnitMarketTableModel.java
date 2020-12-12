@@ -2,6 +2,7 @@
  * UnitMarketTableModel.java
  *
  * Copyright (c) 2014 Carl Spain. All rights reserved.
+ * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -27,10 +28,10 @@ import javax.swing.SwingConstants;
 import megamek.common.EntityWeightClass;
 import megamek.common.UnitType;
 import mekhq.campaign.finances.Money;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.unitMarket.UnitMarketOffer;
 
 /**
- * Model for displaying offers on the UnitMarket
+ * Model for displaying offers on the selected UnitMarket
  *
  * Code borrowed heavily from PersonnelTableModel
  *
@@ -49,7 +50,7 @@ public class UnitMarketTableModel extends DataTableModel {
 
 	public UnitMarketTableModel() {
         columnNames = new String[] { "Market", "Type", "Weight Class", "Unit", "Price", "Percent" };
-        data = new ArrayList<UnitMarket.MarketOffer>();
+        data = new ArrayList<UnitMarketOffer>();
 	}
 
     public int getColumnWidth(int c) {
@@ -82,12 +83,8 @@ public class UnitMarketTableModel extends DataTableModel {
         }
     }
 
-    public UnitMarket.MarketOffer getOffer(int i) {
-        if (i >= data.size()) {
-            return null;
-        } else {
-            return (UnitMarket.MarketOffer) data.get(i);
-        }
+    public UnitMarketOffer getOffer(int i) {
+        return (i < data.size()) ? (UnitMarketOffer) data.get(i) : null;
     }
 
     @Override
@@ -95,36 +92,28 @@ public class UnitMarketTableModel extends DataTableModel {
         if (data.isEmpty()) {
             return "";
         }
-        UnitMarket.MarketOffer o = getOffer(row);
+        UnitMarketOffer o = getOffer(row);
         if (o == null) {
             return "?";
         }
 
         if (col == COL_MARKET) {
-            return o.market;
+            return o.getMarketType();
         } else if (col == COL_UNITTYPE) {
-            return UnitType.getTypeName(o.unitType);
+            return UnitType.getTypeName(o.getUnitType());
         } else if (col == COL_WEIGHTCLASS) {
-            if (o.unit != null) {
-                return EntityWeightClass.getClassName(o.unitWeight,
-                        o.unit.getUnitType(), o.unit.isSupport());
+            if (o.getUnit() != null) {
+                return EntityWeightClass.getClassName(o.getUnitWeight(),
+                        o.getUnit().getUnitType(), o.getUnit().isSupport());
             }
         } else if (col == COL_UNIT) {
-        	if (o.unit != null) {
-        		return o.unit.getName();
-        	} else {
-                return "";
-            }
+            return (o.getUnit() == null) ? "" : o.getUnit().getName();
         } else if (col == COL_PRICE) {
-        	if (null == o.unit) {
-        		return "";
-        	}
-            return Money.of((double) o.unit.getCost())
-                    .multipliedBy(o.pct)
-                    .dividedBy(100)
-                    .toAmountAndSymbolString();
+            return (o.getUnit() == null) ? ""
+                    : Money.of((double) o.getUnit().getCost()).multipliedBy(o.getPercent())
+                    .dividedBy(100).toAmountAndSymbolString();
         } else if (col == COL_PERCENT) {
-       		return o.pct + "%";
+       		return o.getPercent() + "%";
         }
 
         return "?";

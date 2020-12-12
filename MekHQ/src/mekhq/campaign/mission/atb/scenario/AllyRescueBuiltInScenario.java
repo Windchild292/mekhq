@@ -25,7 +25,7 @@ import megamek.common.Board;
 import megamek.common.Entity;
 import megamek.common.UnitType;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.unitMarket.AtBUnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBScenario;
 import mekhq.campaign.mission.BotForce;
@@ -96,7 +96,7 @@ public class AllyRescueBuiltInScenario extends AtBScenario {
         for (int i = 0; i < 4; i++) {
             getAlliesPlayer().add(getEntity(getContract(campaign).getEmployerCode(),
                     getContract(campaign).getAllySkill(), getContract(campaign).getAllyQuality(), UnitType.MEK,
-                    UnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEmployerCode(),
+                    AtBUnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEmployerCode(),
                             campaign.getCampaignOptions().getRegionalMechVariations()),
                     campaign));
         }
@@ -105,7 +105,7 @@ public class AllyRescueBuiltInScenario extends AtBScenario {
 
         for (int i = 0; i < 8; i++) {
             otherForce.add(getEntity(getContract(campaign).getEmployerCode(), getContract(campaign).getAllySkill(),
-                    getContract(campaign).getAllyQuality(), UnitType.MEK, UnitMarket.getRandomAeroWeight(), // max
+                    getContract(campaign).getAllyQuality(), UnitType.MEK, AtBUnitMarket.getRandomAeroWeight(), // max
                                                                                                             // heavy
                     campaign));
         }
@@ -114,7 +114,7 @@ public class AllyRescueBuiltInScenario extends AtBScenario {
 
         for (int i = 0; i < 12; i++) {
             enemyEntities.add(getEntity(getContract(campaign).getEnemyCode(), getContract(campaign).getEnemySkill(),
-                    getContract(campaign).getEnemyQuality(), UnitType.MEK, UnitMarket.getRandomAeroWeight() + 1, // no
+                    getContract(campaign).getEnemyQuality(), UnitType.MEK, AtBUnitMarket.getRandomAeroWeight() + 1, // no
                                                                                                                  // light
                                                                                                                  // 'Mechs
                     campaign));

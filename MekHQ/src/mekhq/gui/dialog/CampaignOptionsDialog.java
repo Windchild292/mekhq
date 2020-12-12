@@ -82,8 +82,11 @@ import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.event.OptionsChangedEvent;
 import mekhq.campaign.finances.enums.FinancialYearDuration;
-import mekhq.campaign.market.PersonnelMarketDylan;
-import mekhq.campaign.market.PersonnelMarketRandom;
+import mekhq.campaign.market.enums.ContractMarketMethod;
+import mekhq.campaign.market.enums.UnitMarketMethod;
+import mekhq.campaign.market.personnelMarket.PersonnelMarket;
+import mekhq.campaign.market.personnelMarket.PersonnelMarketDylan;
+import mekhq.campaign.market.personnelMarket.PersonnelMarketRandom;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.Person;
@@ -405,8 +408,8 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkAssignPortraitOnRoleChange;
     //endregion Name and Portrait Generation Tab
 
-    //region Personnel Market Tab
-    private JPanel panPersonnelMarket;
+    //region Markets Tab
+    // Personnel Market
     private JComboBox<String> personnelMarketType;
     private JCheckBox personnelMarketReportRefresh;
     private JTextField personnelMarketRandomEliteRemoval;
@@ -415,7 +418,16 @@ public class CampaignOptionsDialog extends JDialog {
     private JTextField personnelMarketRandomGreenRemoval;
     private JTextField personnelMarketRandomUltraGreenRemoval;
     private JSpinner personnelMarketDylansWeight;
-    //endregion Personnel Market Tab
+
+    // Unit Market
+    private JComboBox<UnitMarketMethod> comboUnitMarketMethod;
+    private JCheckBox chkInstantUnitMarketDelivery;
+    private JCheckBox chkUnitMarketReportRefresh;
+
+    // Contract Market
+    private JComboBox<ContractMarketMethod> comboContractMarketMethod;
+    private JCheckBox chkContractMarketReportRefresh;
+    //endregion Markets Tab
 
     //region Against the Bot Tab
     private JPanel panAtB;
@@ -438,9 +450,6 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkUseAero;
     private JCheckBox chkUseVehicles;
     private JCheckBox chkClanVehicles;
-    private JCheckBox chkInstantUnitMarketDelivery;
-    private JCheckBox chkContractMarketReportRefresh;
-    private JCheckBox chkUnitMarketReportRefresh;
 
     //contract operations
     private JSpinner spnSearchRadius;
@@ -490,6 +499,8 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkUseLightConditions;
     private JCheckBox chkUsePlanetaryConditions;
     //endregion Against the Bot Tab
+
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.CampaignOptionsDialog", new EncodeControl());
     //endregion Variable Declarations
 
     public CampaignOptionsDialog(JFrame parent, boolean modal, Campaign c) {
@@ -3360,178 +3371,9 @@ public class CampaignOptionsDialog extends JDialog {
         tabOptions.addTab(resourceMap.getString("panNameGen.TabConstraints.tabTitle"), panNameGen);
         //endregion Name and Portrait Generation Tab
 
-        //region Personnel Market Tab
-        panPersonnelMarket = new JPanel();
-        personnelMarketType = new JComboBox<>();
-        personnelMarketReportRefresh = new JCheckBox("Display a report when market refreshes");
-        personnelMarketRandomEliteRemoval = new JTextField();
-        personnelMarketRandomVeteranRemoval = new JTextField();
-        personnelMarketRandomRegularRemoval = new JTextField();
-        personnelMarketRandomGreenRemoval = new JTextField();
-        personnelMarketRandomUltraGreenRemoval = new JTextField();
-        personnelMarketDylansWeight = new JSpinner(new SpinnerNumberModel(0.3, 0.1, 0.8, 0.1));
-        JLabel personnelMarketTypeLabel = new JLabel("Market Type:");
-        JLabel personnelMarketRandomEliteRemovalLabel = new JLabel("Random & Dylan's Elite Removal");
-        JLabel personnelMarketRandomVeteranRemovalLabel = new JLabel("Random & Dylan's Veteran Removal");
-        JLabel personnelMarketRandomRegularRemovalLabel = new JLabel("Random & Dylan's Regular Removal");
-        JLabel personnelMarketRandomGreenRemovalLabel = new JLabel("Random & Dylan's Green Removal");
-        JLabel personnelMarketRandomUltraGreenRemovalLabel = new JLabel("Random & Dylan's Ultra-Green Removal");
-        JLabel personnelMarketDylansWeightLabel = new JLabel("<html>Weight for Dylan's Method to choose most"
-                                                      + "<br />common unit type based on your forces</html>");
-
-        for (PersonnelMarketMethod method : PersonnelMarketServiceManager.getInstance().getAllServices(true)) {
-            personnelMarketType.addItem(method.getModuleName());
-        }
-
-        panPersonnelMarket.setName("panPersonnelMarket");
-        panPersonnelMarket.setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketTypeLabel, gridBagConstraints);
-        personnelMarketType.addActionListener(evt -> {
-            final boolean enabled = new PersonnelMarketDylan().getModuleName().equals(personnelMarketType.getSelectedItem())
-                    || new PersonnelMarketRandom().getModuleName().equals(personnelMarketType.getSelectedItem());
-            personnelMarketRandomEliteRemoval.setEnabled(enabled);
-            personnelMarketRandomVeteranRemoval.setEnabled(enabled);
-            personnelMarketRandomRegularRemoval.setEnabled(enabled);
-            personnelMarketRandomGreenRemoval.setEnabled(enabled);
-            personnelMarketRandomUltraGreenRemoval.setEnabled(enabled);
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketType, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketReportRefresh, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomEliteRemovalLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomEliteRemoval, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomVeteranRemovalLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomVeteranRemoval, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomRegularRemovalLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomRegularRemoval, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomGreenRemovalLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomGreenRemoval, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomUltraGreenRemovalLabel, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketRandomUltraGreenRemoval, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketDylansWeightLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panPersonnelMarket.add(personnelMarketDylansWeight, gridBagConstraints);
-
-        tabOptions.addTab(resourceMap.getString("panPersonnelMarket.TabConstraints.tabTitle"),
-                          panPersonnelMarket);
-        //endregion Personnel Market Tab
+        //region Markets Tab
+        tabOptions.addTab(resourceMap.getString("panMarkets.title"), createMarketsTab());
+        //endregion Markets Tab
 
         //region Against the Bot Tab
         panAtB = new JPanel();
@@ -3580,10 +3422,6 @@ public class CampaignOptionsDialog extends JDialog {
         chkUsePlanetaryConditions = new JCheckBox();
 
         chkAeroRecruitsHaveUnits = new JCheckBox();
-        chkInstantUnitMarketDelivery = new JCheckBox();
-        chkContractMarketReportRefresh = new JCheckBox();
-        chkUnitMarketReportRefresh = new JCheckBox();
-
 
         panAtB.setName("panAtB");
         panAtB.setLayout(new GridBagLayout());
@@ -3611,6 +3449,11 @@ public class CampaignOptionsDialog extends JDialog {
             enableAtBComponents(panAtB, chkUseAtB.isSelected());
             enableAtBComponents(panSubAtBRat,
                     chkUseAtB.isSelected() && btnStaticRATs.isSelected());
+
+            if (chkUseAtB.isSelected()) {
+                comboContractMarketMethod.setSelectedItem(ContractMarketMethod.ATB_MONTHLY);
+            }
+            comboContractMarketMethod.setEnabled(!chkUseAtB.isSelected());
         });
 
         JLabel lblSkillLevel = new JLabel(resourceMap.getString("lblSkillLevel.text"));
@@ -3659,11 +3502,11 @@ public class CampaignOptionsDialog extends JDialog {
         // AtB options: "Unit Administration" frame controls
         chkUseShareSystem.setText(resourceMap.getString("chkUseShareSystem.text"));
         chkUseShareSystem.setToolTipText(resourceMap.getString("chkUseShareSystem.toolTipText"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.insets = new Insets(5, 5, 5, 5);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panSubAtBAdmin.add(chkUseShareSystem, gridBagConstraints);
@@ -3737,19 +3580,6 @@ public class CampaignOptionsDialog extends JDialog {
         chkClanVehicles.setToolTipText(resourceMap.getString("chkClanVehicles.toolTipText"));
         gridBagConstraints.gridy++;
         panSubAtBAdmin.add(chkClanVehicles, gridBagConstraints);
-
-        chkInstantUnitMarketDelivery.setText(resourceMap.getString("chkInstantUnitMarketDelivery.text"));
-        chkInstantUnitMarketDelivery.setToolTipText(resourceMap.getString("chkInstantUnitMarketDelivery.toolTipText"));
-        gridBagConstraints.gridy++;
-        panSubAtBAdmin.add(chkInstantUnitMarketDelivery, gridBagConstraints);
-
-        chkContractMarketReportRefresh.setText(resourceMap.getString("chkContractMarketReportRefresh.text"));
-        gridBagConstraints.gridy++;
-        panSubAtBAdmin.add(chkContractMarketReportRefresh, gridBagConstraints);
-
-        chkUnitMarketReportRefresh.setText(resourceMap.getString("chkUnitMarketReportRefresh.text"));
-        gridBagConstraints.gridy++;
-        panSubAtBAdmin.add(chkUnitMarketReportRefresh, gridBagConstraints);
 
         ButtonGroup group = new ButtonGroup();
         group.add(btnDynamicRATs);
@@ -4258,6 +4088,216 @@ public class CampaignOptionsDialog extends JDialog {
         pack();
     }
 
+    //region Markets Tab
+    private JScrollPane createMarketsTab() {
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+
+        JPanel panel = new JPanel(new GridBagLayout());
+
+        JPanel personnelMarketPanel = createPersonnelMarketPanel();
+        gridBagConstraints.gridx = 0;
+        panel.add(personnelMarketPanel, gridBagConstraints);
+
+        JPanel unitMarketPanel = createUnitMarketPanel();
+        gridBagConstraints.gridy = 1;
+        panel.add(unitMarketPanel, gridBagConstraints);
+
+        JPanel contractMarketPanel = createContractMarketPanel();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 1;
+        panel.add(contractMarketPanel, gridBagConstraints);
+
+        JScrollPane scrollMarkets = new JScrollPane(panel);
+        scrollMarkets.setPreferredSize(new Dimension(500, 400));
+
+        return scrollMarkets;
+    }
+
+    private JPanel createPersonnelMarketPanel() {
+        JLabel personnelMarketTypeLabel = new JLabel(resources.getString("personnelMarketLabel.text"));
+
+        personnelMarketType = new JComboBox<>();
+        personnelMarketType.addItem(PersonnelMarket.NONE);
+        for (PersonnelMarketMethod method : PersonnelMarketServiceManager.getInstance().getAllServices(true)) {
+            personnelMarketType.addItem(method.getModuleName());
+        }
+
+        personnelMarketType.addActionListener(evt -> {
+            final boolean enabled = new PersonnelMarketDylan().getModuleName().equals(personnelMarketType.getSelectedItem())
+                    || new PersonnelMarketRandom().getModuleName().equals(personnelMarketType.getSelectedItem());
+            personnelMarketRandomEliteRemoval.setEnabled(enabled);
+            personnelMarketRandomVeteranRemoval.setEnabled(enabled);
+            personnelMarketRandomRegularRemoval.setEnabled(enabled);
+            personnelMarketRandomGreenRemoval.setEnabled(enabled);
+            personnelMarketRandomUltraGreenRemoval.setEnabled(enabled);
+        });
+
+        personnelMarketReportRefresh = new JCheckBox(resources.getString("personnelMarketReportRefresh.text"));
+
+        JLabel personnelMarketRandomEliteRemovalLabel = new JLabel(resources.getString("personnelMarketRandomEliteRemovalLabel.text"));
+
+        personnelMarketRandomEliteRemoval = new JTextField();
+
+        JLabel personnelMarketRandomVeteranRemovalLabel = new JLabel(resources.getString("personnelMarketRandomVeteranRemovalLabel.text"));
+
+        personnelMarketRandomVeteranRemoval = new JTextField();
+
+        JLabel personnelMarketRandomRegularRemovalLabel = new JLabel(resources.getString("personnelMarketReportRefresh.text"));
+
+        personnelMarketRandomRegularRemoval = new JTextField();
+
+        JLabel personnelMarketRandomGreenRemovalLabel = new JLabel(resources.getString("personnelMarketReportRefresh.text"));
+
+        personnelMarketRandomGreenRemoval = new JTextField();
+
+        JLabel personnelMarketRandomUltraGreenRemovalLabel = new JLabel(resources.getString("personnelMarketRandomUltraGreenRemovalLabel.text"));
+
+        personnelMarketRandomUltraGreenRemoval = new JTextField();
+
+        JLabel personnelMarketDylansWeightLabel = new JLabel(resources.getString("personnelMarketDylansWeightLabel.text"));
+
+        personnelMarketDylansWeight = new JSpinner(new SpinnerNumberModel(0.3, 0.1, 0.8, 0.1));
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("panPersonnelMarkets.title")));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(personnelMarketTypeLabel)
+                                .addComponent(personnelMarketType, GroupLayout.Alignment.LEADING))
+                        .addComponent(personnelMarketReportRefresh)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(personnelMarketRandomEliteRemovalLabel)
+                                .addComponent(personnelMarketRandomEliteRemoval, GroupLayout.Alignment.LEADING))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(personnelMarketRandomVeteranRemovalLabel)
+                                .addComponent(personnelMarketRandomVeteranRemoval, GroupLayout.Alignment.LEADING))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(personnelMarketRandomRegularRemovalLabel)
+                                .addComponent(personnelMarketRandomRegularRemoval, GroupLayout.Alignment.LEADING))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(personnelMarketRandomGreenRemovalLabel)
+                                .addComponent(personnelMarketRandomGreenRemoval, GroupLayout.Alignment.LEADING))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(personnelMarketRandomUltraGreenRemovalLabel)
+                                .addComponent(personnelMarketRandomUltraGreenRemoval, GroupLayout.Alignment.LEADING))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(personnelMarketDylansWeightLabel)
+                                .addComponent(personnelMarketDylansWeight, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(personnelMarketTypeLabel)
+                                .addComponent(personnelMarketType))
+                        .addComponent(personnelMarketReportRefresh)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(personnelMarketRandomEliteRemovalLabel)
+                                .addComponent(personnelMarketRandomEliteRemoval))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(personnelMarketRandomVeteranRemovalLabel)
+                                .addComponent(personnelMarketRandomVeteranRemoval))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(personnelMarketRandomRegularRemovalLabel)
+                                .addComponent(personnelMarketRandomRegularRemoval))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(personnelMarketRandomGreenRemovalLabel)
+                                .addComponent(personnelMarketRandomGreenRemoval))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(personnelMarketRandomUltraGreenRemovalLabel)
+                                .addComponent(personnelMarketRandomUltraGreenRemoval))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(personnelMarketDylansWeightLabel)
+                                .addComponent(personnelMarketDylansWeight))
+        );
+
+        return panel;
+    }
+
+    private JPanel createUnitMarketPanel() {
+        JLabel lblUnitMarketMethod = new JLabel(resources.getString("lblUnitMarketMethod.text"));
+
+        comboUnitMarketMethod = new JComboBox<>(UnitMarketMethod.values());
+
+        chkInstantUnitMarketDelivery = new JCheckBox(resources.getString("chkInstantUnitMarketDelivery.text"));
+        chkInstantUnitMarketDelivery.setToolTipText(resources.getString("chkInstantUnitMarketDelivery.toolTipText"));
+
+        chkUnitMarketReportRefresh = new JCheckBox(resources.getString("chkUnitMarketReportRefresh.text"));
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("panUnitMarkets.title")));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblUnitMarketMethod)
+                                .addComponent(comboUnitMarketMethod, GroupLayout.Alignment.LEADING))
+                        .addComponent(chkInstantUnitMarketDelivery)
+                        .addComponent(chkUnitMarketReportRefresh)
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblUnitMarketMethod)
+                                .addComponent(comboUnitMarketMethod))
+                        .addComponent(chkInstantUnitMarketDelivery)
+                        .addComponent(chkUnitMarketReportRefresh)
+        );
+
+        return panel;
+    }
+
+    private JPanel createContractMarketPanel() {
+        JLabel lblContractMarketMethod = new JLabel(resources.getString("lblContractMarketMethod.text"));
+
+        comboContractMarketMethod = new JComboBox<>(ContractMarketMethod.values());
+
+        chkContractMarketReportRefresh = new JCheckBox(resources.getString("chkContractMarketReportRefresh.text"));
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("panContractMarkets.title")));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblContractMarketMethod)
+                                .addComponent(comboContractMarketMethod, GroupLayout.Alignment.LEADING))
+                        .addComponent(chkContractMarketReportRefresh)
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblContractMarketMethod)
+                                .addComponent(comboContractMarketMethod))
+                        .addComponent(chkContractMarketReportRefresh)
+        );
+
+        return panel;
+    }
+    //endregion Markets Tab
+
     private void setUserPreferences() {
         PreferencesNode preferences = MekHQ.getPreferences().forClass(CampaignOptionsDialog.class);
 
@@ -4595,7 +4635,8 @@ public class CampaignOptionsDialog extends JDialog {
         chkAssignPortraitOnRoleChange.setSelected(options.getAssignPortraitOnRoleChange());
         //endregion Name and Portrait Generation Tab
 
-        //region Personnel Market Tab
+        //region Markets Tab
+        // Personnel Market
         personnelMarketType.setSelectedItem(options.getPersonnelMarketType());
         personnelMarketReportRefresh.setSelected(options.getPersonnelMarketReportRefresh());
         personnelMarketRandomEliteRemoval.setText(Integer.toString(options.getPersonnelMarketRandomEliteRemoval()));
@@ -4604,7 +4645,16 @@ public class CampaignOptionsDialog extends JDialog {
         personnelMarketRandomGreenRemoval.setText(Integer.toString(options.getPersonnelMarketRandomGreenRemoval()));
         personnelMarketRandomUltraGreenRemoval.setText(Integer.toString(options.getPersonnelMarketRandomUltraGreenRemoval()));
         personnelMarketDylansWeight.setValue(options.getPersonnelMarketDylansWeight());
-        //endregion Personnel Market Tab
+
+        // Unit Market
+        comboUnitMarketMethod.setSelectedItem(options.getUnitMarketMethod());
+        chkInstantUnitMarketDelivery.setSelected(options.getInstantUnitMarketDelivery());
+        chkUnitMarketReportRefresh.setSelected(options.getUnitMarketReportRefresh());
+
+        // Contract Market
+        comboContractMarketMethod.setSelectedItem(options.getContractMarketMethod());
+        chkContractMarketReportRefresh.setSelected(options.getContractMarketReportRefresh());
+        //endregion Markets Tab
 
         //region Against the Bot Tab
         if (chkUseAtB.isSelected() != options.getUseAtB()) {
@@ -4627,9 +4677,6 @@ public class CampaignOptionsDialog extends JDialog {
         chkUseAero.setSelected(options.getUseAero());
         chkUseVehicles.setSelected(options.getUseVehicles());
         chkClanVehicles.setSelected(options.getClanVehicles());
-        chkInstantUnitMarketDelivery.setSelected(options.getInstantUnitMarketDelivery());
-        chkContractMarketReportRefresh.setSelected(options.getContractMarketReportRefresh());
-        chkUnitMarketReportRefresh.setSelected(options.getUnitMarketReportRefresh());
 
         spnSearchRadius.setValue(options.getSearchRadius());
         chkVariableContractLength.setSelected(options.getVariableContractLength());
@@ -5070,21 +5117,30 @@ public class CampaignOptionsDialog extends JDialog {
         SpecialAbility.replaceSpecialAbilities(getCurrentSPA());
         //end SPA
 
-        // Start Personnel Market
-        options.setPersonnelMarketDylansWeight((Double) personnelMarketDylansWeight.getValue());
+        //region Markets Tab
+        // Personnel Market
+        options.setPersonnelMarketType((String) personnelMarketType.getSelectedItem());
+        options.setPersonnelMarketReportRefresh(personnelMarketReportRefresh.isSelected());
         options.setPersonnelMarketRandomEliteRemoval(Integer.parseInt(personnelMarketRandomEliteRemoval.getText()));
         options.setPersonnelMarketRandomVeteranRemoval(Integer.parseInt(personnelMarketRandomVeteranRemoval.getText()));
         options.setPersonnelMarketRandomRegularRemoval(Integer.parseInt(personnelMarketRandomRegularRemoval.getText()));
         options.setPersonnelMarketRandomGreenRemoval(Integer.parseInt(personnelMarketRandomGreenRemoval.getText()));
         options.setPersonnelMarketRandomUltraGreenRemoval(Integer.parseInt(personnelMarketRandomUltraGreenRemoval.getText()));
-        options.setPersonnelMarketReportRefresh(personnelMarketReportRefresh.isSelected());
-        options.setPersonnelMarketType((String) personnelMarketType.getSelectedItem());
-        // End Personnel Market
+        options.setPersonnelMarketDylansWeight((Double) personnelMarketDylansWeight.getValue());
+
+        // Unit Market
+        options.setUnitMarketMethod((UnitMarketMethod) comboUnitMarketMethod.getSelectedItem());
+        options.setInstantUnitMarketDelivery(chkInstantUnitMarketDelivery.isSelected());
+        options.setUnitMarketReportRefresh(chkUnitMarketReportRefresh.isSelected());
+
+        // Contract Market
+        options.setContractMarketMethod((ContractMarketMethod) comboContractMarketMethod.getSelectedItem());
+        options.setContractMarketReportRefresh(chkContractMarketReportRefresh.isSelected());
+        //endregion Markets Tab
 
         // Start Against the Bot
         options.setUseAtB(chkUseAtB.isSelected());
         options.setSkillLevel(cbSkillLevel.getSelectedIndex());
-        options.setUseAtBUnitMarket(chkUseAtB.isSelected()); // TODO : add fully modular capabilities
         options.setUseShareSystem(chkUseShareSystem.isSelected());
         options.setSharesExcludeLargeCraft(chkSharesExcludeLargeCraft.isSelected());
         options.setSharesForAll(chkSharesForAll.isSelected());
@@ -5140,11 +5196,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setUseWeatherConditions(chkUseWeatherConditions.isSelected());
         options.setUseLightConditions(chkUseLightConditions.isSelected());
         options.setUsePlanetaryConditions(chkUsePlanetaryConditions.isSelected());
-
         options.setAeroRecruitsHaveUnits(chkAeroRecruitsHaveUnits.isSelected());
-        options.setInstantUnitMarketDelivery(chkInstantUnitMarketDelivery.isSelected());
-        options.setContractMarketReportRefresh(chkContractMarketReportRefresh.isSelected());
-        options.setUnitMarketReportRefresh(chkUnitMarketReportRefresh.isSelected());
         // End Against the Bot
 
         campaign.setCampaignOptions(options);

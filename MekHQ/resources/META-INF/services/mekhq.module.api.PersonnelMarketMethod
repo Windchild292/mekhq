@@ -1,5 +1,5 @@
-mekhq.campaign.market.PersonnelMarketRandom
-mekhq.campaign.market.PersonnelMarketFMMr
-mekhq.campaign.market.PersonnelMarketStratOps
-mekhq.campaign.market.PersonnelMarketDylan
+mekhq.campaign.market.personnelMarket.PersonnelMarketRandom
+mekhq.campaign.market.personnelMarket.PersonnelMarketFMMr
+mekhq.campaign.market.personnelMarket.PersonnelMarketStratOps
+mekhq.campaign.market.personnelMarket.PersonnelMarketDylan
 mekhq.module.atb.PersonnelMarketAtB

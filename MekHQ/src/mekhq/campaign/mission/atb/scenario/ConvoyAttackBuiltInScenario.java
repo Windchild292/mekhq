@@ -26,7 +26,7 @@ import megamek.common.Entity;
 import megamek.common.EntityWeightClass;
 import megamek.common.UnitType;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.unitMarket.AtBUnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBScenario;
 import mekhq.campaign.mission.BotForce;
@@ -104,7 +104,7 @@ public class ConvoyAttackBuiltInScenario extends AtBScenario {
         for (int i = 0; i < 8; i++) {
             enemyEntities.add(getEntity(getContract(campaign).getEnemyCode(), getContract(campaign).getEnemySkill(),
                     getContract(campaign).getEnemyQuality(), UnitType.MEK,
-                    UnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
+                    AtBUnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
                             campaign.getCampaignOptions().getRegionalMechVariations()),
                     campaign));
         }

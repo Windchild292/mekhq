@@ -50,18 +50,18 @@ import mekhq.campaign.unit.Unit;
 public class Contract extends Mission implements Serializable, MekHqXmlSerializable {
     private static final long serialVersionUID   = 4606932545119410453L;
 
-    public final static int   OH_NONE            = 0;
-    public final static int   OH_HALF            = 1;
-    public final static int   OH_FULL            = 2;
-    public final static int   OH_NUM             = 3;
+    public final static int OH_NONE            = 0;
+    public final static int OH_HALF            = 1;
+    public final static int OH_FULL            = 2;
+    public final static int OH_NUM             = 3;
 
-    public final static int   COM_INTEGRATED     = 0;
-    public final static int   COM_HOUSE          = 1;
-    public final static int   COM_LIAISON        = 2;
-    public final static int   COM_INDEP          = 3;
-    public final static int   COM_NUM            = 4;
+    public final static int COM_INTEGRATED     = 0;
+    public final static int COM_HOUSE          = 1;
+    public final static int COM_LIAISON        = 2;
+    public final static int COM_INDEP          = 3;
+    public final static int COM_NUM            = 4;
 
-    public final static int   MRBC_FEE_PERCENTAGE = 5;
+    public final static int MRBC_FEE_PERCENTAGE = 5;
 
     private LocalDate startDate;
     private LocalDate endDate;

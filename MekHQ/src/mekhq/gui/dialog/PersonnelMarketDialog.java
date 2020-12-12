@@ -38,7 +38,7 @@ import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.Transaction;
-import mekhq.campaign.market.PersonnelMarket;
+import mekhq.campaign.market.personnelMarket.PersonnelMarket;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.unit.actions.HirePersonnelUnitAction;
@@ -86,8 +86,7 @@ public class PersonnelMarketDialog extends JDialog {
     private ArrayList<RowSorter.SortKey> sortKeys;
     private javax.swing.JSplitPane splitMain;
 
-    ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.PersonnelMarketDialog",
-            new EncodeControl());
+    final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.PersonnelMarketDialog", new EncodeControl());
     //endregion Variable Declarations
 
     /** Creates new form PersonnelMarketDialog */
