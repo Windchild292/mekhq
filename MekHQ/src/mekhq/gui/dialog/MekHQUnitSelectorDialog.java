@@ -24,7 +24,6 @@ import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.client.ui.swing.tileset.EntityImage;
 import megamek.client.ui.swing.util.PlayerColors;
 import megamek.common.*;
-import megamek.common.icons.Camouflage;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
@@ -172,13 +171,8 @@ public class MekHQUnitSelectorDialog extends AbstractUnitSelectorDialog {
         if (selectedEntity != null) {
             Image base = MHQStaticDirectoryManager.getMechTileset().imageFor(selectedEntity);
 
-            Image camo;
-            if ((selectedEntity.getCamoCategory() != null)
-                    && !Camouflage.NO_CAMOUFLAGE.equals(selectedEntity.getCamoCategory())) {
-                camo = selectedEntity.getCamouflage().getImage();
-            } else {
-                camo = campaign.getCamouflage().getImage();
-            }
+            Image camo = (selectedEntity.getCamouflage().hasDefaultCategory()
+                    ? campaign.getCamouflage() : selectedEntity.getCamouflage()).getImage();
 
             // This seems unnecessary as the CamoManager will return an image for a playercolor
             int tint = PlayerColors.getColorRGB(campaign.getColorIndex());

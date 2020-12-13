@@ -499,14 +499,13 @@ public class AtBDynamicScenarioFactory {
             ScenarioForceTemplate forceTemplate = scenario.getBotForceTemplates().get(botForce);
 
             if ((forceTemplate != null) && forceTemplate.isAlliedPlayerForce()) {
-
                 for (Entity en : botForce.getEntityList()) {
                     scenario.getAlliesPlayer().add(en);
                     scenario.getBotUnitTemplates().put(UUID.fromString(en.getExternalIdAsString()), forceTemplate);
 
                     if (!campaign.getCampaignOptions().getAttachedPlayerCamouflage()) {
-                        en.setCamoCategory(Camouflage.NO_CAMOUFLAGE);
-                        en.setCamoFileName(IPlayer.colorNames[scenario.getContract(campaign).getAllyColorIndex()]);
+                        en.setCamouflage(new Camouflage(Camouflage.COLOUR_CAMOUFLAGE,
+                                IPlayer.colorNames[scenario.getContract(campaign).getAllyColorIndex()]));
                     }
                 }
 

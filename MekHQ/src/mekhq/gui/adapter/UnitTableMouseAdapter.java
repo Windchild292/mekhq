@@ -44,6 +44,7 @@ import megamek.client.ui.swing.UnitEditorDialog;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.icons.AbstractIcon;
+import megamek.common.icons.Camouflage;
 import megamek.common.loaders.BLKFile;
 import megamek.common.util.EncodeControl;
 import megamek.common.util.StringUtil;
@@ -382,23 +383,18 @@ public class UnitTableMouseAdapter extends MouseInputAdapter implements ActionLi
         } else if (command.equals(COMMAND_REMOVE_INDI_CAMO)) {
             for (Unit u : units) {
                 if (u.isEntityCamo()) {
-                    u.getEntity().setCamoCategory(null);
-                    u.getEntity().setCamoFileName(null);
+                    u.getEntity().setCamouflage(new Camouflage());
                 }
             }
         } else if (command.equals(COMMAND_INDI_CAMO)) { // Single Unit only
-            String category = selectedUnit.getCamoCategory();
-            if (StringUtil.isNullOrEmpty(category)) {
-                category = AbstractIcon.ROOT_CATEGORY;
-            }
+            String category = selectedUnit.getCamouflage().getCategory();
             CamoChoiceDialog ccd = new CamoChoiceDialog(gui.getFrame(), true, category,
-                    selectedUnit.getCamoFileName(), gui.getCampaign().getColorIndex());
+                    selectedUnit.getCamouflage().getFilename(), gui.getCampaign().getColorIndex());
             ccd.setLocationRelativeTo(gui.getFrame());
             ccd.setVisible(true);
 
             if (ccd.clickedSelect()) {
-                selectedUnit.getEntity().setCamoCategory(ccd.getCategory());
-                selectedUnit.getEntity().setCamoFileName(ccd.getFileName());
+                selectedUnit.getEntity().setCamouflage(new Camouflage(ccd.getCategory(), ccd.getFileName()));
                 MekHQ.triggerEvent(new UnitChangedEvent(selectedUnit));
             }
         } else if (command.equals(COMMAND_CANCEL_ORDER)) {

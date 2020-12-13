@@ -705,8 +705,8 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                 externalIDLookup.put(en.getExternalIdAsString(), en);
 
                 if (!campaign.getCampaignOptions().getAttachedPlayerCamouflage()) {
-                    en.setCamoCategory(Camouflage.NO_CAMOUFLAGE);
-                    en.setCamoFileName(IPlayer.colorNames[getContract(campaign).getAllyColorIndex()]);
+                    en.setCamouflage(new Camouflage(Camouflage.COLOUR_CAMOUFLAGE,
+                            IPlayer.colorNames[getContract(campaign).getAllyColorIndex()]));
                 }
             } else {
                 MekHQ.getLogger().error(AtBScenario.class, "Entity for player-controlled allies is null");

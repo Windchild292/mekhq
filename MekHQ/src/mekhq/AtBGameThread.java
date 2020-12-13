@@ -41,7 +41,6 @@ import megamek.common.IGame;
 import megamek.common.MapSettings;
 import megamek.common.PlanetaryConditions;
 import megamek.common.UnitType;
-import megamek.common.icons.Camouflage;
 import megamek.common.logging.LogLevel;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.mission.AtBDynamicScenario;
@@ -116,8 +115,7 @@ public class AtBGameThread extends GameThread {
             if (((client.getGame() != null) && (client.getGame().getPhase() == IGame.Phase.PHASE_LOUNGE))) {
                 MekHQ.getLogger().info("Thread in lounge" );
 
-                client.getLocalPlayer().setCamoCategory(app.getCampaign().getCamoCategory());
-                client.getLocalPlayer().setCamoFileName(app.getCampaign().getCamoFileName());
+                client.getLocalPlayer().setCamouflage(app.getCampaign().getCamouflage());
                 client.getLocalPlayer().setColorIndex(app.getCampaign().getColorIndex());
 
                 if (started) {
@@ -393,13 +391,12 @@ public class AtBGameThread extends GameThread {
                 botClient.getLocalPlayer().setTeam(botForce.getTeam());
                 botClient.getLocalPlayer().setStartingPos(botForce.getStart());
 
-                if (Camouflage.NO_CAMOUFLAGE.equals(botForce.getCamoCategory())) {
+                if (botForce.getCamouflage().hasDefaultCategory()) {
                     if (botForce.getColorIndex() >= 0) {
                         botClient.getLocalPlayer().setColorIndex(botForce.getColorIndex());
                     }
                 } else {
-                    botClient.getLocalPlayer().setCamoCategory(botForce.getCamoCategory());
-                    botClient.getLocalPlayer().setCamoFileName(botForce.getCamoFileName());
+                    botClient.getLocalPlayer().setCamouflage(botForce.getCamouflage());
                 }
 
                 botClient.sendPlayerInfo();
