@@ -36,6 +36,7 @@ import megamek.client.Client;
 import megamek.client.bot.BotClient;
 import megamek.client.bot.princess.Princess;
 import megamek.client.ui.swing.ClientGUI;
+import megamek.client.ui.swing.util.PlayerColors;
 import megamek.common.Entity;
 import megamek.common.IGame;
 import megamek.common.MapSettings;
@@ -116,8 +117,7 @@ public class AtBGameThread extends GameThread {
             if (((client.getGame() != null) && (client.getGame().getPhase() == IGame.Phase.PHASE_LOUNGE))) {
                 MekHQ.getLogger().info("Thread in lounge" );
 
-                client.getLocalPlayer().setCamoCategory(app.getCampaign().getCamoCategory());
-                client.getLocalPlayer().setCamoFileName(app.getCampaign().getCamoFileName());
+                client.getLocalPlayer().setCamouflage(app.getCampaign().getCamouflage());
                 client.getLocalPlayer().setColorIndex(app.getCampaign().getColorIndex());
 
                 if (started) {
@@ -380,7 +380,8 @@ public class AtBGameThread extends GameThread {
      */
     private void configureBot(BotClient botClient, BotForce botForce) {
         try {
-            /* Wait for the server to add the bot client, but allow a timeout
+            /*
+             * Wait for the server to add the bot client, but allow a timeout
              * rather than blocking
              */
             int retries = 50;
@@ -390,17 +391,16 @@ public class AtBGameThread extends GameThread {
             if (null == botClient.getLocalPlayer()) {
                 MekHQ.getLogger().error("Could not configure bot " + botClient.getName());
             } else {
+                MekHQ.getLogger().warning("Setting player " + botClient.getLocalPlayer().getName()
+                        + " with camo " + botForce.getCamoCategory() + "/" + botForce.getCamoFileName()
+                        + " and colour index " + botForce.getColorIndex());
                 botClient.getLocalPlayer().setTeam(botForce.getTeam());
                 botClient.getLocalPlayer().setStartingPos(botForce.getStart());
-
-                if (Camouflage.NO_CAMOUFLAGE.equals(botForce.getCamoCategory())) {
-                    if (botForce.getColorIndex() >= 0) {
-                        botClient.getLocalPlayer().setColorIndex(botForce.getColorIndex());
-                    }
-                } else {
-                    botClient.getLocalPlayer().setCamoCategory(botForce.getCamoCategory());
-                    botClient.getLocalPlayer().setCamoFileName(botForce.getCamoFileName());
-                }
+                botClient.getLocalPlayer().setCamouflage(new Camouflage(botForce.getCamoCategory(),
+                        (Camouflage.NO_CAMOUFLAGE.equalsIgnoreCase(botForce.getCamoCategory())
+                                ? PlayerColors.COLOR_NAMES[botForce.getColorIndex()]
+                                : botForce.getCamoFileName())));
+                botClient.getLocalPlayer().setColorIndex(botForce.getColorIndex());
 
                 botClient.sendPlayerInfo();
 
