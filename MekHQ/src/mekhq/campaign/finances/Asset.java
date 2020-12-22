@@ -82,19 +82,19 @@ public class Asset implements MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "asset");
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "name", name);
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "value", value.toXmlString());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "schedule", schedule);
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "income", income.toXmlString());
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "asset");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "asset");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "value", value);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "schedule", schedule);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "income", income);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "asset");
     }
 
     public static Asset generateInstanceFromXML(Node wn) {
         Asset retVal = new Asset();
 
         NodeList nl = wn.getChildNodes();
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
             if (wn2.getNodeName().equalsIgnoreCase("name")) {
                 retVal.name = wn2.getTextContent();

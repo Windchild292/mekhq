@@ -331,7 +331,7 @@ public class Scenario implements Serializable {
             for (Loot l : loots) {
                 l.writeToXml(pw1, indent);
             }
-            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, --indent, "loots");
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "loots");
         }
 
         if (date != null) {
@@ -340,7 +340,7 @@ public class Scenario implements Serializable {
     }
 
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "scenario");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "scenario");
     }
 
     protected void loadFieldsFromXmlNode(Node wn) throws ParseException {

@@ -151,10 +151,10 @@ public class AmmoStorage extends EquipmentPart implements IAcquisitionWork {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "typeName", getType().getInternalName());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "shots", shots);
-        writeToXmlEnd(pw1, indent);
+        writeToXmlBegin(pw1, indent++);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "typeName", getType().getInternalName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shots", shots);
+        writeToXmlEnd(pw1, --indent);
     }
 
     @Override

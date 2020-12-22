@@ -4157,9 +4157,9 @@ public class Campaign implements Serializable, ITechManager {
             contractMarket.writeToXml(pw1, indent);
 
             unitMarket.writeToXml(pw1, indent);
-            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent++, "colorIndex", colorIndex);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "colorIndex", colorIndex);
             if (lances.size() > 0)   {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "lances");
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "lances");
                 for (Lance l : lances.values()) {
                     if (forceIds.containsKey(l.getForceId())) {
                         l.writeToXml(pw1, indent);
@@ -4168,14 +4168,10 @@ public class Campaign implements Serializable, ITechManager {
                 MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "lances");
             }
             retirementDefectionTracker.writeToXml(pw1, indent);
-            if (shipSearchStart != null) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchStart", getShipSearchStart());
-            }
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchStart", getShipSearchStart());
             MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchType", shipSearchType);
             MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchResult", shipSearchResult);
-            if (shipSearchExpiration != null) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchExpiration", getShipSearchExpiration());
-            }
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchExpiration", getShipSearchExpiration());
         }
 
         // Customised planetary events

@@ -1756,10 +1756,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "unitId", getUnit().getId());
             }
             if (!salary.equals(Money.of(-1))) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "salary", salary.toXmlString());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "salary", salary);
             }
             if (!totalEarnings.equals(Money.of(0))) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "totalEarnings", totalEarnings.toXmlString());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "totalEarnings", totalEarnings);
             }
             // Always save a person's status, to make it easy to parse the personnel saved data
             MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "status", status.name());

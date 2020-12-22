@@ -180,16 +180,16 @@ public class Finances implements Serializable {
     }
 
     public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "finances");
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "loanDefaults", loanDefaults);
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "finances");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "loanDefaults", loanDefaults);
         for (Transaction trans : getAllTransactions()) {
-            trans.writeToXml(pw1, indent + 1);
+            trans.writeToXml(pw1, indent);
         }
         for (Loan loan : getAllLoans()) {
-            loan.writeToXml(pw1, indent + 1);
+            loan.writeToXml(pw1, indent);
         }
         for (Asset asset : getAllAssets()) {
-            asset.writeToXml(pw1, indent + 1);
+            asset.writeToXml(pw1, indent);
         }
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "wentIntoDebt", wentIntoDebt);
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "finances");
