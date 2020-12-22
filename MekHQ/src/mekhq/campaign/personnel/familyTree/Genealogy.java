@@ -166,9 +166,8 @@ public class Genealogy implements Serializable, MekHqXmlSerializable {
                 }
             }
         } else if (getFamily().get(relationshipType) == null) {
-            MekHQ.getLogger().error(getClass(), "removeFamilyMember",
-                    "Could not remove unknown family member of relationship "
-                            + relationshipType.name() + " and UUID " + id.toString() + ".");
+            MekHQ.getLogger().error("Could not remove unknown family member of relationship "
+                    + relationshipType.name() + " and UUID " + id + ".");
         } else {
             List<UUID> familyTypeMembers = getFamily().get(relationshipType);
             familyTypeMembers.remove(id);
@@ -449,31 +448,29 @@ public class Genealogy implements Serializable, MekHqXmlSerializable {
      */
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "genealogy");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "origin", getOrigin().toString());
-        if (getSpouseId() != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "spouse", getSpouseId().toString());
-        }
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "genealogy");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "origin", getOrigin());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "spouse", getSpouseId());
         if (!getFormerSpouses().isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "formerSpouses");
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "formerSpouses");
             for (FormerSpouse ex : getFormerSpouses()) {
-                ex.writeToXml(pw1, indent + 2);
+                ex.writeToXml(pw1, indent);
             }
-            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "formerSpouses");
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "formerSpouses");
         }
         if (!familyIsEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "family");
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "family");
             for (FamilialRelationshipType relationshipType : getFamily().keySet()) {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 2, "relationship");
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3, "type", relationshipType.name());
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "relationship");
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "type", relationshipType.name());
                 for (UUID id : getFamily().get(relationshipType)) {
-                    MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3, "personId", id.toString());
+                    MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "personId", id);
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 2, "relationship");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "relationship");
             }
-            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "family");
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "family");
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "genealogy");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "genealogy");
     }
 
     /**
@@ -498,7 +495,7 @@ public class Genealogy implements Serializable, MekHqXmlSerializable {
                 }
             }
         } catch (Exception e) {
-            MekHQ.getLogger().error(Genealogy.class, "generateInstanceFromXML", "");
+            MekHQ.getLogger().error("Failed to generate genealogy from XML", e);
         }
 
         return retVal;
@@ -519,8 +516,7 @@ public class Genealogy implements Serializable, MekHqXmlSerializable {
             }
 
             if (!wn2.getNodeName().equalsIgnoreCase("formerSpouse")) {
-                MekHQ.getLogger().error(Genealogy.class, "generateInstanceFromXML",
-                        "Unknown node type not loaded in formerSpouses nodes: " + wn2.getNodeName());
+                MekHQ.getLogger().error("Unknown node type not loaded in formerSpouses nodes: " + wn2.getNodeName());
                 continue;
             }
             retVal.formerSpouses.add(FormerSpouse.generateInstanceFromXML(wn2));

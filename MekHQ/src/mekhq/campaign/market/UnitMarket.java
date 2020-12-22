@@ -284,11 +284,11 @@ public class UnitMarket implements Serializable {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "unitMarket");
         for (MarketOffer o : offers) {
             MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "offer");
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "market", o.market.name());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "unitType", o.unitType);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "unitWeight", o.unitWeight);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "unit", o.unit.getName());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "pct", o.pct);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "market", o.market.name());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "unitType", o.unitType);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "unitWeight", o.unitWeight);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "unit", o.unit.getName());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "pct", o.pct);
             MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "offer");
         }
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "unitMarket");

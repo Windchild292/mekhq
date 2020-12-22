@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign;
 
 import java.io.PrintWriter;
@@ -342,12 +341,9 @@ public class Warehouse {
     }
 
     public void writeToXml(PrintWriter pw1, int indent, String tag) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, tag);
-
-        forEachPart(part -> {
-            part.writeToXml(pw1, indent + 1);
-        });
-
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, tag);
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, tag);
+        final int i = indent;
+        forEachPart(part -> part.writeToXml(pw1, i));
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, tag);
     }
 }

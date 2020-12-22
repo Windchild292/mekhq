@@ -139,7 +139,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         int children = 1;
         // Hellin's law says it's 1:89 chance, to not make it appear too seldom, we use 1:50
         while (Compute.randomInt(50) == 0) {
-            ++ children;
+            children++;
         }
         return Math.min(children, 10); // Limit to decuplets, for the sake of sanity
     };
@@ -1658,226 +1658,197 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<person id=\"" + id.toString()
-                + "\" type=\"" + this.getClass().getName() + "\">");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "person", "id", id, "type", getClass());
         try {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "id", id.toString());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "givenName", givenName);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "surname", surname);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", id);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "givenName", givenName);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "surname", surname);
             if (!StringUtil.isNullOrEmpty(honorific)) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "honorific", honorific);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "honorific", honorific);
             }
             if (maidenName != null) { // this is only a != null comparison because empty is a use case for divorce
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "maidenName", maidenName);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "maidenName", maidenName);
             }
             if (!StringUtil.isNullOrEmpty(callsign)) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "callsign", callsign);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "callsign", callsign);
             }
             // Always save the primary role
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "primaryRole", primaryRole);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "primaryRole", primaryRole);
             if (secondaryRole != T_NONE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "secondaryRole", secondaryRole);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "secondaryRole", secondaryRole);
             }
             if (primaryDesignator != ROMDesignation.NONE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "primaryDesignator", primaryDesignator.name());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "primaryDesignator", primaryDesignator.name());
             }
             if (secondaryDesignator != ROMDesignation.NONE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "secondaryDesignator", secondaryDesignator.name());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "secondaryDesignator", secondaryDesignator.name());
             }
             if (commander) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "commander", true);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "commander", true);
             }
             if (dependent) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "dependent", true);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "dependent", true);
             }
             // Always save the person's origin faction
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "faction", originFaction.getShortName());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "faction", originFaction.getShortName());
             if (originPlanet != null) {
-                pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                        + "<planetId systemId=\""
-                        + originPlanet.getParentSystem().getId()
-                        + "\">"
-                        + originPlanet.getId()
-                        + "</planetId>");
+                pw1.println(MekHqXmlUtil.indentStr(indent)
+                        + "<planetId systemId=\"" + originPlanet.getParentSystem().getId() + "\">" + originPlanet.getId() + "</planetId>");
             }
             // Always save whether or not someone is a clanner
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "clan", clan);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "clan", clan);
             if (phenotype != Phenotype.NONE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "phenotype", phenotype.name());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "phenotype", phenotype.name());
             }
             if (!StringUtil.isNullOrEmpty(bloodname)) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "bloodname", bloodname);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "bloodname", bloodname);
             }
             if (!StringUtil.isNullOrEmpty(biography)) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "biography", biography);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "biography", biography);
             }
             if (idleMonths > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "idleMonths", idleMonths);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "idleMonths", idleMonths);
             }
             if (!genealogy.isEmpty()) {
-                genealogy.writeToXml(pw1, indent + 1);
+                genealogy.writeToXml(pw1, indent);
             }
             if (!isTryingToMarry()) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "tryingToMarry", false);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "tryingToMarry", false);
             }
             if (!isTryingToConceive()) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "tryingToConceive", false);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "tryingToConceive", false);
             }
-            if (dueDate != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "dueDate",
-                        MekHqXmlUtil.saveFormattedDate(dueDate));
-            }
-            if (expectedDueDate != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "expectedDueDate",
-                        MekHqXmlUtil.saveFormattedDate(expectedDueDate));
-            }
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "dueDate", dueDate);
+
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "expectedDueDate", expectedDueDate);
             if (!getPortrait().hasDefaultCategory()) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "portraitCategory", getPortrait().getCategory());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "portraitCategory", getPortrait().getCategory());
             }
             if (!getPortrait().hasDefaultFilename()) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "portraitFile", getPortrait().getFilename());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "portraitFile", getPortrait().getFilename());
             }
             // Always save the current XP
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "xp", xp);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "xp", xp);
             if (daysToWaitForHealing != 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "daysToWaitForHealing", daysToWaitForHealing);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "daysToWaitForHealing", daysToWaitForHealing);
             }
             // Always save the person's gender, as it would otherwise get confusing fast
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "gender", gender.name());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "gender", gender.name());
             // Always save a person's rank
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "rank", rank);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rank", rank);
             if (rankLevel != 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "rankLevel", rankLevel);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rankLevel", rankLevel);
             }
             if (rankSystem != -1) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "rankSystem", rankSystem);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rankSystem", rankSystem);
             }
             if (maneiDominiRank != ManeiDominiRank.NONE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "maneiDominiRank", maneiDominiRank.name());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "maneiDominiRank", maneiDominiRank.name());
             }
             if (maneiDominiClass != ManeiDominiClass.NONE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "maneiDominiClass", maneiDominiClass.name());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "maneiDominiClass", maneiDominiClass.name());
             }
             if (nTasks > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "nTasks", nTasks);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "nTasks", nTasks);
             }
-            if (doctorId != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "doctorId", doctorId.toString());
-            }
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "doctorId", doctorId);
             if (getUnit() != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "unitId", getUnit().getId());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "unitId", getUnit().getId());
             }
             if (!salary.equals(Money.of(-1))) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "salary", salary.toXmlString());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "salary", salary.toXmlString());
             }
             if (!totalEarnings.equals(Money.of(0))) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "totalEarnings", totalEarnings.toXmlString());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "totalEarnings", totalEarnings.toXmlString());
             }
             // Always save a person's status, to make it easy to parse the personnel saved data
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "status", status.name());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "status", status.name());
             if (prisonerStatus != PrisonerStatus.FREE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "prisonerStatus", prisonerStatus.name());
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "prisonerStatus", prisonerStatus.name());
             }
             if (hits > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "hits", hits);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "hits", hits);
             }
             if (toughness != 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "toughness", toughness);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "toughness", toughness);
             }
             if (minutesLeft > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "minutesLeft", minutesLeft);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "minutesLeft", minutesLeft);
             }
             if (overtimeLeft > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "overtimeLeft", overtimeLeft);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "overtimeLeft", overtimeLeft);
             }
-            if (birthday != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "birthday",
-                        MekHqXmlUtil.saveFormattedDate(birthday));
-            }
-            if (dateOfDeath != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "deathday",
-                        MekHqXmlUtil.saveFormattedDate(dateOfDeath));
-            }
-            if (recruitment != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "recruitment",
-                        MekHqXmlUtil.saveFormattedDate(recruitment));
-            }
-            if (lastRankChangeDate != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastRankChangeDate",
-                        MekHqXmlUtil.saveFormattedDate(lastRankChangeDate));
-            }
-            if (getRetirement() != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "retirement",
-                        MekHqXmlUtil.saveFormattedDate(getRetirement()));
-            }
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "birthday", birthday);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "deathday", dateOfDeath);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "recruitment", recruitment);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "lastRankChangeDate", lastRankChangeDate);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "retirement", getRetirement());
             for (Skill skill : skills.getSkills()) {
-                skill.writeToXml(pw1, indent + 1);
+                skill.writeToXml(pw1, indent);
             }
             if (countOptions(PilotOptions.LVL3_ADVANTAGES) > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "advantages",
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "advantages",
                         getOptionList("::", PilotOptions.LVL3_ADVANTAGES));
             }
             if (countOptions(PilotOptions.EDGE_ADVANTAGES) > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "edge",
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "edge",
                         getOptionList("::", PilotOptions.EDGE_ADVANTAGES));
                 // For support personnel, write an available edge value
                 if (hasSupportRole(false) || isEngineer()) {
-                    MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "edgeAvailable", getCurrentEdge());
+                    MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "edgeAvailable", getCurrentEdge());
                 }
             }
             if (countOptions(PilotOptions.MD_ADVANTAGES) > 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "implants",
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "implants",
                         getOptionList("::", PilotOptions.MD_ADVANTAGES));
             }
             if (!techUnits.isEmpty()) {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "techUnitIds");
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "techUnitIds");
                 for (Unit unit : techUnits) {
-                    MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 2, "id", unit.getId());
+                    MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", unit.getId());
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "techUnitIds");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "techUnitIds");
             }
             if (!personnelLog.isEmpty()) {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "personnelLog");
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "personnelLog");
                 for (LogEntry entry : personnelLog) {
-                    entry.writeToXml(pw1, indent + 2);
+                    entry.writeToXml(pw1, indent);
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "personnelLog");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "personnelLog");
             }
             if (!missionLog.isEmpty()) {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "missionLog");
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "missionLog");
                 for (LogEntry entry : missionLog) {
-                    entry.writeToXml(pw1, indent + 2);
+                    entry.writeToXml(pw1, indent);
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "missionLog");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "missionLog");
             }
             if (!getAwardController().getAwards().isEmpty()) {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "awards");
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "awards");
                 for (Award award : getAwardController().getAwards()) {
-                    award.writeToXml(pw1, indent + 2);
+                    award.writeToXml(pw1, indent);
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "awards");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "awards");
             }
             if (injuries.size() > 0) {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "injuries");
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "injuries");
                 for (Injury injury : injuries) {
-                    injury.writeToXml(pw1, indent + 2);
+                    injury.writeToXml(pw1, indent);
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "injuries");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "injuries");
             }
             if (founder) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "founder", true);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "founder", true);
             }
             if (originalUnitWeight != EntityWeightClass.WEIGHT_ULTRA_LIGHT) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "originalUnitWeight", originalUnitWeight);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "originalUnitWeight", originalUnitWeight);
             }
             if (originalUnitTech != TECH_IS1) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "originalUnitTech", originalUnitTech);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "originalUnitTech", originalUnitTech);
             }
-            if (originalUnitId != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "originalUnitId", originalUnitId.toString());
-            }
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "originalUnitId", originalUnitId);
             if (acquisitions != 0) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "acquisitions", acquisitions);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "acquisitions", acquisitions);
             }
             if (!extraData.isEmpty()) {
                 extraData.writeToXml(pw1);
@@ -1886,7 +1857,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
             MekHQ.getLogger().error("Failed to write " + getFullName() + " to the XML File", e);
             throw e; // we want to rethrow to ensure that that the save fails
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</person>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "person");
     }
 
     public static Person generateInstanceFromXML(Node wn, Campaign c, Version version) {

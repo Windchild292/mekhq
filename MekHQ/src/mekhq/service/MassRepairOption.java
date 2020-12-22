@@ -112,12 +112,12 @@ public class MassRepairOption {
     //region File IO
     public void writeToXML(PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "massRepairOption");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "type", getType());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "active", isActive() ? 1 : 0);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "skillMin", getSkillMin());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "skillMax", getSkillMax());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "btnMin", getBthMin());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "btnMax", getBthMax());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "type", getType());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "active", isActive() ? 1 : 0);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "skillMin", getSkillMin());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "skillMax", getSkillMax());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "btnMin", getBthMin());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "btnMax", getBthMax());
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "massRepairOption");
     }
 

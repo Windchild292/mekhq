@@ -135,8 +135,8 @@ public class GamePreset implements MekHqXmlSerializable {
         pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         pw.println("<gamePreset version=\"" + ResourceBundle.getBundle("mekhq.resources.MekHQ")
                 .getString("Application.version") + "\">");
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent, "title", title);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent, "description", description);
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "title", title);
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "description", description);
         if (getOptions() != null) {
             getOptions().writeToXml(pw, indent);
         }
@@ -161,9 +161,9 @@ public class GamePreset implements MekHqXmlSerializable {
         }
 
         if (getRandomSkillPreferences() != null) {
-            getRandomSkillPreferences().writeToXml(pw, --indent);
+            getRandomSkillPreferences().writeToXml(pw, indent);
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, indent, "gamePreset");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "gamePreset");
     }
 
     public static GamePreset createGamePresetFromXMLFileInputStream(FileInputStream fis) throws DOMException {

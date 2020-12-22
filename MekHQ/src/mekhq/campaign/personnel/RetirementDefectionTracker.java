@@ -23,7 +23,6 @@ package mekhq.campaign.personnel;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +34,6 @@ import mekhq.campaign.finances.FinancialReport;
 import mekhq.campaign.finances.Money;
 
 import mekhq.campaign.personnel.ranks.Ranks;
-import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -583,48 +581,41 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
         }
     }
 
-    private String createCsv(Collection<? extends Object> coll) {
-        return StringUtils.join(coll, ",");
-    }
-
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<retirementDefectionTracker>");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "retirementDefectionTracker");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rollRequired", rollRequired);
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "unresolvedPersonnel");
 
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1,
-                "rollRequired",
-                createCsv(rollRequired));
-
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "<unresolvedPersonnel>");
         for (Integer i : unresolvedPersonnel.keySet()) {
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "contract", "id", i, unresolvedPersonnel);
             pw1.println(MekHqXmlUtil.indentStr(indent + 2)
                     + "<contract id=\"" + i + "\">"
                     + createCsv(unresolvedPersonnel.get(i))
                     + "</contract>");
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1)
-                + "</unresolvedPersonnel>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "unresolvedPersonnel");
+;
 
         pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                 + "<payouts>");
         for (UUID pid : payouts.keySet()) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 2)
-                    + "<payout id=\"" + pid.toString() + "\">");
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3,
+                    + "<payout id=\"" + pid + "\">");
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3,
                     "weightClass", payouts.get(pid).getWeightClass());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3,
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3,
                     "dependents", payouts.get(pid).getDependents());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3,
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3,
                     "cbills", payouts.get(pid).getPayoutAmount().toXmlString());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3,
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3,
                     "recruit", payouts.get(pid).hasRecruit());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3,
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3,
                     "heir", payouts.get(pid).hasHeir());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3,
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3,
                     "stolenUnit", payouts.get(pid).hasStolenUnit());
             if (null != payouts.get(pid).getStolenUnitId()) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3,
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3,
                         "stolenUnitId", payouts.get(pid).getStolenUnitId().toString());
             }
             pw1.println(MekHqXmlUtil.indentStr(indent + 2)
@@ -633,14 +624,12 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
         pw1.println(MekHqXmlUtil.indentStr(indent + 1)
                 + "</payouts>");
 
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1,
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1,
                 "lastRetirementRoll", MekHqXmlUtil.saveFormattedDate(lastRetirementRoll));
         pw1.println(MekHqXmlUtil.indentStr(indent) + "</retirementDefectionTracker>");
     }
 
     public static RetirementDefectionTracker generateInstanceFromXML(Node wn, Campaign c) {
-        final String METHOD_NAME = "generateInstanceFromXML(Node,Campaign)"; //$NON-NLS-1$
-
         RetirementDefectionTracker retVal = null;
 
         try {

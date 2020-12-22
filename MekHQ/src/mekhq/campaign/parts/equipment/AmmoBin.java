@@ -209,11 +209,11 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
         // CAW: InfantryAmmoBin may have negative shots needed
         if (shotsNeeded != 0) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "shotsNeeded", shotsNeeded);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "shotsNeeded", shotsNeeded);
         }
 
         if (oneShot) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "oneShot", oneShot);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "oneShot", oneShot);
         }
 
         super.writeToXmlEnd(pw1, indent);

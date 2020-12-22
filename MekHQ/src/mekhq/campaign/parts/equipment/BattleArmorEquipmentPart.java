@@ -81,20 +81,20 @@ public class BattleArmorEquipmentPart extends EquipmentPart {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "equipmentNum", equipmentNum);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "typeName", type.getInternalName());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "size", size);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "equipTonnage", equipTonnage);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "trooper", trooper);
-        writeToXmlEnd(pw1, indent);
+        writeToXmlBegin(pw1, indent++);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "equipmentNum", equipmentNum);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "typeName", type.getInternalName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "size", size);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "equipTonnage", equipTonnage);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "trooper", trooper);
+        writeToXmlEnd(pw1, --indent);
     }
 
     @Override
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
             if (wn2.getNodeName().equalsIgnoreCase("equipmentNum")) {
                 equipmentNum = Integer.parseInt(wn2.getTextContent());

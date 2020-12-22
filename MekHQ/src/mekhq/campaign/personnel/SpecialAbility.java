@@ -320,7 +320,7 @@ public class SpecialAbility implements MekHqXmlSerializable {
             skillpre.writeToXml(pw1, indent+1);
         }
         for (String pre : prereqMisc.keySet()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "miscPrereq", pre + ":" + prereqMisc.get(pre));
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "miscPrereq", pre + ":" + prereqMisc.get(pre));
         }
         pw1.println(MekHqXmlUtil.indentStr(indent) + "</ability>");
 

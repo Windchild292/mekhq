@@ -69,11 +69,11 @@ public class MissingBattleArmorEquipmentPart extends MissingEquipmentPart {
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "equipmentNum", equipmentNum);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "typeName", type.getInternalName());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "size", size);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "equipTonnage", equipTonnage);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "trooper", trooper);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "equipmentNum", equipmentNum);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "typeName", type.getInternalName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "size", size);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "equipTonnage", equipTonnage);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "trooper", trooper);
         writeToXmlEnd(pw1, indent);
     }
 

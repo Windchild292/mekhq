@@ -149,7 +149,7 @@ public class MissingAmmoBin extends MissingEquipmentPart {
     @Override
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
         if (oneShot) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "oneShot", oneShot);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "oneShot", oneShot);
         }
 
         super.writeToXmlEnd(pw1, indent);

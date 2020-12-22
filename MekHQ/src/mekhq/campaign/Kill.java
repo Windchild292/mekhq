@@ -116,10 +116,10 @@ public class Kill implements Serializable {
 
     public void writeToXml(PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "kill");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "pilotId", pilotId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "killed", killed);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "killer", killer);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "date", MekHqXmlUtil.saveFormattedDate(date));
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "pilotId", pilotId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "killed", killed);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "killer", killer);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "date", date);
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "kill");
     }
 

@@ -205,8 +205,8 @@ public class JumpshipDockingCollar extends Part {
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "collarType", collarType);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "collarNumber", collarNumber);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "collarType", collarType);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "collarNumber", collarNumber);
         writeToXmlEnd(pw1, indent);
     }
 

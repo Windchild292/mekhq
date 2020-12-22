@@ -155,7 +155,7 @@ public class MissingLargeCraftAmmoBin extends MissingAmmoBin {
 
     @Override
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "bayEqNum", bayEqNum);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "bayEqNum", bayEqNum);
         super.writeToXmlEnd(pw1, indent);
     }
 

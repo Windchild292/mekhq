@@ -162,8 +162,8 @@ public class SVArmor extends Armor {
 
     @Override
     protected void writeAdditionalFields(PrintWriter pw, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent, NODE_BAR, bar);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent, NODE_TECH_RATING, ITechnology.getRatingName(techRating));
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, NODE_BAR, bar);
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, NODE_TECH_RATING, ITechnology.getRatingName(techRating));
     }
 
     @Override

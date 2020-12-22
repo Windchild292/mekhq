@@ -98,13 +98,13 @@ public class Award implements MekHqXmlSerializable, Comparable<Award>, Serializa
      */
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "award");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "award");
         for (LocalDate date : dates) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "date", MekHqXmlUtil.saveFormattedDate(date));
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "date", date);
         }
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "set", set);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "name", name);
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "award");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "set", set);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", name);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "award");
     }
 
     public String getName() {

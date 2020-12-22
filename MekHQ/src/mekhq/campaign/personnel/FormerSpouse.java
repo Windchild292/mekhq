@@ -103,12 +103,13 @@ public class FormerSpouse implements Serializable, MekHqXmlSerializable {
     //endregion getters/setters
 
     //region read from/write to XML
+    @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(String.format("%s<formerSpouse id=\"%s\">", MekHqXmlUtil.indentStr(indent), getFormerSpouseId().toString()));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "id", formerSpouseId.toString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "date", MekHqXmlUtil.saveFormattedDate(date));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "reason", reason);
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</formerSpouse>");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "formerSpouse", "id", getFormerSpouseId());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", formerSpouseId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "date", date);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "reason", reason);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "formerSpouse");
     }
 
     public static FormerSpouse generateInstanceFromXML(Node wn) {
@@ -123,15 +124,15 @@ public class FormerSpouse implements Serializable, MekHqXmlSerializable {
                 Node wn2 = nl.item(x);
 
                 if (wn2.getNodeName().equalsIgnoreCase("id")) {
-                    retVal.setFormerSpouseId(UUID.fromString(wn2.getTextContent()));
+                    retVal.setFormerSpouseId(UUID.fromString(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("date")) {
                     retVal.setDate(MekHqXmlUtil.parseDate(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("reason")) {
-                    retVal.setReason(Integer.parseInt((wn2.getTextContent())));
+                    retVal.setReason(Integer.parseInt(wn2.getTextContent().trim()));
                 }
             }
         } catch (Exception e) {
-            MekHQ.getLogger().error(FormerSpouse.class, "generateInstanceFromXML(Node,Campaign,Version)", e);
+            MekHQ.getLogger().error(e);
         }
 
         return retVal;

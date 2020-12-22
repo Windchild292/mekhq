@@ -383,14 +383,14 @@ public class SkillType implements Serializable {
 
     public void writeToXml(PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "skillType");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "name", name);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "target", target);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "countUp", countUp);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "greenLvl", greenLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "regLvl", regLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "vetLvl", vetLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "eliteLvl", eliteLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "costs", StringUtils.join(costs, ','));
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "target", target);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "countUp", countUp);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "greenLvl", greenLvl);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "regLvl", regLvl);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "vetLvl", vetLvl);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "eliteLvl", eliteLvl);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "costs", StringUtils.join(costs, ','));
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "skillType");
     }
 

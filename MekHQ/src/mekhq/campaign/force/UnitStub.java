@@ -81,15 +81,15 @@ public class UnitStub implements Serializable {
     public void writeToXml(PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "unitStub");
         if (!StringUtil.isNullOrEmpty(desc)) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "desc", desc);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "desc", desc);
         }
 
         if (!getPortrait().hasDefaultCategory()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "portraitCategory", getPortrait().getCategory());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "portraitCategory", getPortrait().getCategory());
         }
 
         if (!getPortrait().hasDefaultFilename()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "portraitFileName", getPortrait().getFilename());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "portraitFileName", getPortrait().getFilename());
         }
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "unitStub");
     }

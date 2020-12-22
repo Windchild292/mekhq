@@ -1080,127 +1080,42 @@ public class AtBContract extends Contract implements Serializable {
     }
 
     protected void writeToXmlBegin(PrintWriter pw1, int indent) {
-        super.writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<employerCode>"
-                +employerCode
-                +"</employerCode>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyCode>"
-                +enemyCode
-                +"</enemyCode>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<missionType>"
-                +missionType
-                +"</missionType>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allySkill>"
-                +allySkill
-                +"</allySkill>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyQuality>"
-                +allyQuality
-                +"</allyQuality>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemySkill>"
-                +enemySkill
-                +"</enemySkill>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyQuality>"
-                +enemyQuality
-                +"</enemyQuality>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyBotName>"
-                +allyBotName
-                +"</allyBotName>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyBotName>"
-                +enemyBotName
-                +"</enemyBotName>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyCamoCategory>"
-                +allyCamoCategory
-                +"</allyCamoCategory>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyCamoFileName>"
-                +allyCamoFileName
-                +"</allyCamoFileName>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyColorIndex>"
-                +allyColorIndex
-                +"</allyColorIndex>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyCamoCategory>"
-                +enemyCamoCategory
-                +"</enemyCamoCategory>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyCamoFileName>"
-                +enemyCamoFileName
-                +"</enemyCamoFileName>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyColorIndex>"
-                +enemyColorIndex
-                +"</enemyColorIndex>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<requiredLances>"
-                +requiredLances
-                +"</requiredLances>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<moraleLevel>"
-                +moraleLevel
-                +"</moraleLevel>");
-        if (null != routEnd) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "routEnd",
-                    MekHqXmlUtil.saveFormattedDate(routEnd));
-        }
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<numBonusParts>"
-                +numBonusParts
-                +"</numBonusParts>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<partsAvailabilityLevel>"
-                +partsAvailabilityLevel
-                +"</partsAvailabilityLevel>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<extensionLength>"
-                +extensionLength
-                +"</extensionLength>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<sharesPct>"
-                +sharesPct
-                +"</sharesPct>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<playerMinorBreaches>"
-                +playerMinorBreaches
-                +"</playerMinorBreaches>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<employerMinorBreaches>"
-                +employerMinorBreaches
-                +"</employerMinorBreaches>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<contractScoreArbitraryModifier>"
-                +contractScoreArbitraryModifier
-                +"</contractScoreArbitraryModifier>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<priorLogisticsFailure>"
-                +priorLogisticsFailure
-                +"</priorLogisticsFailure>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<battleTypeMod>"
-                +battleTypeMod
-                +"</battleTypeMod>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<nextWeekBattleTypeMod>"
-                +nextWeekBattleTypeMod
-                +"</nextWeekBattleTypeMod>");
+        super.writeToXmlBegin(pw1, indent++);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "employerCode", employerCode);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enemyCode", enemyCode);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "missionType", missionType);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "allySkill", allySkill);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "allyQuality", allyQuality);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enemySkill", enemySkill);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enemyQuality", enemyQuality);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "allyBotName", allyBotName);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enemyBotName", enemyBotName);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "allyCamoCategory", allyCamoCategory);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "allyCamoFileName", allyCamoFileName);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "allyColorIndex", allyColorIndex);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enemyCamoCategory", enemyCamoCategory);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enemyCamoFileName", enemyCamoFileName);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enemyColorIndex", enemyColorIndex);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "requiredLances", requiredLances);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "moraleLevel", moraleLevel);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "routEnd", routEnd);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "numBonusParts", numBonusParts);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "partsAvailabilityLevel", partsAvailabilityLevel);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "extensionLength", extensionLength);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "sharesPct", sharesPct);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "playerMinorBreaches", playerMinorBreaches);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "employerMinorBreaches", employerMinorBreaches);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "contractScoreArbitraryModifier", contractScoreArbitraryModifier);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "priorLogisticsFailure", priorLogisticsFailure);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "battleTypeMod", battleTypeMod);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "nextWeekBattleTypeMod", nextWeekBattleTypeMod);
         if (parentContract != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "parentContractId", parentContract.getId());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "parentContractId", parentContract.getId());
         }
 
-        if (null != specialEventScenarioDate) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "specialEventScenarioDate",
-                    MekHqXmlUtil.saveFormattedDate(specialEventScenarioDate));
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "specialEventScenarioType", specialEventScenarioType);
+        if (specialEventScenarioDate != null) {
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "specialEventScenarioDate", specialEventScenarioDate);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "specialEventScenarioType", specialEventScenarioType);
         }
     }
 

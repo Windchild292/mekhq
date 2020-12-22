@@ -465,17 +465,15 @@ public class Lance implements Serializable, MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<lance type=\"" + getClass().getName() + "\">");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "forceId", forceId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "missionId", missionId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "role", role.name());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "commanderId", commanderId);
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "lance");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "lance", null, null, "type", getClass());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "forceId", forceId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "missionId", missionId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "role", role.name());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "commanderId", commanderId);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "lance");
     }
 
     public static Lance generateInstanceFromXML(Node wn) {
-        final String METHOD_NAME = "generateInstanceFromXML(Node)";
-
         Lance retVal = null;
         NamedNodeMap attrs = wn.getAttributes();
         Node classNameNode = attrs.getNamedItem("type");
@@ -484,7 +482,7 @@ public class Lance implements Serializable, MekHqXmlSerializable {
             retVal = (Lance) Class.forName(className).newInstance();
             NodeList nl = wn.getChildNodes();
 
-            for (int x=0; x<nl.getLength(); x++) {
+            for (int x = 0; x < nl.getLength(); x++) {
                 Node wn2 = nl.item(x);
 
                 if (wn2.getNodeName().equalsIgnoreCase("forceId")) {
@@ -498,7 +496,7 @@ public class Lance implements Serializable, MekHqXmlSerializable {
                 }
             }
         } catch (Exception ex) {
-            MekHQ.getLogger().error(Lance.class, METHOD_NAME, ex);
+            MekHQ.getLogger().error(ex);
         }
         return retVal;
     }

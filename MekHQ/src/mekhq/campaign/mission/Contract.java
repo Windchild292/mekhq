@@ -685,33 +685,31 @@ public class Contract extends Mission implements Serializable, MekHqXmlSerializa
     @Override
     protected void writeToXmlBegin(PrintWriter pw1, int indent) {
         super.writeToXmlBegin(pw1, indent);
-        indent++;
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "nMonths", nMonths);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "startDate", MekHqXmlUtil.saveFormattedDate(startDate));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "endDate", MekHqXmlUtil.saveFormattedDate(endDate));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "employer", employer);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "paymentMultiplier", paymentMultiplier);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "commandRights", commandRights);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "overheadComp", overheadComp);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "salvagePct", salvagePct);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "salvageExchange", salvageExchange);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "straightSupport", straightSupport);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "battleLossComp", battleLossComp);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "transportComp", transportComp);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "mrbcFee", mrbcFee);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "advancePct", advancePct);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "signBonus", signBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "advanceAmount", advanceAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "signingAmount", signingAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "transportAmount", transportAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "transitAmount", transitAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "overheadAmount", overheadAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "supportAmount", supportAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "baseAmount", baseAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "feeAmount", feeAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "salvagedByUnit", salvagedByUnit.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "salvagedByEmployer", salvagedByEmployer.toXmlString());
-        indent--; //just in case this ends up being used here in the future
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, ++indent, "nMonths", nMonths);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "startDate", startDate);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "endDate", endDate);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "employer", employer);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "paymentMultiplier", paymentMultiplier);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "commandRights", commandRights);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "overheadComp", overheadComp);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "salvagePct", salvagePct);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "salvageExchange", salvageExchange);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "straightSupport", straightSupport);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "battleLossComp", battleLossComp);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "transportComp", transportComp);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "mrbcFee", mrbcFee);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "advancePct", advancePct);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "signBonus", signBonus);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "advanceAmount", advanceAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "signingAmount", signingAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "transportAmount", transportAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "transitAmount", transitAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "overheadAmount", overheadAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "supportAmount", supportAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "baseAmount", baseAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "feeAmount", feeAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "salvagedByUnit", salvagedByUnit);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent--, "salvagedByEmployer", salvagedByEmployer);
     }
 
     @Override

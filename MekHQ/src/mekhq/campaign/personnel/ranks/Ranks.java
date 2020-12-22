@@ -374,8 +374,8 @@ public class Ranks {
 
     public void writeToXml(PrintWriter pw1, int indent, boolean saveAll) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "rankSystem");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "systemId", getRankSystem());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "systemName", getRankSystemName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "systemId", getRankSystem());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "systemName", getRankSystemName());
 
         // Only write out the ranks if we're using a custom system
         if ((rankSystem == RS_CUSTOM) || saveAll) {

@@ -309,33 +309,14 @@ public class Scenario implements Serializable {
     }
 
     protected void writeToXmlBegin(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<scenario id=\""
-                +id
-                +"\" type=\""
-                +this.getClass().getName()
-                +"\">");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<name>"
-                +MekHqXmlUtil.escape(getName())
-                +"</name>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<desc>"
-                +MekHqXmlUtil.escape(desc)
-                +"</desc>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<report>"
-                +MekHqXmlUtil.escape(report)
-                +"</report>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<status>"
-                +status
-                +"</status>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<id>"
-                +id
-                +"</id>");
-        if (null != stub) {
-            stub.writeToXml(pw1, indent+1);
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "scenario", "id", id, "type", getClass());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", getName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "desc", desc);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "report", report);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "status", status);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", id);
+        if (stub != null) {
+            stub.writeToXml(pw1, indent);
         } else {
             // only bother writing out objectives for active scenarios
             if (hasObjectives()) {
@@ -344,20 +325,22 @@ public class Scenario implements Serializable {
                 }
             }
         }
+
         if ((loots.size() > 0) && (status == S_CURRENT)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)+"<loots>");
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "loots");
             for (Loot l : loots) {
-                l.writeToXml(pw1, indent+2);
+                l.writeToXml(pw1, indent);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)+"</loots>");
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, --indent, "loots");
         }
-        if (null != date) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "date", MekHqXmlUtil.saveFormattedDate(date));
+
+        if (date != null) {
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "date", date);
         }
     }
 
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</scenario>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "scenario");
     }
 
     protected void loadFieldsFromXmlNode(Node wn) throws ParseException {
@@ -389,14 +372,14 @@ public class Scenario implements Serializable {
                 }
 
                 if (battleType == -1) {
-                    MekHQ.getLogger().error(Scenario.class, "Unable to load an old AtBScenario because we could not determine the battle type");
+                    MekHQ.getLogger().error("Unable to load an old AtBScenario because we could not determine the battle type");
                     return null;
                 }
 
                 List<Class<IAtBScenario>> scenarioClassList = AtBScenarioFactory.getScenarios(battleType);
 
-                if ((null == scenarioClassList) || scenarioClassList.isEmpty()) {
-                    MekHQ.getLogger().error(Scenario.class, "Unable to load an old AtBScenario of battle type " + battleType);
+                if ((scenarioClassList == null) || scenarioClassList.isEmpty()) {
+                    MekHQ.getLogger().error("Unable to load an old AtBScenario of battle type " + battleType);
                     return null;
                 }
 
@@ -439,7 +422,7 @@ public class Scenario implements Serializable {
                         if (!wn3.getNodeName().equalsIgnoreCase("loot")) {
                             // Error condition of sorts!
                             // Errr, what should we do here?
-                            MekHQ.getLogger().error(Scenario.class, "Unknown node type not loaded in techUnitIds nodes: " + wn3.getNodeName());
+                            MekHQ.getLogger().error("Unknown node type not loaded in techUnitIds nodes: " + wn3.getNodeName());
                             continue;
                         }
                         Loot loot = Loot.generateInstanceFromXML(wn3, c, version);
@@ -453,7 +436,7 @@ public class Scenario implements Serializable {
             // Errrr, apparently either the class name was invalid...
             // Or the listed name doesn't exist.
             // Doh!
-            MekHQ.getLogger().error(Scenario.class, ex);
+            MekHQ.getLogger().error(ex);
         }
 
         return retVal;

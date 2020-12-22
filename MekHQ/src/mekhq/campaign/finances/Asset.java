@@ -83,10 +83,10 @@ public class Asset implements MekHqXmlSerializable {
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "asset");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "name", name);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "value", value.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "schedule", schedule);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "income", income.toXmlString());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "value", value.toXmlString());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "schedule", schedule);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "income", income.toXmlString());
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "asset");
     }
 

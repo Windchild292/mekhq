@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 - The MegaMek Team. All Rights Reserved.
+ * Copyright (C) 2018-2020 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -72,24 +72,20 @@ public class LogEntry implements Cloneable, MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw, int indent) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(MekHqXmlUtil.indentStr(indent)).append("<logEntry>");
-        if (date != null) {
-            sb.append("<date>").append(MekHqXmlUtil.saveFormattedDate(date)).append("</date>");
-        }
-        sb.append("<desc>").append(MekHqXmlUtil.escape(desc)).append("</desc>");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw, indent++, "logEntry");
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "date", date);
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "desc", desc);
         if (type != null) {
-            sb.append("<type>").append(MekHqXmlUtil.escape(type.toString())).append("</type>");
+            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "type", type.toString());
         }
-        sb.append("</logEntry>");
-        pw.println(sb.toString());
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "logEntry");
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (null != date) {
-            sb.append("[").append(date.toString()).append("] ");
+            sb.append("[").append(date).append("] ");
         }
         sb.append(desc);
         if (null != type) {

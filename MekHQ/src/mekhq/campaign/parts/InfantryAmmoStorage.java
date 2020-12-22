@@ -120,7 +120,7 @@ public class InfantryAmmoStorage extends AmmoStorage {
 
     @Override
     public void writeToXmlEnd(PrintWriter pw, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, "weaponType", weaponType.getInternalName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent + 1, "weaponType", weaponType.getInternalName());
         super.writeToXmlEnd(pw, indent);
     }
 

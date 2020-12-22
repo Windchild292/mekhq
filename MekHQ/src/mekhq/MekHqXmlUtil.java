@@ -18,23 +18,17 @@
  */
 package mekhq;
 
-import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import megamek.common.icons.Camouflage;
 import megamek.utils.MegaMekXmlUtil;
+import mekhq.campaign.finances.Money;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -67,17 +61,13 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
             // instance of the builder factory, as long as it is
             // XXE safe.
 
-            //
             // For further background, see newSafeDocumentBuilder()
-            //
             dbf = DocumentBuilderFactory.newInstance();
             dbf.setXIncludeAware(false);
             dbf.setExpandEntityReferences(false);
 
-            //
             // "If you can't completely disable DTDs, then at least do the
             // following:"
-            //
 
             // Disable external entities
             String FEATURE = "http://xml.org/sax/features/external-general-entities";
@@ -97,25 +87,13 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
         return dbf.newDocumentBuilder();
     }
 
-    public static String xmlToString(Node node) throws TransformerException {
-        Source source = new DOMSource(node);
-        StringWriter stringWriter = new StringWriter();
-        Result result = new StreamResult(stringWriter);
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer();
-        transformer.transform(source, result);
-
-        return stringWriter.getBuffer().toString();
-    }
-
     /**
      * Contents copied from megamek.common.EntityListFile.saveTo(...) Modified
      * to support saving to/from XML for our purposes in MekHQ TODO: Some of
      * this may want to be back-ported into entity itself in MM and then
      * re-factored out of EntityListFile.
      *
-     * @param tgtEnt
-     *            The entity to serialize to XML.
+     * @param tgtEnt The entity to serialize to XML.
      * @return A string containing the XML representation of the entity.
      */
     public static String writeEntityToXmlString(Entity tgtEnt, int indentLvl, List<Entity> list) {
@@ -501,7 +479,7 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
      *         if the given element parses to multiple entities
      */
     public static Entity parseSingleEntityMul(Element element) {
-        MekHQ.getLogger().trace(MekHqXmlUtil.class, "Executing getEntityFromXmlString(Node)...");
+        MekHQ.getLogger().trace("Executing getEntityFromXmlString(Node)...");
 
         MULParser prs = new MULParser();
         prs.parse(element);
@@ -512,7 +490,7 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
                 return null;
             case 1:
                 Entity entity = entities.get(0);
-                MekHQ.getLogger().trace(MekHqXmlUtil.class, "Returning " + entity + " from getEntityFromXmlString(String)...");
+                MekHQ.getLogger().trace("Returning " + entity + " from getEntityFromXmlString(String)...");
                 return entity;
             default:
                 throw new IllegalArgumentException("More than one entity contained in XML string!  Expecting a single entity.");
@@ -525,4 +503,17 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
         String model = attrs.getNamedItem("model").getTextContent();
         return chassis + " " + model;
     }
+
+    //region XML Writing
+    public static void writeSimpleXMLTag(PrintWriter pw1, int indent, String name, Money... monies) {
+        for (Money money : monies) {
+            if (money != null) {
+                writeSimpleXMLTag(pw1, indent, name, money.toXmlString());
+            }
+        }
+    }
+    //endregion XML Writing
+
+    //region XML Parsing
+    //endregion XML Parsing
 }

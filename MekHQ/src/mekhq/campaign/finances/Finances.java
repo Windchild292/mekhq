@@ -181,7 +181,7 @@ public class Finances implements Serializable {
 
     public void writeToXml(PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "finances");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "loanDefaults", loanDefaults);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "loanDefaults", loanDefaults);
         for (Transaction trans : getAllTransactions()) {
             trans.writeToXml(pw1, indent + 1);
         }
@@ -191,11 +191,8 @@ public class Finances implements Serializable {
         for (Asset asset : getAllAssets()) {
             asset.writeToXml(pw1, indent + 1);
         }
-        if (wentIntoDebt != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "wentIntoDebt",
-                    MekHqXmlUtil.saveFormattedDate(wentIntoDebt));
-        }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "finances");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "wentIntoDebt", wentIntoDebt);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "finances");
     }
 
     public static Finances generateInstanceFromXML(Node wn) {

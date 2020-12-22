@@ -300,28 +300,27 @@ public class Loan implements MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "loan");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "institution", institution);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "refNumber", refNumber);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "principal", principal.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "rate", rate);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "years", years);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "schedule", schedule);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "collateral", collateral);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "nPayments", nPayments);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "payAmount", payAmount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "collateralValue", collateralValue.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "overdue", overdue);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "nextPayment",
-                MekHqXmlUtil.saveFormattedDate(getNextPayment()));
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "loan");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "loan");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "institution", institution);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "refNumber", refNumber);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "principal", principal);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rate", rate);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "years", years);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "schedule", schedule);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "collateral", collateral);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "nPayments", nPayments);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "payAmount", payAmount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "collateralValue", collateralValue);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "overdue", overdue);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "nextPayment", getNextPayment());
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "loan");
     }
 
     public static Loan generateInstanceFromXML(Node wn) {
         Loan retVal = new Loan();
 
         NodeList nl = wn.getChildNodes();
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
             if (wn2.getNodeName().equalsIgnoreCase("institution")) {
                 retVal.institution = wn2.getTextContent();
@@ -346,7 +345,7 @@ public class Loan implements MekHqXmlSerializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("nextPayment")) {
                 retVal.setNextPayment(MekHqXmlUtil.parseDate(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("overdue")) {
-                retVal.overdue = wn2.getTextContent().equalsIgnoreCase("true");
+                retVal.overdue = Boolean.parseBoolean(wn2.getTextContent().trim());
             }
         }
         return retVal;

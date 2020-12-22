@@ -215,8 +215,8 @@ public class TransportBayPart extends Part {
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "bayNumber", bayNumber);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "size", size);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "bayNumber", bayNumber);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "size", size);
         writeToXmlEnd(pw1, indent);
     }
 

@@ -4057,55 +4057,50 @@ public class Campaign implements Serializable, ITechManager {
         pw1.println("<campaign version=\"" + resourceMap.getString("Application.version") + "\">");
 
         //region Basic Campaign Info
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "info");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "info");
 
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "id", id.toString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "name", name);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "faction", factionCode);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", id);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "faction", factionCode);
         if (retainerEmployerCode != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "retainerEmployerCode", retainerEmployerCode);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "retainerEmployerCode", retainerEmployerCode);
         }
 
         // Ranks
-        ranks.writeToXml(pw1, indent + 1);
+        ranks.writeToXml(pw1, indent);
 
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "nameGen",
-                RandomNameGenerator.getInstance().getChosenFaction());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "percentFemale",
-                RandomGenderGenerator.getPercentFemale());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "overtime", overtime);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "gmMode", gmMode);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPool", astechPool);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPoolMinutes",
-                astechPoolMinutes);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPoolOvertime",
-                astechPoolOvertime);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "medicPool", medicPool);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoCategory", camoCategory);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoFileName", camoFileName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", iconCategory);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", iconFileName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "colorIndex", colorIndex);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastForceId", lastForceId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastMissionId", lastMissionId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastScenarioId", lastScenarioId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "calendar",
-                MegaMekXmlUtil.saveFormattedDate(getLocalDate()));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "fatigueLevel", fatigueLevel);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "nameGen", RandomNameGenerator.getInstance().getChosenFaction());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "percentFemale", RandomGenderGenerator.getPercentFemale());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "overtime", overtime);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "gmMode", gmMode);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "astechPool", astechPool);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "astechPoolMinutes", astechPoolMinutes);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "astechPoolOvertime", astechPoolOvertime);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "medicPool", medicPool);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "camoCategory", camoCategory);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "camoFileName", camoFileName);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "iconCategory", iconCategory);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "iconFileName", iconFileName);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "colorIndex", colorIndex);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "lastForceId", lastForceId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "lastMissionId", lastMissionId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "lastScenarioId", lastScenarioId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "calendar", getLocalDate());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "fatigueLevel", fatigueLevel);
 
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "nameGen");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 2, "faction", RandomNameGenerator.getInstance().getChosenFaction());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 2, "percentFemale", RandomGenderGenerator.getPercentFemale());
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "nameGen");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "nameGen");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "faction", RandomNameGenerator.getInstance().getChosenFaction());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "percentFemale", RandomGenderGenerator.getPercentFemale());
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "nameGen");
 
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "currentReport");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "currentReport");
         for (String s : currentReport) {
             // This cannot use the MekHQXMLUtil as it cannot be escaped
-            pw1.println(MekHqXmlUtil.indentStr(indent + 2) + "<reportLine><![CDATA[" + s + "]]></reportLine>");
+            pw1.println(MekHqXmlUtil.indentStr(indent) + "<reportLine><![CDATA[" + s + "]]></reportLine>");
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "currentReport");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "currentReport");
 
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "info");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "info");
         //endregion Basic Campaign Info
 
         //region Campaign Options
@@ -4120,38 +4115,38 @@ public class Campaign implements Serializable, ITechManager {
         writeMapToXml(pw1, indent, "missions", missions); // Missions
         // the forces structure is hierarchical, but that should be handled
         // internally from with writeToXML function for Force
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "forces");
-        forces.writeToXml(pw1, indent + 1);
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "forces");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "forces");
+        forces.writeToXml(pw1, indent);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "forces");
         finances.writeToXml(pw1, indent);
         location.writeToXml(pw1, indent);
         shoppingList.writeToXml(pw1, indent);
 
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "kills");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "kills");
         for (List<Kill> kills : kills.values()) {
             for (Kill k : kills) {
-                k.writeToXml(pw1, indent + 1);
+                k.writeToXml(pw1, indent);
             }
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "kills");
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "skillTypes");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "kills");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "skillTypes");
         for (String name : SkillType.skillList) {
             SkillType type = SkillType.getType(name);
-            if (null != type) {
-                type.writeToXml(pw1, indent + 1);
+            if (type != null) {
+                type.writeToXml(pw1, indent);
             }
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "skillTypes");
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "specialAbilities");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "skillTypes");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "specialAbilities");
         for (String key : SpecialAbility.getAllSpecialAbilities().keySet()) {
-            SpecialAbility.getAbility(key).writeToXml(pw1, indent + 1);
+            SpecialAbility.getAbility(key).writeToXml(pw1, indent);
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "specialAbilities");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "specialAbilities");
         rskillPrefs.writeToXml(pw1, indent);
         // parts is the biggest so it goes last
         parts.writeToXml(pw1, indent, "parts"); // Parts
 
-        writeGameOptions(pw1);
+        writeGameOptions(pw1, indent);
 
         // Personnel Market
         personnelMarket.writeToXml(pw1, indent);
@@ -4162,31 +4157,29 @@ public class Campaign implements Serializable, ITechManager {
             contractMarket.writeToXml(pw1, indent);
 
             unitMarket.writeToXml(pw1, indent);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "colorIndex", colorIndex);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent++, "colorIndex", colorIndex);
             if (lances.size() > 0)   {
                 MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "lances");
                 for (Lance l : lances.values()) {
                     if (forceIds.containsKey(l.getForceId())) {
-                        l.writeToXml(pw1, indent + 1);
+                        l.writeToXml(pw1, indent);
                     }
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "lances");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "lances");
             }
             retirementDefectionTracker.writeToXml(pw1, indent);
             if (shipSearchStart != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "shipSearchStart",
-                        MekHqXmlUtil.saveFormattedDate(getShipSearchStart()));
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchStart", getShipSearchStart());
             }
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "shipSearchType", shipSearchType);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "shipSearchResult", shipSearchResult);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchType", shipSearchType);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchResult", shipSearchResult);
             if (shipSearchExpiration != null) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "shipSearchExpiration",
-                        MekHqXmlUtil.saveFormattedDate(getShipSearchExpiration()));
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "shipSearchExpiration", getShipSearchExpiration());
             }
         }
 
         // Customised planetary events
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "customPlanetaryEvents");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "customPlanetaryEvents");
         for (PlanetarySystem psystem : Systems.getInstance().getSystems().values()) {
             //first check for system-wide events
             List<PlanetarySystem.PlanetarySystemEvent> customSysEvents = new ArrayList<>();
@@ -4197,8 +4190,8 @@ public class Campaign implements Serializable, ITechManager {
             }
             boolean startedSystem = false;
             if (!customSysEvents.isEmpty()) {
-                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "system");
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 2, "id", psystem.getId());
+                MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "system");
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", psystem.getId());
                 for (PlanetarySystem.PlanetarySystemEvent event : customSysEvents) {
                     Systems.getInstance().writePlanetarySystemEvent(pw1, event);
                     pw1.println();
@@ -4211,25 +4204,25 @@ public class Campaign implements Serializable, ITechManager {
                 if (!customEvents.isEmpty()) {
                     if (!startedSystem) {
                         //only write this if we haven't already started the system
-                        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 1, "system");
-                        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 2, "id", psystem.getId());
+                        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "system");
+                        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", psystem.getId());
                     }
-                    MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent + 2, "planet");
-                    MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3, "sysPos", p.getSystemPosition());
+                    MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "planet");
+                    MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "sysPos", p.getSystemPosition());
                     for (Planet.PlanetaryEvent event : customEvents) {
                         Systems.getInstance().writePlanetaryEvent(pw1, event);
                         pw1.println();
                     }
-                    MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 2, "planet");
+                    MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "planet");
                     startedSystem = true;
                 }
             }
             if (startedSystem) {
                 //close the system
-                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent + 1, "system");
+                MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "system");
             }
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "customPlanetaryEvents");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "customPlanetaryEvents");
 
         if (MekHQ.getMekHQOptions().getWriteCustomsToXML()) {
             writeCustoms(pw1);
@@ -4237,19 +4230,18 @@ public class Campaign implements Serializable, ITechManager {
 
         // Okay, we're done.
         // Close everything out and be done with it.
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent - 1, "campaign");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "campaign");
     }
 
-    public void writeGameOptions(PrintWriter pw1) {
-        pw1.println("\t<gameOptions>");
+    public void writeGameOptions(PrintWriter pw1, int indent) {
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "gameOptions");
         for (IBasicOption option : getGameOptionsVector()) {
-            pw1.println("\t\t<gameoption>"); //$NON-NLS-1$
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, 3, "name", option.getName());
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, 3, "value", option.getValue()
-                    .toString());
-            pw1.println("\t\t</gameoption>"); //$NON-NLS-1$
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "gameoption");
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", option.getName());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "value", option.getValue().toString());
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "gameoption");
         }
-        pw1.println("\t</gameOptions>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "gameOptions");
     }
 
     /**
@@ -4264,13 +4256,11 @@ public class Campaign implements Serializable, ITechManager {
      */
     private <keyType, valueType extends MekHqXmlSerializable> void writeMapToXml(PrintWriter pw1,
             int indent, String tag, Map<keyType, valueType> map) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<" + tag + ">");
-
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, tag);
         for (Map.Entry<keyType, valueType> x : map.entrySet()) {
-            x.getValue().writeToXml(pw1, indent + 1);
+            x.getValue().writeToXml(pw1, indent);
         }
-
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</" + tag + ">");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, tag);
     }
 
     private void writeCustoms(PrintWriter pw1) {

@@ -204,12 +204,12 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "name", name);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "team", team);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "start", start);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "camoCategory", camoCategory);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "camoFileName", camoFileName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "colorIndex", colorIndex);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "team", team);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "start", start);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "camoCategory", camoCategory);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "camoFileName", camoFileName);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "colorIndex", colorIndex);
 
         pw1.println(MekHqXmlUtil.indentStr(indent+1) + "<entities>");
         for (Entity en : entityList) {
@@ -222,16 +222,16 @@ public class BotForce implements Serializable, MekHqXmlSerializable {
         pw1.println(MekHqXmlUtil.indentStr(indent+1) + "</entities>");
 
         pw1.println(MekHqXmlUtil.indentStr(indent+1) + "<behaviorSettings>");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "verbosity", behaviorSettings.getVerbosity().toString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "forcedWithdrawal", behaviorSettings.isForcedWithdrawal());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "autoFlee", behaviorSettings.shouldAutoFlee());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "selfPreservationIndex", behaviorSettings.getSelfPreservationIndex());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "fallShameIndex", behaviorSettings.getFallShameIndex());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "hyperAggressionIndex", behaviorSettings.getHyperAggressionIndex());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "destinationEdge", behaviorSettings.getDestinationEdge().ordinal());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "retreatEdge", behaviorSettings.getRetreatEdge().ordinal());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "herdMentalityIndex", behaviorSettings.getHerdMentalityIndex());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "braveryIndex", behaviorSettings.getBraveryIndex());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "verbosity", behaviorSettings.getVerbosity().toString());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "forcedWithdrawal", behaviorSettings.isForcedWithdrawal());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "autoFlee", behaviorSettings.shouldAutoFlee());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "selfPreservationIndex", behaviorSettings.getSelfPreservationIndex());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "fallShameIndex", behaviorSettings.getFallShameIndex());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "hyperAggressionIndex", behaviorSettings.getHyperAggressionIndex());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "destinationEdge", behaviorSettings.getDestinationEdge().ordinal());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "retreatEdge", behaviorSettings.getRetreatEdge().ordinal());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "herdMentalityIndex", behaviorSettings.getHerdMentalityIndex());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "braveryIndex", behaviorSettings.getBraveryIndex());
         pw1.println(MekHqXmlUtil.indentStr(indent+1) + "</behaviorSettings>");
     }
 

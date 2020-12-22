@@ -219,7 +219,7 @@ public class PersonnelMarket {
         if (paidRecruitment) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<paidRecruitment/>");
         }
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "paidRecruitType", paidRecruitType);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "paidRecruitType", paidRecruitType);
 
         for (UUID id : attachedEntities.keySet()) {
             pw1.println(MekHqXmlUtil.indentStr(indent + 1)

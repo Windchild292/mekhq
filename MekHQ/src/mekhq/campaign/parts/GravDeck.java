@@ -204,8 +204,8 @@ public class GravDeck extends Part {
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "deckType", deckType);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "deckNumber", deckNumber);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "deckType", deckType);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "deckNumber", deckNumber);
         writeToXmlEnd(pw1, indent);
     }
 

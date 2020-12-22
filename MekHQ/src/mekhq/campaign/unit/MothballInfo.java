@@ -128,31 +128,31 @@ public class MothballInfo implements MekHqXmlSerializable {
         pw1.println(MekHqXmlUtil.indentStr(indent++) + "<mothballInfo>");
 
         if (tech != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "techId", tech.getId());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "techId", tech.getId());
         }
 
         if (forceID > 0) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "forceID", forceID);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "forceID", forceID);
         }
 
         for (Person driver : drivers) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "driverId", driver.getId());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "driverId", driver.getId());
         }
 
         for (Person gunner : gunners) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "gunnerId", gunner.getId());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "gunnerId", gunner.getId());
         }
 
         for (Person crew : vesselCrew) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "vesselCrewId", crew.getId());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "vesselCrewId", crew.getId());
         }
 
         if (navigator != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "navigatorId", navigator.getId());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "navigatorId", navigator.getId());
         }
 
         if (techOfficer != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "techOfficerId", techOfficer.getId());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "techOfficerId", techOfficer.getId());
         }
 
         pw1.println(MekHqXmlUtil.indentStr(--indent) + "</mothballInfo>");

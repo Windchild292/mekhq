@@ -181,19 +181,19 @@ public class RandomSkillPreferences implements Serializable {
 
     public void writeToXml(PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "randomSkillPreferences");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "overallRecruitBonus", overallRecruitBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "recruitBonuses", StringUtils.join(recruitBonuses, ','));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "specialAbilBonus", StringUtils.join(specialAbilBonus, ','));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "tacticsMod", StringUtils.join(tacticsMod, ','));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "randomizeSkill", randomizeSkill);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "useClanBonuses", useClanBonuses);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "antiMekProb", antiMekProb);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "combatSmallArmsBonus", combatSmallArmsBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "supportSmallArmsBonus", supportSmallArmsBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "artilleryProb", artilleryProb);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "artilleryBonus", artilleryBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "secondSkillProb", secondSkillProb);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "secondSkillBonus", secondSkillBonus);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "overallRecruitBonus", overallRecruitBonus);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "recruitBonuses", StringUtils.join(recruitBonuses, ','));
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "specialAbilBonus", StringUtils.join(specialAbilBonus, ','));
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "tacticsMod", StringUtils.join(tacticsMod, ','));
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomizeSkill", randomizeSkill);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "useClanBonuses", useClanBonuses);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "antiMekProb", antiMekProb);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "combatSmallArmsBonus", combatSmallArmsBonus);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "supportSmallArmsBonus", supportSmallArmsBonus);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "artilleryProb", artilleryProb);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "artilleryBonus", artilleryBonus);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "secondSkillProb", secondSkillProb);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "secondSkillBonus", secondSkillBonus);
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "randomSkillPreferences");
     }
 

@@ -1540,27 +1540,22 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
 
     @Override
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "attacker", isAttacker());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "lanceForceId", lanceForceId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "lanceRole", lanceRole.name());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "terrainType", terrainType);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "light", light);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "weather", weather);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "wind", wind);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "fog", fog);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "atmosphere", atmosphere);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "gravity", gravity);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "start", start);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "deploymentDelay", deploymentDelay);
-
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<mapSize>"
-                + mapSizeX + "," + mapSizeY
-                +"</mapSize>");
-
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "map", map);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "lanceCount", lanceCount);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "rerollsRemaining", rerollsRemaining);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "attacker", isAttacker());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "lanceForceId", lanceForceId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "lanceRole", lanceRole.name());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "terrainType", terrainType);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "light", light);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "weather", weather);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "wind", wind);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "fog", fog);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "atmosphere", atmosphere);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "gravity", gravity);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "start", start);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "deploymentDelay", deploymentDelay);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "mapSize", mapSizeX, mapSizeY);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "map", map);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "lanceCount", lanceCount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "rerollsRemaining", rerollsRemaining);
 
         if (null != bigBattleAllies && bigBattleAllies.size() > 0) {
             pw1.println(MekHqXmlUtil.indentStr(indent+1) + "<bigBattleAllies>");
@@ -1589,7 +1584,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         if (alliesPlayerStub.size() > 0) {
             pw1.println(MekHqXmlUtil.indentStr(indent+1) + "<alliesPlayerStub>");
             for (String stub : alliesPlayerStub) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2,
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2,
                         "entityStub", MekHqXmlUtil.escape(stub));
             }
             pw1.println(MekHqXmlUtil.indentStr(indent+1) + "</alliesPlayerStub>");
@@ -1600,7 +1595,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                     + "<botForceStub name=\""
                     + MekHqXmlUtil.escape(bot.getName()) + "\">");
             for (String entity : bot.getEntityList()) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2,
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2,
                         "entityStub", MekHqXmlUtil.escape(entity));
             }
             pw1.println(MekHqXmlUtil.indentStr(indent+1)
@@ -1608,10 +1603,10 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         }
 
         if (attachedUnitIds.size() > 0) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "attachedUnits", getCsvFromList(attachedUnitIds));
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "attachedUnits", getCsvFromList(attachedUnitIds));
         }
         if (survivalBonus.size() > 0) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "survivalBonus", getCsvFromList(survivalBonus));
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "survivalBonus", getCsvFromList(survivalBonus));
         }
 
         if (null != specMissionEnemies && specMissionEnemies.size() > 0) {
@@ -1633,8 +1628,8 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
 
             for (String key : transportLinkages.keySet()) {
                 pw1.println(MekHqXmlUtil.indentStr(indent+2) + "<transportLinkage>");
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3, "transportID", key);
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 3, "transportedUnits", String.join(",", transportLinkages.get(key)));
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3, "transportID", key);
+                MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 3, "transportedUnits", String.join(",", transportLinkages.get(key)));
                 pw1.println(MekHqXmlUtil.indentStr(indent+2) + "</transportLinkage>");
             }
 

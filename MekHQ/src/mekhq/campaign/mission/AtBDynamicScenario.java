@@ -68,10 +68,10 @@ public class AtBDynamicScenario extends AtBScenario {
 
         // loop through all player-supplied forces in the template, if there is one
         // assign the newly-added force to the first template we find
-        if(template != null) {
-            for(ScenarioForceTemplate forceTemplate : template.scenarioForces.values()) {
-                if((forceTemplate.getGenerationMethod() == ForceGenerationMethod.PlayerSupplied.ordinal()) &&
-                        !playerForceTemplates.containsValue(forceTemplate)) {
+        if (template != null) {
+            for (ScenarioForceTemplate forceTemplate : template.scenarioForces.values()) {
+                if ((forceTemplate.getGenerationMethod() == ForceGenerationMethod.PlayerSupplied.ordinal())
+                        && !playerForceTemplates.containsValue(forceTemplate)) {
                     playerForceTemplates.put(forceID, forceTemplate);
                     return;
                 }
@@ -88,7 +88,7 @@ public class AtBDynamicScenario extends AtBScenario {
      */
     public void addForce(int forceID, String templateName) {
         // if we're not supplied a template name, fall back to trying to automatically place the force
-        if(StringUtils.isEmpty(templateName)) {
+        if (StringUtils.isEmpty(templateName)) {
             addForces(forceID);
             return;
         }
@@ -122,8 +122,7 @@ public class AtBDynamicScenario extends AtBScenario {
         // If we've assigned at least one force
         // and there's a player force template associated with the first force
         // then return the generated deployment zone associated with the first force
-        if(!getForceIDs().isEmpty() &&
-                playerForceTemplates.containsKey(getForceIDs().get(0))) {
+        if (!getForceIDs().isEmpty() && playerForceTemplates.containsKey(getForceIDs().get(0))) {
             return playerForceTemplates.get(getForceIDs().get(0)).getActualDeploymentZone();
         }
 
@@ -166,7 +165,7 @@ public class AtBDynamicScenario extends AtBScenario {
     @Override
     public void removeBotForce(int x) {
         // safety check, just in case
-        if((x >= 0) && (x < botForces.size())) {
+        if ((x >= 0) && (x < botForces.size())) {
             BotForce botToRemove = botForces.get(x);
 
             botForceTemplates.remove(botToRemove);
@@ -238,8 +237,8 @@ public class AtBDynamicScenario extends AtBScenario {
     public List<Integer> getPrimaryPlayerForceIDs() {
         List<Integer> retval = new ArrayList<>();
 
-        for(int forceID : getForceIDs()) {
-            if(getPlayerForceTemplates().containsKey(forceID)) {
+        for (int forceID : getForceIDs()) {
+            if (getPlayerForceTemplates().containsKey(forceID)) {
                 retval.add(forceID);
             }
         }
@@ -252,13 +251,13 @@ public class AtBDynamicScenario extends AtBScenario {
      * @return
      */
     public Person getLanceCommander(Campaign campaign) {
-        if(getForceIDs().isEmpty()) {
+        if (getForceIDs().isEmpty()) {
             return null; // if we don't have forces, just a bunch of units, then get the highest-ranked?
         }
 
         Lance lance = campaign.getLances().get(getForceIDs().get(0));
 
-        if(lance != null) {
+        if (lance != null) {
             lance.refreshCommander(campaign);
             return lance.getCommander(campaign);
         } else {
@@ -277,8 +276,7 @@ public class AtBDynamicScenario extends AtBScenario {
         Person commander = getLanceCommander(campaign);
         int skillValue = SkillType.SKILL_NONE;
 
-        if((commander != null) &&
-                commander.hasSkill(skillType)) {
+        if ((commander != null) && commander.hasSkill(skillType)) {
             skillValue = commander.getSkill(skillType).getLevel();
         }
 
@@ -317,7 +315,7 @@ public class AtBDynamicScenario extends AtBScenario {
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
         // if we have a scenario template and haven't played the scenario out yet, serialize the template
         // in its current state
-        if(template != null && isCurrent()) {
+        if ((template != null) && isCurrent()) {
             template.Serialize(pw1);
         }
 
@@ -328,7 +326,7 @@ public class AtBDynamicScenario extends AtBScenario {
     protected void loadFieldsFromXmlNode(Node wn) throws ParseException {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
             if (wn2.getNodeName().equalsIgnoreCase(ScenarioTemplate.ROOT_XML_ELEMENT_NAME)) {

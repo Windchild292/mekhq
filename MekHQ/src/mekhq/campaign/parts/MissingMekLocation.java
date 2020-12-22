@@ -146,7 +146,7 @@ public class MissingMekLocation extends MissingPart {
 				+"<structureType>"
 				+structureType
 				+"</structureType>");
-		MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "clan", clan);
+		MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "clan", clan);
 		pw1.println(MekHqXmlUtil.indentStr(indent+1)
 				+"<tsm>"
 				+tsm

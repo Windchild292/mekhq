@@ -820,7 +820,7 @@ public class ContractMarket implements Serializable {
 
     public void writeToXml(PrintWriter pw1, int indent) {
         pw1.println(MekHqXmlUtil.indentStr(indent) + "<contractMarket>");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "lastId", lastId);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+1, "lastId", lastId);
         for (Contract c : contracts) {
             c.writeToXml(pw1, indent + 1);
         }
@@ -836,8 +836,8 @@ public class ContractMarket implements Serializable {
                 rerolls += clauseMods.get(key).rerollsUsed[i] + ((i < CLAUSE_NUM - 1)?",":"");
                 mods += clauseMods.get(key).mods[i] + ((i < CLAUSE_NUM - 1)?",":"");
             }
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "mods", mods);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "rerollsUsed", rerolls);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "mods", mods);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "rerollsUsed", rerolls);
             pw1.println(MekHqXmlUtil.indentStr(indent+1) + "</clauseMods>");
         }
         pw1.println(MekHqXmlUtil.indentStr(indent) + "</contractMarket>");
@@ -892,7 +892,7 @@ public class ContractMarket implements Serializable {
                     retVal.clauseMods.put(key, cm);
                 }
             }
-            
+
             // Restore any parent contract references
             for (Contract contract : retVal.contracts) {
                 if (contract instanceof AtBContract) {

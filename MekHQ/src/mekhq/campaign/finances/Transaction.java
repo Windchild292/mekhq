@@ -159,7 +159,7 @@ public class Transaction implements Serializable {
         }
 
         Transaction other = (Transaction) obj;
-        if (amount != other.amount) {
+        if (!amount.equals(other.amount)) {
             return false;
         } else if (category != other.category) {
             return false;
@@ -215,12 +215,12 @@ public class Transaction implements Serializable {
     }
 
     protected void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "transaction");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "amount", amount.toXmlString());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "description", description);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "category", category);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "date", MekHqXmlUtil.saveFormattedDate(date));
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "transaction");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "transaction");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "amount", amount);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "description", description);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "category", category);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "date", date);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "transaction");
     }
 
     public static Transaction generateInstanceFromXML(Node wn) {
@@ -243,13 +243,11 @@ public class Transaction implements Serializable {
     }
 
     public String updateTransaction(Transaction previousTransaction) {
-        return "Edited Transaction: {" +
-               "Previous = " + previousTransaction.toString() +
-               "} -> {New = " + toString() + "}";
+        return "Edited Transaction: {" + "Previous = " + previousTransaction + "} -> {New = " + this + "}";
     }
 
     public String voidTransaction() {
-        return "Deleted Transaction: " + toString();
+        return "Deleted Transaction: " + this;
     }
 
     @Override
