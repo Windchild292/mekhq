@@ -576,24 +576,9 @@ public class PlanetarySystemMapPanel extends JPanel {
             return null;
         }
         int tint = PlayerColors.getColorRGB(campaign.getColorIndex());
-        EntityImage entityImage = new EntityImage(img, tint, getCamo(), this, u.getEntity());
+        EntityImage entityImage = new EntityImage(img, tint, campaign.getCamouflage().getImage(), this, u.getEntity());
         img = entityImage.loadPreviewImage();
         return Utilities.toBufferedImage(img);
-    }
-
-    /**
-     * Get the camo image for the campaign if it exists
-     * @return An <code>Image</code> of the camo
-     */
-    private Image getCamo() {
-        Image camo = null;
-        try {
-            camo = (Image) MHQStaticDirectoryManager.getCamouflage()
-                    .getItem(campaign.getCamoCategory(), campaign.getCamoFileName());
-        } catch (Exception e) {
-            MekHQ.getLogger().error(e);
-        }
-        return camo;
     }
 
     /**

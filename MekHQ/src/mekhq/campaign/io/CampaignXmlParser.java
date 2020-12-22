@@ -613,18 +613,14 @@ public class CampaignXmlParser {
                 } else if (xn.equalsIgnoreCase("camoCategory")) {
                     String val = wn.getTextContent().trim();
 
-                    if (val.equals("null")) {
-                        retVal.setCamoCategory(null);
-                    } else {
-                        retVal.setCamoCategory(val);
+                    if (!val.equals("null")) {
+                        retVal.getCamouflage().setCategory(val);
                     }
                 } else if (xn.equalsIgnoreCase("camoFileName")) {
                     String val = wn.getTextContent().trim();
 
-                    if (val.equals("null")) {
-                        retVal.setCamoFileName(null);
-                    } else {
-                        retVal.setCamoFileName(val);
+                    if (!val.equals("null")) {
+                        retVal.getCamouflage().setFilename(val);
                     }
                 } else if (xn.equalsIgnoreCase("colorIndex")) {
                     retVal.setColorIndex(Integer.parseInt(wn.getTextContent().trim()));

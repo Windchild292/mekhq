@@ -44,6 +44,7 @@ import megamek.client.ui.swing.UnitEditorDialog;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.icons.AbstractIcon;
+import megamek.common.icons.Camouflage;
 import megamek.common.loaders.BLKFile;
 import megamek.common.loaders.EntityLoadingException;
 import megamek.common.util.EncodeControl;
@@ -398,24 +399,22 @@ public class UnitTableMouseAdapter extends MouseInputAdapter implements ActionLi
             }
         } else if (command.equals(COMMAND_REMOVE_INDI_CAMO)) {
             for (Unit u : units) {
-                if (u.isEntityCamo()) {
-                    u.getEntity().setCamoCategory(null);
-                    u.getEntity().setCamoFileName(null);
+                if (!u.getCamouflage().hasDefaultCategory()) {
+                    u.getEntity().setCamouflage(new Camouflage());
                 }
             }
         } else if (command.equals(COMMAND_INDI_CAMO)) { // Single Unit only
-            String category = selectedUnit.getCamoCategory();
+            String category = selectedUnit.getCamouflage().getCategory();
             if (StringUtil.isNullOrEmpty(category)) {
                 category = AbstractIcon.ROOT_CATEGORY;
             }
             CamoChoiceDialog ccd = new CamoChoiceDialog(gui.getFrame(), true, category,
-                    selectedUnit.getCamoFileName(), gui.getCampaign().getColorIndex());
+                    selectedUnit.getCamouflage().getFilename(), gui.getCampaign().getColorIndex());
             ccd.setLocationRelativeTo(gui.getFrame());
             ccd.setVisible(true);
 
             if (ccd.clickedSelect()) {
-                selectedUnit.getEntity().setCamoCategory(ccd.getCategory());
-                selectedUnit.getEntity().setCamoFileName(ccd.getFileName());
+                selectedUnit.getEntity().setCamouflage(new Camouflage(ccd.getCategory(), ccd.getFileName()));
                 MekHQ.triggerEvent(new UnitChangedEvent(selectedUnit));
             }
         } else if (command.equals(COMMAND_CANCEL_ORDER)) {
@@ -644,7 +643,7 @@ public class UnitTableMouseAdapter extends MouseInputAdapter implements ActionLi
                         allAvailable = false;
                     }
 
-                    if (u.isEntityCamo()) {
+                    if (!u.getCamouflage().hasDefaultCategory()) {
                         oneHasIndividualCamo = true;
                     }
 
@@ -954,7 +953,7 @@ public class UnitTableMouseAdapter extends MouseInputAdapter implements ActionLi
                 }
 
                 // Camo
-                if (oneSelected && !unit.isEntityCamo()) {
+                if (oneSelected && !unit.getCamouflage().hasDefaultCategory()) {
                     menuItem = new JMenuItem(gui.getResourceMap()
                             .getString("customizeMenu.individualCamo.text"));
                     menuItem.setActionCommand(COMMAND_INDI_CAMO);

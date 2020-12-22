@@ -706,8 +706,8 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                 externalIDLookup.put(en.getExternalIdAsString(), en);
 
                 if (!campaign.getCampaignOptions().getAttachedPlayerCamouflage()) {
-                    en.setCamoCategory(Camouflage.NO_CAMOUFLAGE);
-                    en.setCamoFileName(PlayerColors.COLOR_NAMES[getContract(campaign).getAllyColorIndex()]);
+                    en.setCamouflage(new Camouflage(Camouflage.COLOUR_CAMOUFLAGE,
+                            PlayerColors.COLOR_NAMES[getContract(campaign).getAllyColorIndex()]));
                 }
             } else {
                 MekHQ.getLogger().error("Entity for player-controlled allies is null");
@@ -1474,9 +1474,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
     /* Convenience methods for frequently-used arguments */
     protected BotForce getAllyBotForce(AtBContract c, int start, int home, List<Entity> entities) {
         return new BotForce(c.getAllyBotName(), 1, start, home, entities,
-                c.getAllyCamoCategory(),
-                c.getAllyCamoFileName(),
-                c.getAllyColorIndex());
+                ((Camouflage) c.getAllyCamouflage()).clone(), c.getAllyColorIndex());
     }
 
     protected BotForce getEnemyBotForce(AtBContract c, int start, List<Entity> entities) {
@@ -1485,9 +1483,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
 
     protected BotForce getEnemyBotForce(AtBContract c, int start, int home, List<Entity> entities) {
         return new BotForce(c.getEnemyBotName(), 2, start, home, entities,
-                c.getEnemyCamoCategory(),
-                c.getEnemyCamoFileName(),
-                c.getEnemyColorIndex());
+                ((Camouflage) c.getEnemyCamouflage()).clone(), c.getEnemyColorIndex());
     }
 
     public List<String> generateEntityStub(List<Entity> entities) {

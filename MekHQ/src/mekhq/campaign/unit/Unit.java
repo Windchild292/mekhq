@@ -1,7 +1,7 @@
 /*
  * Unit.java
  *
- * Copyright (C) 2016 - The MegaMek Team. All Rights Reserved.
+ * Copyright (C) 2016-2020 - The MegaMek Team. All Rights Reserved.
  * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
  *
  * This file is part of MekHQ.
@@ -65,8 +65,7 @@ import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
 
 /**
- * This is a wrapper class for entity, so that we can add some functionality to
- * it
+ * This is a wrapper class for entity, so that we can add some functionality to it
  *
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
@@ -152,8 +151,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
     public Unit(Entity en, Campaign c) {
         this.entity = en;
         if (entity != null) {
-            entity.setCamoCategory(null);
-            entity.setCamoFileName(null);
+            entity.setCamouflage(new Camouflage());
         }
         this.site = SITE_BAY;
         this.campaign = c;
@@ -3249,41 +3247,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
     }
 
     public AbstractIcon getCamouflage() {
-        return new Camouflage(getCamoCategory(), getCamoFileName());
-    }
-
-    public String getCamoCategory() {
-        if (null == entity) {
-            return "";
-        }
-
-        String category = getCampaign().getCamoCategory();
-        if (isEntityCamo()) {
-            category = entity.getCamoCategory();
-        }
-
-        if (AbstractIcon.ROOT_CATEGORY.equals(category)) {
-            category = "";
-        }
-
-        return category;
-    }
-
-    public String getCamoFileName() {
-        if (null == getCampaign() || null == entity) {
-            return "";
-        }
-
-        String fileName = getCampaign().getCamoFileName();
-        if (isEntityCamo()) {
-            fileName = entity.getCamoFileName();
-        }
-
-        if (null == fileName) {
-            fileName = "";
-        }
-
-        return fileName;
+        return (entity == null) ? new Camouflage() : entity.getCamouflage();
     }
 
     /**
@@ -4649,15 +4613,6 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
             }
         }
         return null;
-    }
-
-    public boolean isEntityCamo() {
-        return (entity != null) && ((entity.getCamoCategory() != null)
-                && !Camouflage.NO_CAMOUFLAGE.equals(entity.getCamoCategory())
-                && !entity.getCamoCategory().isEmpty())
-                && ((entity.getCamoFileName() != null)
-                && !Camouflage.NO_CAMOUFLAGE.equals(entity.getCamoFileName())
-                && !entity.getCamoFileName().isEmpty());
     }
 
     public int getAvailability(int era) {

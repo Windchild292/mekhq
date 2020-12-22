@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import megamek.client.generator.RandomGenderGenerator;
 import megamek.client.ui.swing.util.PlayerColors;
-import megamek.common.IPlayer;
 import megamek.common.MechSummaryCache;
 import megamek.common.enums.Gender;
 import megamek.common.icons.Camouflage;
@@ -506,8 +505,8 @@ public class AtBDynamicScenarioFactory {
                     scenario.getBotUnitTemplates().put(UUID.fromString(en.getExternalIdAsString()), forceTemplate);
 
                     if (!campaign.getCampaignOptions().getAttachedPlayerCamouflage()) {
-                        en.setCamoCategory(Camouflage.NO_CAMOUFLAGE);
-                        en.setCamoFileName(PlayerColors.COLOR_NAMES[scenario.getContract(campaign).getAllyColorIndex()]);
+                        en.setCamouflage(new Camouflage(Camouflage.COLOUR_CAMOUFLAGE,
+                                PlayerColors.COLOR_NAMES[scenario.getContract(campaign).getAllyColorIndex()]));
                     }
                 }
 
@@ -1747,13 +1746,11 @@ public class AtBDynamicScenarioFactory {
         if (forceAlignment == ScenarioForceTemplate.ForceAlignment.Allied) {
             generatedForce.setName(String.format("%s %s", contract.getAllyBotName(), forceTemplate.getForceName()));
             generatedForce.setColorIndex(contract.getAllyColorIndex());
-            generatedForce.setCamoCategory(contract.getAllyCamoCategory());
-            generatedForce.setCamoFileName(contract.getAllyCamoFileName());
+            generatedForce.setCamouflage(contract.getAllyCamouflage());
         } else if (forceAlignment == ScenarioForceTemplate.ForceAlignment.Opposing) {
             generatedForce.setName(String.format("%s %s", contract.getEnemyBotName(), forceTemplate.getForceName()));
             generatedForce.setColorIndex(contract.getEnemyColorIndex());
-            generatedForce.setCamoCategory(contract.getEnemyCamoCategory());
-            generatedForce.setCamoFileName(contract.getEnemyCamoFileName());
+            generatedForce.setCamouflage(contract.getEnemyCamouflage());
         } else {
             generatedForce.setName("Unknown Hostiles");
         }

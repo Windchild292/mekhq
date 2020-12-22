@@ -32,6 +32,8 @@ import javax.swing.JTree;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.tree.TreePath;
 
+import megamek.common.icons.AbstractIcon;
+import megamek.common.icons.Camouflage;
 import megamek.common.util.StringUtil;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.gui.utilities.JMenuHelpers;
@@ -366,8 +368,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                     for (UUID id : singleForce.getAllUnits(false)) {
                         Unit unit = gui.getCampaign().getUnit(id);
                         if (null != unit) {
-                            unit.getEntity().setCamoCategory(ccd.getCategory());
-                            unit.getEntity().setCamoFileName(ccd.getFileName());
+                            unit.getEntity().setCamouflage(new Camouflage(ccd.getCategory(), ccd.getFileName()));
                             MekHQ.triggerEvent(new UnitChangedEvent(unit));
                         }
                     }
@@ -1497,8 +1498,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
      * @return A CamoChoiceDialog for the given force.
      */
     private CamoChoiceDialog getCamoChoiceDialogForForce(Force force) {
-        String category = gui.getCampaign().getCamoCategory();
-        String fileName = gui.getCampaign().getCamoFileName();
+        AbstractIcon camouflage = ((Camouflage) gui.getCampaign().getCamouflage()).clone();
 
         // Gather the most used camo category/file name for the force
         Optional<Pair<String, String>> used = force.getAllUnits(false).stream()
@@ -1508,7 +1508,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
             .collect(
                 Collectors.collectingAndThen(
                     Collectors.groupingBy(
-                        e -> Pair.of(e.getCamoCategory(), e.getCamoFileName()),
+                        e -> Pair.of(e.getCamouflage().getCategory(), e.getCamouflage().getFilename()),
                         Collectors.counting()),
                     m -> m.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey)
                 )
@@ -1517,13 +1517,13 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
             // IF there is a camo category and its not blank...
             if (!StringUtil.isNullOrEmpty(used.get().getKey())) {
                 // ...use it as the category/fileName
-                category = used.get().getKey();
-                fileName = used.get().getValue();
+                camouflage.setCategory(used.get().getKey());
+                camouflage.setFilename(used.get().getValue());
             }
         }
 
-        return new CamoChoiceDialog(gui.getFrame(), true, category, fileName,
-            gui.getCampaign().getColorIndex());
+        return new CamoChoiceDialog(gui.getFrame(), true, camouflage.getCategory(),
+                camouflage.getFilename(), gui.getCampaign().getColorIndex());
     }
 
     /**

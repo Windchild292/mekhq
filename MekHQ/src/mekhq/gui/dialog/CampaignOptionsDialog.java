@@ -122,8 +122,7 @@ public class CampaignOptionsDialog extends JDialog {
     private RandomSkillPreferences rSkillPrefs;
     private LocalDate date;
     private JFrame frame;
-    private String camoCategory;
-    private String camoFileName;
+    private AbstractIcon camouflage;
     private int colorIndex;
     private String iconCategory;
     private String iconFileName;
@@ -498,8 +497,7 @@ public class CampaignOptionsDialog extends JDialog {
         //this is a hack but I have no idea what is going on here
         this.frame = parent;
         this.date = campaign.getLocalDate();
-        this.camoCategory = campaign.getCamoCategory();
-        this.camoFileName = campaign.getCamoFileName();
+        this.camouflage = ((Camouflage) c.getCamouflage()).clone();
         this.colorIndex = campaign.getColorIndex();
         this.iconCategory = campaign.getIconCategory();
         this.iconFileName = campaign.getIconFileName();
@@ -512,7 +510,7 @@ public class CampaignOptionsDialog extends JDialog {
 
         initComponents();
         setOptions(c.getCampaignOptions(), c.getRandomSkillPreferences());
-        setCamoIcon();
+        btnCamo.setIcon(camouflage.getImageIcon());
         setForceIcon();
         setLocationRelativeTo(parent);
 
@@ -4837,8 +4835,7 @@ public class CampaignOptionsDialog extends JDialog {
         if (comboRanks.getSelectedIndex() == Ranks.RS_CUSTOM) {
             campaign.getRanks().setRanksFromModel(ranksModel);
         }
-        campaign.setCamoCategory(camoCategory);
-        campaign.setCamoFileName(camoFileName);
+        campaign.setCamouflage(camouflage);
         campaign.setColorIndex(colorIndex);
 
         campaign.setIconCategory(iconCategory);
@@ -5240,14 +5237,14 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private void btnCamoActionPerformed(ActionEvent evt) {
-        CamoChoiceDialog ccd = new CamoChoiceDialog(frame, true, camoCategory, camoFileName, colorIndex);
+        CamoChoiceDialog ccd = new CamoChoiceDialog(frame, true, camouflage.getCategory(),
+                camouflage.getFilename(), colorIndex);
         ccd.setVisible(true);
-        camoCategory = ccd.getCategory();
-        camoFileName = ccd.getFileName();
+        camouflage = new Camouflage(ccd.getCategory(), ccd.getFileName());
         if (ccd.getColorIndex() != -1) {
             colorIndex = ccd.getColorIndex();
         }
-        setCamoIcon();
+        btnCamo.setIcon(camouflage.getImageIcon());
     }
 
     private Vector<String> getUnusedSPA() {
@@ -5338,48 +5335,6 @@ public class CampaignOptionsDialog extends JDialog {
         });
         panSpecialAbilities.revalidate();
         panSpecialAbilities.repaint();
-    }
-
-    public void setCamoIcon() {
-        if (null == camoCategory) {
-            return;
-        }
-
-        if (Camouflage.NO_CAMOUFLAGE.equals(camoCategory)) {
-            int colorInd = colorIndex;
-            if (colorInd == -1) {
-                colorInd = 0;
-            }
-            BufferedImage tempImage = new BufferedImage(84, 72, BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = tempImage.createGraphics();
-            graphics.setColor(PlayerColors.getColor(colorInd));
-            graphics.fillRect(0, 0, 84, 72);
-            btnCamo.setIcon(new ImageIcon(tempImage));
-            return;
-        }
-
-        // Try to get the camo file.
-        try {
-            // Translate the root camo directory name.
-            if (AbstractIcon.ROOT_CATEGORY.equals(camoCategory)) {
-                camoCategory = "";
-            }
-            Image camo = (Image) MHQStaticDirectoryManager.getCamouflage().getItem(camoCategory, camoFileName);
-            btnCamo.setIcon(new ImageIcon(camo));
-        } catch (Exception err) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Cannot find your camo file.\n"
-                    + "Setting to default color.\n"
-                    + "You should browse to the correct camo file,\n"
-                    + "or if it isn't available copy it into MekHQ's"
-                    + "data/images/camo folder.",
-                    "Missing Camo File",
-                    JOptionPane.WARNING_MESSAGE);
-            camoCategory = Camouflage.NO_CAMOUFLAGE;
-            colorIndex = 0;
-            setCamoIcon();
-        }
     }
 
     public void setForceIcon() {

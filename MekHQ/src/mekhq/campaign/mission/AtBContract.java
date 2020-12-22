@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.finances.Money;
@@ -127,11 +128,9 @@ public class AtBContract extends Contract implements Serializable {
     protected int enemyQuality;
     protected String allyBotName;
     protected String enemyBotName;
-    protected String allyCamoCategory;
-    protected String allyCamoFileName;
+    protected AbstractIcon allyCamouflage;
     protected int allyColorIndex;
-    protected String enemyCamoCategory;
-    protected String enemyCamoFileName;
+    protected AbstractIcon enemyCamouflage;
     protected int enemyColorIndex;
 
     protected int extensionLength;
@@ -181,11 +180,9 @@ public class AtBContract extends Contract implements Serializable {
         enemyQuality = IUnitRating.DRAGOON_C;
         allyBotName = "Ally";
         enemyBotName = "Enemy";
-        allyCamoCategory = Camouflage.NO_CAMOUFLAGE;
-        allyCamoFileName = null;
+        setAllyCamouflage(new Camouflage());
         allyColorIndex = 1;
-        enemyCamoCategory = Camouflage.NO_CAMOUFLAGE;
-        enemyCamoFileName = null;
+        setEnemyCamouflage(new Camouflage());
         enemyColorIndex = 2;
 
         extensionLength = 0;
@@ -1117,26 +1114,22 @@ public class AtBContract extends Contract implements Serializable {
                 +"<enemyBotName>"
                 +enemyBotName
                 +"</enemyBotName>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyCamoCategory>"
-                +allyCamoCategory
-                +"</allyCamoCategory>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyCamoFileName>"
-                +allyCamoFileName
-                +"</allyCamoFileName>");
+        if (!getAllyCamouflage().hasDefaultCategory()) {
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "allyCamoCategory", getAllyCamouflage().getCategory());
+        }
+        if (!getAllyCamouflage().hasDefaultFilename()) {
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "allyCamoFileName", getAllyCamouflage().getFilename());
+        }
         pw1.println(MekHqXmlUtil.indentStr(indent+1)
                 +"<allyColorIndex>"
                 +allyColorIndex
                 +"</allyColorIndex>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyCamoCategory>"
-                +enemyCamoCategory
-                +"</enemyCamoCategory>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyCamoFileName>"
-                +enemyCamoFileName
-                +"</enemyCamoFileName>");
+        if (!getEnemyCamouflage().hasDefaultCategory()) {
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enemyCamoCategory", getEnemyCamouflage().getCategory());
+        }
+        if (!getEnemyCamouflage().hasDefaultFilename()) {
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enemyCamoFileName", getEnemyCamouflage().getFilename());
+        }
         pw1.println(MekHqXmlUtil.indentStr(indent+1)
                 +"<enemyColorIndex>"
                 +enemyColorIndex
@@ -1231,15 +1224,15 @@ public class AtBContract extends Contract implements Serializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("enemyBotName")) {
                 enemyBotName = wn2.getTextContent();
             } else if (wn2.getNodeName().equalsIgnoreCase("allyCamoCategory")) {
-                allyCamoCategory = wn2.getTextContent();
+                getAllyCamouflage().setCategory(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("allyCamoFileName")) {
-                allyCamoFileName = wn2.getTextContent();
+                getAllyCamouflage().setFilename(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("allyColorIndex")) {
                 allyColorIndex = Integer.parseInt(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("enemyCamoCategory")) {
-                enemyCamoCategory = wn2.getTextContent();
+                getEnemyCamouflage().setCategory(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("enemyCamoFileName")) {
-                enemyCamoFileName = wn2.getTextContent();
+                getEnemyCamouflage().setFilename(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("enemyColorIndex")) {
                 enemyColorIndex = Integer.parseInt(wn2.getTextContent());
             } else if (wn2.getNodeName().equalsIgnoreCase("requiredLances")) {
@@ -1391,20 +1384,12 @@ public class AtBContract extends Contract implements Serializable {
         enemyBotName = name;
     }
 
-    public String getAllyCamoCategory() {
-        return allyCamoCategory;
+    public AbstractIcon getAllyCamouflage() {
+        return allyCamouflage;
     }
 
-    public void setAllyCamoCategory(String category) {
-        allyCamoCategory = category;
-    }
-
-    public String getAllyCamoFileName() {
-        return allyCamoFileName;
-    }
-
-    public void setAllyCamoFileName(String fileName) {
-        allyCamoFileName = fileName;
+    public void setAllyCamouflage(AbstractIcon allyCamouflage) {
+        this.allyCamouflage = allyCamouflage;
     }
 
     public int getAllyColorIndex() {
@@ -1415,20 +1400,12 @@ public class AtBContract extends Contract implements Serializable {
         allyColorIndex = index;
     }
 
-    public String getEnemyCamoCategory() {
-        return enemyCamoCategory;
+    public AbstractIcon getEnemyCamouflage() {
+        return enemyCamouflage;
     }
 
-    public void setEnemyCamoCategory(String category) {
-        enemyCamoCategory = category;
-    }
-
-    public String getEnemyCamoFileName() {
-        return enemyCamoFileName;
-    }
-
-    public void setEnemyCamoFileName(String fileName) {
-        enemyCamoFileName = fileName;
+    public void setEnemyCamouflage(AbstractIcon enemyCamouflage) {
+        this.enemyCamouflage = enemyCamouflage;
     }
 
     public int getEnemyColorIndex() {

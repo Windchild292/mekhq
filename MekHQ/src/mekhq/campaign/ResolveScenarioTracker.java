@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import megamek.client.Client;
 import megamek.common.*;
 import megamek.common.event.GameVictoryEvent;
+import megamek.common.icons.Camouflage;
 import megamek.common.loaders.EntityLoadingException;
 import megamek.common.options.OptionsConstants;
 import mekhq.MekHQ;
@@ -148,7 +149,7 @@ public class ResolveScenarioTracker {
             try {
                 loadUnitsAndPilots(unitList.get());
             } catch (IOException e) {
-                MekHQ.getLogger().error(this, e);
+                MekHQ.getLogger().error(e);
             }
         } else {
             initUnitsAndPilotsWithoutBattle();
@@ -158,11 +159,8 @@ public class ResolveScenarioTracker {
 
     private TestUnit generateNewTestUnit(Entity e) {
         // Do some hoops here so that the new mech gets it's old individual paint job!
-        String cat = e.getCamoCategory();
-        String fn = e.getCamoFileName();
         TestUnit nu = new TestUnit(e, campaign, true);
-        nu.getEntity().setCamoCategory(cat);
-        nu.getEntity().setCamoFileName(fn);
+        nu.getEntity().setCamouflage(((Camouflage) e.getCamouflage()).clone());
         /* AtB uses id to track status of allied units */
         if (e.getExternalIdAsString().equals("-1")) {
             UUID id = UUID.randomUUID();

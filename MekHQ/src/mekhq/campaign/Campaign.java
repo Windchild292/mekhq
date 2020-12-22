@@ -222,8 +222,7 @@ public class Campaign implements Serializable, ITechManager {
     private boolean gmMode;
     private transient boolean overviewLoadingValue = true;
 
-    private String camoCategory = Camouflage.NO_CAMOUFLAGE;
-    private String camoFileName = null;
+    private AbstractIcon camouflage = new Camouflage();
     private int colorIndex = 0;
 
     //unit icon
@@ -3973,24 +3972,12 @@ public class Campaign implements Serializable, ITechManager {
         }
     }
 
-    public void setCamoCategory(String name) {
-        camoCategory = name;
-    }
-
-    public String getCamoCategory() {
-        return camoCategory;
-    }
-
-    public void setCamoFileName(String name) {
-        camoFileName = name;
-    }
-
-    public String getCamoFileName() {
-        return camoFileName;
-    }
-
     public AbstractIcon getCamouflage() {
-        return new Camouflage(getCamoCategory(), getCamoFileName());
+        return camouflage;
+    }
+
+    public void setCamouflage(AbstractIcon camouflage) {
+        this.camouflage = camouflage;
     }
 
     public int getColorIndex() {
@@ -4081,8 +4068,8 @@ public class Campaign implements Serializable, ITechManager {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPoolOvertime",
                 astechPoolOvertime);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "medicPool", medicPool);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoCategory", camoCategory);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoFileName", camoFileName);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoCategory", getCamouflage().getCategory());
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoFileName", getCamouflage().getFilename());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", iconCategory);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", iconFileName);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "colorIndex", colorIndex);

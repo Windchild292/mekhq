@@ -36,7 +36,6 @@ import megamek.common.TechConstants;
 import megamek.common.UnitType;
 import megamek.common.util.EncodeControl;
 import mekhq.MHQStaticDirectoryManager;
-import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.utilities.ImgLabel;
@@ -321,24 +320,12 @@ public class UnitViewPanel extends ScrollablePanel {
 	}
 
 	private Image getImageFor(Unit u, Component c) {
-        if (null == MHQStaticDirectoryManager.getMechTileset()) {
+        if (MHQStaticDirectoryManager.getMechTileset() == null) {
             return null;
         }
         Image base = MHQStaticDirectoryManager.getMechTileset().imageFor(u.getEntity());
         int tint = PlayerColors.getColorRGB(u.getCampaign().getColorIndex());
-        EntityImage entityImage = new EntityImage(base, tint, getCamo(u), c, u.getEntity());
+        EntityImage entityImage = new EntityImage(base, tint, u.getCamouflage().getImage(), c, u.getEntity());
         return entityImage.loadPreviewImage();
-    }
-
-    private Image getCamo(Unit unit) {
-        // Try to get the player's camo file.
-        Image camo = null;
-        try {
-            camo = (Image) MHQStaticDirectoryManager.getCamouflage()
-                    .getItem(unit.getCamoCategory(), unit.getCamoFileName());
-        } catch (Exception e) {
-            MekHQ.getLogger().error(e);
-        }
-        return camo;
     }
 }

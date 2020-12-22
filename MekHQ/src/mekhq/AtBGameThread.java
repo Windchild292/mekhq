@@ -36,7 +36,6 @@ import megamek.client.Client;
 import megamek.client.bot.BotClient;
 import megamek.client.bot.princess.Princess;
 import megamek.client.ui.swing.ClientGUI;
-import megamek.client.ui.swing.util.PlayerColors;
 import megamek.common.Entity;
 import megamek.common.IGame;
 import megamek.common.MapSettings;
@@ -391,15 +390,9 @@ public class AtBGameThread extends GameThread {
             if (null == botClient.getLocalPlayer()) {
                 MekHQ.getLogger().error("Could not configure bot " + botClient.getName());
             } else {
-                MekHQ.getLogger().warning("Setting player " + botClient.getLocalPlayer().getName()
-                        + " with camo " + botForce.getCamoCategory() + "/" + botForce.getCamoFileName()
-                        + " and colour index " + botForce.getColorIndex());
                 botClient.getLocalPlayer().setTeam(botForce.getTeam());
                 botClient.getLocalPlayer().setStartingPos(botForce.getStart());
-                botClient.getLocalPlayer().setCamouflage(new Camouflage(botForce.getCamoCategory(),
-                        (Camouflage.NO_CAMOUFLAGE.equalsIgnoreCase(botForce.getCamoCategory())
-                                ? PlayerColors.COLOR_NAMES[botForce.getColorIndex()]
-                                : botForce.getCamoFileName())));
+                botClient.getLocalPlayer().setCamouflage(((Camouflage) botForce.getCamouflage()).clone());
                 botClient.getLocalPlayer().setColorIndex(botForce.getColorIndex());
 
                 botClient.sendPlayerInfo();
