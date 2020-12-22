@@ -358,7 +358,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         setPortrait(new Portrait());
         xp = 0;
         daysToWaitForHealing = 0;
-        gender = Gender.MALE;
+        setGender(Gender.MALE);
         rank = 0;
         rankLevel = 0;
         rankSystem = -1;
@@ -1733,7 +1733,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "daysToWaitForHealing", daysToWaitForHealing);
             }
             // Always save the person's gender, as it would otherwise get confusing fast
-            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "gender", gender.name());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "gender", getGender().name());
             // Always save a person's rank
             MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rank", rank);
             if (rankLevel != 0) {
@@ -1955,7 +1955,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("hits")) {
                     retVal.hits = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("gender")) {
-                    retVal.gender = Gender.parseFromString(wn2.getTextContent().trim());
+                    retVal.setGender(Gender.parseFromString(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("rank")) {
                     retVal.rank = Integer.parseInt(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("rankLevel")) {
@@ -2342,24 +2342,12 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public int getRankSystem() {
-        if (rankSystem == -1) {
-            return campaign.getRanks().getRankSystem();
-        }
-        return rankSystem;
+        return (rankSystem == -1) ? campaign.getRanks().getRankSystem() : rankSystem;
     }
 
     public void setRankSystem(int system) {
-        rankSystem = system;
-        if (system == campaign.getRanks().getRankSystem()) {
-            rankSystem = -1;
-        }
-
-        // Set the ranks too
-        if (rankSystem == -1) {
-            ranks = null;
-        } else {
-            ranks = Ranks.getRanksFromSystem(rankSystem);
-        }
+        rankSystem = (system == campaign.getRanks().getRankSystem()) ? -1 : system;
+        ranks = (rankSystem == -1) ? null : Ranks.getRanksFromSystem(rankSystem);
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
 
@@ -2375,10 +2363,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public Rank getRank() {
-        if (rankSystem != -1) {
-            return Ranks.getRanksFromSystem(rankSystem).getRank(rank);
-        }
-        return campaign.getRanks().getRank(rank);
+        final Ranks system = (rankSystem == -1) ? campaign.getRanks() : Ranks.getRanksFromSystem(rankSystem);
+        return Objects.requireNonNull(system, "Error: Failed to get a valid rank system").getRank(rank);
     }
 
     public String getRankName() {
@@ -2421,10 +2407,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
         // Manei Domini Additions
         if (getRankSystem() == Ranks.RS_WOB) {
             if (maneiDominiClass != ManeiDominiClass.NONE) {
-                rankName = maneiDominiClass.toString() + " " + rankName;
+                rankName = maneiDominiClass + " " + rankName;
             }
             if (maneiDominiRank != ManeiDominiRank.NONE) {
-                rankName += " " + maneiDominiRank.toString();
+                rankName += " " + maneiDominiRank;
             }
         } else {
             maneiDominiClass = ManeiDominiClass.NONE;
