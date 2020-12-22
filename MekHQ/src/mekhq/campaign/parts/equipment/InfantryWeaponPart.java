@@ -64,22 +64,10 @@ public class InfantryWeaponPart extends EquipmentPart {
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<equipmentNum>"
-                +equipmentNum
-                +"</equipmentNum>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<typeName>"
-                +MekHqXmlUtil.escape(type.getInternalName())
-                +"</typeName>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<equipTonnage>"
-                +equipTonnage
-                +"</equipTonnage>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<primary>"
-                +primary
-                +"</primary>");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "equipmentNum", equipmentNum);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "typeName", type.getInternalName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "equipTonnage", equipTonnage);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "primary", primary);
         writeToXmlEnd(pw1, indent);
     }
 

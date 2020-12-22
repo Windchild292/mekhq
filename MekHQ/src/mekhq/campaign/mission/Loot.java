@@ -151,27 +151,17 @@ public class Loot implements MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<loot>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<name>"
-                +MekHqXmlUtil.escape(name)
-                +"</name>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<cash>"
-                +cash.toXmlString()
-                +"</cash>");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "loot");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "cash", cash);
         for (Entity e : units) {
-            String lookupName = e.getChassis() + " " + e.getModel();
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"<entityName>"
-                    +lookupName.trim()
-                    +"</entityName>");
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "entityName",
+                    (e.getChassis() + " " + e.getModel()).trim());
         }
         for (Part p : parts) {
-            p.writeToXml(pw1, indent+1);
+            p.writeToXml(pw1, indent);
         }
-
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</loot>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "loot");
     }
 
     public static Loot generateInstanceFromXML(Node wn, Campaign c, Version version) {

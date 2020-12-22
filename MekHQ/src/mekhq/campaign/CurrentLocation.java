@@ -253,28 +253,15 @@ public class CurrentLocation implements Serializable {
     }
 
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<location>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                + "<currentSystemId>"
-                +MekHqXmlUtil.escape(currentSystem.getId())
-                + "</currentSystemId>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<transitTime>"
-                +transitTime
-                +"</transitTime>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<rechargeTime>"
-                +rechargeTime
-                +"</rechargeTime>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<jumpZenith>"
-                +jumpZenith
-                +"</jumpZenith>");
-        if (null != jumpPath) {
-            jumpPath.writeToXml(pw1, indent+1);
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "location");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "currentSystemId", currentSystem.getId());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "transitTime", transitTime);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rechargeTime", rechargeTime);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "jumpZenith", jumpZenith);
+        if (jumpPath != null) {
+            jumpPath.writeToXml(pw1, indent);
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</location>");
-
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "location");
     }
 
     public static CurrentLocation generateInstanceFromXML(Node wn, Campaign c) {

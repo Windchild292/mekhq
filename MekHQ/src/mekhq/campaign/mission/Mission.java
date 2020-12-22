@@ -219,27 +219,27 @@ public class Mission implements Serializable, MekHqXmlSerializable {
     }
 
     protected void writeToXmlBegin(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<mission id=\"" + id + "\" type=\"" + this.getClass().getName() + "\">");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<name>" + MekHqXmlUtil.escape(name) + "</name>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<type>" + MekHqXmlUtil.escape(type) + "</type>");
-
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "mission", "id", id, "type", getClass());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "type", type);
         if (systemId != null) {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<systemId>" + MekHqXmlUtil.escape(systemId) + "</systemId>");
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "systemId", systemId);
         } else {
-            pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<planetName>" + MekHqXmlUtil.escape(legacyPlanetName) + "</planetName>");
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "planetName", legacyPlanetName);
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<status>" + status + "</status>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<desc>" + MekHqXmlUtil.escape(desc) + "</desc>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<id>" + id + "</id>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<scenarios>");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "status", status);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "desc", desc);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "id", id);
+
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "scenarios");
         for (Scenario s : scenarios) {
-            s.writeToXml(pw1, indent + 2);
+            s.writeToXml(pw1, indent);
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "</scenarios>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "scenarios");
     }
 
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</mission>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "mission");
     }
 
     public void loadFieldsFromXmlNode(Node wn) throws ParseException {

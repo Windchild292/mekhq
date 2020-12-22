@@ -147,14 +147,11 @@ public class JumpPath implements Serializable {
     }
 
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<jumpPath>");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "jumpPath");
         for (PlanetarySystem p : path) {
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"<planetName>"
-                    +MekHqXmlUtil.escape(p.getId())
-                    +"</planetName>");
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "playerName", p.getId());
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</jumpPath>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "jumpPath");
     }
 
     public static JumpPath generateInstanceFromXML(Node wn, Campaign c) {

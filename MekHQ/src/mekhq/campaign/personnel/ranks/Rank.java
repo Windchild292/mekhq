@@ -121,21 +121,13 @@ public class Rank implements MekHqXmlSerializable {
     	return joiner.toString();
     }
 
+    @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<rank>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<rankNames>"
-                +MekHqXmlUtil.escape(getRankNamesAsString())
-                +"</rankNames>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<officer>"
-                +officer
-                +"</officer>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<payMultiplier>"
-                +payMultiplier
-                +"</payMultiplier>");
-        pw1.print(MekHqXmlUtil.indentStr(indent) + "</rank>");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "rank");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "rankNames", getRankNamesAsString());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "officer", officer);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "payMultiplier", payMultiplier);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "rank");
     }
 
     public static Rank generateInstanceFromXML(Node wn) {

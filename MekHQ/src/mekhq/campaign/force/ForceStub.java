@@ -113,60 +113,38 @@ public class ForceStub implements Serializable {
     }
 
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<forceStub>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<name>"
-                +MekHqXmlUtil.escape(name)
-                +"</name>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<iconCategory>"
-                +MekHqXmlUtil.escape(iconCategory)
-                +"</iconCategory>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<iconFileName>"
-                +MekHqXmlUtil.escape(iconFileName)
-                +"</iconFileName>");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "forceStub");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "name", name);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "iconCategory", iconCategory);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "iconFileName", iconFileName);
         if (iconCategory.equals(Force.ROOT_LAYERED)) {
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"<iconHashMap>");
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "iconHashMap");
             for (Map.Entry<String, Vector<String>> entry : iconMap.entrySet()) {
-                if ((null != entry.getValue()) && !entry.getValue().isEmpty()) {
-                    pw1.println(MekHqXmlUtil.indentStr(indent+2)
-                            +"<iconentry key=\""
-                            +MekHqXmlUtil.escape(entry.getKey())
-                            +"\">");
+                if ((entry.getValue() != null) && !entry.getValue().isEmpty()) {
+                    MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "iconentry", "key", entry.getKey());
                     for (String value : entry.getValue()) {
-                        pw1.println(MekHqXmlUtil.indentStr(indent+2)
-                                +"<value name=\""
-                                +MekHqXmlUtil.escape(value)
-                                +"\"/>");
+                        pw1.println(MekHqXmlUtil.indentStr(indent) + "<value name=\"" + MekHqXmlUtil.escape(value) + "\"/>");
                     }
-                    pw1.println(MekHqXmlUtil.indentStr(indent+2)
-                            +"</iconentry>");
+                    MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "iconentry");
                 }
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"</iconHashMap>");
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "iconHashMap");
         }
         if (units.size() > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"<units>");
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "units");
             for (UnitStub ustub : units) {
-                ustub.writeToXml(pw1, indent+2);
+                ustub.writeToXml(pw1, indent);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"</units>");
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "units");
         }
         if (subForces.size() > 0) {
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"<subforces>");
+            MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "subforces");
             for (ForceStub sub : subForces) {
-                sub.writeToXml(pw1, indent+2);
+                sub.writeToXml(pw1, indent);
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"</subforces>");
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "subforces");
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</forceStub>");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "forceStub");
     }
 
     public static ForceStub generateInstanceFromXML(Node wn) {
