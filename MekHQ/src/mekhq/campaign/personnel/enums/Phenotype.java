@@ -150,8 +150,7 @@ public enum Phenotype {
 
         }
 
-        MekHQ.getLogger().error(Phenotype.class, "parseFromString",
-                "Unable to parse the phenotype from string " + text + ". Returning Phenotype.NONE");
+        MekHQ.getLogger().error("Unable to parse the phenotype from string " + text + ". Returning Phenotype.NONE");
 
         return NONE;
     }

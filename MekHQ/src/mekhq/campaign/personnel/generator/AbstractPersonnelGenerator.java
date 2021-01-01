@@ -81,10 +81,10 @@ public abstract class AbstractPersonnelGenerator {
      */
     protected int generateExperienceLevel(Campaign campaign, Person person) {
         int bonus = campaign.getCampaignOptions().getOverallRecruitmentBonus()
-                + campaign.getCampaignOptions().getRecruitmentBonus(person.getPrimaryRoleInt());
+                + campaign.getCampaignOptions().getPersonnelRoleRecruitmentBonuses()[person.getPrimaryRole().ordinal()];
 
         // LAM pilots get +3 to random experience roll
-        if ((person.getPrimaryRoleInt() == Person.T_MECHWARRIOR) && (person.getSecondaryRoleInt() == Person.T_AERO_PILOT)) {
+        if (person.getPrimaryRole().isMechWarrior() && person.getSecondaryRole().isAerospacePilot()) {
             bonus += 3;
         }
 

@@ -61,10 +61,9 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
 
         // roll tactics skill
         if (!(Person.isSupportRole(type) || Person.isSupportRole(secondary))) {
-            int tacLvl = Utilities.generateExpLevel(campaign.getCampaignOptions().getTacticsModifier(expLvl));
+            int tacLvl = Utilities.generateExpLevel(campaign.getCampaignOptions().getTacticsModifiers()[expLvl]);
             if (tacLvl > SkillType.EXP_ULTRA_GREEN) {
-                addSkill(person, SkillType.S_TACTICS, tacLvl,
-                        campaign.getCampaignOptions().randomizeSkill(), bonus);
+                addSkill(person, SkillType.S_TACTICS, tacLvl, campaign.getCampaignOptions().randomizeSkill(), bonus);
             }
         }
 

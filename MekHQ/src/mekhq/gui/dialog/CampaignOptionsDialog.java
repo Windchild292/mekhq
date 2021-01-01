@@ -4014,12 +4014,12 @@ public class CampaignOptionsDialog extends JDialog {
         JLabel lblOverallRecruitBonus = new JLabel(resources.getString("lblOverallRecruitBonus.text"));
 
         JLabel lblProbAntiMek = new JLabel(resources.getString("lblProbAntiMek.text"));
-        spnProbAntiMek = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
-        ((JSpinner.DefaultEditor) spnProbAntiMek.getEditor()).getTextField().setEditable(false);
+        spnProbabilityAntiMek = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
+        ((JSpinner.DefaultEditor) spnProbabilityAntiMek.getEditor()).getTextField().setEditable(false);
 
-        spnOverallRecruitBonus = new JSpinner(new SpinnerNumberModel(0, -12, 12, 1));
-        ((JSpinner.DefaultEditor) spnOverallRecruitBonus.getEditor()).getTextField().setEditable(false);
-        spnOverallRecruitBonus.setToolTipText(resources.getString("spnOverallRecruitBonus.toolTipText"));
+        spnOverallRecruitmentBonus = new JSpinner(new SpinnerNumberModel(0, -12, 12, 1));
+        ((JSpinner.DefaultEditor) spnOverallRecruitmentBonus.getEditor()).getTextField().setEditable(false);
+        spnOverallRecruitmentBonus.setToolTipText(resources.getString("spnOverallRecruitBonus.toolTipText"));
 
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -4037,7 +4037,7 @@ public class CampaignOptionsDialog extends JDialog {
         panRandomSkill.add(createPhenotypePanel(), gridBagConstraints);
 
         gridBagConstraints.gridy = 2;
-        panRandomSkill.add(spnProbAntiMek, gridBagConstraints);
+        panRandomSkill.add(spnProbabilityAntiMek, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -4063,7 +4063,7 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.fill = GridBagConstraints.NONE;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        panRandomSkill.add(spnOverallRecruitBonus, gridBagConstraints);
+        panRandomSkill.add(spnOverallRecruitmentBonus, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -4081,7 +4081,7 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        panRandomSkill.add(panTypeRecruitBonus, gridBagConstraints);
+        panRandomSkill.add(createPersonnelRoleRecruitmentBonusPanel(), gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -4808,20 +4808,20 @@ public class CampaignOptionsDialog extends JDialog {
         spnProbabilityAntiMek.setValue(options.getAntiMekProbability());
         spnOverallRecruitmentBonus.setValue(options.getOverallRecruitmentBonus());
         for (int i = 0; i < Person.T_NUM; i++) {
-            spnRoleRecruitmentBonus[i].setValue(options.getRecruitmentBonus(i));
+            spnRoleRecruitmentBonus[i].setValue(options.getPersonnelRoleRecruitmentBonuses()[i]);
         }
         spnArtilleryProbability.setValue(options.getArtilleryProbability());
         spnArtilleryBonus.setValue(options.getArtilleryBonus());
         spnSecondaryProbability.setValue(options.getSecondarySkillProbability());
         spnSecondaryBonus.setValue(options.getSecondarySkillBonus());
-        spnTacticsGreen.setValue(options.getTacticsModifier(SkillType.EXP_GREEN));
-        spnTacticsRegular.setValue(options.getTacticsModifer(SkillType.EXP_REGULAR));
-        spnTacticsVeteran.setValue(options.getTacticsModifier(SkillType.EXP_VETERAN));
-        spnTacticsElite.setValue(options.getTacticsModifier(SkillType.EXP_ELITE));
-        spnSPAsGreen.setValue(options.getSpecialAbilityBonus(SkillType.EXP_GREEN));
-        spnSPAsRegular.setValue(options.getSpecialAbilityBonus(SkillType.EXP_REGULAR));
-        spnSPAsVeteran.setValue(options.getSpecialAbilityBonus(SkillType.EXP_VETERAN));
-        spnSPAsElite.setValue(options.getSpecialAbilityBonus(SkillType.EXP_ELITE));
+        spnTacticsGreen.setValue(options.getTacticsModifier(SkillLevel.GREEN));
+        spnTacticsRegular.setValue(options.getTacticsModifier(SkillLevel.REGULAR));
+        spnTacticsVeteran.setValue(options.getTacticsModifier(SkillLevel.VETERAN));
+        spnTacticsElite.setValue(options.getTacticsModifier(SkillLevel.ELITE));
+        spnSPAsGreen.setValue(options.getSpecialAbilityBonus(SkillLevel.GREEN));
+        spnSPAsRegular.setValue(options.getSpecialAbilityBonus(SkillLevel.REGULAR));
+        spnSPAsVeteran.setValue(options.getSpecialAbilityBonus(SkillLevel.VETERAN));
+        spnSPAsElite.setValue(options.getSpecialAbilityBonus(SkillLevel.ELITE));
         spnCombatSmallArms.setValue(options.getCombatSmallArmsBonus());
         spnSupportSmallArms.setValue(options.getSupportSmallArmsBonus());
         //endregion Skill Randomization Tab
