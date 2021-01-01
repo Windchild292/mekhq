@@ -283,14 +283,14 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
     private void calcAdminSupportHoursNeeded() {
         int personnelCount = 0;
         for (Person p : getCampaign().getActivePersonnel()) {
-            if ((p.getPrimaryRole() == Person.T_ADMIN_TRA) ||
-                (p.getPrimaryRole() == Person.T_ADMIN_COM) ||
-                (p.getPrimaryRole() == Person.T_ADMIN_LOG) ||
-                (p.getPrimaryRole() == Person.T_ADMIN_HR) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_HR) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_TRA) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_COM) ||
-                (p.getSecondaryRole() == Person.T_ADMIN_LOG)) {
+            if ((p.getPrimaryRoleInt() == Person.T_ADMIN_TRA) ||
+                (p.getPrimaryRoleInt() == Person.T_ADMIN_COM) ||
+                (p.getPrimaryRoleInt() == Person.T_ADMIN_LOG) ||
+                (p.getPrimaryRoleInt() == Person.T_ADMIN_HR) ||
+                (p.getSecondaryRoleInt() == Person.T_ADMIN_HR) ||
+                (p.getSecondaryRoleInt() == Person.T_ADMIN_TRA) ||
+                (p.getSecondaryRoleInt() == Person.T_ADMIN_COM) ||
+                (p.getSecondaryRoleInt() == Person.T_ADMIN_LOG)) {
                 continue;
             }
             personnelCount++;
@@ -348,7 +348,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             return;
         }
         int hours = getSupportHours(doctorSkill.getExperienceLevel());
-        if (p.getSecondaryRole() == Person.T_DOCTOR) {
+        if (p.getSecondaryRoleInt() == Person.T_DOCTOR) {
             hours = (int) Math.floor(hours / 2.0);
         }
 

@@ -199,7 +199,7 @@ public class NewRecruitDialog extends javax.swing.JDialog {
     }
 
     private void createNewRecruit() {
-        person = hqView.getCampaign().newPerson(person.getPrimaryRole());
+        person = hqView.getCampaign().newPerson(person.getPrimaryRoleInt());
         refreshRanksCombo();
         hqView.getCampaign().changeRank(person, hqView.getCampaign().getRanks().getRankNumericFromNameAndProfession(
                 person.getProfession(), (String) choiceRanks.getSelectedItem()), false);
@@ -248,7 +248,7 @@ public class NewRecruitDialog extends javax.swing.JDialog {
     }
 
     private void regenerate() {
-        person = hqView.getCampaign().newPerson(person.getPrimaryRole(), person.getSecondaryRole());
+        person = hqView.getCampaign().newPerson(person.getPrimaryRoleInt(), person.getSecondaryRoleInt());
         refreshRanksCombo();
         refreshView();
     }

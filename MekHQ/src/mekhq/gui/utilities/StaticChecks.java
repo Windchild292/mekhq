@@ -476,7 +476,7 @@ public class StaticChecks {
 
     public static boolean areAllInfantry(Person[] people) {
         for (Person person : people) {
-            if (Person.T_INFANTRY != person.getPrimaryRole()) {
+            if (Person.T_INFANTRY != person.getPrimaryRoleInt()) {
                 return false;
             }
         }
@@ -485,7 +485,7 @@ public class StaticChecks {
 
     public static boolean areAllBattleArmor(Person[] people) {
         for (Person person : people) {
-            if (Person.T_BA != person.getPrimaryRole()) {
+            if (Person.T_BA != person.getPrimaryRoleInt()) {
                 return false;
             }
         }
@@ -494,7 +494,7 @@ public class StaticChecks {
 
     public static boolean areAllVeeGunners(Person[] people) {
         for (Person person : people) {
-            if (Person.T_VEE_GUNNER != person.getPrimaryRole()) {
+            if (Person.T_VEE_GUNNER != person.getPrimaryRoleInt()) {
                 return false;
             }
         }
@@ -503,7 +503,7 @@ public class StaticChecks {
 
     public static boolean areAllVesselGunners(Person[] people) {
         for (Person person : people) {
-            if (Person.T_SPACE_GUNNER != person.getPrimaryRole()) {
+            if (Person.T_SPACE_GUNNER != person.getPrimaryRoleInt()) {
                 return false;
             }
         }
@@ -512,8 +512,8 @@ public class StaticChecks {
 
     public static boolean areAllVesselCrew(Person[] people) {
         for (Person person : people) {
-            if (Person.T_SPACE_CREW != person.getPrimaryRole()
-                    && Person.T_VEHICLE_CREW != person.getPrimaryRole()) {
+            if (Person.T_SPACE_CREW != person.getPrimaryRoleInt()
+                    && Person.T_VEHICLE_CREW != person.getPrimaryRoleInt()) {
                 return false;
             }
         }
@@ -522,7 +522,7 @@ public class StaticChecks {
 
     public static boolean areAllVesselPilots(Person[] people) {
         for (Person person : people) {
-            if (Person.T_SPACE_PILOT != person.getPrimaryRole()) {
+            if (Person.T_SPACE_PILOT != person.getPrimaryRoleInt()) {
                 return false;
             }
         }
@@ -531,7 +531,7 @@ public class StaticChecks {
 
     public static boolean areAllVesselNavigators(Person[] people) {
         for (Person person : people) {
-            if (Person.T_NAVIGATOR != person.getPrimaryRole()) {
+            if (Person.T_NAVIGATOR != person.getPrimaryRoleInt()) {
                 return false;
             }
         }

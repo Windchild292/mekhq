@@ -81,10 +81,10 @@ public abstract class AbstractPersonnelGenerator {
      */
     protected int generateExperienceLevel(Campaign campaign, Person person) {
         int bonus = campaign.getCampaignOptions().getOverallRecruitmentBonus()
-                + campaign.getCampaignOptions().getRecruitmentBonus(person.getPrimaryRole());
+                + campaign.getCampaignOptions().getRecruitmentBonus(person.getPrimaryRoleInt());
 
         // LAM pilots get +3 to random experience roll
-        if ((person.getPrimaryRole() == Person.T_MECHWARRIOR) && (person.getSecondaryRole() == Person.T_AERO_PILOT)) {
+        if ((person.getPrimaryRoleInt() == Person.T_MECHWARRIOR) && (person.getSecondaryRoleInt() == Person.T_AERO_PILOT)) {
             bonus += 3;
         }
 
@@ -129,7 +129,7 @@ public abstract class AbstractPersonnelGenerator {
     protected void generatePhenotype(Campaign campaign, Person person) {
         //check for clan phenotypes
         if (person.isClanner()) {
-            switch (person.getPrimaryRole()) {
+            switch (person.getPrimaryRoleInt()) {
                 case Person.T_MECHWARRIOR:
                     if (Utilities.rollProbability(campaign.getCampaignOptions().getPhenotypeProbability(Phenotype.MECHWARRIOR))) {
                         person.setPhenotype(Phenotype.MECHWARRIOR);

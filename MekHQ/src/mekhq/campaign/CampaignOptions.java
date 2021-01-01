@@ -308,12 +308,12 @@ public class CampaignOptions implements Serializable {
     //endregion Special Abilities Tab
 
     //region Skill Randomization Tab
-    private int[] phenotypeProbabilities;
-    private int overallRecruitBonus;
-    private int[] recruitBonuses;
     private boolean randomizeSkill;
+    private int[] phenotypeProbabilities;
+    private int antiMekProbability;
+    private int overallRecruitmentBonus;
+    private int[] recruitmentBonuses;
     private boolean useClanBonuses;
-    private int antiMekProb;
     private int[] specialAbilBonus;
     private int combatSmallArmsBonus;
     private int supportSmallArmsBonus;

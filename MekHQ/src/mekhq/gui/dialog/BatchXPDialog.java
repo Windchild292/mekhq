@@ -412,7 +412,7 @@ public final class BatchXPDialog extends JDialog {
 
                 // The next part is bollocks and doesn't belong here, but as long as we hardcode AtB ...
                 if (campaign.getCampaignOptions().getUseAtB()) {
-                    if ((p.getPrimaryRole() > Person.T_NONE) && (p.getPrimaryRole() <= Person.T_CONV_PILOT)
+                    if ((p.getPrimaryRoleInt() > Person.T_NONE) && (p.getPrimaryRoleInt() <= Person.T_CONV_PILOT)
                             && (p.getExperienceLevel(false) > startingExperienceLevel)
                             && (startingExperienceLevel >= SkillType.EXP_REGULAR)) {
                         SingleSpecialAbilityGenerator spaGenerator = new SingleSpecialAbilityGenerator();
@@ -461,7 +461,7 @@ public final class BatchXPDialog extends JDialog {
                 return false;
             } else if (!prisoners && !p.getPrisonerStatus().isFree()) {
                 return false;
-            } else if ((null != primaryRole) && (p.getPrimaryRole() != primaryRole)) {
+            } else if ((null != primaryRole) && (p.getPrimaryRoleInt() != primaryRole)) {
                 return false;
             } else if ((null != expLevel) && (p.getExperienceLevel(false) != expLevel)) {
                 return false;

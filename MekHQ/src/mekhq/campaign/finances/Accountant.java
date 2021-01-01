@@ -69,7 +69,7 @@ public class Accountant {
         Money salaries = Money.zero();
         for (Person p : getCampaign().getActivePersonnel()) {
             // Optionized infantry (Unofficial)
-            if (!(noInfantry && (p.getPrimaryRole() == Person.T_INFANTRY))) {
+            if (!(noInfantry && (p.getPrimaryRoleInt() == Person.T_INFANTRY))) {
                 salaries = salaries.plus(p.getSalary());
             }
         }

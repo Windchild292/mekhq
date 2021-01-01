@@ -356,8 +356,8 @@ public class AtBConfiguration implements Serializable {
         Person adminLog = campaign.findBestInRole(Person.T_ADMIN_LOG, SkillType.S_ADMIN);
         int adminLogExp = (adminLog == null)?SkillType.EXP_ULTRA_GREEN:adminLog.getSkill(SkillType.S_ADMIN).getExperienceLevel();
         for (Person p : campaign.getAdmins()) {
-            if ((p.getPrimaryRole() == Person.T_ADMIN_LOG ||
-                    p.getSecondaryRole() == Person.T_ADMIN_LOG) &&
+            if ((p.getPrimaryRoleInt() == Person.T_ADMIN_LOG ||
+                    p.getSecondaryRoleInt() == Person.T_ADMIN_LOG) &&
                     p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp) {
                 adminLogExp = p.getSkill(SkillType.S_ADMIN).getExperienceLevel();
             }

@@ -1160,7 +1160,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             //holy crap, do we really need to add every weapon?
             for (Enumeration<EquipmentType> i = EquipmentType.getAllTypes(); i.hasMoreElements();) {
                 EquipmentType etype = i.nextElement();
-                if (SpecialAbility.isWeaponEligibleForSPA(etype, person.getPrimaryRole(), false)) {
+                if (SpecialAbility.isWeaponEligibleForSPA(etype, person.getPrimaryRoleInt(), false)) {
                     optionComp.addValue(etype.getName());
                 }
             }
@@ -1170,7 +1170,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             //holy crap, do we really need to add every weapon?
             for (Enumeration<EquipmentType> i = EquipmentType.getAllTypes(); i.hasMoreElements();) {
                 EquipmentType etype = i.nextElement();
-                if (SpecialAbility.isWeaponEligibleForSPA(etype, person.getPrimaryRole(), true)) {
+                if (SpecialAbility.isWeaponEligibleForSPA(etype, person.getPrimaryRoleInt(), true)) {
                     optionComp.addValue(etype.getName());
                 }
             }

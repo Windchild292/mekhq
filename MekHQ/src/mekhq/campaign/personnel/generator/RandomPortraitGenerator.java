@@ -60,7 +60,7 @@ public class RandomPortraitGenerator {
         // and if none are found then /gender/rolegroup, then /gender/combat or
         // /gender/support, then in /gender.
         File genderFile = new File(p.getGender().isFemale() ? "Female" : "Male");
-        File searchFile = new File(genderFile, Person.getRoleDesc(p.getPrimaryRole(), p.isClanner()));
+        File searchFile = new File(genderFile, Person.getRoleDesc(p.getPrimaryRoleInt(), p.isClanner()));
 
         possiblePortraits = getPossibleRandomPortraits(existingPortraits, searchFile);
 
@@ -68,15 +68,15 @@ public class RandomPortraitGenerator {
             String searchCat_RoleGroup = "";
             if (p.isAdminPrimary()) {
                 searchCat_RoleGroup = "Admin";
-            } else if (p.getPrimaryRole() == Person.T_SPACE_CREW
-                    || p.getPrimaryRole() == Person.T_SPACE_GUNNER
-                    || p.getPrimaryRole() == Person.T_SPACE_PILOT
-                    || p.getPrimaryRole() == Person.T_NAVIGATOR) {
+            } else if (p.getPrimaryRoleInt() == Person.T_SPACE_CREW
+                    || p.getPrimaryRoleInt() == Person.T_SPACE_GUNNER
+                    || p.getPrimaryRoleInt() == Person.T_SPACE_PILOT
+                    || p.getPrimaryRoleInt() == Person.T_NAVIGATOR) {
                 searchCat_RoleGroup = "Vessel Crew";
             } else if (p.isTechPrimary()) {
                 searchCat_RoleGroup = "Tech";
-            } else if (p.getPrimaryRole() == Person.T_MEDIC
-                    || p.getPrimaryRole() == Person.T_DOCTOR) {
+            } else if (p.getPrimaryRoleInt() == Person.T_MEDIC
+                    || p.getPrimaryRoleInt() == Person.T_DOCTOR) {
                 searchCat_RoleGroup = "Medical";
             }
 

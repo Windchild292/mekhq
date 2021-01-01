@@ -695,13 +695,13 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                         // Get the list of techs, then sort them based on their tech role
                         List<Person> techList = gui.getCampaign().getTechs();
                         techList.sort((o1, o2) -> {
-                            int r1 = o1.isTechPrimary() ? o1.getPrimaryRole() : o1.getSecondaryRole();
-                            int r2 = o2.isTechPrimary() ? o2.getPrimaryRole() : o2.getSecondaryRole();
+                            int r1 = o1.isTechPrimary() ? o1.getPrimaryRoleInt() : o1.getSecondaryRoleInt();
+                            int r2 = o2.isTechPrimary() ? o2.getPrimaryRoleInt() : o2.getSecondaryRoleInt();
                             return r1 - r2;
                         });
                         for (Person tech : techList) {
                             if ((tech.getMaintenanceTimeUsing() == 0) && !tech.isEngineer()) {
-                                role = tech.isTechPrimary() ? tech.getPrimaryRole() : tech.getSecondaryRole();
+                                role = tech.isTechPrimary() ? tech.getPrimaryRoleInt() : tech.getSecondaryRoleInt();
                                 String skillLvl = SkillType.getExperienceLevelName(tech.getExperienceLevel(!tech.isTechPrimary()));
 
                                 // We need to add all the non-empty menus to the current menu, then

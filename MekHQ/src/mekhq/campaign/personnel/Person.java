@@ -172,8 +172,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
     private Gender gender;
     private AbstractIcon portrait;
 
-    private int primaryRole;
-    private int secondaryRole;
+    private PersonnelRole primaryRole;
+    private PersonnelRole secondaryRole;
 
     private ROMDesignation primaryDesignator;
     private ROMDesignation secondaryDesignator;
@@ -338,8 +338,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
         this.honorific = honorific;
         maidenName = null; // this is set to null to handle divorce cases
         callsign = "";
-        primaryRole = T_NONE;
-        secondaryRole = T_NONE;
+        primaryRole = PersonnelRole.NONE;
+        secondaryRole = PersonnelRole.NONE;
         primaryDesignator = ROMDesignation.NONE;
         secondaryDesignator = ROMDesignation.NONE;
         commander = false;
@@ -669,7 +669,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public String getHyperlinkedName() {
-        return String.format("<a href='PERSON:%s'>%s</a>", getId().toString(), getFullName());
+        return String.format("<a href='PERSON:%s'>%s</a>", getId(), getFullName());
     }
 
     public String getCallsign() {
@@ -701,32 +701,48 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     //region Personnel Roles
     // TODO : Move me into an enum with checks for hasAdministratorRole, hasTechRole, hasMedicalRole, etc.
-    public int getPrimaryRole() {
+    public PersonnelRole getPrimaryRole() {
         return primaryRole;
     }
 
-    public void setPrimaryRole(int t) {
-        this.primaryRole = t;
+    public int getPrimaryRoleInt() {
+        return primaryRole.ordinal();
+    }
+
+    public void setPrimaryRole(PersonnelRole primaryRole) {
+        this.primaryRole = primaryRole;
         //you can't be primary tech and a secondary astech
         //you can't be a primary astech and a secondary tech
-        if ((isTechPrimary() && secondaryRole == T_ASTECH)
-            || (isTechSecondary() && primaryRole == T_ASTECH)) {
-            secondaryRole = T_NONE;
+        if ((isTechPrimary() && getSecondaryRole().isAstech())
+            || (isTechSecondary() && getPrimaryRole().isAstech())) {
+            setSecondaryRole(PersonnelRole.NONE);
         }
-        if ((primaryRole == T_DOCTOR && secondaryRole == T_MEDIC)
-            || (secondaryRole == T_DOCTOR && primaryRole == T_MEDIC)) {
-            secondaryRole = T_NONE;
+        if ((getPrimaryRole().isDoctor() && getSecondaryRole().isMedic())
+            || (getSecondaryRole().isDoctor() && getPrimaryRole().isMedic())) {
+            setSecondaryRole(PersonnelRole.NONE);
         }
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
 
-    public int getSecondaryRole() {
+    public void setPrimaryRoleInt(int t) {
+        setPrimaryRole(PersonnelRole.values()[t]);
+    }
+
+    public PersonnelRole getSecondaryRole() {
         return secondaryRole;
     }
 
-    public void setSecondaryRole(int t) {
-        this.secondaryRole = t;
+    public void setSecondaryRole(PersonnelRole secondaryRole) {
+        this.secondaryRole = secondaryRole;
         MekHQ.triggerEvent(new PersonChangedEvent(this));
+    }
+
+    public int getSecondaryRoleInt() {
+        return secondaryRole.ordinal();
+    }
+
+    public void setSecondaryRoleInt(int t) {
+        setSecondaryRole(PersonnelRole.values()[t]);
     }
 
     /**
@@ -744,7 +760,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return true if the person has the specific role as their primary role
      */
     public boolean hasPrimaryRole(int role) {
-        return getPrimaryRole() == role;
+        return getPrimaryRoleInt() == role;
     }
 
     /**
@@ -752,7 +768,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return true if the person has the specific role as their secondary role
      */
     public boolean hasSecondaryRole(int role) {
-        return getSecondaryRole() == role;
+        return getSecondaryRoleInt() == role;
     }
 
     /**
@@ -773,7 +789,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return true if they have a primary role within the bounds (inclusive), otherwise false
      */
     public boolean hasPrimaryRoleWithin(int minimumRole, int maximumRole) {
-        return (getPrimaryRole() >= minimumRole) && (getPrimaryRole() <= maximumRole);
+        return (getPrimaryRoleInt() >= minimumRole) && (getPrimaryRoleInt() <= maximumRole);
     }
 
     /**
@@ -782,7 +798,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
      * @return true if they have a secondary role within the bounds (inclusive), otherwise false
      */
     public boolean hasSecondaryRoleWithin(int minimumRole, int maximumRole) {
-        return (getSecondaryRole() >= minimumRole) && (getSecondaryRole() <= maximumRole);
+        return (getSecondaryRoleInt() >= minimumRole) && (getSecondaryRoleInt() <= maximumRole);
     }
 
     /**
@@ -1069,7 +1085,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     public String getRoleDesc() {
         String role = getPrimaryRoleDesc();
-        if ((getSecondaryRole() != T_NONE) && (getSecondaryRole() != -1)) {
+        if ((getSecondaryRoleInt() != T_NONE) && (getSecondaryRoleInt() != -1)) {
             role += "/" + getSecondaryRoleDesc();
         }
         return role;
@@ -1080,11 +1096,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
         if (isClanner()) {
             bgPrefix = getPhenotype().getShortName() + " ";
         }
-        return bgPrefix + getRoleDesc(getPrimaryRole(), isClanner());
+        return bgPrefix + getRoleDesc(getPrimaryRoleInt(), isClanner());
     }
 
     public String getSecondaryRoleDesc() {
-        return getRoleDesc(getSecondaryRole(), isClanner());
+        return getRoleDesc(getSecondaryRoleInt(), isClanner());
     }
 
     public static int getRoleMnemonic(int type) {
@@ -1658,10 +1674,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<person id=\"" + id.toString()
+        pw1.println(MekHqXmlUtil.indentStr(indent) + "<person id=\"" + id
                 + "\" type=\"" + this.getClass().getName() + "\">");
         try {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "id", id.toString());
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "id", id);
             MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "givenName", givenName);
             MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "surname", surname);
             if (!StringUtil.isNullOrEmpty(honorific)) {
@@ -1674,9 +1690,9 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "callsign", callsign);
             }
             // Always save the primary role
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "primaryRole", primaryRole);
-            if (secondaryRole != T_NONE) {
-                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "secondaryRole", secondaryRole);
+            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "primaryRole", getPrimaryRoleInt());
+            if (getSecondaryRoleInt() != T_NONE) {
+                MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "secondaryRole", getSecondaryRoleInt());
             }
             if (primaryDesignator != ROMDesignation.NONE) {
                 MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "primaryDesignator", primaryDesignator.name());
@@ -2185,7 +2201,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     try {
                         retVal.getOptions().getOption(advName).setValue(value);
                     } catch (Exception e) {
-                        MekHQ.getLogger().error(Person.class, "Error restoring advantage: " + adv);
+                        MekHQ.getLogger().error("Error restoring advantage: " + adv);
                     }
                 }
             }
@@ -2199,7 +2215,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     try {
                         retVal.getOptions().getOption(advName).setValue(value);
                     } catch (Exception e) {
-                        MekHQ.getLogger().error(Person.class, "Error restoring edge: " + adv);
+                        MekHQ.getLogger().error("Error restoring edge: " + adv);
                     }
                 }
             }
@@ -2213,7 +2229,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                     try {
                         retVal.getOptions().getOption(advName).setValue(value);
                     } catch (Exception e) {
-                        MekHQ.getLogger().error(Person.class, "Error restoring implants: " + adv);
+                        MekHQ.getLogger().error("Error restoring implants: " + adv);
                     }
                 }
             }
@@ -2280,15 +2296,15 @@ public class Person implements Serializable, MekHqXmlSerializable {
         }
 
         //if salary is negative, then use the standard amounts
-        Money primaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getPrimaryRole());
+        Money primaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getPrimaryRoleInt());
         primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(false)));
-        if (hasSkill(SkillType.S_ANTI_MECH) && (getPrimaryRole() == T_INFANTRY || getPrimaryRole() == T_BA)) {
+        if (hasSkill(SkillType.S_ANTI_MECH) && (getPrimaryRoleInt() == T_INFANTRY || getPrimaryRoleInt() == T_BA)) {
             primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
         }
 
-        Money secondaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getSecondaryRole()).dividedBy(2);
+        Money secondaryBase = campaign.getCampaignOptions().getBaseSalaryMoney(getSecondaryRoleInt()).dividedBy(2);
         secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXpMultiplier(getExperienceLevel(true)));
-        if (hasSkill(SkillType.S_ANTI_MECH) && (getSecondaryRole() == T_INFANTRY || getSecondaryRole() == T_BA)) {
+        if (hasSkill(SkillType.S_ANTI_MECH) && (getSecondaryRoleInt() == T_INFANTRY || getSecondaryRoleInt() == T_BA)) {
             secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
         }
 
@@ -2758,11 +2774,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public String makeHTMLRankDiv() {
-        return String.format("<div id=\"%s\">%s</div>", getId().toString(), getRankName().trim());
+        return String.format("<div id=\"%s\">%s</div>", getId(), getRankName().trim());
     }
 
     public String getHyperlinkedFullTitle() {
-        return String.format("<a href='PERSON:%s'>%s</a>", getId().toString(), getFullTitle());
+        return String.format("<a href='PERSON:%s'>%s</a>", getId(), getFullTitle());
     }
 
     /**
@@ -3253,11 +3269,11 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void resetMinutesLeft() {
-        if (isTechPrimary() || (getPrimaryRole() == T_DOCTOR)) {
+        if (isTechPrimary() || (getPrimaryRoleInt() == T_DOCTOR)) {
             this.minutesLeft = PRIMARY_ROLE_SUPPORT_TIME;
             this.overtimeLeft = PRIMARY_ROLE_OVERTIME_SUPPORT_TIME;
         }
-        if (isTechSecondary() || (getSecondaryRole() == T_DOCTOR)) {
+        if (isTechSecondary() || (getSecondaryRoleInt() == T_DOCTOR)) {
             this.minutesLeft = SECONDARY_ROLE_SUPPORT_TIME;
             this.overtimeLeft = SECONDARY_ROLE_OVERTIME_SUPPORT_TIME;
         }

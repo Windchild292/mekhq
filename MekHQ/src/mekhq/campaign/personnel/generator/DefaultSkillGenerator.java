@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 MegaMek team
+ * Copyright (C) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel.generator;
 
@@ -23,19 +23,15 @@ import java.util.List;
 
 import megamek.common.Compute;
 import mekhq.Utilities;
-import mekhq.campaign.CampaignOptions;
-import mekhq.campaign.RandomSkillPreferences;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.personnel.generator.AbstractSkillGenerator;
 
 public class DefaultSkillGenerator extends AbstractSkillGenerator {
-
     @Override
-    public void generateSkills(Person person, int expLvl) {
-        int type = person.getPrimaryRole();
-        int secondary = person.getSecondaryRole();
-        RandomSkillPreferences rskillPrefs = getSkillPreferences();
+    public void generateSkills(Campaign campaign, Person person, int expLvl) {
+        int type = person.getPrimaryRoleInt();
+        int secondary = person.getSecondaryRoleInt();
 
         int bonus = 0;
         int mod = 0;
@@ -45,50 +41,45 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
             mod = -2;
         }
 
-        generateDefaultSkills(person, type, expLvl, bonus, mod);
+        generateDefaultSkills(campaign, person, type, expLvl, bonus, mod);
 
         if (secondary != Person.T_NONE) {
-            generateDefaultSkills(person, secondary, expLvl, bonus, mod);
+            generateDefaultSkills(campaign, person, secondary, expLvl, bonus, mod);
         }
 
         bonus = getPhenotypeBonus(person);
 
         // roll small arms skill
         if (!person.getSkills().hasSkill(SkillType.S_SMALL_ARMS)) {
-            int sarmsLvl = -12;
-            if (Person.isSupportRole(type) || Person.isSupportRole(secondary)) {
-                sarmsLvl = Utilities.generateExpLevel(rskillPrefs.getSupportSmallArmsBonus());
-            } else {
-                sarmsLvl = Utilities.generateExpLevel(rskillPrefs.getCombatSmallArmsBonus());
-            }
+            int sarmsLvl = Utilities.generateExpLevel((Person.isSupportRole(type) || Person.isSupportRole(secondary)) ?
+                    campaign.getCampaignOptions().getSupportSmallArmsBonus()
+                    : campaign.getCampaignOptions().getCombatSmallArmsBonus());
             if (sarmsLvl > SkillType.EXP_ULTRA_GREEN) {
-                addSkill(person, SkillType.S_SMALL_ARMS, sarmsLvl,
-                        rskillPrefs.randomizeSkill(), bonus);
+                addSkill(person, SkillType.S_SMALL_ARMS, sarmsLvl, campaign.getCampaignOptions().randomizeSkill(), bonus);
             }
         }
 
         // roll tactics skill
         if (!(Person.isSupportRole(type) || Person.isSupportRole(secondary))) {
-            int tacLvl = Utilities.generateExpLevel(rskillPrefs.getTacticsMod(expLvl));
+            int tacLvl = Utilities.generateExpLevel(campaign.getCampaignOptions().getTacticsModifier(expLvl));
             if (tacLvl > SkillType.EXP_ULTRA_GREEN) {
                 addSkill(person, SkillType.S_TACTICS, tacLvl,
-                        rskillPrefs.randomizeSkill(), bonus);
+                        campaign.getCampaignOptions().randomizeSkill(), bonus);
             }
         }
 
         // roll artillery skill
-        if (getCampaignOptions(person).useArtillery()
-                && (type == Person.T_MECHWARRIOR || type == Person.T_VEE_GUNNER || type == Person.T_INFANTRY)
-                && Utilities.rollProbability(rskillPrefs.getArtilleryProb())) {
-            int artyLvl = Utilities.generateExpLevel(rskillPrefs.getArtilleryBonus());
+        if (campaign.getCampaignOptions().useArtillery()
+                && ((type == Person.T_MECHWARRIOR) || (type == Person.T_VEE_GUNNER) || (type == Person.T_INFANTRY))
+                && Utilities.rollProbability(campaign.getCampaignOptions().getArtilleryProbability())) {
+            int artyLvl = Utilities.generateExpLevel(campaign.getCampaignOptions().getArtilleryBonus());
             if (artyLvl > SkillType.EXP_ULTRA_GREEN) {
-                addSkill(person, SkillType.S_ARTILLERY, artyLvl,
-                        rskillPrefs.randomizeSkill(), bonus);
+                addSkill(person, SkillType.S_ARTILLERY, artyLvl, campaign.getCampaignOptions().randomizeSkill(), bonus);
             }
         }
 
         // roll random secondary skill
-        if (Utilities.rollProbability(rskillPrefs.getSecondSkillProb())) {
+        if (Utilities.rollProbability(campaign.getCampaignOptions().getSecondarySkillProbability())) {
             final List<String> possibleSkills = new ArrayList<>();
             for (String stype : SkillType.skillList) {
                 if (!person.getSkills().hasSkill(stype)) {
@@ -96,13 +87,8 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
                 }
             }
             String selSkill = possibleSkills.get(Compute.randomInt(possibleSkills.size()));
-            int secondLvl = Utilities.generateExpLevel(rskillPrefs.getSecondSkillBonus());
-            addSkill(person, selSkill, secondLvl, rskillPrefs.randomizeSkill(),
-                    bonus);
+            int secondLvl = Utilities.generateExpLevel(campaign.getCampaignOptions().getSecondarySkillBonus());
+            addSkill(person, selSkill, secondLvl, campaign.getCampaignOptions().randomizeSkill(), bonus);
         }
-    }
-
-    private CampaignOptions getCampaignOptions(Person person) {
-        return person.getCampaign().getCampaignOptions();
     }
 }

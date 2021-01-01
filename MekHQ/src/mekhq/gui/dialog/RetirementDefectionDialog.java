@@ -530,9 +530,9 @@ public class RetirementDefectionDialog extends JDialog {
             Person p = hqView.getCampaign().getPerson(id);
             if (rdTracker.getPayout(id).hasStolenUnit()) {
                 boolean unassignedAvailable = (unassignedMechs.size() > 0 &&
-                        p.getPrimaryRole() == Person.T_MECHWARRIOR) ||
+                        p.getPrimaryRoleInt() == Person.T_MECHWARRIOR) ||
                         (unassignedASF.size() > 0 &&
-                                p.getPrimaryRole() == Person.T_AERO_PILOT);
+                                p.getPrimaryRoleInt() == Person.T_AERO_PILOT);
                 /* If a unit has previously been assigned, check that it is still available
                  * and either assigned to the current player or unassigned. If so, keep
                  * the previous value.
@@ -546,14 +546,14 @@ public class RetirementDefectionDialog extends JDialog {
                         && ((Compute.d6() < 4) || !unassignedAvailable)) {
                     unitAssignments.put(id, p.getUnit().getId());
                 } else if (unassignedAvailable) {
-                    if (p.getPrimaryRole() == Person.T_MECHWARRIOR) {
+                    if (p.getPrimaryRoleInt() == Person.T_MECHWARRIOR) {
                         int roll = Compute.randomInt(unassignedMechs.size());
                         unitAssignments.put(id, unassignedMechs.get(roll));
                         rdTracker.getPayout(id).setStolenUnitId(unassignedMechs.get(roll));
                         availableUnits.remove(unassignedMechs.get(roll));
                         unassignedMechs.remove(roll);
                     }
-                    if (p.getPrimaryRole() == Person.T_AERO_PILOT) {
+                    if (p.getPrimaryRoleInt() == Person.T_AERO_PILOT) {
                         int roll = Compute.randomInt(unassignedASF.size());
                         unitAssignments.put(id, unassignedASF.get(roll));
                         rdTracker.getPayout(id).setStolenUnitId(unassignedASF.get(roll));
@@ -585,7 +585,7 @@ public class RetirementDefectionDialog extends JDialog {
              * entire unit. Unassigned infantry can retire individually.
              */
             if ((p.getUnit() != null)
-                    && ((p.getPrimaryRole() == Person.T_INFANTRY) || (p.getPrimaryRole() == Person.T_BA))) {
+                    && ((p.getPrimaryRoleInt() == Person.T_INFANTRY) || (p.getPrimaryRoleInt() == Person.T_BA))) {
                 unitAssignments.put(id, p.getUnit().getId());
             }
             ((UnitAssignmentTableModel) unitAssignmentTable.getModel()).setData(availableUnits);
@@ -809,8 +809,8 @@ public class RetirementDefectionDialog extends JDialog {
                     !btnEdit.isSelected()) {
                 btnAddUnit.setEnabled(false);
                 btnRemoveUnit.setEnabled(false);
-            } else if (hqView.getCampaign().getPerson(pid).getPrimaryRole() == Person.T_INFANTRY ||
-                    hqView.getCampaign().getPerson(pid).getPrimaryRole() == Person.T_BA) {
+            } else if (hqView.getCampaign().getPerson(pid).getPrimaryRoleInt() == Person.T_INFANTRY ||
+                    hqView.getCampaign().getPerson(pid).getPrimaryRoleInt() == Person.T_BA) {
                 btnAddUnit.setEnabled(false);
                 btnRemoveUnit.setEnabled(false);
             } else if (unitAssignments.containsKey(pid)) {
@@ -865,7 +865,7 @@ public class RetirementDefectionDialog extends JDialog {
         if (!chkShowAllUnits.isSelected() && (retireeTable.getSelectedRow() >= 0)) {
             Person p = ((RetirementTableModel) retireeTable.getModel())
                     .getPerson(retireeTable.convertRowIndexToModel(retireeTable.getSelectedRow()));
-            switch (p.getPrimaryRole()) {
+            switch (p.getPrimaryRoleInt()) {
                 case Person.T_MECHWARRIOR:
                     cbUnitCategory.setSelectedIndex(UnitType.MEK + 1);
                     break;

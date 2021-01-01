@@ -147,7 +147,7 @@ public class AtBEventProcessor {
         UnitGeneratorParameters params = new UnitGeneratorParameters();
 
         int unitType;
-        switch (p.getPrimaryRole()) {
+        switch (p.getPrimaryRoleInt()) {
             case Person.T_MECHWARRIOR:
                 unitType = UnitType.MEK;
                 break;
@@ -235,31 +235,31 @@ public class AtBEventProcessor {
                         en.getMovementMode() == EntityMovementMode.WHEELED ||
                         en.getMovementMode() == EntityMovementMode.HOVER ||
                         en.getMovementMode() == EntityMovementMode.WIGE) {
-                    if (p.getPrimaryRole() == Person.T_VTOL_PILOT) {
+                    if (p.getPrimaryRoleInt() == Person.T_VTOL_PILOT) {
                         swapSkills(p, SkillType.S_PILOT_VTOL, SkillType.S_PILOT_GVEE);
                         p.setPrimaryRole(Person.T_GVEE_DRIVER);
                     }
-                    if (p.getPrimaryRole() == Person.T_NVEE_DRIVER) {
+                    if (p.getPrimaryRoleInt() == Person.T_NVEE_DRIVER) {
                         swapSkills(p, SkillType.S_PILOT_NVEE, SkillType.S_PILOT_GVEE);
                         p.setPrimaryRole(Person.T_GVEE_DRIVER);
                     }
                 } else if (en.getMovementMode() == EntityMovementMode.VTOL) {
-                    if (p.getPrimaryRole() == Person.T_GVEE_DRIVER) {
+                    if (p.getPrimaryRoleInt() == Person.T_GVEE_DRIVER) {
                         swapSkills(p, SkillType.S_PILOT_GVEE, SkillType.S_PILOT_VTOL);
                         p.setPrimaryRole(Person.T_VTOL_PILOT);
                     }
-                    if (p.getPrimaryRole() == Person.T_NVEE_DRIVER) {
+                    if (p.getPrimaryRoleInt() == Person.T_NVEE_DRIVER) {
                         swapSkills(p, SkillType.S_PILOT_NVEE, SkillType.S_PILOT_VTOL);
                         p.setPrimaryRole(Person.T_VTOL_PILOT);
                     }
                 } else if (en.getMovementMode() == EntityMovementMode.NAVAL ||
                         en.getMovementMode() == EntityMovementMode.HYDROFOIL ||
                         en.getMovementMode() == EntityMovementMode.SUBMARINE) {
-                    if (p.getPrimaryRole() == Person.T_GVEE_DRIVER) {
+                    if (p.getPrimaryRoleInt() == Person.T_GVEE_DRIVER) {
                         swapSkills(p, SkillType.S_PILOT_GVEE, SkillType.S_PILOT_NVEE);
                         p.setPrimaryRole(Person.T_NVEE_DRIVER);
                     }
-                    if (p.getPrimaryRole() == Person.T_VTOL_PILOT) {
+                    if (p.getPrimaryRoleInt() == Person.T_VTOL_PILOT) {
                         swapSkills(p, SkillType.S_PILOT_VTOL, SkillType.S_PILOT_NVEE);
                         p.setPrimaryRole(Person.T_NVEE_DRIVER);
                     }

@@ -689,7 +689,7 @@ public class Campaign implements Serializable, ITechManager {
                                 newPerson(getRetirementDefectionTracker().getPayout(pid).getRecruitType()));
                     }
                     if (getRetirementDefectionTracker().getPayout(pid).hasHeir()) {
-                        Person p = newPerson(getPerson(pid).getPrimaryRole());
+                        Person p = newPerson(getPerson(pid).getPrimaryRoleInt());
                         p.setOriginalUnitWeight(getPerson(pid).getOriginalUnitWeight());
                         p.setOriginalUnitTech(getPerson(pid).getOriginalUnitTech());
                         p.setOriginalUnitId(getPerson(pid).getOriginalUnitId());
@@ -1301,10 +1301,10 @@ public class Campaign implements Serializable, ITechManager {
             addReport(String.format("%s has been added to the personnel roster%s.", p.getHyperlinkedName(), add));
         }
 
-        if (p.getPrimaryRole() == Person.T_ASTECH) {
+        if (p.getPrimaryRoleInt() == Person.T_ASTECH) {
             astechPoolMinutes += 480;
             astechPoolOvertime += 240;
-        } else if (p.getSecondaryRole() == Person.T_ASTECH) {
+        } else if (p.getSecondaryRoleInt() == Person.T_ASTECH) {
             astechPoolMinutes += 240;
             astechPoolOvertime += 120;
         }
@@ -1380,7 +1380,7 @@ public class Campaign implements Serializable, ITechManager {
                     bloodnameTarget += person.hasSkill(SkillType.S_GUN_VEE)
                             ? person.getSkill(SkillType.S_GUN_VEE).getFinalSkillValue()
                             : TargetRoll.AUTOMATIC_FAIL;
-                    switch (person.getPrimaryRole()) {
+                    switch (person.getPrimaryRoleInt()) {
                         case Person.T_VTOL_PILOT:
                             bloodnameTarget += person.hasSkill(SkillType.S_PILOT_VTOL)
                                     ? person.getSkill(SkillType.S_PILOT_VTOL).getFinalSkillValue()
@@ -1406,7 +1406,7 @@ public class Campaign implements Serializable, ITechManager {
                     break;
                 }
                 case NAVAL: {
-                    switch (person.getPrimaryRole()) {
+                    switch (person.getPrimaryRoleInt()) {
                         case Person.T_SPACE_CREW:
                             bloodnameTarget += 2 * (person.hasSkill(SkillType.S_TECH_VESSEL)
                                     ? person.getSkill(SkillType.S_TECH_VESSEL).getFinalSkillValue()
@@ -1783,7 +1783,7 @@ public class Campaign implements Serializable, ITechManager {
         int highest = 0;
         Person retVal = null;
         for (Person p : getActivePersonnel()) {
-            if ((p.getPrimaryRole() == role || p.getSecondaryRole() == role) && p.getSkill(primary) != null) {
+            if ((p.getPrimaryRoleInt() == role || p.getSecondaryRoleInt() == role) && p.getSkill(primary) != null) {
                 if (p.getSkill(primary).getLevel() > highest) {
                     retVal = p;
                     highest = p.getSkill(primary).getLevel();
@@ -1911,8 +1911,8 @@ public class Campaign implements Serializable, ITechManager {
         List<Person> retval = new ArrayList<>();
 
         for (Person tech : techs) {
-            if((tech.getPrimaryRole() == roleType) ||
-               (tech.getSecondaryRole() == roleType)) {
+            if((tech.getPrimaryRoleInt() == roleType) ||
+               (tech.getSecondaryRoleInt() == roleType)) {
                 retval.add(tech);
             }
         }
@@ -2849,7 +2849,7 @@ public class Campaign implements Serializable, ITechManager {
                     || (!getCampaignOptions().isDestroyByMargin()
                             //if an elite, primary tech and destroy by margin is NOT on
                             && ((tech.getExperienceLevel(false) == SkillType.EXP_ELITE)
-                                    || (tech.getPrimaryRole() == Person.T_SPACE_CREW))) // For vessel crews
+                                    || (tech.getPrimaryRoleInt() == Person.T_SPACE_CREW))) // For vessel crews
                     && (roll < target.getValue())) {
                 tech.changeCurrentEdge(-1);
                 roll = tech.isRightTechTypeFor(partWork) ? Compute.d6(2) : Utilities.roll3d6();
@@ -3540,10 +3540,10 @@ public class Campaign implements Serializable, ITechManager {
         personnel.remove(id);
 
         // Deal with Astech Pool Minutes
-        if (person.getPrimaryRole() == Person.T_ASTECH) {
+        if (person.getPrimaryRoleInt() == Person.T_ASTECH) {
             astechPoolMinutes = Math.max(0, astechPoolMinutes - 480);
             astechPoolOvertime = Math.max(0, astechPoolOvertime - 240);
-        } else if (person.getSecondaryRole() == Person.T_ASTECH) {
+        } else if (person.getSecondaryRoleInt() == Person.T_ASTECH) {
             astechPoolMinutes = Math.max(0, astechPoolMinutes - 240);
             astechPoolOvertime = Math.max(0, astechPoolOvertime - 120);
         }
@@ -3593,7 +3593,7 @@ public class Campaign implements Serializable, ITechManager {
                             }
                             // ...and if their weakest role is Green or Ultra-Green
                             int experienceLevel = Math.min(p.getExperienceLevel(false),
-                                    p.getSecondaryRole() != Person.T_NONE
+                                    p.getSecondaryRoleInt() != Person.T_NONE
                                             ? p.getExperienceLevel(true)
                                             : SkillType.EXP_ELITE);
                             if (experienceLevel >= 0 && experienceLevel < SkillType.EXP_REGULAR) {
@@ -5289,7 +5289,7 @@ public class Campaign implements Serializable, ITechManager {
     public int getNumberPrimaryAstechs() {
         int astechs = getAstechPool();
         for (Person p : getActivePersonnel()) {
-            if ((p.getPrimaryRole() == Person.T_ASTECH) && !p.isDeployed()) {
+            if ((p.getPrimaryRoleInt() == Person.T_ASTECH) && !p.isDeployed()) {
                 astechs++;
             }
         }
@@ -5299,7 +5299,7 @@ public class Campaign implements Serializable, ITechManager {
     public int getNumberSecondaryAstechs() {
         int astechs = 0;
         for (Person p : getActivePersonnel()) {
-            if ((p.getSecondaryRole() == Person.T_ASTECH) && !p.isDeployed()) {
+            if ((p.getSecondaryRoleInt() == Person.T_ASTECH) && !p.isDeployed()) {
                 astechs++;
             }
         }
@@ -6631,9 +6631,9 @@ public class Campaign implements Serializable, ITechManager {
                 if ((join != null) && join.equals(founding)) {
                     p.setFounder(true);
                 }
-                if (p.getPrimaryRole() == Person.T_MECHWARRIOR
-                        || (p.getPrimaryRole() == Person.T_AERO_PILOT && getCampaignOptions().getAeroRecruitsHaveUnits())
-                        || p.getPrimaryRole() == Person.T_PROTO_PILOT) {
+                if (p.getPrimaryRoleInt() == Person.T_MECHWARRIOR
+                        || (p.getPrimaryRoleInt() == Person.T_AERO_PILOT && getCampaignOptions().getAeroRecruitsHaveUnits())
+                        || p.getPrimaryRoleInt() == Person.T_PROTO_PILOT) {
                     for (LogEntry e : p.getPersonnelLog()) {
                         if (e.getDate().equals(join) && e.getDesc().startsWith("Assigned to ")) {
                             String mech = e.getDesc().substring(12);
