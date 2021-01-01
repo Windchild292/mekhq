@@ -242,7 +242,6 @@ public class Campaign implements Serializable, ITechManager {
     private List<String> customs;
 
     private CampaignOptions campaignOptions;
-    private RandomSkillPreferences rskillPrefs = new RandomSkillPreferences();
     private MekHQ app;
 
     private ShoppingList shoppingList;
@@ -1555,7 +1554,6 @@ public class Campaign implements Serializable, ITechManager {
     public AbstractPersonnelGenerator getPersonnelGenerator(AbstractFactionSelector factionSelector, AbstractPlanetSelector planetSelector) {
         DefaultPersonnelGenerator generator = new DefaultPersonnelGenerator(factionSelector, planetSelector);
         generator.setNameGenerator(RandomNameGenerator.getInstance());
-        generator.setSkillPreferences(getRandomSkillPreferences());
         return generator;
     }
     //endregion Personnel Selectors and Generators
@@ -4151,7 +4149,6 @@ public class Campaign implements Serializable, ITechManager {
             SpecialAbility.getAbility(key).writeToXml(pw1, indent + 1);
         }
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "specialAbilities");
-        rskillPrefs.writeToXml(pw1, indent);
         // parts is the biggest so it goes last
         parts.writeToXml(pw1, indent, "parts"); // Parts
 
@@ -5581,14 +5578,6 @@ public class Campaign implements Serializable, ITechManager {
     public int getUnitRatingAsInteger() {
         return getCampaignOptions().getUnitRatingMethod().isEnabled()
                 ? getUnitRating().getUnitRatingAsInteger() : IUnitRating.DRAGOON_C;
-    }
-
-    public RandomSkillPreferences getRandomSkillPreferences() {
-        return rskillPrefs;
-    }
-
-    public void setRandomSkillPreferences(RandomSkillPreferences prefs) {
-        rskillPrefs = prefs;
     }
 
     public void setStartingSystem() {

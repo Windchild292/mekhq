@@ -309,6 +309,19 @@ public class CampaignOptions implements Serializable {
 
     //region Skill Randomization Tab
     private int[] phenotypeProbabilities;
+    private int overallRecruitBonus;
+    private int[] recruitBonuses;
+    private boolean randomizeSkill;
+    private boolean useClanBonuses;
+    private int antiMekProb;
+    private int[] specialAbilBonus;
+    private int combatSmallArmsBonus;
+    private int supportSmallArmsBonus;
+    private int[] tacticsMod;
+    private int artilleryProb;
+    private int artilleryBonus;
+    private int secondSkillProb;
+    private int secondSkillBonus;
     //endregion Skill Randomization Tab
 
     //region Rank System Tab
@@ -696,6 +709,19 @@ public class CampaignOptions implements Serializable {
         phenotypeProbabilities[Phenotype.VEHICLE.getIndex()] = 0;
         phenotypeProbabilities[Phenotype.PROTOMECH.getIndex()] = 95;
         phenotypeProbabilities[Phenotype.NAVAL.getIndex()] = 25;
+        antiMekProbability = 10;
+        overallRecruitmentBonus = 0;
+        personnelTypeRecruitmentBonus = new int[Person.T_NUM];
+        randomizeSkill = true;
+        useClanBonuses = true;
+        combatSmallArmsBonus = -3;
+        supportSmallArmsBonus = -10;
+        specialAbilBonus = new int[]{-10,-10,-2,0,1};
+        tacticsMod = new int[]{-10,-10,-7,-4,-1};
+        artilleryProb = 10;
+        artilleryBonus = -2;
+        secondSkillProb = 0;
+        secondSkillBonus = -4;
         //endregion Skill Randomization Tab
 
         //region Rank System Tab
@@ -3940,10 +3966,11 @@ public class CampaignOptions implements Serializable {
     /**
      * This is annoyingly required for the case of anyone having changed the surname weights.
      * The code is not nice, but will nicely handle the cases where anyone has made changes
+     *
      * @param retVal the return CampaignOptions
      * @param values the values to migrate
      */
-    private static void migrateMarriageSurnameWeights(CampaignOptions retVal, String[] values) {
+    private static void migrateMarriageSurnameWeights(CampaignOptions retVal, String... values) {
         int[] weights = new int[values.length];
 
         for (int i = 0; i < weights.length; i++) {
@@ -3977,6 +4004,10 @@ public class CampaignOptions implements Serializable {
             retVal.randomMarriageSurnameWeights[11] = weights[7];
             retVal.randomMarriageSurnameWeights[12] = weights[8];
         }
+    }
+
+    public void migrateRandomSkillPreferences(Node wn) {
+
     }
     //endregion Migration
 }

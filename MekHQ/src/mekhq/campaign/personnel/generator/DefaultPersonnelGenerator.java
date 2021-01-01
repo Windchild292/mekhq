@@ -93,11 +93,9 @@ public class DefaultPersonnelGenerator extends AbstractPersonnelGenerator {
                 && person.getPhenotype() != Phenotype.NONE);
 
         AbstractSkillGenerator skillGenerator = new DefaultSkillGenerator();
-        skillGenerator.setSkillPreferences(getSkillPreferences());
         skillGenerator.generateSkills(person, expLvl);
 
         AbstractSpecialAbilityGenerator specialAbilityGenerator = new DefaultSpecialAbilityGenerator();
-        specialAbilityGenerator.setSkillPreferences(getSkillPreferences());
         specialAbilityGenerator.generateSpecialAbilities(person, expLvl);
 
         // Do naming at the end, to ensure the keys are set
