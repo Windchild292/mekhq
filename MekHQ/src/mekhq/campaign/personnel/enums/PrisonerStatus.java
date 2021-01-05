@@ -44,22 +44,28 @@ public enum PrisonerStatus {
     //endregion Enum Declarations
 
     //region Variable Declarations
-    private final String typeName;
+    private final String name;
     private final String titleExtension;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
-            new EncodeControl());
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    PrisonerStatus(String typeName, String titleExtension) {
-        this.typeName = resources.getString(typeName);
+    PrisonerStatus(String name, String titleExtension) {
+        this.name = resources.getString(name);
         this.titleExtension = resources.getString(titleExtension);
     }
     //endregion Constructors
 
-    public String getTypeName() {
-        return typeName;
+    //region Getters
+    @Override
+    public String toString() {
+        return name;
     }
+
+    public String getTitleExtension() {
+        return titleExtension;
+    }
+    //endregion Getters
 
     //region Boolean Comparisons
     public boolean isFree() {
@@ -79,15 +85,7 @@ public enum PrisonerStatus {
     }
     //endregion Boolean Comparisons
 
-    public String getTitleExtension() {
-        return titleExtension;
-    }
-
-    @Override
-    public String toString() {
-        return getTypeName();
-    }
-
+    //region File I/O
     /**
      * @param text The saved value to parse, either the older magic number save format or the
      *             PrisonerStatus.name() value
@@ -115,9 +113,9 @@ public enum PrisonerStatus {
 
         }
 
-        MekHQ.getLogger().error(PrisonerStatus.class, "parseFromString",
-                    "Unable to parse " + text + " into a PrisonerStatus. Returning FREE.");
+        MekHQ.getLogger().error("Unable to parse " + text + " into a PrisonerStatus. Returning FREE.");
 
         return FREE;
     }
+    //endregion File I/O
 }
