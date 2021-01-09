@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public enum RandomDeathType {
+public enum RandomDeathMethod {
     //region Enum Declarations
     /**
      * This disables Random Deaths
@@ -68,11 +68,11 @@ public enum RandomDeathType {
     //endregion Variable Declarations
 
     //region Constructors
-    RandomDeathType(String name, String toolTip) {
+    RandomDeathMethod(String name, String toolTip) {
         this(name, toolTip, true);
     }
 
-    RandomDeathType(String name, String toolTip, boolean implemented) {
+    RandomDeathMethod(String name, String toolTip, boolean implemented) {
         this.name = resources.getString(name);
         this.toolTip = resources.getString(toolTip);
         this.implemented = implemented;
@@ -113,9 +113,9 @@ public enum RandomDeathType {
         }
     }
 
-    public static List<RandomDeathType> getImplementedValues() {
-        List<RandomDeathType> implementedTypes = new ArrayList<>();
-        for (RandomDeathType type : values()) {
+    public static List<RandomDeathMethod> getImplementedValues() {
+        List<RandomDeathMethod> implementedTypes = new ArrayList<>();
+        for (RandomDeathMethod type : values()) {
             if (type.isImplemented()) {
                 implementedTypes.add(type);
             }

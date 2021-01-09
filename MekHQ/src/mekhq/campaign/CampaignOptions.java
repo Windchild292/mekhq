@@ -30,7 +30,7 @@ import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
-import mekhq.campaign.personnel.enums.RandomDeathType;
+import mekhq.campaign.personnel.enums.RandomDeathMethod;
 import mekhq.service.MassRepairOption;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -240,15 +240,15 @@ public class CampaignOptions implements Serializable {
     private double[] salaryXpMultiplier;
     private Money[] salaryTypeBase;
 
-    //Prisoners
+    // Prisoners
     private PrisonerCaptureStyle prisonerCaptureStyle;
     private PrisonerStatus defaultPrisonerStatus;
     private boolean prisonerBabyStatus;
     private boolean useAtBPrisonerDefection;
     private boolean useAtBPrisonerRansom;
 
-    //Death
-    private RandomDeathType randomDeathMethod;
+    // Death
+    private RandomDeathMethod randomDeathMethod;
     private double[] randomDeathMaleMValues;
     private double[] randomDeathMaleNValues;
     private double[] randomDeathFemaleMValues;
@@ -635,7 +635,7 @@ public class CampaignOptions implements Serializable {
         useAtBPrisonerRansom = false;
 
         //Death
-        randomDeathMethod = RandomDeathType.NONE;
+        randomDeathMethod = RandomDeathMethod.NONE;
         randomDeathMaleMValues = new double[7];
         randomDeathMaleNValues = new double[7];
         randomDeathMaleMValues[6] = 7;
@@ -1657,14 +1657,14 @@ public class CampaignOptions implements Serializable {
     /**
      * @return the random death method to use
      */
-    public RandomDeathType getRandomDeathMethod() {
+    public RandomDeathMethod getRandomDeathMethod() {
         return randomDeathMethod;
     }
 
     /**
      * @param randomDeathMethod the random death method to use
      */
-    public void setRandomDeathMethod(RandomDeathType randomDeathMethod) {
+    public void setRandomDeathMethod(RandomDeathMethod randomDeathMethod) {
         this.randomDeathMethod = randomDeathMethod;
     }
 
@@ -3806,7 +3806,7 @@ public class CampaignOptions implements Serializable {
 
             //region Death
             } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMethod")) {
-                retVal.setRandomDeathMethod(RandomDeathType.valueOf(wn2.getTextContent().trim()));
+                retVal.setRandomDeathMethod(RandomDeathMethod.valueOf(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMaleMValues")) {
                 String[] values = wn2.getTextContent().trim().split(",");
                 for (int i = 0; i < values.length; i++) {

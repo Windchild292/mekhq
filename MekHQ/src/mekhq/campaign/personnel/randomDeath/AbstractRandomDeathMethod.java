@@ -25,15 +25,15 @@ import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.AgeRange;
 import mekhq.campaign.personnel.enums.InjuryLevel;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
-import mekhq.campaign.personnel.enums.RandomDeathType;
+import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
 public abstract class AbstractRandomDeathMethod {
     //region Variable Declarations
-    protected RandomDeathType type;
+    protected RandomDeathMethod type;
     //endregion Variable Declarations
 
     //region Constructors
-    protected AbstractRandomDeathMethod(RandomDeathType type) {
+    protected AbstractRandomDeathMethod(RandomDeathMethod type) {
         this.type = type;
     }
     //endregion Constructors

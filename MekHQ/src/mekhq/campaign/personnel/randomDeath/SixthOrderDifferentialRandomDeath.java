@@ -23,7 +23,7 @@ import megamek.common.enums.Gender;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.enums.AgeRange;
-import mekhq.campaign.personnel.enums.RandomDeathType;
+import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
 public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod {
     //region Variable Declarations
@@ -36,7 +36,7 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
 
     //region Constructors
     public SixthOrderDifferentialRandomDeath(Campaign campaign) {
-        super(RandomDeathType.STANDARD);
+        super(RandomDeathMethod.STANDARD);
         maleM = campaign.getCampaignOptions().getRandomDeathMaleMValues();
         maleN = campaign.getCampaignOptions().getRandomDeathMaleNValues();
         femaleM = campaign.getCampaignOptions().getRandomDeathFemaleMValues();

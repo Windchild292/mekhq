@@ -96,7 +96,7 @@ import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.enums.Marriage;
 import mekhq.campaign.personnel.enums.BabySurnameStyle;
-import mekhq.campaign.personnel.enums.RandomDeathType;
+import mekhq.campaign.personnel.enums.RandomDeathMethod;
 import mekhq.campaign.personnel.enums.TimeInDisplayFormat;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.universe.Faction;
@@ -283,7 +283,7 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkAtBPrisonerDefection;
     private JCheckBox chkAtBPrisonerRansom;
     //Death
-    private JComboBox<RandomDeathType> comboRandomDeathType;
+    private JComboBox<RandomDeathMethod> comboRandomDeathType;
     private JSpinner[] spnRandomDeathMaleValues;
     private JSpinner[] spnRandomDeathFemaleValues;
     private JCheckBox chkEnableTeenRandomDeaths;
@@ -4278,8 +4278,8 @@ public class CampaignOptionsDialog extends JDialog {
         JLabel randomDeathTypeLabel = new JLabel(resources.getString("randomDeathStyleLabel.text"));
         randomDeathTypeLabel.setToolTipText(resources.getString("randomDeathStyleLabel.toolTipText"));
 
-        DefaultComboBoxModel<RandomDeathType> randomDeathTypeModel = new DefaultComboBoxModel<>();
-        randomDeathTypeModel.addAll(RandomDeathType.getImplementedValues());
+        DefaultComboBoxModel<RandomDeathMethod> randomDeathTypeModel = new DefaultComboBoxModel<>();
+        randomDeathTypeModel.addAll(RandomDeathMethod.getImplementedValues());
         comboRandomDeathType = new JComboBox<>(randomDeathTypeModel);
         comboRandomDeathType.setRenderer(new DefaultListCellRenderer() {
             private static final long serialVersionUID = -543354619818226314L;
@@ -4288,8 +4288,8 @@ public class CampaignOptionsDialog extends JDialog {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                           boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (isSelected && (index > -1) && (list.getSelectedValue() instanceof RandomDeathType)) {
-                    list.setToolTipText(((RandomDeathType) list.getSelectedValue()).getToolTip());
+                if (isSelected && (index > -1) && (list.getSelectedValue() instanceof RandomDeathMethod)) {
+                    list.setToolTipText(((RandomDeathMethod) list.getSelectedValue()).getToolTip());
                 }
 
                 return this;
