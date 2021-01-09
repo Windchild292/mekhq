@@ -30,6 +30,7 @@ import java.util.*;
 
 import javax.swing.JOptionPane;
 
+import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import megamek.common.util.EncodeControl;
@@ -50,6 +51,8 @@ import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
 import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
 import mekhq.campaign.personnel.generator.RandomPortraitGenerator;
 import mekhq.campaign.personnel.randomDeath.AbstractRandomDeathMethod;
+import mekhq.campaign.personnel.ranks.Rank;
+import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
 
@@ -138,6 +141,7 @@ import mekhq.campaign.universe.DefaultFactionSelector;
 import mekhq.campaign.universe.DefaultPlanetSelector;
 import mekhq.campaign.universe.Era;
 import mekhq.campaign.universe.Faction;
+import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.IUnitGenerator;
 import mekhq.campaign.universe.News;
 import mekhq.campaign.universe.NewsItem;
@@ -222,9 +226,9 @@ public class Campaign implements Serializable, ITechManager {
     private boolean gmMode;
     private transient boolean overviewLoadingValue = true;
 
-    private String camoCategory = Camouflage.NO_CAMOUFLAGE;
-    private String camoFileName = null;
-    private int colorIndex = 0;
+    private String camoCategory = Camouflage.COLOUR_CAMOUFLAGE;
+    private String camoFileName = PlayerColour.BLUE.name();
+    private PlayerColour colour = PlayerColour.BLUE;
 
     //unit icon
     private String iconCategory = AbstractIcon.ROOT_CATEGORY;
@@ -287,7 +291,6 @@ public class Campaign implements Serializable, ITechManager {
         factionCode = "MERC";
         techFactionCode = ITechnology.F_MERC;
         retainerEmployerCode = null;
-        Ranks.initializeRankSystems();
         ranks = Ranks.getRanksFromSystem(Ranks.RS_SL);
         forces = new Force(name);
         forceIds.put(0, forces);
@@ -1648,11 +1651,14 @@ public class Campaign implements Serializable, ITechManager {
         if (p instanceof StructuralIntegrity) {
             return null;
         }
+        // Skip out on "not armor" (as in 0 point armer on men or field guns)
+        if ((p instanceof Armor) && ((Armor) p).getType() == EquipmentType.T_ARMOR_UNKNOWN) {
+            return null;
+        }
         // Makes no sense buying those separately from the chasis
         if((p instanceof EquipmentPart)
                 && ((EquipmentPart) p).getType() != null
-                && (((EquipmentPart) p).getType().hasFlag(MiscType.F_CHASSIS_MODIFICATION)))
-        {
+                && (((EquipmentPart) p).getType().hasFlag(MiscType.F_CHASSIS_MODIFICATION))) {
             return null;
         }
         // Replace a "missing" part with a corresponding "new" one.
@@ -3909,7 +3915,7 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     public Faction getFaction() {
-        return Faction.getFaction(factionCode);
+        return Factions.getInstance().getFaction(factionCode);
     }
 
     public String getFactionName() {
@@ -4000,16 +4006,20 @@ public class Campaign implements Serializable, ITechManager {
         return camoFileName;
     }
 
-    public AbstractIcon getCamouflage() {
+    public Camouflage getCamouflage() {
         return new Camouflage(getCamoCategory(), getCamoFileName());
     }
 
-    public int getColorIndex() {
-        return colorIndex;
+    public PlayerColour getColour() {
+        return colour;
     }
 
-    public void setColorIndex(int index) {
-        colorIndex = index;
+    public void setColour(PlayerColour colour) {
+        Objects.requireNonNull(colour, "Colour cannot be set to null");
+        this.colour = colour;
+        if (getCamouflage().isColourCamouflage()) {
+            setCamoFileName(colour.name());
+        }
     }
 
     public String getIconCategory() {
@@ -4043,11 +4053,6 @@ public class Campaign implements Serializable, ITechManager {
         String quantityString = quantity.toAmountAndSymbolString();
         addReport("Funds added : " + quantityString + " (" + description + ")");
     }
-
-    public boolean hasEnoughFunds(Money cost) {
-        return getFunds().isGreaterOrEqualThan(cost);
-    }
-
 
     public CampaignOptions getCampaignOptions() {
         return campaignOptions;
@@ -4096,7 +4101,7 @@ public class Campaign implements Serializable, ITechManager {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoFileName", camoFileName);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", iconCategory);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", iconFileName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "colorIndex", colorIndex);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "colour", getColour().name());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastForceId", lastForceId);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastMissionId", lastMissionId);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastScenarioId", lastScenarioId);
@@ -4169,9 +4174,10 @@ public class Campaign implements Serializable, ITechManager {
 
         // Against the Bot
         if (getCampaignOptions().getUseAtB()) {
+            // CAW: implicit DEPENDS-ON to the <missions> node, do not move this above it
             contractMarket.writeToXml(pw1, indent);
+
             unitMarket.writeToXml(pw1, indent);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "colorIndex", colorIndex);
             if (lances.size() > 0)   {
                 MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "lances");
                 for (Lance l : lances.values()) {
@@ -4293,7 +4299,7 @@ public class Campaign implements Serializable, ITechManager {
             try {
                 mechFileParser = new MechFileParser(ms.getSourceFile());
             } catch (EntityLoadingException ex) {
-                MekHQ.getLogger().error(Campaign.class, "writeCustoms(PrintWriter)", ex);
+                MekHQ.getLogger().error(ex);
             }
             if (mechFileParser == null) {
                 continue;
