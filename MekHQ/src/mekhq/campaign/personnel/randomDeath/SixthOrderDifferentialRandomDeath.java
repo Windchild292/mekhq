@@ -29,9 +29,9 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
     //region Variable Declarations
     // the following are a list of variables in the format m * 10^n
     private double[] maleM;
-    private double[] maleN;
+    private int[] maleN;
     private double[] femaleM;
-    private double[] femaleN;
+    private int[] femaleN;
     //endregion Variable Declarations
 
     //region Constructors
@@ -62,7 +62,7 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
                 chance += femaleM[i] * Math.pow(10, femaleN[i]) * Math.pow(age, i);
             }
         } else {
-            MekHQ.getLogger().error("Unable to process random death for unknown biological gender " + gender.toString());
+            MekHQ.getLogger().error("Unable to process random death for unknown biological gender " + gender);
         }
 
         MekHQ.getLogger().warning("The odds of randomly dying were calculated to be " + chance + " for a "

@@ -62,6 +62,7 @@ import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
 import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
+import megamek.common.enums.Gender;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import megamek.common.options.GameOptions;
@@ -282,10 +283,12 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkPrisonerBabyStatus;
     private JCheckBox chkAtBPrisonerDefection;
     private JCheckBox chkAtBPrisonerRansom;
-    //Death
+    // Death
     private JComboBox<RandomDeathMethod> comboRandomDeathType;
-    private JSpinner[] spnRandomDeathMaleValues;
-    private JSpinner[] spnRandomDeathFemaleValues;
+    private JSpinner[] spnRandomDeathMaleMValues;
+    private JSpinner[] spnRandomDeathMaleNValues;
+    private JSpinner[] spnRandomDeathFemaleMValues;
+    private JSpinner[] spnRandomDeathFemaleNValues;
     private JCheckBox chkEnableTeenRandomDeaths;
     private JCheckBox chkEnablePreteenRandomDeaths;
     private JCheckBox chkEnableChildRandomDeaths;
@@ -1810,6 +1813,16 @@ public class CampaignOptionsDialog extends JDialog {
         panPersonnel.add(panFamily, gridBagConstraints);
         //endregion Family
 
+        //region Death
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = ++gridy;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        panPersonnel.add(createDeathPanel(), gridBagConstraints);
+        //endregion Death
+
         //region Salary
         JPanel panSalary = new JPanel(new GridBagLayout());
         panSalary.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("SalaryTab.text")));
@@ -1999,14 +2012,6 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         panPersonnel.add(panPrisoners, gridBagConstraints);
         //endregion Prisoners
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 27;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        panPersonnel.add(createDeathPanel(), gridBagConstraints);
 
         JScrollPane scrollPersonnel = new JScrollPane(panPersonnel);
         scrollPersonnel.setPreferredSize(new Dimension(500, 400));
@@ -4281,12 +4286,8 @@ public class CampaignOptionsDialog extends JDialog {
         JLabel randomDeathTypeLabel = new JLabel(resources.getString("randomDeathStyleLabel.text"));
         randomDeathTypeLabel.setToolTipText(resources.getString("randomDeathStyleLabel.toolTipText"));
 
-        DefaultComboBoxModel<RandomDeathMethod> randomDeathTypeModel = new DefaultComboBoxModel<>();
-        randomDeathTypeModel.addAll(RandomDeathMethod.getImplementedValues());
-        comboRandomDeathType = new JComboBox<>(randomDeathTypeModel);
+        comboRandomDeathType = new JComboBox<>(RandomDeathMethod.values());
         comboRandomDeathType.setRenderer(new DefaultListCellRenderer() {
-            private static final long serialVersionUID = -543354619818226314L;
-
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                           boolean isSelected, boolean cellHasFocus) {
@@ -4299,8 +4300,7 @@ public class CampaignOptionsDialog extends JDialog {
             }
         });
 
-        // TODO : Random Death : Male / Female M / N values
-        JPanel panSixthOrderDifferential = new JPanel();
+        JPanel panSixthOrderDifferential = createSixthOrderDifferentialPanel();
 
         chkEnableTeenRandomDeaths = new JCheckBox(resources.getString("enableTeenRandomDeaths.text"));
         chkEnableTeenRandomDeaths.setToolTipText(resources.getString("enableTeenRandomDeaths.toolTipText"));
@@ -4354,6 +4354,175 @@ public class CampaignOptionsDialog extends JDialog {
                         .addComponent(chkEnableToddlerRandomDeaths)
                         .addComponent(chkEnableBabyRandomDeaths)
                         .addComponent(chkKeepMarriedNameUponSpouseDeath)
+        );
+
+        return panel;
+    }
+
+    private JPanel createSixthOrderDifferentialPanel() {
+        spnRandomDeathMaleMValues = new JSpinner[7];
+        spnRandomDeathMaleNValues = new JSpinner[spnRandomDeathMaleMValues.length];
+        spnRandomDeathFemaleMValues = new JSpinner[spnRandomDeathMaleMValues.length];
+        spnRandomDeathFemaleNValues = new JSpinner[spnRandomDeathMaleMValues.length];
+
+        for (int i = 0; i < spnRandomDeathMaleMValues.length; i++) {
+            spnRandomDeathMaleMValues[i] = new JSpinner(new SpinnerNumberModel(0.0, -9.9, 9.9, 0.1));
+            spnRandomDeathMaleNValues[i] = new JSpinner(new SpinnerNumberModel(0.0, -100, 100, 1));
+            spnRandomDeathFemaleMValues[i] = new JSpinner(new SpinnerNumberModel(0.0, -9.9, 9.9, 0.1));
+            spnRandomDeathFemaleNValues[i] = new JSpinner(new SpinnerNumberModel(0.0, -100, 100, 1));
+        }
+
+        JLabel lblMale = new JLabel(Gender.MALE.toString());
+
+        JPanel panMale = createSixthOrderDifferentialIndividualPanel(spnRandomDeathMaleMValues, spnRandomDeathMaleNValues);
+
+        JLabel lblFemale = new JLabel(Gender.FEMALE.toString());
+
+        JPanel panFemale = createSixthOrderDifferentialIndividualPanel(spnRandomDeathFemaleMValues, spnRandomDeathFemaleNValues);
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("panSixthOrderDifferential.text")));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addComponent(lblMale)
+                        .addComponent(panMale)
+                        .addComponent(lblFemale)
+                        .addComponent(panFemale)
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(lblMale)
+                        .addComponent(panMale)
+                        .addComponent(lblFemale)
+                        .addComponent(panFemale)
+        );
+
+        return panel;
+    }
+
+    private JPanel createSixthOrderDifferentialIndividualPanel(JSpinner[] mValues, JSpinner[] nValues) {
+        JLabel lblOpenBracket = new JLabel("(");
+        JLabel lblSixthExponential = new JLabel(resources.getString("lblExponential.text"));
+        JLabel lblSixthAgeExponential = new JLabel(resources.getString("lblSixthAgeExponential.text"));
+        JLabel lblSixthPlus = new JLabel(resources.getString("lblBracketedPlus.text"));
+        JLabel lblFifthExponential = new JLabel(resources.getString("lblExponential.text"));
+        JLabel lblFifthAgeExponential = new JLabel(resources.getString("lblFifthAgeExponential.text"));
+        JLabel lblFifthPlus = new JLabel(resources.getString("lblBracketedPlus.text"));
+        JLabel lblFourthExponential = new JLabel(resources.getString("lblExponential.text"));
+        JLabel lblFourthAgeExponential = new JLabel(resources.getString("lblFourthAgeExponential.text"));
+        JLabel lblFourthPlus = new JLabel(resources.getString("lblBracketedPlus.text"));
+        JLabel lblThirdExponential = new JLabel(resources.getString("lblExponential.text"));
+        JLabel lblThirdAgeExponential = new JLabel(resources.getString("lblThirdAgeExponential.text"));
+        JLabel lblCloseBracketTop = new JLabel(")");
+
+        JLabel lblThirdPlus = new JLabel(resources.getString("lblOpenBracketPlus.text"));
+        JLabel lblSecondExponential = new JLabel(resources.getString("lblExponential.text"));
+        JLabel lblSecondAgeExponential = new JLabel(resources.getString("lblSecondAgeExponential.text"));
+        JLabel lblSecondPlus = new JLabel(resources.getString("lblBracketedPlus.text"));
+        JLabel lblFirstExponential = new JLabel(resources.getString("lblExponential.text"));
+        JLabel lblFirstAgeExponential = new JLabel(resources.getString("lblFirstAgeExponential.text"));
+        JLabel lblFirstPlus = new JLabel(resources.getString("lblBracketedPlus.text"));
+        JLabel lblExponential = new JLabel(resources.getString("lblExponential.text"));
+        JLabel lblCloseBracketBottom = new JLabel(")");
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblOpenBracket)
+                                .addComponent(mValues[6])
+                                .addComponent(lblSixthExponential)
+                                .addComponent(nValues[6])
+                                .addComponent(lblSixthAgeExponential)
+                                .addComponent(lblSixthPlus)
+                                .addComponent(mValues[5])
+                                .addComponent(lblFifthExponential)
+                                .addComponent(nValues[5])
+                                .addComponent(lblFifthAgeExponential)
+                                .addComponent(lblFifthPlus)
+                                .addComponent(mValues[4])
+                                .addComponent(lblFourthExponential)
+                                .addComponent(nValues[4])
+                                .addComponent(lblFourthAgeExponential)
+                                .addComponent(lblFourthPlus)
+                                .addComponent(mValues[3])
+                                .addComponent(lblThirdExponential)
+                                .addComponent(nValues[3])
+                                .addComponent(lblThirdAgeExponential)
+                                .addComponent(lblCloseBracketTop))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblThirdPlus)
+                                .addComponent(mValues[2])
+                                .addComponent(lblSecondExponential)
+                                .addComponent(nValues[2])
+                                .addComponent(lblSecondAgeExponential)
+                                .addComponent(lblSecondPlus)
+                                .addComponent(mValues[1])
+                                .addComponent(lblFirstExponential)
+                                .addComponent(nValues[1])
+                                .addComponent(lblFirstAgeExponential)
+                                .addComponent(lblFirstPlus)
+                                .addComponent(mValues[0])
+                                .addComponent(lblExponential)
+                                .addComponent(nValues[0])
+                                .addComponent(lblCloseBracketBottom, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblOpenBracket)
+                                .addComponent(mValues[6])
+                                .addComponent(lblSixthExponential)
+                                .addComponent(nValues[6])
+                                .addComponent(lblSixthAgeExponential)
+                                .addComponent(lblSixthPlus)
+                                .addComponent(mValues[5])
+                                .addComponent(lblFifthExponential)
+                                .addComponent(nValues[5])
+                                .addComponent(lblFifthAgeExponential)
+                                .addComponent(lblFifthPlus)
+                                .addComponent(mValues[4])
+                                .addComponent(lblFourthExponential)
+                                .addComponent(nValues[4])
+                                .addComponent(lblFourthAgeExponential)
+                                .addComponent(lblFourthPlus)
+                                .addComponent(mValues[3])
+                                .addComponent(lblThirdExponential)
+                                .addComponent(nValues[3])
+                                .addComponent(lblThirdAgeExponential)
+                                .addComponent(lblCloseBracketTop))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblThirdPlus)
+                                .addComponent(mValues[2])
+                                .addComponent(lblSecondExponential)
+                                .addComponent(nValues[2])
+                                .addComponent(lblSecondAgeExponential)
+                                .addComponent(lblSecondPlus)
+                                .addComponent(mValues[1])
+                                .addComponent(lblFirstExponential)
+                                .addComponent(nValues[1])
+                                .addComponent(lblFirstAgeExponential)
+                                .addComponent(lblFirstPlus)
+                                .addComponent(mValues[0])
+                                .addComponent(lblExponential)
+                                .addComponent(nValues[0])
+                                .addComponent(lblCloseBracketBottom))
         );
 
         return panel;
@@ -4575,7 +4744,12 @@ public class CampaignOptionsDialog extends JDialog {
 
         //Deaths
         comboRandomDeathType.setSelectedItem(options.getRandomDeathMethod());
-        // TODO : Random Death : Male / Female M / N values
+        for (int i = 0; i < spnRandomDeathMaleMValues.length; i++) {
+            spnRandomDeathMaleMValues[i].setValue(options.getRandomDeathMaleMValue(i));
+            spnRandomDeathMaleNValues[i].setValue(options.getRandomDeathMaleNValue(i));
+            spnRandomDeathFemaleMValues[i].setValue(options.getRandomDeathFemaleMValue(i));
+            spnRandomDeathFemaleNValues[i].setValue(options.getRandomDeathFemaleNValue(i));
+        }
         chkEnableTeenRandomDeaths.setSelected(options.teenDeathsEnabled());
         chkEnablePreteenRandomDeaths.setSelected(options.preteenDeathsEnabled());
         chkEnableChildRandomDeaths.setSelected(options.childDeathsEnabled());
@@ -5172,12 +5346,19 @@ public class CampaignOptionsDialog extends JDialog {
                 options.setBaseSalary(i, (double) spnSalaryBase[i].getValue());
             } catch (Exception ignored) { }
         }
-        //Prisoners
+        // Prisoners
         options.setPrisonerCaptureStyle((PrisonerCaptureStyle) comboPrisonerCaptureStyle.getSelectedItem());
         options.setDefaultPrisonerStatus((PrisonerStatus) comboPrisonerStatus.getSelectedItem());
         options.setPrisonerBabyStatus(chkPrisonerBabyStatus.isSelected());
         options.setUseAtBPrisonerDefection(chkAtBPrisonerDefection.isSelected());
         options.setUseAtBPrisonerRansom(chkAtBPrisonerRansom.isSelected());
+        // Death
+        for (int i = 0; i < spnRandomDeathMaleMValues.length; i++) {
+            options.setRandomDeathMaleMValue(i, (double) spnRandomDeathMaleMValues[i].getValue());
+            options.setRandomDeathMaleNValue(i, (int) spnRandomDeathMaleMValues[i].getValue());
+            options.setRandomDeathFemaleMValue(i, (double) spnRandomDeathMaleMValues[i].getValue());
+            options.setRandomDeathFemaleNValue(i, (int) spnRandomDeathMaleMValues[i].getValue());
+        }
         //endregion Personnel Tab
 
         //start SPA

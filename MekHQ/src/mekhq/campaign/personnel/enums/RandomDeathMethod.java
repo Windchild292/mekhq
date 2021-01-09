@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -24,8 +24,6 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.randomDeath.AbstractRandomDeathMethod;
 import mekhq.campaign.personnel.randomDeath.SixthOrderDifferentialRandomDeath;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public enum RandomDeathMethod {
@@ -38,44 +36,19 @@ public enum RandomDeathMethod {
      * This is the standard type for Random Deaths, which uses a sixth order differential equation
      * to determine the chance of random deaths
      */
-    STANDARD("RandomDeathType.STANDARD.text", "RandomDeathType.STANDARD.toolTipText"),
-    /**
-     * This type uses weights based on the current era to determine the formula to calculate
-     * the chance of random deaths occurring
-     */
-    ERA_WEIGHTED("RandomDeathType.ERA_WEIGHTED.text", "RandomDeathType.ERA_WEIGHTED.toolTipText", false),
-    /**
-     * This uses weights based on the selected faction to determine the formula to calculate the chance
-     * of random deaths occurring
-     */
-    FACTION_WEIGHTED("RandomDeathType.FACTION_WEIGHTED.text", "RandomDeathType.FACTION_WEIGHTED.toolTipText", false),
-    /**
-     * This uses weightings based on both the faction and era to determine to formula to calculate the
-     * change of random deaths occurring
-     */
-    ERA_FACTION_WEIGHTED("RandomDeathType.ERA_FACTION_WEIGHTED.text", "RandomDeathType.ERA_FACTION_WEIGHTED.toolTipText", false),
-    /**
-     * This uses a standard weighted grouping to determine the randomization for random deaths
-     */
-    GENERAL_WEIGHTED("RandomDeathType.GENERAL_WEIGHTED.text", "RandomDeathType.GENERAL_WEIGHTED.toolTipText", false);
+    STANDARD("RandomDeathType.STANDARD.text", "RandomDeathType.STANDARD.toolTipText");
     //endregion Enum Declarations
 
     //region Variable Declarations
     private String name;
     private String toolTip;
-    private boolean implemented;
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
     RandomDeathMethod(String name, String toolTip) {
-        this(name, toolTip, true);
-    }
-
-    RandomDeathMethod(String name, String toolTip, boolean implemented) {
         this.name = resources.getString(name);
         this.toolTip = resources.getString(toolTip);
-        this.implemented = implemented;
     }
     //endregion Constructors
 
@@ -83,44 +56,24 @@ public enum RandomDeathMethod {
     public String getToolTip() {
         return toolTip;
     }
-
-    public boolean isImplemented() {
-        return implemented;
-    }
     //endregion Getters
 
     //region Boolean Comparison Methods
-    public boolean isNone() {
-        return this == NONE;
+    public boolean isEnabled() {
+        return this != NONE;
     }
     //endregion Boolean Comparison Methods
 
     public AbstractRandomDeathMethod getMethod(Campaign campaign) {
         switch (this) {
-            case ERA_WEIGHTED:
-            case FACTION_WEIGHTED:
-            case ERA_FACTION_WEIGHTED:
-            case GENERAL_WEIGHTED:
-                MekHQ.getLogger().warning("RandomDeath: Method " + toString()
-                        + "is not currently supported. Using the standard sixth order method instead.");
             case STANDARD:
                 return new SixthOrderDifferentialRandomDeath(campaign);
             case NONE:
             default:
-                MekHQ.getLogger().warning("RandomDeath: Error: Attempted to get the method while disabled."
+                MekHQ.getLogger().error("RandomDeath: Error: Attempted to get the method while disabled."
                         + "Returning the standard sixth order method, and please report this on our GitHub");
                 return new SixthOrderDifferentialRandomDeath(campaign);
         }
-    }
-
-    public static List<RandomDeathMethod> getImplementedValues() {
-        List<RandomDeathMethod> implementedTypes = new ArrayList<>();
-        for (RandomDeathMethod type : values()) {
-            if (type.isImplemented()) {
-                implementedTypes.add(type);
-            }
-        }
-        return implementedTypes;
     }
 
     @Override

@@ -250,9 +250,9 @@ public class CampaignOptions implements Serializable {
     // Death
     private RandomDeathMethod randomDeathMethod;
     private double[] randomDeathMaleMValues;
-    private double[] randomDeathMaleNValues;
+    private int[] randomDeathMaleNValues;
     private double[] randomDeathFemaleMValues;
-    private double[] randomDeathFemaleNValues;
+    private int[] randomDeathFemaleNValues;
     private boolean enableTeenRandomDeaths;
     private boolean enablePreteenRandomDeaths;
     private boolean enableChildRandomDeaths;
@@ -637,7 +637,7 @@ public class CampaignOptions implements Serializable {
         //Death
         randomDeathMethod = RandomDeathMethod.NONE;
         randomDeathMaleMValues = new double[7];
-        randomDeathMaleNValues = new double[7];
+        randomDeathMaleNValues = new int[7];
         randomDeathMaleMValues[6] = 7;
         randomDeathMaleNValues[6] = -12;
         randomDeathMaleMValues[5] = -2;
@@ -648,12 +648,12 @@ public class CampaignOptions implements Serializable {
         randomDeathMaleNValues[3] = -6;
         randomDeathMaleMValues[2] = 2;
         randomDeathMaleNValues[2] = -4;
-        randomDeathMaleNValues[1] = -1.5;
+        randomDeathMaleMValues[1] = -1.5;
         randomDeathMaleNValues[1] = -3;
         randomDeathMaleMValues[0] = 4.1;
         randomDeathMaleNValues[0] = -3;
         randomDeathFemaleMValues = new double[7];
-        randomDeathFemaleNValues = new double[7];
+        randomDeathFemaleNValues = new int[7];
         randomDeathFemaleMValues[6] = 7;
         randomDeathFemaleNValues[6] = -12;
         randomDeathFemaleMValues[5] = -2;
@@ -1676,12 +1676,20 @@ public class CampaignOptions implements Serializable {
         return randomDeathMaleMValues[pos];
     }
 
-    public double[] getRandomDeathMaleNValues() {
+    public void setRandomDeathMaleMValue(int pos, double value) {
+        randomDeathMaleMValues[pos] = value;
+    }
+
+    public int[] getRandomDeathMaleNValues() {
         return randomDeathMaleNValues;
     }
 
     public double getRandomDeathMaleNValue(int pos) {
         return randomDeathMaleNValues[pos];
+    }
+
+    public void setRandomDeathMaleNValue(int pos, int value) {
+        randomDeathMaleNValues[pos] = value;
     }
 
     public double[] getRandomDeathFemaleMValues() {
@@ -1692,12 +1700,20 @@ public class CampaignOptions implements Serializable {
         return randomDeathFemaleMValues[pos];
     }
 
-    public double[] getRandomDeathFemaleNValues() {
+    public void setRandomDeathFemaleMValue(int pos, double value) {
+        randomDeathFemaleMValues[pos] = value;
+    }
+
+    public int[] getRandomDeathFemaleNValues() {
         return randomDeathFemaleNValues;
     }
 
     public double getRandomDeathFemaleNValue(int pos) {
         return randomDeathFemaleNValues[pos];
+    }
+
+    public void setRandomDeathFemaleNValue(int pos, int value) {
+        randomDeathFemaleNValues[pos] = value;
     }
 
     public boolean teenDeathsEnabled() {
@@ -3800,7 +3816,7 @@ public class CampaignOptions implements Serializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMaleNValues")) {
                 String[] values = wn2.getTextContent().trim().split(",");
                 for (int i = 0; i < values.length; i++) {
-                    retVal.randomDeathMaleNValues[i] = Double.parseDouble(values[i]);
+                    retVal.randomDeathMaleNValues[i] = Integer.parseInt(values[i]);
                 }
             } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathFemaleMValues")) {
                 String[] values = wn2.getTextContent().trim().split(",");
@@ -3810,7 +3826,7 @@ public class CampaignOptions implements Serializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathFemaleNValues")) {
                 String[] values = wn2.getTextContent().trim().split(",");
                 for (int i = 0; i < values.length; i++) {
-                    retVal.randomDeathFemaleNValues[i] = Double.parseDouble(values[i]);
+                    retVal.randomDeathFemaleNValues[i] = Integer.parseInt(values[i]);
                 }
             } else if (wn2.getNodeName().equalsIgnoreCase("enableTeenRandomDeaths")) {
                 retVal.enableTeenRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());

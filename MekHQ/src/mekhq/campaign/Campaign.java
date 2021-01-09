@@ -3188,7 +3188,7 @@ public class Campaign implements Serializable, ITechManager {
         // furthermore this allows us to add and remove personnel without issue
         for (Person p : getActivePersonnel()) {
             // Random Death
-            if (!getCampaignOptions().getRandomDeathMethod().isNone()) {
+            if (getCampaignOptions().getRandomDeathMethod().isEnabled()) {
                 final AgeRange ageRange = p.getAgeRange(getLocalDate());
                 final AbstractRandomDeathMethod randomDeathMethod = getCampaignOptions()
                         .getRandomDeathMethod().getMethod(this);
