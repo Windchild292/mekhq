@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import megamek.client.ui.swing.tileset.EntityImage;
 import megamek.common.*;
 import megamek.common.InfantryBay.PlatoonType;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import mekhq.MHQStaticDirectoryManager;

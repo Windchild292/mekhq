@@ -45,7 +45,7 @@ import megamek.common.BombType;
 import megamek.common.Compute;
 import megamek.common.Crew;
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.EntityWeightClass;
 import megamek.common.IBomber;
 import megamek.common.Infantry;

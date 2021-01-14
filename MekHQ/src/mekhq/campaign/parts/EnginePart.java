@@ -31,7 +31,7 @@ import megamek.common.Aero;
 import megamek.common.CriticalSlot;
 import megamek.common.Engine;
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.IArmorState;
 import megamek.common.Mech;
 import megamek.common.Protomech;

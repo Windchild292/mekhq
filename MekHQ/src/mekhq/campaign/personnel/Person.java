@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import megamek.client.generator.RandomNameGenerator;
 import megamek.common.*;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.enums.Gender;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Portrait;

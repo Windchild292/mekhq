@@ -31,6 +31,7 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 import megamek.client.ui.swing.util.PlayerColour;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import megamek.common.util.EncodeControl;

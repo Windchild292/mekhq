@@ -30,7 +30,7 @@ import megamek.client.ratgenerator.FactionRecord;
 import megamek.client.ratgenerator.ModelRecord;
 import megamek.client.ratgenerator.RATGenerator;
 import megamek.client.ratgenerator.UnitTable;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.MechSummary;
 import megamek.common.UnitType;
 import mekhq.MekHQ;

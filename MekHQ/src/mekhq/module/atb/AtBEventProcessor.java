@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import megamek.client.ratgenerator.MissionRole;
 import megamek.common.Compute;
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.EntityWeightClass;
 import megamek.common.MechFileParser;
 import megamek.common.MechSummary;

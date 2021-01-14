@@ -45,7 +45,7 @@ import org.w3c.dom.NodeList;
 
 import megamek.client.generator.RandomUnitGenerator;
 import megamek.common.Compute;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.EntityWeightClass;
 import megamek.common.MechSummary;
 import megamek.common.UnitType;
@@ -479,7 +479,7 @@ public class RATManager extends AbstractUnitGenerator implements IUnitGenerator 
             }
             return RandomUnitGenerator.getInstance().generate(count, rat.ratName, filter);
         }
-        return new ArrayList<MechSummary>();
+        return new ArrayList<>();
     }
 
     /**

@@ -12,13 +12,12 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
 import java.io.PrintWriter;
@@ -28,25 +27,23 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.Infantry;
 import megamek.common.TechAdvancement;
 import mekhq.MekHqXmlUtil;
 import mekhq.campaign.Campaign;
 
 /**
- *
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
 public class InfantryMotiveType extends Part {
-
-	/**
-	 *
-	 */
+    //region Variable Declarations
 	private static final long serialVersionUID = -2915821210551422633L;
 
 	private EntityMovementMode mode;
+    //endregion Variable Declarations
 
+    //region Constructors
 	public InfantryMotiveType() {
     	this(0, null, null);
     }
@@ -54,34 +51,34 @@ public class InfantryMotiveType extends Part {
 	public InfantryMotiveType(int tonnage, Campaign c, EntityMovementMode m) {
 		super(tonnage, c);
 		this.mode = m;
-		if(null != mode) {
+		if (null != mode) {
 			assignName();
 		}
-
 	}
+	//endregion Constructors
 
 	private void assignName() {
 		switch (mode) {
-        case INF_UMU:
-            name = "Scuba Gear";
-            break;
-        case INF_MOTORIZED:
-        	name = "Motorized Vehicle";
-            break;
-        case INF_JUMP:
-        	name = "Jump Pack";
-            break;
-        case HOVER:
-        	name = "Hover Infantry Vehicle";
-            break;
-        case WHEELED:
-        	name = "Wheeled Infantry Vehicle";
-            break;
-        case TRACKED:
-        	name = "Tracked Infantry Vehicle";
-            break;
-        default:
-        	name = "Unknown Motive Type";
+            case INF_UMU:
+                name = "Scuba Gear";
+                break;
+            case INF_MOTORIZED:
+                name = "Motorized Vehicle";
+                break;
+            case INF_JUMP:
+                name = "Jump Pack";
+                break;
+            case HOVER:
+                name = "Hover Infantry Vehicle";
+                break;
+            case WHEELED:
+                name = "Wheeled Infantry Vehicle";
+                break;
+            case TRACKED:
+                name = "Tracked Infantry Vehicle";
+                break;
+            default:
+                name = "Unknown Motive Type";
 		}
 	}
 
@@ -107,13 +104,13 @@ public class InfantryMotiveType extends Part {
 
 	@Override
 	public void remove(boolean salvage) {
-		if(null != unit) {
+		if (null != unit) {
 			Part spare = campaign.getWarehouse().checkForExistingSparePart(this);
-			if(!salvage) {
+			if (!salvage) {
 				campaign.getWarehouse().removePart(this);
-			} else if(null != spare) {
+			} else if (null != spare) {
 				int number = quantity;
-				while(number > 0) {
+				while (number > 0) {
 					spare.incrementQuantity();
 					number--;
 				}
@@ -142,7 +139,7 @@ public class InfantryMotiveType extends Part {
 
 	@Override
 	public Money getStickerPrice() {
-		 switch (getMovementMode()){
+		 switch (getMovementMode()) {
 	        case INF_UMU:
 	            return Money.of(17888);
 	        case INF_MOTORIZED:
@@ -162,7 +159,6 @@ public class InfantryMotiveType extends Part {
 
 	@Override
 	public double getTonnage() {
-		//TODO: what should this be?
 		return 0;
 	}
 
@@ -173,31 +169,27 @@ public class InfantryMotiveType extends Part {
 
 	@Override
 	public boolean isSamePartType(Part part) {
-		return part instanceof InfantryMotiveType && mode.equals(((InfantryMotiveType)part).getMovementMode());
+		return (part instanceof InfantryMotiveType) && mode.equals(((InfantryMotiveType) part).getMovementMode());
 	}
 
 	@Override
 	public void writeToXml(PrintWriter pw1, int indent) {
-		writeToXmlBegin(pw1, indent);
-		pw1.println(MekHqXmlUtil.indentStr(indent+1)
-				+"<moveMode>"
-				+mode
-				+"</moveMode>");
-		writeToXmlEnd(pw1, indent);
+		writeToXmlBegin(pw1, indent++);
+		MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "moveMode", mode.name());
+		writeToXmlEnd(pw1, --indent);
 	}
 
 	@Override
 	protected void loadFieldsFromXmlNode(Node wn) {
 		NodeList nl = wn.getChildNodes();
 
-		for (int x=0; x<nl.getLength(); x++) {
+		for (int x = 0; x < nl.getLength(); x++) {
 			Node wn2 = nl.item(x);
 			if (wn2.getNodeName().equalsIgnoreCase("mode")) {
-				mode = EntityMovementMode.getMode(wn2.getTextContent());
+				mode = EntityMovementMode.parseFromString(wn2.getTextContent().trim());
 				assignName();
-			}
-			else if (wn2.getNodeName().equalsIgnoreCase("moveMode")) {
-				mode = EntityMovementMode.getMode(wn2.getTextContent());
+			} else if (wn2.getNodeName().equalsIgnoreCase("moveMode")) {
+				mode = EntityMovementMode.parseFromString(wn2.getTextContent().trim());
 				assignName();
 			}
 		}
@@ -219,7 +211,6 @@ public class InfantryMotiveType extends Part {
 
 	@Override
 	public String getLocationName() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

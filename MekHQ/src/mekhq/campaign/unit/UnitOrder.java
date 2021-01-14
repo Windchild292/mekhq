@@ -30,7 +30,7 @@ import megamek.common.Aero;
 import megamek.common.BattleArmor;
 import megamek.common.ConvFighter;
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.EntityWeightClass;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;

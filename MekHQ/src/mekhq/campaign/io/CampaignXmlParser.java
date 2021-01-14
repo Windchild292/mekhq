@@ -49,7 +49,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.EquipmentType;
 import megamek.common.Jumpship;
 import megamek.common.Mech;

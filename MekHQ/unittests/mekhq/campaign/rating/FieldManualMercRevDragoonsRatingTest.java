@@ -27,7 +27,7 @@ import megamek.common.BipedMech;
 import megamek.common.Crew;
 import megamek.common.Dropship;
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.Jumpship;
 import megamek.common.MechBay;
 import megamek.common.Tank;

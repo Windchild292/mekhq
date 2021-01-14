@@ -36,7 +36,7 @@ import megamek.common.BattleArmor;
 import megamek.common.ConvFighter;
 import megamek.common.Dropship;
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
+import megamek.common.enums.EntityMovementMode;
 import megamek.common.EntityWeightClass;
 import megamek.common.GunEmplacement;
 import megamek.common.Infantry;
