@@ -470,7 +470,7 @@ public class RATManager extends AbstractUnitGenerator implements IUnitGenerator 
         if (rat != null) {
             if (!movementModes.isEmpty()) {
                 Predicate<MechSummary> moveFilter = ms ->
-                    movementModes.contains(EntityMovementMode.getMode(ms.getUnitSubType()));
+                    movementModes.contains(EntityMovementMode.parseFromString(ms.getUnitSubType()));
                 if (filter == null) {
                     filter = moveFilter;
                 } else {
