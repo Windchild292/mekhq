@@ -20,7 +20,6 @@
  */
 package mekhq.campaign.unit;
 
-
 import java.io.PrintWriter;
 
 import org.w3c.dom.Node;
@@ -30,7 +29,6 @@ import megamek.common.Aero;
 import megamek.common.BattleArmor;
 import megamek.common.ConvFighter;
 import megamek.common.Entity;
-import megamek.common.enums.EntityMovementMode;
 import megamek.common.EntityWeightClass;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
@@ -248,22 +246,18 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
             }
         }
         else if(entity instanceof BattleArmor) {
-            target.addModifier(0, "BattleArmor");
-        }
-        else if(entity instanceof Infantry) {
-            if(entity.getMovementMode() == EntityMovementMode.INF_LEG) {
+            target.addModifier(0, "Battle Armor");
+        } else if (entity instanceof Infantry) {
+            if (entity.getMovementMode().isLegInfantry()) {
                 target.addModifier(-3, "Foot Infantry");
-            }
-            else if(entity.getMovementMode() == EntityMovementMode.INF_JUMP) {
+            } else if (entity.getMovementMode().isJumpInfantry()) {
                 target.addModifier(-1, "Jump Infantry");
-            }
-            else if(entity.getMovementMode() == EntityMovementMode.INF_MOTORIZED) {
+            } else if (entity.getMovementMode().isMotorizedInfantry()) {
                 target.addModifier(-2, "Motorized Infantry");
             } else {
                 target.addModifier(-1, "Mechanized Infantry");
             }
-        }
-        else if(entity instanceof Tank) {
+        } else if (entity instanceof Tank) {
             target.addModifier(-1, "Vehicle");
             switch(entity.getWeightClass()) {
             case EntityWeightClass.WEIGHT_LIGHT:

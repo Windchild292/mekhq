@@ -30,7 +30,6 @@ import megamek.common.Aero;
 import megamek.common.CriticalSlot;
 import megamek.common.Engine;
 import megamek.common.Entity;
-import megamek.common.enums.EntityMovementMode;
 import megamek.common.Mech;
 import megamek.common.Protomech;
 import megamek.common.Tank;
@@ -212,8 +211,10 @@ public class MissingEnginePart extends MissingPart {
 
     @Override
     public Part getNewPart() {
-        boolean useHover = null != unit && unit.getEntity().getMovementMode() == EntityMovementMode.HOVER && unit.getEntity() instanceof Tank;
-        return new EnginePart(getUnitTonnage(), new Engine(engine.getRating(), engine.getEngineType(), engine.getFlags()), campaign, useHover);
+        boolean useHover = (unit != null) && (unit.getEntity() instanceof Tank)
+                && unit.getEntity().getMovementMode().isHover();
+        return new EnginePart(getUnitTonnage(), new Engine(engine.getRating(), engine.getEngineType(),
+                engine.getFlags()), campaign, useHover);
     }
 
     @Override

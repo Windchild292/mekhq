@@ -41,35 +41,35 @@ public interface IUnitGenerator {
     /*
      * For convenience in generating traditional ground + vtol units.
      */
-    final static EnumSet<EntityMovementMode> MIXED_TANK_VTOL = EnumSet.of(EntityMovementMode.TRACKED,
+    EnumSet<EntityMovementMode> MIXED_TANK_VTOL = EnumSet.of(EntityMovementMode.TRACKED,
             EntityMovementMode.WHEELED, EntityMovementMode.HOVER, EntityMovementMode.WIGE,
             EntityMovementMode.VTOL);
 
     /**
      * For convenience in generating infantry units.
      */
-    final static EnumSet<EntityMovementMode> ALL_INFANTRY_MODES = EnumSet.of(EntityMovementMode.INF_JUMP,
+    EnumSet<EntityMovementMode> ALL_INFANTRY_MODES = EnumSet.of(EntityMovementMode.INF_JUMP,
             EntityMovementMode.INF_LEG, EntityMovementMode.INF_MOTORIZED, EntityMovementMode.INF_UMU,
             EntityMovementMode.TRACKED, EntityMovementMode.WHEELED, EntityMovementMode.HOVER);
 
-    final static EnumSet<EntityMovementMode> ALL_BATTLE_ARMOR_MODES = EnumSet.of(EntityMovementMode.INF_JUMP,
+    EnumSet<EntityMovementMode> ALL_BATTLE_ARMOR_MODES = EnumSet.of(EntityMovementMode.INF_JUMP,
             EntityMovementMode.INF_LEG, EntityMovementMode.INF_UMU, EntityMovementMode.VTOL);
 
     /**
      * For convenience in generating infantry units, the minimum tonnage of a foot infantry platoon.
      */
-    final static double FOOT_PLATOON_INFANTRY_WEIGHT = 3.0;
+    double FOOT_PLATOON_INFANTRY_WEIGHT = 3.0;
 
     /**
      * For convenience in generating battle armor, minimum tonnage of a battle armor squad.
      */
-    final static double BATTLE_ARMOR_MIN_WEIGHT = 4.0;
+    double BATTLE_ARMOR_MIN_WEIGHT = 4.0;
 
     /**
      * For convenience in generating battle armor/infantry, when the tonnage does not matter
      * (a dedicated dropship bay, battle armor riding on a mech, etc)
      */
-    final static double NO_WEIGHT_LIMIT = -1.0;
+    double NO_WEIGHT_LIMIT = -1.0;
 
     /**
      * Convenience function to let us know whether a unit type supports weight class selection.

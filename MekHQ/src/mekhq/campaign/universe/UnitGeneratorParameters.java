@@ -48,14 +48,10 @@ public class UnitGeneratorParameters {
         newParams.setQuality(quality);
         newParams.setFilter(filter);
 
-        Collection<EntityMovementMode> newModes = new ArrayList<>();
-        for(EntityMovementMode movementMode : movementModes) {
-            newModes.add(movementMode);
-        }
+        Collection<EntityMovementMode> newModes = new ArrayList<>(movementModes);
 
         newParams.setMovementModes(newModes);
-
-        for(MissionRole missionRole : missionRoles) {
+        for (MissionRole missionRole : missionRoles) {
             newParams.addMissionRole(missionRole);
         }
 

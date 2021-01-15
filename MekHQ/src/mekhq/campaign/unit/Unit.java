@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import megamek.client.ui.swing.tileset.EntityImage;
 import megamek.common.*;
 import megamek.common.InfantryBay.PlatoonType;
-import megamek.common.enums.EntityMovementMode;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import mekhq.MHQStaticDirectoryManager;
@@ -1671,16 +1670,13 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
         } else if (entity instanceof VTOL) {
             tonnage = 30;
         } else if (entity instanceof Tank) {
-            if (entity.getMovementMode() == EntityMovementMode.WHEELED || entity.getMovementMode() == EntityMovementMode.NAVAL) {
+            if (entity.getMovementMode().isWheeled() || entity.getMovementMode().isNaval()) {
                 tonnage = 200;
-            }
-            else if (entity.getMovementMode() == EntityMovementMode.HOVER || entity.getMovementMode() == EntityMovementMode.SUBMARINE) {
+            } else if (entity.getMovementMode().isHover() || entity.getMovementMode().isSubmarine()) {
                 tonnage = 50;
-            }
-            else if (entity.getMovementMode() == EntityMovementMode.HYDROFOIL) {
+            } else if (entity.getMovementMode().isHydrofoil()) {
                 tonnage = 75;
-            }
-            else if (entity.getMovementMode() == EntityMovementMode.WIGE) {
+            } else if (entity.getMovementMode().isWiGE()) {
                 tonnage = 25;
             }
         } else if (entity instanceof Dropship) {
@@ -2764,7 +2760,9 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
                     partsToAdd.add(engine);
                 }
             } else if (null != entity.getEngine()) {
-                engine = new EnginePart((int) entity.getWeight(),new Engine(entity.getEngine().getRating(), entity.getEngine().getEngineType(), entity.getEngine().getFlags()), getCampaign(), entity.getMovementMode() == EntityMovementMode.HOVER && entity instanceof Tank);
+                engine = new EnginePart((int) entity.getWeight(), new Engine(entity.getEngine().getRating(),
+                        entity.getEngine().getEngineType(), entity.getEngine().getFlags()),
+                        getCampaign(), (entity instanceof Tank) && entity.getMovementMode().isHover());
                 addPart(engine);
                 partsToAdd.add(engine);
             }
@@ -3137,7 +3135,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
             }
         }
         if (entity.isConventionalInfantry()) {
-            if ((null == motiveType) && (entity.getMovementMode() != EntityMovementMode.INF_LEG)) {
+            if ((null == motiveType) && !entity.getMovementMode().isLegInfantry()) {
                 int number = entity.getOInternal(Infantry.LOC_INFANTRY);
                 if (((Infantry) entity).isMechanized()) {
                     number = ((Infantry) entity).getSquadN();
@@ -4991,20 +4989,20 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
         } else if (entity instanceof Infantry) {
             if (((Infantry)entity).isMechanized()) {
                 partsCost = partsCost.plus(entity.getWeight() * .001 * 10000);
-            } else if (entity.getMovementMode() == EntityMovementMode.INF_LEG) {
+            } else if (entity.getMovementMode().isLegInfantry()) {
                 partsCost = partsCost.plus(3 * .002 * 10000);
-            } else if (entity.getMovementMode() == EntityMovementMode.INF_JUMP) {
+            } else if (entity.getMovementMode().isJumpInfantry()) {
                 partsCost = partsCost.plus(4 * .002 * 10000);
-            } else if (entity.getMovementMode() == EntityMovementMode.INF_MOTORIZED) {
+            } else if (entity.getMovementMode().isMotorizedInfantry()) {
                 partsCost = partsCost.plus(6 * .002 * 10000);
             } else {
                 partsCost = partsCost.plus(entity.getWeight() * .002 * 10000);
-                MekHQ.getLogger().error(this, getName() + " is not a generic CI. Movement mode is " + entity.getMovementModeAsString());
+                MekHQ.getLogger().error(getName() + " is not a generic CI. Movement mode is " + entity.getMovementModeAsString());
             }
         } else {
             // Only ProtoMechs should fall here. Anything else needs to be logged
             if (!(entity instanceof Protomech)) {
-                MekHQ.getLogger().error(this, getName() + " has no Spare Parts value for unit type " + Entity.getEntityTypeName(entity.getEntityType()));
+                MekHQ.getLogger().error(getName() + " has no Spare Parts value for unit type " + Entity.getEntityTypeName(entity.getEntityType()));
             }
         }
 
@@ -5182,11 +5180,8 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
                 return Money.zero();
             }
         }
-        if (e.getMovementMode() == EntityMovementMode.INF_LEG) {
-            return Money.zero();
-        } else {
-            return Money.of(e.getWeight() * 0.02 * 1000.0 * 4.0);
-        }
+        return e.getMovementMode().isLegInfantry() ? Money.zero()
+                : Money.of(e.getWeight() * 0.02 * 1000.0 * 4.0);
     }
 
     /**

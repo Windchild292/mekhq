@@ -49,7 +49,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import megamek.common.Entity;
-import megamek.common.enums.EntityMovementMode;
 import megamek.common.EquipmentType;
 import megamek.common.Jumpship;
 import megamek.common.Mech;
@@ -1475,10 +1474,10 @@ public class CampaignXmlParser {
                 }
             }
 
-            // old versions didnt distinguish tank engines
+            // old versions didn't distinguish tank engines
             if ((prt instanceof EnginePart) && prt.getName().contains("Vehicle")) {
-                boolean isHover = null != u
-                        && u.getEntity().getMovementMode() == EntityMovementMode.HOVER && u.getEntity() instanceof Tank;
+                boolean isHover = (u != null) && (u.getEntity() instanceof Tank)
+                        && u.getEntity().getMovementMode().isHover();
                 ((EnginePart) prt).fixTankFlag(isHover);
             }
 
@@ -1487,10 +1486,8 @@ public class CampaignXmlParser {
                     && (prt.getTechBase() != Part.T_CLAN)) {
                 ((EnginePart) prt).fixClanFlag();
             }
-            if ((prt instanceof MissingEnginePart) && (null != u)
-                    && (u.getEntity() instanceof Tank)) {
-                boolean isHover = u.getEntity().getMovementMode() == EntityMovementMode.HOVER;
-                ((MissingEnginePart) prt).fixTankFlag(isHover);
+            if ((prt instanceof MissingEnginePart) && (null != u) && (u.getEntity() instanceof Tank)) {
+                ((MissingEnginePart) prt).fixTankFlag(u.getEntity().getMovementMode().isHover());
             }
             if ((prt instanceof MissingEnginePart)
                     && prt.getName().contains("(Clan") && (prt.getTechBase() != Part.T_CLAN)) {

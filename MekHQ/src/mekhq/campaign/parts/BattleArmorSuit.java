@@ -144,78 +144,74 @@ public class BattleArmorSuit extends Part {
             return alternateTon;
         }
         double tons = 0;
-        switch(weightClass) {
-        case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
-            if(clan) {
-                tons += 0.13;
-            } else {
-                tons += 0.08;
-            }
-            tons += groundMP * .025;
-            if(jumpType == EntityMovementMode.INF_UMU) {
-                tons += jumpMP * .045;
-            }
-            else if(jumpType == EntityMovementMode.VTOL) {
-                tons += jumpMP * .03;
-            } else {
-                tons += jumpMP * .025;
-            }
-            break;
-        case EntityWeightClass.WEIGHT_LIGHT:
-            if(clan) {
-                tons += 0.15;
-            } else {
-                tons += 0.1;
-            }
-            tons += groundMP * .03;
-            if(jumpType == EntityMovementMode.INF_UMU) {
-                tons += jumpMP * .045;
-            }
-            else if(jumpType == EntityMovementMode.VTOL) {
-                tons += jumpMP * .04;
-            } else {
-                tons += jumpMP * .025;
-            }
-            break;
-        case EntityWeightClass.WEIGHT_MEDIUM:
-            if(clan) {
-                tons += 0.25;
-            } else {
-                tons += 0.175;
-            }
-            tons += groundMP * .04;
-            if(jumpType == EntityMovementMode.INF_UMU) {
-                tons += jumpMP * .085;
-            }
-            else if(jumpType == EntityMovementMode.VTOL) {
-                tons += jumpMP * .06;
-            } else {
-                tons += jumpMP * .05;
-            }
-            break;
-        case EntityWeightClass.WEIGHT_HEAVY:
-            if(clan) {
-                tons += 0.4;
-            } else {
-                tons += 0.3;
-            }
-            tons += groundMP * .08;
-            if(jumpType == EntityMovementMode.INF_UMU) {
-                tons += jumpMP * .16;
-            }
-            else {
-                tons += jumpMP * .125;
-            }
-            break;
-        case EntityWeightClass.WEIGHT_ASSAULT:
-            if(clan) {
-                tons += 0.7;
-            } else {
-                tons += 0.55;
-            }
-            tons += groundMP * .16;
-            tons += jumpMP * .25;
-            break;
+        switch (weightClass) {
+            case EntityWeightClass.WEIGHT_ULTRA_LIGHT:
+                if (clan) {
+                    tons += 0.13;
+                } else {
+                    tons += 0.08;
+                }
+                tons += groundMP * .025;
+                if (jumpType.isUMUInfantry()) {
+                    tons += jumpMP * .045;
+                } else if (jumpType.isVTOL()) {
+                    tons += jumpMP * .03;
+                } else {
+                    tons += jumpMP * .025;
+                }
+                break;
+            case EntityWeightClass.WEIGHT_LIGHT:
+                if (clan) {
+                    tons += 0.15;
+                } else {
+                    tons += 0.1;
+                }
+                tons += groundMP * .03;
+                if (jumpType.isUMUInfantry()) {
+                    tons += jumpMP * .045;
+                } else if (jumpType.isVTOL()) {
+                    tons += jumpMP * .04;
+                } else {
+                    tons += jumpMP * .025;
+                }
+                break;
+            case EntityWeightClass.WEIGHT_MEDIUM:
+                if (clan) {
+                    tons += 0.25;
+                } else {
+                    tons += 0.175;
+                }
+                tons += groundMP * .04;
+                if (jumpType.isUMUInfantry()) {
+                    tons += jumpMP * .085;
+                } else if (jumpType.isVTOL()) {
+                    tons += jumpMP * .06;
+                } else {
+                    tons += jumpMP * .05;
+                }
+                break;
+            case EntityWeightClass.WEIGHT_HEAVY:
+                if (clan) {
+                    tons += 0.4;
+                } else {
+                    tons += 0.3;
+                }
+                tons += groundMP * .08;
+                if (jumpType.isUMUInfantry()) {
+                    tons += jumpMP * .16;
+                } else {
+                    tons += jumpMP * .125;
+                }
+                break;
+            case EntityWeightClass.WEIGHT_ASSAULT:
+                if (clan) {
+                    tons += 0.7;
+                } else {
+                    tons += 0.55;
+                }
+                tons += groundMP * .16;
+                tons += jumpMP * .25;
+                break;
         }
         //if there are no linked parts and the unit is null,
         //then use the pre-recorded extra costs
@@ -239,34 +235,20 @@ public class BattleArmorSuit extends Part {
         }
         Money cost = Money.zero();
         switch(weightClass) {
-        case EntityWeightClass.WEIGHT_MEDIUM:
-            cost = cost.plus(100000);
-            if(jumpType == EntityMovementMode.VTOL) {
-                cost = cost.plus(jumpMP * 100000);
-            } else {
-                cost = cost.plus(jumpMP * 75000);
-            }
-            break;
-        case EntityWeightClass.WEIGHT_HEAVY:
-            cost = cost.plus(200000);
-            if(jumpType == EntityMovementMode.INF_UMU) {
-                cost = cost.plus(jumpMP * 100000);
-            } else {
-                cost = cost.plus(jumpMP * 150000);
-            }
-            break;
-        case EntityWeightClass.WEIGHT_ASSAULT:
-            cost = cost.plus(400000);
-            if(jumpType == EntityMovementMode.INF_UMU) {
-                cost = cost.plus(jumpMP * 150000);
-            } else {
-                cost = cost.plus(jumpMP * 300000);
-            }
-            break;
-        default:
-            cost = cost.plus(50000 * (jumpMP + 1));
+            case EntityWeightClass.WEIGHT_MEDIUM:
+                cost = cost.plus(100000).plus(jumpMP * (jumpType.isVTOL() ? 100000 : 75000));
+                break;
+            case EntityWeightClass.WEIGHT_HEAVY:
+                cost = cost.plus(200000).plus(jumpMP * (jumpType.isUMUInfantry() ? 100000 : 150000));
+                break;
+            case EntityWeightClass.WEIGHT_ASSAULT:
+                cost = cost.plus(400000).plus(jumpMP * (jumpType.isUMUInfantry() ? 150000 : 300000));
+                break;
+            default:
+                cost = cost.plus(50000 * (jumpMP + 1));
+                break;
         }
-        cost = cost.plus(25000 * (groundMP-1));
+        cost = cost.plus(25000 * (groundMP - 1));
         for (Part p : getChildParts()) {
             if (p instanceof BaArmor) {
                 cost = cost.plus(p.getCurrentValue());

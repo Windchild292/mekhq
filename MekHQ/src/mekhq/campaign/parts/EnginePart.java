@@ -31,7 +31,6 @@ import megamek.common.Aero;
 import megamek.common.CriticalSlot;
 import megamek.common.Engine;
 import megamek.common.Entity;
-import megamek.common.enums.EntityMovementMode;
 import megamek.common.IArmorState;
 import megamek.common.Mech;
 import megamek.common.Protomech;
@@ -126,7 +125,7 @@ public class EnginePart extends Part {
     public void setUnit(Unit u) {
         super.setUnit(u);
         if ((null != u) && u.getEntity().hasETypeFlag(Entity.ETYPE_TANK)) {
-            fixTankFlag(u.getEntity().getMovementMode() == EntityMovementMode.HOVER);
+            fixTankFlag(u.getEntity().getMovementMode().isHover());
         }
     }
 

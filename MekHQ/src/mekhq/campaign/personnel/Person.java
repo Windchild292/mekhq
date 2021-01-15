@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import megamek.client.generator.RandomNameGenerator;
 import megamek.common.*;
-import megamek.common.enums.EntityMovementMode;
 import megamek.common.enums.Gender;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Portrait;
@@ -3118,9 +3117,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         } else if (ent instanceof VTOL) {
             return hasSkill(SkillType.S_PILOT_VTOL);
         } else if (ent instanceof Tank) {
-            if (ent.getMovementMode() == EntityMovementMode.NAVAL
-                || ent.getMovementMode() == EntityMovementMode.HYDROFOIL
-                || ent.getMovementMode() == EntityMovementMode.SUBMARINE) {
+            if (ent.getMovementMode().isMarine()) {
                 return hasSkill(SkillType.S_PILOT_NVEE);
             } else {
                 return hasSkill(SkillType.S_PILOT_GVEE);

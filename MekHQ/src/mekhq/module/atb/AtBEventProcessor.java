@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import megamek.client.ratgenerator.MissionRole;
 import megamek.common.Compute;
 import megamek.common.Entity;
-import megamek.common.enums.EntityMovementMode;
 import megamek.common.EntityWeightClass;
 import megamek.common.MechFileParser;
 import megamek.common.MechSummary;
@@ -231,10 +230,8 @@ public class AtBEventProcessor {
             campaign.getPersonnelMarket().addAttachedEntity(p.getId(), en);
             /* adjust vehicle pilot roles according to the type of vehicle rolled */
             if ((en.getEntityType() & Entity.ETYPE_TANK) != 0) {
-                if (en.getMovementMode() == EntityMovementMode.TRACKED ||
-                        en.getMovementMode() == EntityMovementMode.WHEELED ||
-                        en.getMovementMode() == EntityMovementMode.HOVER ||
-                        en.getMovementMode() == EntityMovementMode.WIGE) {
+                if (en.getMovementMode().isTrackedOrWheeled()
+                        || en.getMovementMode().isHoverOrWiGE()) {
                     if (p.getPrimaryRole() == Person.T_VTOL_PILOT) {
                         swapSkills(p, SkillType.S_PILOT_VTOL, SkillType.S_PILOT_GVEE);
                         p.setPrimaryRole(Person.T_GVEE_DRIVER);
@@ -243,7 +240,7 @@ public class AtBEventProcessor {
                         swapSkills(p, SkillType.S_PILOT_NVEE, SkillType.S_PILOT_GVEE);
                         p.setPrimaryRole(Person.T_GVEE_DRIVER);
                     }
-                } else if (en.getMovementMode() == EntityMovementMode.VTOL) {
+                } else if (en.getMovementMode().isVTOL()) {
                     if (p.getPrimaryRole() == Person.T_GVEE_DRIVER) {
                         swapSkills(p, SkillType.S_PILOT_GVEE, SkillType.S_PILOT_VTOL);
                         p.setPrimaryRole(Person.T_VTOL_PILOT);
@@ -252,9 +249,7 @@ public class AtBEventProcessor {
                         swapSkills(p, SkillType.S_PILOT_NVEE, SkillType.S_PILOT_VTOL);
                         p.setPrimaryRole(Person.T_VTOL_PILOT);
                     }
-                } else if (en.getMovementMode() == EntityMovementMode.NAVAL ||
-                        en.getMovementMode() == EntityMovementMode.HYDROFOIL ||
-                        en.getMovementMode() == EntityMovementMode.SUBMARINE) {
+                } else if (en.getMovementMode().isMarine()) {
                     if (p.getPrimaryRole() == Person.T_GVEE_DRIVER) {
                         swapSkills(p, SkillType.S_PILOT_GVEE, SkillType.S_PILOT_NVEE);
                         p.setPrimaryRole(Person.T_NVEE_DRIVER);
