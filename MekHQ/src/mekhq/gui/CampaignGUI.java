@@ -64,6 +64,7 @@ import mekhq.Version;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignController;
 import mekhq.campaign.CampaignOptions;
+import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.event.AssetEvent;
 import mekhq.campaign.event.AstechPoolChangedEvent;
 import mekhq.campaign.event.DayEndingEvent;
@@ -1587,12 +1588,12 @@ public class CampaignGUI extends JPanel {
             int TimePerDay;
 
             List<Person> techs = getCampaign().getTechs();
-            techs.sort(Comparator.comparingInt(Person::getPrimaryRoleInt));
+            techs.sort(Comparator.comparingInt(Person::getPrimaryRole));
             for (Person tech : techs) {
                 if (getCampaign().isWorkingOnRefit(tech) || tech.isEngineer()) {
                     continue;
                 }
-                if (tech.getSecondaryRoleInt() == Person.T_MECH_TECH || tech.getSecondaryRoleInt() == Person.T_MECHANIC || tech.getSecondaryRoleInt() == Person.T_AERO_TECH) {
+                if (tech.getSecondaryRole() == Person.T_MECH_TECH || tech.getSecondaryRole() == Person.T_MECHANIC || tech.getSecondaryRole() == Person.T_AERO_TECH) {
                     TimePerDay = 240 - tech.getMaintenanceTimeUsing();
                 } else {
                     TimePerDay = 480 - tech.getMaintenanceTimeUsing();
@@ -2153,6 +2154,7 @@ public class CampaignGUI extends JPanel {
                 SpecialAbility.getAbility(key).writeToXml(pw, 2);
             }
             pw.println("\t</specialAbilities>");
+            getCampaign().getRandomSkillPreferences().writeToXml(pw, 1);
             pw.println("</options>");
             // Okay, we're done.
             pw.flush();
@@ -2268,6 +2270,7 @@ public class CampaignGUI extends JPanel {
         Version version = new Version(partsEle.getAttribute("version"));
 
         CampaignOptions options = null;
+        RandomSkillPreferences rsp = null;
 
         // we need to iterate through three times, the first time to collect
         // any custom units that might not be written yet
@@ -2283,8 +2286,8 @@ public class CampaignGUI extends JPanel {
 
             if (xn.equalsIgnoreCase("campaignOptions")) {
                 options = CampaignOptions.generateCampaignOptionsFromXml(wn, version);
-            } else if (xn.equalsIgnoreCase("randomSkillPreferences") && (options != null)) {
-                options.migrateRandomSkillPreferences(wn);
+            } else if (xn.equalsIgnoreCase("randomSkillPreferences")) {
+                rsp = RandomSkillPreferences.generateRandomSkillPreferencesFromXml(wn);
             } else if (xn.equalsIgnoreCase("skillTypes")) {
                 NodeList wList = wn.getChildNodes();
 
@@ -2335,8 +2338,11 @@ public class CampaignGUI extends JPanel {
 
         }
 
-        if (options != null) {
+        if (null != options) {
             this.getCampaign().setCampaignOptions(options);
+        }
+        if (null != rsp) {
+            this.getCampaign().setRandomSkillPreferences(rsp);
         }
 
         MekHQ.getLogger().info("Finished load of campaign options file");

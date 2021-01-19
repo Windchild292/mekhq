@@ -377,7 +377,7 @@ public class PersonnelMarketDialog extends JDialog {
             unit.addDriver(selectedPerson);
         } else if (selectedPerson.canGun(en)) {
             unit.addGunner(selectedPerson);
-        } else if (selectedPerson.getPrimaryRoleInt() == Person.T_NAVIGATOR) {
+        } else if (selectedPerson.getPrimaryRole() == Person.T_NAVIGATOR) {
             unit.setNavigator(selectedPerson);
         } else {
             unit.addVesselCrew(selectedPerson);

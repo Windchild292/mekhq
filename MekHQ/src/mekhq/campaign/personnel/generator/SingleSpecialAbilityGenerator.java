@@ -31,6 +31,7 @@ import mekhq.Utilities;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SpecialAbility;
+import mekhq.campaign.personnel.generator.AbstractSpecialAbilityGenerator;
 
 /**
  * Generates a single special ability for a {@link Person}.
@@ -106,12 +107,12 @@ public class SingleSpecialAbilityGenerator extends AbstractSpecialAbilityGenerat
         } else if (name.equals(OptionsConstants.GUNNERY_WEAPON_SPECIALIST)) {
             person.getOptions()
                 .acquireAbility(PilotOptions.LVL3_ADVANTAGES, name,
-                    SpecialAbility.chooseWeaponSpecialization(person.getPrimaryRoleInt(), person.getOriginFaction().isClan(),
+                    SpecialAbility.chooseWeaponSpecialization(person.getPrimaryRole(), person.getOriginFaction().isClan(),
                             getCampaignOptions(person).getTechLevel(), person.getCampaign().getGameYear(), false));
         } else if (name.equals(OptionsConstants.GUNNERY_SANDBLASTER)) {
             person.getOptions()
                 .acquireAbility(PilotOptions.LVL3_ADVANTAGES, name,
-                    SpecialAbility.chooseWeaponSpecialization(person.getPrimaryRoleInt(), person.getOriginFaction().isClan(),
+                    SpecialAbility.chooseWeaponSpecialization(person.getPrimaryRole(), person.getOriginFaction().isClan(),
                             getCampaignOptions(person).getTechLevel(), person.getCampaign().getGameYear(), true));
         } else {
             person.getOptions()

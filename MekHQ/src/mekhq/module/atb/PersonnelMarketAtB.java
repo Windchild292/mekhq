@@ -104,7 +104,7 @@ public class PersonnelMarketAtB implements PersonnelMarketMethod {
             if (null != p) {
                 retVal.add(p);
 
-                if (p.getPrimaryRoleInt() == Person.T_GVEE_DRIVER) {
+                if (p.getPrimaryRole() == Person.T_GVEE_DRIVER) {
                     /* Replace driver with 1-6 crew with equal
                      * chances of being drivers or gunners */
                     retVal.remove(p);
@@ -141,7 +141,7 @@ public class PersonnelMarketAtB implements PersonnelMarketMethod {
                     pilotingMod = 1;
                 }
 
-                switch (p.getPrimaryRoleInt()) {
+                switch (p.getPrimaryRole()) {
                 case Person.T_MECHWARRIOR:
                     adjustSkill(p, SkillType.S_GUN_MECH, gunneryMod);
                     adjustSkill(p, SkillType.S_PILOT_MECH, pilotingMod);

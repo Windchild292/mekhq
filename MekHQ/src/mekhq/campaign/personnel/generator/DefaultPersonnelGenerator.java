@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - The MegaMek Team. All Rights Reserved.
+ * Copyright (C) 2019 MegaMek team
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel.generator;
 
@@ -23,6 +23,7 @@ import java.util.Objects;
 import megamek.common.enums.Gender;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.universe.AbstractFactionSelector;
 import mekhq.campaign.universe.AbstractPlanetSelector;
 import mekhq.campaign.universe.DefaultFactionSelector;
@@ -60,7 +61,12 @@ public class DefaultPersonnelGenerator extends AbstractPersonnelGenerator {
     protected Person createPerson(Campaign campaign) {
         Faction faction = this.factionSelector.selectFaction(campaign);
 
-        Person person = (faction == null) ? super.createPerson(campaign) : new Person(campaign, faction.getShortName());
+        Person person;
+        if (faction != null) {
+            person = new Person(campaign, faction.getShortName());
+        } else {
+            person = super.createPerson(campaign);
+        }
 
         Planet planet = this.planetSelector.selectPlanet(campaign, faction);
         if (planet != null) {
@@ -74,8 +80,8 @@ public class DefaultPersonnelGenerator extends AbstractPersonnelGenerator {
     public Person generate(Campaign campaign, int primaryRole, int secondaryRole, Gender gender) {
         Person person = createPerson(campaign);
 
-        person.setPrimaryRoleInt(primaryRole);
-        person.setSecondaryRoleInt(secondaryRole);
+        person.setPrimaryRole(primaryRole);
+        person.setSecondaryRole(secondaryRole);
 
         int expLvl = generateExperienceLevel(campaign, person);
 
@@ -83,10 +89,11 @@ public class DefaultPersonnelGenerator extends AbstractPersonnelGenerator {
 
         generatePhenotype(campaign, person);
 
-        generateBirthday(campaign, person, expLvl, person.isClanner() && !person.getPhenotype().isNone());
+        generateBirthday(campaign, person, expLvl, person.isClanner()
+                && person.getPhenotype() != Phenotype.NONE);
 
         AbstractSkillGenerator skillGenerator = new DefaultSkillGenerator();
-        skillGenerator.generateSkills(campaign, person, expLvl);
+        skillGenerator.generateSkills(person, expLvl);
 
         AbstractSpecialAbilityGenerator specialAbilityGenerator = new DefaultSpecialAbilityGenerator();
         specialAbilityGenerator.generateSpecialAbilities(person, expLvl);

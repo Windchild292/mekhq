@@ -704,7 +704,7 @@ public class GMToolsDialog extends JDialog {
      * given unit type.
      */
     private boolean doesPersonPrimarilyDriveUnitType(int unitType) {
-        int primaryRole = getPerson().getPrimaryRoleInt();
+        int primaryRole = getPerson().getPrimaryRole();
         switch (unitType) {
             case UnitType.AERO:
                 return primaryRole == Person.T_AERO_PILOT;

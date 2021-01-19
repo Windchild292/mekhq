@@ -978,28 +978,28 @@ public class CampaignOptionsDialog extends JDialog {
         panSubDelivery.setBorder(BorderFactory.createTitledBorder("Delivery"));
         panSubPlanetAcquire.setBorder(BorderFactory.createTitledBorder("Planetary Acquisition"));
 
-        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = .5;
         gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         panSupplies.add(panSubAcquire, gridBagConstraints);
 
-        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = .5;
         gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         panSupplies.add(panSubDelivery, gridBagConstraints);
 
-        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         panSupplies.add(panSubPlanetAcquire, gridBagConstraints);
 
         spnAcquireWaitingPeriod = new JSpinner(new SpinnerNumberModel(1, 1, 365, 1));
@@ -4245,8 +4245,6 @@ public class CampaignOptionsDialog extends JDialog {
         panRoleRecruitmentBonus.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createTitledBorder(resources.getString("panRoleRecruitmentBonus.title")),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-        return panRoleRecruitmentBonus;
     }
 
     private JPanel createOtherBonusesPanel() {
@@ -4800,13 +4798,13 @@ public class CampaignOptionsDialog extends JDialog {
         //endregion Special Abilities Tab
 
         //region Skill Randomization Tab
-        chkExtraRandom.setSelected(options.randomizeSkill());
+        chkExtraRandom.setSelected(randomSkillPreferences.randomizeSkill());
         int[] phenotypeProbabilities = options.getPhenotypeProbabilities();
         for (int i = 0; i < phenotypeSpinners.length; i++) {
             phenotypeSpinners[i].setValue(phenotypeProbabilities[i]);
         }
-        spnProbabilityAntiMek.setValue(options.getAntiMekProbability());
-        spnOverallRecruitmentBonus.setValue(options.getOverallRecruitmentBonus());
+        spnProbAntiMek.setValue(rSkillPrefs.getAntiMekProb());
+        spnOverallRecruitBonus.setValue(rSkillPrefs.getOverallRecruitBonus());
         for (int i = 0; i < Person.T_NUM; i++) {
             spnRoleRecruitmentBonus[i].setValue(options.getPersonnelRoleRecruitmentBonuses()[i]);
         }
@@ -5223,6 +5221,32 @@ public class CampaignOptionsDialog extends JDialog {
         options.setTechLevel(choiceTechLevel.getSelectedIndex());
         campaign.getGameOptions().getOption("techlevel").setValue((String)choiceTechLevel.getSelectedItem());
 
+        rSkillPrefs.setOverallRecruitBonus((Integer) spnOverallRecruitBonus.getModel().getValue());
+        for (int i = 0; i < Person.T_NUM; i++) {
+            rSkillPrefs.setRecruitBonus(i, (Integer) spnTypeRecruitBonus[i].getModel().getValue());
+        }
+        rSkillPrefs.setRandomizeSkill(chkExtraRandom.isSelected());
+        rSkillPrefs.setAntiMekProb((Integer) spnProbAntiMek.getModel().getValue());
+        rSkillPrefs.setArtilleryProb((Integer) spnArtyProb.getModel().getValue());
+        rSkillPrefs.setArtilleryBonus((Integer) spnArtyBonus.getModel().getValue());
+        rSkillPrefs.setSecondSkillProb((Integer) spnSecondProb.getModel().getValue());
+        rSkillPrefs.setSecondSkillBonus((Integer) spnSecondBonus.getModel().getValue());
+        rSkillPrefs.setTacticsMod(SkillType.EXP_GREEN, (Integer) spnTacticsGreen.getModel().getValue());
+        rSkillPrefs.setTacticsMod(SkillType.EXP_REGULAR, (Integer) spnTacticsReg.getModel().getValue());
+        rSkillPrefs.setTacticsMod(SkillType.EXP_VETERAN, (Integer) spnTacticsVet.getModel().getValue());
+        rSkillPrefs.setTacticsMod(SkillType.EXP_ELITE, (Integer) spnTacticsElite.getModel().getValue());
+        rSkillPrefs.setCombatSmallArmsBonus((Integer) spnCombatSA.getModel().getValue());
+        rSkillPrefs.setSupportSmallArmsBonus((Integer) spnSupportSA.getModel().getValue());
+        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_GREEN, (Integer) spnAbilGreen.getModel().getValue());
+        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_REGULAR, (Integer) spnAbilReg.getModel().getValue());
+        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_VETERAN, (Integer) spnAbilVet.getModel().getValue());
+        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_ELITE, (Integer) spnAbilElite.getModel().getValue());
+        campaign.setRandomSkillPreferences(rSkillPrefs);
+
+        for (int i = 0; i < phenotypeSpinners.length; i++) {
+            options.setPhenotypeProbability(i, (Integer) phenotypeSpinners[i].getValue());
+        }
+
         //region Personnel Tab
         options.setInitBonus(useInitBonusBox.isSelected());
         campaign.getGameOptions().getOption("individual_initiative").setValue(useInitBonusBox.isSelected());
@@ -5305,32 +5329,6 @@ public class CampaignOptionsDialog extends JDialog {
         //start SPA
         SpecialAbility.replaceSpecialAbilities(getCurrentSPA());
         //end SPA
-
-        //region Skill Randomization Tab
-        options.setRandomizeSkill(chkExtraRandom.isSelected());
-        for (int i = 0; i < phenotypeSpinners.length; i++) {
-            options.setPhenotypeProbability(i, (Integer) phenotypeSpinners[i].getValue());
-        }
-        options.setAntiMekProbability((Integer) spnProbabilityAntiMek.getModel().getValue());
-        options.setOverallRecruitmentBonus((Integer) spnOverallRecruitmentBonus.getModel().getValue());
-        for (int i = 0; i < Person.T_NUM; i++) {
-            options.setRecruitmentBonus(i, (Integer) spnRoleRecruitmentBonus[i].getModel().getValue());
-        }
-        options.setArtilleryProbability((Integer) spnArtilleryProbability.getModel().getValue());
-        options.setArtilleryBonus((Integer) spnArtilleryBonus.getModel().getValue());
-        options.setSecondarySkillProbility((Integer) spnSecondaryProbability.getModel().getValue());
-        options.setSecondarySkillBonus((Integer) spnSecondaryBonus.getModel().getValue());
-        options.setTacticsModifier(SkillLevel.GREEN, (Integer) spnTacticsGreen.getModel().getValue());
-        options.setTacticsModifier(SkillLevel.REGULAR, (Integer) spnTacticsRegular.getModel().getValue());
-        options.setTacticsModifier(SkillLevel.VETERAN, (Integer) spnTacticsVeteran.getModel().getValue());
-        options.setTacticsModifier(SkillLevel.ELITE, (Integer) spnTacticsElite.getModel().getValue());
-        options.setSpecialAbilityBonus(SkillLevel.GREEN, (Integer) spnSPAsGreen.getModel().getValue());
-        options.setSpecialAbilityBonus(SkillLevel.REGULAR, (Integer) spnSPAsRegular.getModel().getValue());
-        options.setSpecialAbilityBonus(SkillLevel.VETERAN, (Integer) spnSPAsVeteran.getModel().getValue());
-        options.setSpecialAbilityBonus(SkillLevel.ELITE, (Integer) spnSPAsElite.getModel().getValue());
-        options.setCombatSmallArmsBonus((Integer) spnCombatSmallArms.getModel().getValue());
-        options.setSupportSmallArmsBonus((Integer) spnSupportSmallArms.getModel().getValue());
-        //endregion Skill Randomization Tab
 
         // Start Personnel Market
         options.setPersonnelMarketDylansWeight((Double) personnelMarketDylansWeight.getValue());

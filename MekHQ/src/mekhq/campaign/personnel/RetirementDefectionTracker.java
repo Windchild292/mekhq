@@ -130,10 +130,10 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             int proto = 0;
             int support = 0;
             for (Person p : campaign.getActivePersonnel()) {
-                if ((p.getPrimaryRoleInt() == Person.T_NONE) || p.isDependent() || !p.getPrisonerStatus().isFree()) {
+                if ((p.getPrimaryRole() == Person.T_NONE) || p.isDependent() || !p.getPrisonerStatus().isFree()) {
                     continue;
                 }
-                if (p.getPrimaryRoleInt() >= Person.T_MECH_TECH) {
+                if (p.getPrimaryRole() >= Person.T_MECH_TECH) {
                     support++;
                 } else if ((null == p.getUnit()) ||
                         ((null != p.getUnit()) && p.getUnit().isCommander(p))) {
@@ -142,7 +142,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                      * would tax all but the most exceptional commanders of
                      * vehicle or infantry units.
                      */
-                    if (p.getPrimaryRoleInt() == Person.T_PROTO_PILOT) {
+                    if (p.getPrimaryRole() == Person.T_PROTO_PILOT) {
                         proto++;
                     } else {
                         combat++;
@@ -230,7 +230,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             } else {
                 //Bonus payments handled by dialog
             }
-            if (p.getPrimaryRoleInt() == Person.T_INFANTRY) {
+            if (p.getPrimaryRole() == Person.T_INFANTRY) {
                 target.addModifier(-1, "Infantry");
             }
             int injuryMod = 0;
@@ -242,10 +242,10 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             if (injuryMod > 0) {
                 target.addModifier(injuryMod, "Permanent injuries");
             }
-            if (combatLeadershipMod != 0 && p.getPrimaryRoleInt() < Person.T_MECH_TECH) {
+            if (combatLeadershipMod != 0 && p.getPrimaryRole() < Person.T_MECH_TECH) {
                 target.addModifier(combatLeadershipMod, "Leadership");
             }
-            if (supportLeadershipMod != 0 && p.getPrimaryRoleInt() >= Person.T_MECH_TECH) {
+            if (supportLeadershipMod != 0 && p.getPrimaryRole() >= Person.T_MECH_TECH) {
                 target.addModifier(supportLeadershipMod, "Leadership");
             }
 
@@ -308,7 +308,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
          * handled as a unit in the AtB rules, so we're just going to ignore
          * them here.
          */
-        if (person.getPrimaryRoleInt() == Person.T_INFANTRY || person.getPrimaryRoleInt() == Person.T_BA
+        if (person.getPrimaryRole() == Person.T_INFANTRY || person.getPrimaryRole() == Person.T_BA
                 || !person.getPrisonerStatus().isFree()) {
             return false;
         }
@@ -490,8 +490,8 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                     roll += 1;
                 }
             }
-            if (roll >= 6 && (p.getPrimaryRoleInt() == Person.T_AERO_PILOT ||
-                    p.getSecondaryRoleInt() == Person.T_AERO_PILOT)) {
+            if (roll >= 6 && (p.getPrimaryRole() == Person.T_AERO_PILOT ||
+                    p.getSecondaryRole() == Person.T_AERO_PILOT)) {
                 stolenUnit = true;
             } else {
                 if (p.getProfession() == Ranks.RPROF_INF) {

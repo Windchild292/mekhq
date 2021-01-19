@@ -68,7 +68,6 @@ import megamek.common.icons.AbstractIcon;
 import megamek.common.util.StringUtil;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.equipment.*;
-import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -417,7 +416,7 @@ public class Utilities {
             if (null == techProg) {
                 // This should never happen unless there was an exception thrown when calculating the progression.
                 // In such a case we will log it and take the least restrictive action, which is to let it through.
-                MekHQ.getLogger().warning("Could not determine tech progression for " + summary.getName()
+                MekHQ.getLogger().warning(Utilities.class, "Could not determine tech progression for " + summary.getName()
                                 + ", including among available refits.");
             } else if (!campaign.isLegal(techProg)) {
                 continue;
@@ -632,7 +631,7 @@ public class Utilities {
                         - oldCrew.getPiloting(), 0);
                 p.addSkill(SkillType.S_GUN_AERO, SkillType.getType(SkillType.S_GUN_AERO).getTarget()
                         - oldCrew.getGunnery(), 0);
-                p.setSecondaryRole(PersonnelRole.AEROSPACE_PILOT);
+                p.setSecondaryRole(Person.T_AERO_PILOT);
             } else if (u.getEntity() instanceof Mech) {
                 p = c.newPerson(Person.T_MECHWARRIOR, Person.T_NONE, factionCode, oldCrew.getGender());
                 p.addSkill(SkillType.S_PILOT_MECH, SkillType.getType(SkillType.S_PILOT_MECH).getTarget()

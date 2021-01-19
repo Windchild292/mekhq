@@ -507,7 +507,7 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
                 personHash.put(p.getId(), id);
                 //assign the personnel position
                 preparedStatement = connect.prepareStatement("INSERT INTO " + table + ".personnelpositions (personneltype, person) VALUES (?, ?)");
-                preparedStatement.setInt(1, (p.getPrimaryRoleInt()));
+                preparedStatement.setInt(1, (p.getPrimaryRole()));
                 preparedStatement.setInt(2, id);
                 preparedStatement.executeUpdate();
                 //write out skills to skills table

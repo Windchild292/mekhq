@@ -69,7 +69,7 @@ public enum ROMDesignation {
         } else if (person.isAdminPrimary()) {
             sb.append(CHI.toString());
         } else {
-            sb.append(determineDesignationFromRole(person.getPrimaryRoleInt(), person, campaign));
+            sb.append(determineDesignationFromRole(person.getPrimaryRole(), person, campaign));
         }
 
         // Secondary
@@ -79,8 +79,8 @@ public enum ROMDesignation {
             sb.append(" ").append(ZETA.toString());
         } else if (person.isAdminSecondary()) {
             sb.append(" ").append(CHI.toString());
-        } else if (person.getSecondaryRoleInt() != Person.T_NONE) {
-            sb.append(" ").append(determineDesignationFromRole(person.getSecondaryRoleInt(), person, campaign));
+        } else if (person.getSecondaryRole() != Person.T_NONE) {
+            sb.append(" ").append(determineDesignationFromRole(person.getSecondaryRole(), person, campaign));
         }
 
         return sb.toString();

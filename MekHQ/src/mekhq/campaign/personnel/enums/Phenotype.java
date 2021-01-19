@@ -46,7 +46,8 @@ public enum Phenotype {
     private final String toolTip;
     private final int index;
 
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
+            new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
@@ -80,40 +81,6 @@ public enum Phenotype {
         return index;
     }
     //endregion Getters
-
-    //region Boolean Comparisons
-    public boolean isMechWarrior() {
-        return this == MECHWARRIOR;
-    }
-
-    public boolean isElemental() {
-        return this == ELEMENTAL;
-    }
-
-    public boolean isAerospace() {
-        return this == AEROSPACE;
-    }
-
-    public boolean isVehicle() {
-        return this == VEHICLE;
-    }
-
-    public boolean isProtoMech() {
-        return this == PROTOMECH;
-    }
-
-    public boolean isNaval() {
-        return this == NAVAL;
-    }
-
-    public boolean isNone() {
-        return this == NONE;
-    }
-
-    public boolean isGeneral() {
-        return this == GENERAL;
-    }
-    //endregion Boolean Comparisons
 
     public static List<Phenotype> getExternalPhenotypes() {
         List<Phenotype> phenotypeList = new ArrayList<>();

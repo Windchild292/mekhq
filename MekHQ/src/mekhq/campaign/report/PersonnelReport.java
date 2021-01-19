@@ -91,7 +91,7 @@ public class PersonnelReport extends Report {
 
             // Add them to the total count
             if (p.getStatus().isActive()) {
-                countPersonByType[p.getPrimaryRoleInt()]++;
+                countPersonByType[p.getPrimaryRole()]++;
                 countTotal++;
                 if (getCampaign().getCampaignOptions().useAdvancedMedical() && (p.getInjuries().size() > 0)) {
                     countInjured++;
@@ -151,7 +151,7 @@ public class PersonnelReport extends Report {
             boolean primarySupport = p.hasPrimarySupportRole(false);
 
             if (primarySupport && p.getPrisonerStatus().isFree() && p.getStatus().isActive()) {
-                countPersonByType[p.getPrimaryRoleInt()]++;
+                countPersonByType[p.getPrimaryRole()]++;
                 countTotal++;
                 if ((p.getInjuries().size() > 0) || (p.getHits() > 0)) {
                     countInjured++;
