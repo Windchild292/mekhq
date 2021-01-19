@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.Hashtable;
 
+import megamek.common.enums.SkillLevel;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -314,21 +315,21 @@ public class SkillType implements Serializable {
     }
 
     public static String getExperienceLevelName(int level) {
-        switch(level) {
-        case EXP_ULTRA_GREEN:
-            return ULTRA_GREEN_NM;
-        case EXP_GREEN:
-            return GREEN_NM;
-        case EXP_REGULAR:
-            return REGULAR_NM;
-        case EXP_VETERAN:
-            return VETERAN_NM;
-        case EXP_ELITE:
-            return ELITE_NM;
-        case -1:
-            return "Unknown";
-        default:
-            return "Impossible";
+        switch (level) {
+            case EXP_ULTRA_GREEN:
+                return SkillLevel.ULTRA_GREEN.toString();
+            case EXP_GREEN:
+                return SkillLevel.GREEN.toString();
+            case EXP_REGULAR:
+                return SkillLevel.REGULAR.toString();
+            case EXP_VETERAN:
+                return SkillLevel.VETERAN.toString();
+            case EXP_ELITE:
+                return SkillLevel.ELITE.toString();
+            case -1:
+                return "Unknown";
+            default:
+                return "Impossible";
         }
     }
 
