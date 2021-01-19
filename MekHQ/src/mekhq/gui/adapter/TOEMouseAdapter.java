@@ -32,6 +32,7 @@ import javax.swing.JTree;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.tree.TreePath;
 
+import megamek.common.enums.SkillLevel;
 import megamek.common.util.StringUtil;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.gui.utilities.JMenuHelpers;
@@ -653,7 +654,7 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
             boolean multipleSelection = (forcesSelected && forces.size() > 1) || (unitsSelected && units.size() > 1);
             if (forcesSelected) {
                 Force force = forces.get(0);
-                StringBuilder forceIds = new StringBuilder("" + force.getId());
+                StringBuilder forceIds = new StringBuilder(force.getId());
                 for (int i = 1; i < forces.size(); i++) {
                     forceIds.append("|").append(forces.get(i).getId());
                 }
@@ -685,11 +686,11 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
                         int role;
                         int previousRole = Person.T_MECH_TECH;
 
-                        JMenu eliteMenu = new JMenu(SkillType.ELITE_NM);
-                        JMenu veteranMenu = new JMenu(SkillType.VETERAN_NM);
-                        JMenu regularMenu = new JMenu(SkillType.REGULAR_NM);
-                        JMenu greenMenu = new JMenu(SkillType.GREEN_NM);
-                        JMenu ultraGreenMenu = new JMenu(SkillType.ULTRA_GREEN_NM);
+                        JMenu eliteMenu = new JMenu(SkillLevel.ELITE.toString());
+                        JMenu veteranMenu = new JMenu(SkillLevel.VETERAN.toString());
+                        JMenu regularMenu = new JMenu(SkillLevel.REGULAR.toString());
+                        JMenu greenMenu = new JMenu(SkillLevel.GREEN.toString());
+                        JMenu ultraGreenMenu = new JMenu(SkillLevel.ULTRA_GREEN.toString());
                         JMenu currentMenu = mechTechs;
 
                         // Get the list of techs, then sort them based on their tech role
@@ -712,18 +713,19 @@ public class TOEMouseAdapter extends MouseInputAdapter implements ActionListener
 
                                     // Adding menus if they aren't empty and adding scrollbars if they
                                     // contain more than MAX_POPUP_ITEMS items
-                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, eliteMenu, MAX_POPUP_ITEMS);
-                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, veteranMenu, MAX_POPUP_ITEMS);
-                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, regularMenu, MAX_POPUP_ITEMS);
-                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, greenMenu, MAX_POPUP_ITEMS);
-                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, ultraGreenMenu, MAX_POPUP_ITEMS);
-                                    JMenuHelpers.addMenuIfNonEmpty(menu, currentMenu, MAX_POPUP_ITEMS);
+                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, eliteMenu);
+                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, veteranMenu);
+                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, regularMenu);
+                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, greenMenu);
+                                    JMenuHelpers.addMenuIfNonEmpty(currentMenu, ultraGreenMenu);
+                                    JMenuHelpers.addMenuIfNonEmpty(menu, currentMenu);
 
-                                    eliteMenu = new JMenu(SkillType.ELITE_NM);
-                                    veteranMenu = new JMenu(SkillType.VETERAN_NM);
-                                    regularMenu = new JMenu(SkillType.REGULAR_NM);
-                                    greenMenu = new JMenu(SkillType.GREEN_NM);
-                                    ultraGreenMenu = new JMenu(SkillType.ULTRA_GREEN_NM);
+                                    eliteMenu = new JMenu(SkillLevel.ELITE.toString());
+                                    veteranMenu = new JMenu(SkillLevel.VETERAN.toString());
+                                    regularMenu = new JMenu(SkillLevel.REGULAR.toString());
+                                    greenMenu = new JMenu(SkillLevel.GREEN.toString());
+                                    ultraGreenMenu = new JMenu(SkillLevel.ULTRA_GREEN.toString());
+
                                     switch (role) {
                                         case Person.T_MECHANIC:
                                             currentMenu = mechanics;
