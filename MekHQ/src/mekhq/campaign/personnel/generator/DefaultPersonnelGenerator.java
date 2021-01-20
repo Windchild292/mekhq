@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 MegaMek team
+ * Copyright (C) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel.generator;
 
@@ -93,12 +93,10 @@ public class DefaultPersonnelGenerator extends AbstractPersonnelGenerator {
                 && person.getPhenotype() != Phenotype.NONE);
 
         AbstractSkillGenerator skillGenerator = new DefaultSkillGenerator();
-        skillGenerator.setSkillPreferences(getSkillPreferences());
-        skillGenerator.generateSkills(person, expLvl);
+        skillGenerator.generateSkills(campaign, person, expLvl);
 
         AbstractSpecialAbilityGenerator specialAbilityGenerator = new DefaultSpecialAbilityGenerator();
-        specialAbilityGenerator.setSkillPreferences(getSkillPreferences());
-        specialAbilityGenerator.generateSpecialAbilities(person, expLvl);
+        specialAbilityGenerator.generateSpecialAbilities(campaign, person, expLvl);
 
         // Do naming at the end, to ensure the keys are set
         generateName(campaign, person, gender);

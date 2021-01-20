@@ -73,7 +73,6 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.CurrentLocation;
 import mekhq.campaign.Kill;
-import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.Warehouse;
 import mekhq.campaign.finances.Finances;
 import mekhq.campaign.force.Force;
@@ -265,11 +264,8 @@ public class CampaignXmlParser {
                 if (xn.equalsIgnoreCase("campaignOptions")) {
                     retVal.setCampaignOptions(CampaignOptions.generateCampaignOptionsFromXml(wn, version));
                 } else if (xn.equalsIgnoreCase("randomSkillPreferences")) {
-                    retVal.setRandomSkillPreferences(RandomSkillPreferences.generateRandomSkillPreferencesFromXml(wn));
-                } /* We don't need this since info is processed above in the first iteration...
-                else if (xn.equalsIgnoreCase("info")) {
-                    processInfoNode(retVal, wn, version);
-                }*/ else if (xn.equalsIgnoreCase("parts")) {
+                    retVal.getCampaignOptions().migrateRandomSkillPreferences(wn);
+                } else if (xn.equalsIgnoreCase("parts")) {
                     processPartNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("personnel")) {
                     // TODO: Make this depending on campaign options

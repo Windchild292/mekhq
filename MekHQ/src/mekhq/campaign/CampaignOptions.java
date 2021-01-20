@@ -1,6 +1,6 @@
 /*
  * Copyright (c) - 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import megamek.common.enums.SkillLevel;
 import mekhq.Version;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.parts.enums.PartRepairType;
@@ -308,7 +309,19 @@ public class CampaignOptions implements Serializable {
     //endregion Special Abilities Tab
 
     //region Skill Randomization Tab
+    private boolean randomizeSkill;
     private int[] phenotypeProbabilities;
+    private int antiMekProbability;
+    private int overallRecruitmentBonus;
+    private int[] personnelRoleRecruitmentBonuses;
+    private int artilleryProbability;
+    private int artilleryBonus;
+    private int secondarySkillProbability;
+    private int secondarySkillBonus;
+    private int[] tacticsModifiers;
+    private int[] specialAbilityBonus;
+    private int combatSmallArmsBonus;
+    private int supportSmallArmsBonus;
     //endregion Skill Randomization Tab
 
     //region Rank System Tab
@@ -689,13 +702,25 @@ public class CampaignOptions implements Serializable {
         //endregion Special Abilities Tab
 
         //region Skill Randomization Tab
+        randomizeSkill = true;
         phenotypeProbabilities = new int[Phenotype.getExternalPhenotypes().size()];
-        phenotypeProbabilities[Phenotype.MECHWARRIOR.getIndex()] = 95;
-        phenotypeProbabilities[Phenotype.ELEMENTAL.getIndex()] = 100;
-        phenotypeProbabilities[Phenotype.AEROSPACE.getIndex()] = 95;
-        phenotypeProbabilities[Phenotype.VEHICLE.getIndex()] = 0;
-        phenotypeProbabilities[Phenotype.PROTOMECH.getIndex()] = 95;
-        phenotypeProbabilities[Phenotype.NAVAL.getIndex()] = 25;
+        phenotypeProbabilities[Phenotype.MECHWARRIOR.ordinal()] = 95;
+        phenotypeProbabilities[Phenotype.ELEMENTAL.ordinal()] = 100;
+        phenotypeProbabilities[Phenotype.AEROSPACE.ordinal()] = 95;
+        phenotypeProbabilities[Phenotype.VEHICLE.ordinal()] = 0;
+        phenotypeProbabilities[Phenotype.PROTOMECH.ordinal()] = 95;
+        phenotypeProbabilities[Phenotype.NAVAL.ordinal()] = 25;
+        antiMekProbability = 10;
+        overallRecruitmentBonus = 0;
+        personnelRoleRecruitmentBonuses = new int[Person.T_NUM];
+        artilleryProbability = 10;
+        artilleryBonus = -2;
+        secondarySkillProbability = 0;
+        secondarySkillBonus = -4;
+        tacticsModifiers = new int[] { -10, -10, -7, -4, -1 };
+        specialAbilityBonus = new int[] { -10, -10, -2, 0, 1 };
+        combatSmallArmsBonus = -3;
+        supportSmallArmsBonus = -10;
         //endregion Skill Randomization Tab
 
         //region Rank System Tab
@@ -1805,6 +1830,125 @@ public class CampaignOptions implements Serializable {
     }
     //endregion Finances Tab
 
+    //region Skill Randomization Tab
+    public boolean randomizeSkill() {
+        return randomizeSkill;
+    }
+
+    public void setRandomizeSkill(boolean randomizeSkill) {
+        this.randomizeSkill = randomizeSkill;
+    }
+
+    public int[] getPhenotypeProbabilities() {
+        return phenotypeProbabilities;
+    }
+
+    public int getPhenotypeProbability(Phenotype phenotype) {
+        return phenotypeProbabilities[phenotype.ordinal()];
+    }
+
+    public void setPhenotypeProbability(int index, int percentage) {
+        phenotypeProbabilities[index] = percentage;
+    }
+
+    public int getAntiMekProbability() {
+        return antiMekProbability;
+    }
+
+    public void setAntiMekProbability(int antiMekProbability) {
+        this.antiMekProbability = antiMekProbability;
+    }
+
+    public int getOverallRecruitmentBonus() {
+        return overallRecruitmentBonus;
+    }
+
+    public void setOverallRecruitmentBonus(int overallRecruitmentBonus) {
+        this.overallRecruitmentBonus = overallRecruitmentBonus;
+    }
+
+    public int[] getPersonnelRoleRecruitmentBonuses() {
+        return personnelRoleRecruitmentBonuses;
+    }
+
+    public void setPersonnelRoleRecruitmentBonus(int index, int bonus) {
+        personnelRoleRecruitmentBonuses[index] = bonus;
+    }
+
+    public int getArtilleryProbability() {
+        return artilleryProbability;
+    }
+
+    public void setArtilleryProbability(int artilleryProbability) {
+        this.artilleryProbability = artilleryProbability;
+    }
+
+    public int getArtilleryBonus() {
+        return artilleryBonus;
+    }
+
+    public void setArtilleryBonus(int artilleryBonus) {
+        this.artilleryBonus = artilleryBonus;
+    }
+
+    public int getSecondarySkillProbability() {
+        return secondarySkillProbability;
+    }
+
+
+    public void setSecondarySkillProbability(int secondarySkillProbability) {
+        this.secondarySkillProbability = secondarySkillProbability;
+    }
+
+    public int getSecondarySkillBonus() {
+        return secondarySkillBonus;
+    }
+
+    public void setSecondarySkillBonus(int secondarySkillBonus) {
+        this.secondarySkillBonus = secondarySkillBonus;
+    }
+
+    public int[] getTacticsModifiers() {
+        return tacticsModifiers;
+    }
+
+    public int getTacticsModifier(SkillLevel skillLevel) {
+        return getTacticsModifiers()[skillLevel.ordinal() - 2];
+    }
+
+    public void setTacticsModifier(SkillLevel skillLevel, int tacticsModifier) {
+        tacticsModifiers[skillLevel.ordinal() - 2] = tacticsModifier;
+    }
+
+    public int getSpecialAbilityBonus(SkillLevel skillLevel) {
+        return getSpecialAbilityBonus(skillLevel.ordinal() - 2);
+    }
+
+    public int getSpecialAbilityBonus(int index) {
+        return specialAbilityBonus[index];
+    }
+
+    public void setSpecialAbilityBonus(SkillLevel skillLevel, int value) {
+        specialAbilityBonus[skillLevel.ordinal() - 2] = value;
+    }
+
+    public int getCombatSmallArmsBonus() {
+        return combatSmallArmsBonus;
+    }
+
+    public void setCombatSmallArmsBonus(int combatSmallArmsBonus) {
+        this.combatSmallArmsBonus = combatSmallArmsBonus;
+    }
+
+    public int getSupportSmallArmsBonus() {
+        return supportSmallArmsBonus;
+    }
+
+    public void setSupportSmallArmsBonus(int supportSmallArmsBonus) {
+        this.supportSmallArmsBonus = supportSmallArmsBonus;
+    }
+    //endregion Skill Randomization Tab
+
     public static String getRepairSystemName(int repairSystem) {
         return REPAIR_SYSTEM_NAMES[repairSystem];
     }
@@ -2108,18 +2252,6 @@ public class CampaignOptions implements Serializable {
 
     public void setTechLevel(int lvl) {
         techLevel = lvl;
-    }
-
-    public int[] getPhenotypeProbabilities() {
-        return phenotypeProbabilities;
-    }
-
-    public int getPhenotypeProbability(Phenotype phenotype) {
-        return phenotypeProbabilities[phenotype.getIndex()];
-    }
-
-    public void setPhenotypeProbability(int index, int percentage) {
-        phenotypeProbabilities[index] = percentage;
     }
 
     public boolean usePortraitForType(int type) {
@@ -3195,6 +3327,10 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "canceledOrderReimbursement", canceledOrderReimbursement);
         //endregion Finances Tab
 
+        //region Skill Randomization Tab
+        
+        //endregion Skill Randomization Tab
+
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useTransfers", useTransfers);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useTimeInService", useTimeInService);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "timeInServiceDisplayFormat", timeInServiceDisplayFormat.name());
@@ -3343,7 +3479,7 @@ public class CampaignOptions implements Serializable {
     }
 
     public static CampaignOptions generateCampaignOptionsFromXml(Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Campaign Options from Version " + version.toString() + " XML...");
+        MekHQ.getLogger().info("Loading Campaign Options from Version " + version + " XML...");
 
         wn.normalize();
         CampaignOptions retVal = new CampaignOptions();
@@ -3708,6 +3844,15 @@ public class CampaignOptions implements Serializable {
                 retVal.canceledOrderReimbursement = Double.parseDouble(wn2.getTextContent().trim());
             //endregion Finances Tab
 
+            //region Skill Randomization Tab
+            } else if (wn2.getNodeName().equalsIgnoreCase("useTransfers")) {
+
+            } else if (wn2.getNodeName().equalsIgnoreCase("useTransfers")) {
+
+            } else if (wn2.getNodeName().equalsIgnoreCase("useTransfers")) {
+
+            //endregion Skill Randomization Tab
+
             } else if (wn2.getNodeName().equalsIgnoreCase("useTransfers")) {
                 retVal.useTransfers = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useTimeInService")) {
@@ -3943,7 +4088,7 @@ public class CampaignOptions implements Serializable {
      * @param retVal the return CampaignOptions
      * @param values the values to migrate
      */
-    private static void migrateMarriageSurnameWeights(CampaignOptions retVal, String[] values) {
+    private static void migrateMarriageSurnameWeights(CampaignOptions retVal, String... values) {
         int[] weights = new int[values.length];
 
         for (int i = 0; i < weights.length; i++) {
@@ -3977,6 +4122,10 @@ public class CampaignOptions implements Serializable {
             retVal.randomMarriageSurnameWeights[11] = weights[7];
             retVal.randomMarriageSurnameWeights[12] = weights[8];
         }
+    }
+
+    public void migrateRandomSkillPreferences(Node wn) {
+        // TODO : Implement me!
     }
     //endregion Migration
 }

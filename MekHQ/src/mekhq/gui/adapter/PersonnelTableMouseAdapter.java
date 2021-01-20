@@ -541,7 +541,7 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                             && selectedPerson.getExperienceLevel(false) > oldExpLevel
                             && oldExpLevel >= SkillType.EXP_REGULAR) {
                         SingleSpecialAbilityGenerator spaGenerator = new SingleSpecialAbilityGenerator();
-                        String spa = spaGenerator.rollSPA(selectedPerson);
+                        String spa = spaGenerator.rollSPA(gui.getCampaign(), selectedPerson);
                         if (null == spa) {
                             if (gui.getCampaign().getCampaignOptions().useEdge()) {
                                 selectedPerson.getOptions().acquireAbility(PilotOptions.EDGE_ADVANTAGES,

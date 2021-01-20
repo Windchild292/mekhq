@@ -2,6 +2,7 @@
  * GamePreset.java
  *
  * Copyright (c) 2015 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -47,32 +48,30 @@ import mekhq.campaign.personnel.SpecialAbility;
 
 /**
  * This is an object which holds a set of objects that collectively define the game options
- * for a campaign. This includes the campaign options, the skill types, the random skill preferences,
- * and the special ability list. There will also be a short title and description here that allows users
- * to create and save different presets. The goal is to allow users to create and load various different
- * presets.
+ * for a campaign. This includes the campaign options, the skill types, and the special ability list.
+ * There will also be a short title and description here that allows users to create and save
+ * different presets. The goal is to allow users to create and load various different presets.
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
 public class GamePreset implements MekHqXmlSerializable {
     private String title;
     private String description;
     private CampaignOptions options;
-    private RandomSkillPreferences randomSkillPreferences;
     private Hashtable<String, SkillType> skillHash;
     private Hashtable<String, SpecialAbility> specialAbilities;
 
     //region Constructors
     public GamePreset() {
-        this("Title missing", "Description missing", null, null, new Hashtable<>(), new Hashtable<>());
+        this("Title missing", "Description missing", null, new Hashtable<>(),
+                new Hashtable<>());
     }
 
     public GamePreset(String title, String description, CampaignOptions options,
-                      RandomSkillPreferences randomSkillPreferences, Hashtable<String, SkillType> skillHash,
+                      Hashtable<String, SkillType> skillHash,
                       Hashtable<String, SpecialAbility> specialAbilities) {
         this.title = title;
         this.description = description;
         this.setOptions(options);
-        this.setRandomSkillPreferences(randomSkillPreferences);
         this.setSkillHash(skillHash);
         this.setSpecialAbilities(specialAbilities);
     }
@@ -99,14 +98,6 @@ public class GamePreset implements MekHqXmlSerializable {
 
     public void setOptions(CampaignOptions options) {
         this.options = options;
-    }
-
-    public RandomSkillPreferences getRandomSkillPreferences() {
-        return randomSkillPreferences;
-    }
-
-    public void setRandomSkillPreferences(RandomSkillPreferences randomSkillPreferences) {
-        this.randomSkillPreferences = randomSkillPreferences;
     }
 
     public Hashtable<String, SkillType> getSkillHash() {
@@ -160,10 +151,7 @@ public class GamePreset implements MekHqXmlSerializable {
             MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "specialAbilities");
         }
 
-        if (getRandomSkillPreferences() != null) {
-            getRandomSkillPreferences().writeToXml(pw, --indent);
-        }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, indent, "gamePreset");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "gamePreset");
     }
 
     public static GamePreset createGamePresetFromXMLFileInputStream(FileInputStream fis) throws DOMException {
@@ -196,55 +184,49 @@ public class GamePreset implements MekHqXmlSerializable {
         // Okay, lets iterate through the children, eh?
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn = nl.item(x);
-            if (!wn.getParentNode().equals(optionsEle)) {
+            if (!wn.getParentNode().equals(optionsEle) || (wn.getNodeType() != Node.ELEMENT_NODE)) {
                 continue;
             }
-            int xc = wn.getNodeType();
-            if (xc == Node.ELEMENT_NODE) {
-                String xn = wn.getNodeName();
-                if (xn.equalsIgnoreCase("title")) {
-                    preset.title = wn.getTextContent();
-                } else if (xn.equalsIgnoreCase("description")) {
-                    preset.description = wn.getTextContent();
-                } else if (xn.equalsIgnoreCase("campaignOptions")) {
-                    preset.setOptions(CampaignOptions.generateCampaignOptionsFromXml(wn, version));
-                } else if (xn.equalsIgnoreCase("randomSkillPreferences")) {
-                    preset.setRandomSkillPreferences(RandomSkillPreferences.generateRandomSkillPreferencesFromXml(wn));
-                } else if (xn.equalsIgnoreCase("skillTypes")) {
-                    NodeList wList = wn.getChildNodes();
-                    // Okay, lets iterate through the children, eh?
-                    for (int z = 0; z < wList.getLength(); z++) {
-                        Node wn2 = wList.item(z);
+            String xn = wn.getNodeName();
+            if (xn.equalsIgnoreCase("title")) {
+                preset.title = wn.getTextContent();
+            } else if (xn.equalsIgnoreCase("description")) {
+                preset.description = wn.getTextContent();
+            } else if (xn.equalsIgnoreCase("campaignOptions")) {
+                preset.setOptions(CampaignOptions.generateCampaignOptionsFromXml(wn, version));
+            } else if (xn.equalsIgnoreCase("randomSkillPreferences")) {
+                preset.getOptions().migrateRandomSkillPreferences(wn);
+            } else if (xn.equalsIgnoreCase("skillTypes")) {
+                NodeList wList = wn.getChildNodes();
+                // Okay, lets iterate through the children, eh?
+                for (int z = 0; z < wList.getLength(); z++) {
+                    Node wn2 = wList.item(z);
 
-                        // If it's not an element node, we ignore it.
-                        if ((wn2.getNodeType() != Node.ELEMENT_NODE) || (wn2.getNodeName().startsWith("ability-"))) {
-                            continue;
-                        } else if (!wn2.getNodeName().equalsIgnoreCase("skillType")) {
-                            // Error condition of sorts!
-                            // Errr, what should we do here?
-                            MekHQ.getLogger().error("Unknown node type not loaded in Skill Type nodes: " + wn2.getNodeName());
-
-                            continue;
-                        }
-                        SkillType.generateSeparateInstanceFromXML(wn2, preset.getSkillHash());
+                    // If it's not an element node, we ignore it.
+                    if ((wn2.getNodeType() != Node.ELEMENT_NODE) || (wn2.getNodeName().startsWith("ability-"))) {
+                        continue;
+                    } else if (!wn2.getNodeName().equalsIgnoreCase("skillType")) {
+                        MekHQ.getLogger().error("Unknown node type not loaded in Skill Type nodes: " + wn2.getNodeName());
+                        continue;
                     }
-                } else if (xn.equalsIgnoreCase("specialAbilities")) {
-                    PilotOptions options = new PilotOptions();
-                    NodeList wList = wn.getChildNodes();
-                    // Okay, lets iterate through the children, eh?
-                    for (int z = 0; z < wList.getLength(); z++) {
-                        Node wn2 = wList.item(z);
-                        // If it's not an element node, we ignore it.
-                        if (wn2.getNodeType() != Node.ELEMENT_NODE) {
-                            continue;
-                        }
-                        if (!wn2.getNodeName().equalsIgnoreCase("ability")) {
-                            MekHQ.getLogger().error("Unknown node type not loaded in Special Ability nodes: " + wn2.getNodeName());
-                            continue;
-                        }
-
-                        SpecialAbility.generateSeparateInstanceFromXML(wn2, preset.getSpecialAbilities(), options);
+                    SkillType.generateSeparateInstanceFromXML(wn2, preset.getSkillHash());
+                }
+            } else if (xn.equalsIgnoreCase("specialAbilities")) {
+                PilotOptions options = new PilotOptions();
+                NodeList wList = wn.getChildNodes();
+                // Okay, lets iterate through the children, eh?
+                for (int z = 0; z < wList.getLength(); z++) {
+                    Node wn2 = wList.item(z);
+                    // If it's not an element node, we ignore it.
+                    if (wn2.getNodeType() != Node.ELEMENT_NODE) {
+                        continue;
                     }
+                    if (!wn2.getNodeName().equalsIgnoreCase("ability")) {
+                        MekHQ.getLogger().error("Unknown node type not loaded in Special Ability nodes: " + wn2.getNodeName());
+                        continue;
+                    }
+
+                    SpecialAbility.generateSeparateInstanceFromXML(wn2, preset.getSpecialAbilities(), options);
                 }
             }
         }
@@ -252,8 +234,7 @@ public class GamePreset implements MekHqXmlSerializable {
     }
 
     /**
-     * Collect and load all the Game Presets in files in a given directory and
-     * return a List of them
+     * Collect and load all the Game Presets in files in a given directory and return a List of them
      * @return a list of all of the game presets in the given directory
      */
     public static List<GamePreset> getGamePresetsIn() {
@@ -262,13 +243,8 @@ public class GamePreset implements MekHqXmlSerializable {
         File[] files = Utilities.getAllFiles(MekHQ.PRESET_DIR, (dir, name) -> name.toLowerCase().endsWith(".xml"));
         for (File file : files) {
             // And then load the campaign object from it.
-            GamePreset preset;
-
             try (FileInputStream fis = new FileInputStream(file)) {
-                preset = GamePreset.createGamePresetFromXMLFileInputStream(fis);
-                if (preset.isValid()) {
-                    presets.add(preset);
-                }
+                presets.add(GamePreset.createGamePresetFromXMLFileInputStream(fis));
             } catch (Exception e) {
                 MekHQ.getLogger().error(e);
             }
