@@ -48,10 +48,10 @@ import mekhq.MekHQ;
 public class ScenarioObjective {
     public static final String FORCE_SHORTCUT_ALL_PRIMARY_PLAYER_FORCES = "All Primary Player Forces";
     public static final String FORCE_SHORTCUT_ALL_ENEMY_FORCES = "All Enemy Forces";
-    
+
     public static final String ROOT_XML_ELEMENT_NAME = "ScenarioObjective";
     private static Map<ObjectiveCriterion, String> objectiveTypeMapping;
-    
+
     static {
         objectiveTypeMapping = new HashMap<>();
         objectiveTypeMapping.put(ObjectiveCriterion.Destroy, "Destroy");
@@ -62,13 +62,13 @@ public class ScenarioObjective {
         objectiveTypeMapping.put(ObjectiveCriterion.ReachMapEdge, "Reach");
         objectiveTypeMapping.put(ObjectiveCriterion.Custom, "Custom");
     }
-    
+
     public enum TimeLimitType {
         None,
         Fixed,
         ScaledToPrimaryUnitCount
     }
-    
+
     private ObjectiveCriterion objectiveCriterion;
     private String description;
     private OffBoardDirection destinationEdge;
@@ -78,38 +78,38 @@ public class ScenarioObjective {
     private boolean timeLimitAtMost = true;
     private Integer timeLimit = null;
     private Integer timeLimitScaleFactor = null;
-    
+
     @XmlElementWrapper(name="associatedForceNames")
     @XmlElement(name="associatedForceName")
     private Set<String> associatedForceNames = new HashSet<>();
-    
+
     @XmlElementWrapper(name="associatedUnitIDs")
     @XmlElement(name="associatedUnitID")
     private Set<String> associatedUnitIDs = new HashSet<>();
-    
+
     @XmlElementWrapper(name="successEffects")
     @XmlElement(name="successEffect")
     private List<ObjectiveEffect> successEffects = new ArrayList<>();
-    
+
     @XmlElementWrapper(name="failureEffects")
     @XmlElement(name="failureEffect")
     private List<ObjectiveEffect> failureEffects = new ArrayList<>();
-    
+
     @XmlElementWrapper(name="additionalDetails")
     @XmlElement(name="additionalDetail")
     private List<String> additionalDetails = new ArrayList<>();
-    
+
     /**
      * Types of automatically tracked scenario objectives
      */
     public enum ObjectiveCriterion {
-        /* 
+        /*
         * entity must be destroyed:
         * center torso/structure gone, crew killed, immobilized + battlefield control
         */
         Destroy,
         /*
-         *  entity must be crippled, destroyed or withdrawn off the wrong edge of the map        
+         *  entity must be crippled, destroyed or withdrawn off the wrong edge of the map
          */
         ForceWithdraw,
         /*
@@ -132,7 +132,7 @@ public class ScenarioObjective {
          *  this must be tracked manually by the player
          */
         Custom;
-        
+
         @Override
         public String toString() {
             return objectiveTypeMapping.get(this);
@@ -146,11 +146,11 @@ public class ScenarioObjective {
         Fixed,
         Percentage
     }
-    
+
     public ScenarioObjective() {
-        
+
     }
-    
+
     /**
      * Copy constructor
      */
@@ -170,7 +170,7 @@ public class ScenarioObjective {
         this.setTimeLimitType(other.getTimeLimitType());
         this.setTimeLimitScaleFactor(other.getTimeLimitScaleFactor());
     }
-    
+
     public ObjectiveCriterion getObjectiveCriterion() {
         return objectiveCriterion;
     }
@@ -186,43 +186,43 @@ public class ScenarioObjective {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public void addForce(String name) {
         associatedForceNames.add(name);
     }
-    
+
     public void removeForce(String name) {
         associatedForceNames.remove(name);
     }
-    
+
     public void clearForces() {
         associatedForceNames.clear();
     }
-    
+
     public void addDetail(String detail) {
         additionalDetails.add(detail);
     }
-    
+
     public List<String> getDetails() {
         return additionalDetails;
     }
-    
+
     public Set<String> getAssociatedForceNames() {
         return new HashSet<String>(associatedForceNames);
     }
-    
+
     public void addUnit(String id) {
         associatedUnitIDs.add(id);
     }
-    
+
     public void removeUnit(String id) {
         associatedUnitIDs.remove(id);
     }
-    
+
     public Set<String> getAssociatedUnitIDs() {
         return new HashSet<String>(associatedUnitIDs);
     }
-    
+
     public void clearAssociatedUnits() {
         associatedUnitIDs.clear();
     }
@@ -230,15 +230,15 @@ public class ScenarioObjective {
     public void addSuccessEffect(ObjectiveEffect successEffect) {
         successEffects.add(successEffect);
     }
-    
+
     public List<ObjectiveEffect> getSuccessEffects() {
         return successEffects;
     }
-    
+
     public void addFailureEffect(ObjectiveEffect failureEffect) {
         failureEffects.add(failureEffect);
     }
-    
+
     public List<ObjectiveEffect> getFailureEffects() {
         return failureEffects;
     }
@@ -250,7 +250,7 @@ public class ScenarioObjective {
     public void setDestinationEdge(OffBoardDirection destinationEdge) {
         this.destinationEdge = destinationEdge;
     }
-    
+
     public int getPercentage() {
         return percentage;
     }
@@ -258,7 +258,7 @@ public class ScenarioObjective {
     public void setPercentage(int percentage) {
         this.percentage = percentage;
     }
-    
+
     public Integer getFixedAmount() {
         return fixedAmount;
     }
@@ -300,14 +300,14 @@ public class ScenarioObjective {
     }
 
     public String getTimeLimitString() {
-        String timeLimitString = 
-                timeLimitType == TimeLimitType.None ? 
+        String timeLimitString =
+                timeLimitType == TimeLimitType.None ?
                     "" :
                     String.format("%s %d turns", isTimeLimitAtMost() ? " within at most" : " for at least", getTimeLimit());
-        
+
         return timeLimitString;
     }
-    
+
     /**
      * Generates a "short" string that describes the objective in a manner suitable for display in
      * the objective resolution screen.
@@ -317,7 +317,7 @@ public class ScenarioObjective {
         String edgeString = ((getDestinationEdge() != OffBoardDirection.NONE) &&
                 (getDestinationEdge() != null)) ? getDestinationEdge().toString() : "";
         String amountString = fixedAmount != null ? fixedAmount.toString() : String.format("%d%%", percentage);
-        
+
         switch(getObjectiveCriterion()) {
         case Destroy:
         case ForceWithdraw:
@@ -334,7 +334,7 @@ public class ScenarioObjective {
                 return "?";
         }
     }
-    
+
     public int getAmount() {
         if(fixedAmount != null) {
             return fixedAmount;
@@ -342,7 +342,7 @@ public class ScenarioObjective {
             return percentage;
         }
     }
-    
+
     public ObjectiveAmountType getAmountType() {
         if(fixedAmount != null) {
             return ObjectiveAmountType.Fixed;
@@ -350,10 +350,10 @@ public class ScenarioObjective {
             return ObjectiveAmountType.Percentage;
         }
     }
-    
+
     /**
      * Whether this objective is applicable to a force template.
-     * This is the case if the objective's associated force names contain either the 
+     * This is the case if the objective's associated force names contain either the
      * force template's name or any of the the force template's linked force names.
      */
     public boolean isApplicableToForceTemplate(ScenarioForceTemplate forceTemplate, AtBDynamicScenario scenario) {
@@ -361,12 +361,12 @@ public class ScenarioObjective {
         if(forceTemplate == null) {
             return false;
         }
-        
+
         // if the template force is listed in this objective, we're good
         if(getAssociatedForceNames().contains(forceTemplate.getForceName())) {
             return true;
         }
-        
+
         // if the template force is linked to a force listed in this objective, we're good.
         if(forceTemplate.getObjectiveLinkedForces() != null) {
             for(String linkedForceName : forceTemplate.getObjectiveLinkedForces()) {
@@ -377,21 +377,21 @@ public class ScenarioObjective {
                 }
             }
         }
-        
+
         return false;
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(description);
         sb.append("\nObjective Type: ");
         sb.append(objectiveCriterion.toString());
-        
-        if(objectiveCriterion == ObjectiveCriterion.ReachMapEdge || 
+
+        if(objectiveCriterion == ObjectiveCriterion.ReachMapEdge ||
                 objectiveCriterion == ObjectiveCriterion.PreventReachMapEdge) {
             sb.append("\n");
-            
+
             if((destinationEdge != null) &&
                     (destinationEdge != OffBoardDirection.NONE)) {
                 sb.append(destinationEdge.toString());
@@ -400,43 +400,43 @@ public class ScenarioObjective {
             }
             sb.append(" edge");
         }
-        
+
         if(fixedAmount != null) {
             sb.append(fixedAmount);
         } else {
             sb.append(percentage);
             sb.append("% ");
         }
-        
+
         if(associatedForceNames.size() > 0) {
-            sb.append("\nForces:");        
+            sb.append("\nForces:");
             for(String forceName : associatedForceNames) {
                 sb.append("\n");
                 sb.append(forceName);
             }
         }
-        
+
         if(associatedUnitIDs.size() > 0) {
             for(String unitID : associatedUnitIDs) {
                 sb.append("\n");
                 sb.append(unitID.toString());
             }
         }
-        
+
         if(successEffects.size() > 0) {
             for(ObjectiveEffect effect : successEffects) {
                 sb.append("\n");
                 sb.append(effect.toString());
             }
         }
-        
+
         if(failureEffects.size() > 0) {
             for(ObjectiveEffect effect : failureEffects) {
                 sb.append("\n");
                 sb.append(effect.toString());
             }
         }
-        
+
         return sb.toString();
     }
 
@@ -457,7 +457,7 @@ public class ScenarioObjective {
             MekHQ.getLogger().error(ScenarioTemplate.class, "Serialize", e.getMessage());
         }
     }
-    
+
     /**
      * Attempt to deserialize an instance of a ScenarioObjective from the passed-in XML Node
      * @param xmlNode The node with the scenario template
@@ -465,7 +465,7 @@ public class ScenarioObjective {
      */
     public static ScenarioObjective Deserialize(Node xmlNode) {
         ScenarioObjective resultingObjective = null;
-        
+
         try {
             JAXBContext context = JAXBContext.newInstance(ScenarioObjective.class);
             Unmarshaller um = context.createUnmarshaller();
@@ -474,7 +474,7 @@ public class ScenarioObjective {
         } catch(Exception e) {
             MekHQ.getLogger().error(ScenarioTemplate.class, "Deserialize", "Error Deserializing Scenario Objective", e);
         }
-        
+
         return resultingObjective;
     }
 }

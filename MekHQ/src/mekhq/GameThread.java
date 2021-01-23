@@ -24,8 +24,11 @@ import megamek.common.IGame;
 import megamek.common.KeyBindParser;
 import megamek.common.QuirksHandler;
 import megamek.common.WeaponOrderHandler;
+import megamek.common.options.GameOptions;
+import megamek.common.options.OptionsConstants;
 import megamek.common.preference.PreferenceManager;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.mission.Scenario;
 import mekhq.campaign.unit.Unit;
 
 class GameThread extends Thread implements CloseClientListener {
@@ -37,6 +40,7 @@ class GameThread extends Thread implements CloseClientListener {
     protected MegaMekController controller;
     protected MekHQ app;
     protected Campaign campaign;
+    private Scenario scenario;
     protected boolean started;
 
     protected List<Unit> units;
@@ -45,15 +49,17 @@ class GameThread extends Thread implements CloseClientListener {
     //endregion Variable Declarations
 
     //region Constructors
-    public GameThread(String name, String password, Client c, MekHQ app, List<Unit> units) {
-        this(name, password, c, app, units, true);
+    public GameThread(String name, String password, Client c, MekHQ app, List<Unit> units,
+                      Scenario scenario) {
+        this(name, password, c, app, units, scenario, true);
     }
 
-    public GameThread(String name, Client c, MekHQ app, List<Unit> units, boolean started) {
-        this(name, "", c, app, units, started);
+    public GameThread(String name, Client c, MekHQ app, List<Unit> units, Scenario scenario, boolean started) {
+        this(name, "", c, app, units, scenario, started);
     }
 
-    public GameThread(String name, String password, Client c, MekHQ app, List<Unit> units, boolean started) {
+    public GameThread(String name, String password, Client c, MekHQ app, List<Unit> units,
+                      Scenario scenario, boolean started) {
         super(name);
         myname = name.trim();
         this.password = password;
@@ -62,8 +68,19 @@ class GameThread extends Thread implements CloseClientListener {
         this.units = units;
         this.started = started;
         this.campaign = app.getCampaign();
+        setScenario(scenario);
     }
     //endregion Constructors
+
+    //region Getters/Setters
+    public Scenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
+    }
+    //endregion Getters/Setters
 
     public Client getClient() {
         return client;
@@ -109,8 +126,8 @@ class GameThread extends Thread implements CloseClientListener {
                 client.getLocalPlayer().setCamoFileName(app.getCampaign().getCamoFileName());
 
                 if (started) {
-                    client.getGame().getOptions().loadOptions();
-                    client.sendGameOptions(password, app.getCampaign().getGameOptionsVector());
+                    getClient().getGame().getOptions().loadOptions();
+                    getClient().sendGameOptions(password, app.getCampaign().getGameOptionsVector());
                     Thread.sleep(MekHQ.getMekHQOptions().getStartGameDelay());
                 }
 
@@ -120,24 +137,23 @@ class GameThread extends Thread implements CloseClientListener {
                     // Set the TempID for autoreporting
                     entity.setExternalIdAsString(unit.getId().toString());
                     // Set the owner
-                    entity.setOwner(client.getLocalPlayer());
+                    entity.setOwner(getClient().getLocalPlayer());
                     // Add Mek to game
-                    client.sendAddEntity(entity);
+                    getClient().sendAddEntity(entity);
                     // Wait a few secs to not overuse bandwidth
                     Thread.sleep(MekHQ.getMekHQOptions().getStartGameDelay());
                 }
 
-                client.sendPlayerInfo();
+                getClient().sendPlayerInfo();
             }
 
-            while(!stop) {
+            while (!stop) {
                 Thread.sleep(50);
             }
         } catch (Exception e) {
             MekHQ.getLogger().error(e);
-        }
-        finally {
-            client.die();
+        } finally {
+            getClient().die();
             client = null;
             swingGui = null;
             controller = null;
@@ -176,7 +192,7 @@ class GameThread extends Thread implements CloseClientListener {
     }
 
     public void quit() {
-        client.die();
+        getClient().die();
         client = null;// explicit null of the MM client. Wasn't/isn't being
         // GC'ed.
         System.gc();
@@ -188,5 +204,21 @@ class GameThread extends Thread implements CloseClientListener {
         kbfm.addKeyEventDispatcher(controller);
 
         KeyBindParser.parseKeyBindings(controller);
+    }
+
+    public void assignVictoryConditions(Scenario scenario) {
+        if (scenario == null) {
+            return;
+        }
+
+        GameOptions gameOptions = app.getCampaign().getGameOptions();
+        int count = 0;
+
+
+        gameOptions.getOption(OptionsConstants.VICTORY_BV_DESTROYED_PERCENT);
+
+
+
+        gameOptions.getOption(OptionsConstants.VICTORY_CHECK_VICTORY).setValue(count > 0);
     }
 }

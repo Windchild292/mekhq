@@ -1,7 +1,7 @@
 /*
  * MekHqOptionsDialog.java
  *
- * Copyright (c) 2019-2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -74,6 +74,7 @@ public class MekHqOptionsDialog extends BaseDialog {
 
     //region Miscellaneous
     private JSpinner optionStartGameDelay;
+    private JCheckBox optionAssignVictoryConditionsPerScenario;
     //endregion Miscellaneous
     //endregion Variable Declaration
 
@@ -365,6 +366,9 @@ public class MekHqOptionsDialog extends BaseDialog {
 
         optionStartGameDelay = new JSpinner(new SpinnerNumberModel(0, 0, 2500, 25));
         optionStartGameDelay.setToolTipText(resources.getString("optionStartGameDelay.toolTipText"));
+
+        optionAssignVictoryConditionsPerScenario = new JCheckBox(resources.getString("optionAssignVictoryConditionsPerScenario.text"));
+        optionAssignVictoryConditionsPerScenario.setToolTipText(resources.getString("optionAssignVictoryConditionsPerScenario.toolTipText"));
         //endregion Create Graphical Components
 
         //region Layout
@@ -382,6 +386,7 @@ public class MekHqOptionsDialog extends BaseDialog {
                                 .addComponent(labelStartGameDelay)
                                 .addComponent(optionStartGameDelay, GroupLayout.DEFAULT_SIZE,
                                         GroupLayout.DEFAULT_SIZE, 40))
+                        .addComponent(optionAssignVictoryConditionsPerScenario)
         );
 
         layout.setHorizontalGroup(
@@ -389,6 +394,7 @@ public class MekHqOptionsDialog extends BaseDialog {
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(labelStartGameDelay)
                                 .addComponent(optionStartGameDelay))
+                        .addComponent(optionAssignVictoryConditionsPerScenario)
         );
         //endregion Layout
 
@@ -425,6 +431,7 @@ public class MekHqOptionsDialog extends BaseDialog {
         MekHQ.getMekHQOptions().setSaveMothballState(optionSaveMothballState.isSelected());
 
         MekHQ.getMekHQOptions().setStartGameDelay((Integer) optionStartGameDelay.getValue());
+        MekHQ.getMekHQOptions().setAssignVictoryConditionsPerScenario(optionAssignVictoryConditionsPerScenario.isSelected());
 
         MekHQ.triggerEvent(new MekHQOptionsChangedEvent());
     }
@@ -453,6 +460,7 @@ public class MekHqOptionsDialog extends BaseDialog {
         optionSaveMothballState.setSelected(MekHQ.getMekHQOptions().getSaveMothballState());
 
         optionStartGameDelay.setValue(MekHQ.getMekHQOptions().getStartGameDelay());
+        optionAssignVictoryConditionsPerScenario.setSelected(MekHQ.getMekHQOptions().getAssignVictoryConditionsPerScenario());
     }
 
     //region Data Validation

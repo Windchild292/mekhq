@@ -225,5 +225,13 @@ public final class MekHQOptions {
     public void setStartGameDelay(int startGameDelay) {
         userPreferences.node(MekHqConstants.MISCELLANEOUS_NODE).putInt(MekHqConstants.START_GAME_DELAY, startGameDelay);
     }
+
+    public boolean getAssignVictoryConditionsPerScenario() {
+        return userPreferences.node(MekHqConstants.MISCELLANEOUS_NODE).getBoolean(MekHqConstants.ASSIGN_VICTORY_CONDITIONS_PER_SCENARIO, false);
+    }
+
+    public void setAssignVictoryConditionsPerScenario(boolean assignVictoryConditionsPerScenario) {
+        userPreferences.node(MekHqConstants.MISCELLANEOUS_NODE).putBoolean(MekHqConstants.ASSIGN_VICTORY_CONDITIONS_PER_SCENARIO, assignVictoryConditionsPerScenario);
+    }
     //endregion Miscellaneous Options
 }

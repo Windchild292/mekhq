@@ -436,7 +436,7 @@ public class MekHQ implements GameListener {
         currentScenario = scenario;
 
         //Start the game thread
-        gameThread = new GameThread(playerName, client, this, meks, false);
+        gameThread = new GameThread(playerName, client, this, meks, scenario, false);
         gameThread.start();
     }
 
@@ -492,9 +492,13 @@ public class MekHQ implements GameListener {
 
         // Start the game thread
         if (getCampaign().getCampaignOptions().getUseAtB() && (scenario instanceof AtBScenario)) {
-            gameThread = new AtBGameThread(playerName, password, client, this, meks, (AtBScenario) scenario);
+            gameThread = new AtBGameThread(playerName, password, client, this, meks, scenario);
         } else {
-            gameThread = new GameThread(playerName, password, client, this, meks);
+            gameThread = new GameThread(playerName, password, client, this, meks, scenario);
+        }
+
+        if (getMekHQOptions().getAssignVictoryConditionsPerScenario()) {
+            gameThread.assignVictoryConditions(scenario);
         }
         gameThread.start();
     }
