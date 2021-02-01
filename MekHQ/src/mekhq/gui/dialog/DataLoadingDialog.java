@@ -41,6 +41,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 import javax.xml.parsers.ParserConfigurationException;
 
+import megamek.common.options.OptionsConstants;
 import org.w3c.dom.DOMException;
 import org.xml.sax.SAXException;
 
@@ -208,7 +209,7 @@ public class DataLoadingDialog extends JDialog implements PropertyChangeListener
                 // user can either choose a date or cancel by closing
                 if (dc.showDateChooser() == DateChooser.OK_OPTION) {
                     campaign.setLocalDate(dc.getDate());
-                    campaign.getGameOptions().getOption("year").setValue(campaign.getGameYear());
+                    campaign.getGameOptions().getOption(OptionsConstants.ALLOWED_YEAR).setValue(campaign.getGameYear());
                 }
 
                 // This must be after the date chooser to enable correct functionality.

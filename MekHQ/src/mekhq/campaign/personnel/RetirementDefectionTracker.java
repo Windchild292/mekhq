@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
+import megamek.common.options.OptionsConstants;
 import mekhq.campaign.finances.FinancialReport;
 import mekhq.campaign.finances.Money;
 
@@ -199,7 +200,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                 for (Enumeration<IOption> i = p.getOptions(PilotOptions.LVL3_ADVANTAGES); i.hasMoreElements(); ) {
                     IOption ability = i.nextElement();
                     if (ability.booleanValue()) {
-                        if (ability.getName().equals("tactical_genius")) {
+                        if (ability.getName().equals(OptionsConstants.MISC_TACTICAL_GENIUS)) {
                             target.addModifier(1, "Non-officer tactical genius");
                             break;
                         }

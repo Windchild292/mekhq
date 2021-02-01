@@ -47,6 +47,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
+import megamek.common.options.OptionsConstants;
 import megamek.common.options.PilotOptions;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
@@ -419,7 +420,7 @@ public final class BatchXPDialog extends JDialog {
                         String spa = spaGenerator.rollSPA(p);
                         if (null == spa) {
                             if (campaign.getCampaignOptions().useEdge()) {
-                                p.getOptions().acquireAbility(PilotOptions.EDGE_ADVANTAGES, "edge", p.getEdge() + 1);
+                                p.getOptions().acquireAbility(PilotOptions.EDGE_ADVANTAGES, OptionsConstants.EDGE, p.getEdge() + 1);
                                 PersonalLogger.gainedEdge(p, campaign.getLocalDate());
                             }
                         } else {

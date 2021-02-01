@@ -1090,15 +1090,9 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
                 person.removeSkill(type);
             }
         }
-        IOption option;
         for (final Object newVar : optionComps) {
             DialogOptionComponent comp = (DialogOptionComponent) newVar;
-            option = comp.getOption();
-            if ((comp.getValue().equals("None"))) {
-                person.getOptions().getOption(option.getName()).setValue("None");
-            } else {
-                person.getOptions().getOption(option.getName()).setValue(comp.getValue());
-            }
+            person.getOptions().getOption(comp.getOption().getName()).setValue(comp.getValue());
         }
     }
 
@@ -1210,16 +1204,9 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
     }
 
     private void setOptions() {
-        IOption option;
         for (final Object newVar : optionComps) {
             DialogOptionComponent comp = (DialogOptionComponent) newVar;
-            option = comp.getOption();
-            if ((comp.getValue().equals("None"))) {
-                person.getOptions().getOption(option.getName()).setValue("None");
-            } else {
-                person.getOptions().getOption(option.getName())
-                .setValue(comp.getValue());
-            }
+            person.getOptions().getOption(comp.getOption().getName()).setValue(comp.getValue());
         }
     }
 

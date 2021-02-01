@@ -38,7 +38,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import megamek.common.options.OptionsConstants;
 import mekhq.campaign.finances.Money;
+import mekhq.campaign.personnel.PersonnelOptions;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -1489,7 +1491,7 @@ public class Refit extends Part implements IAcquisitionWork {
                 ((AmmoBin) p).loadBin();
             }
         }
-        
+
         if (null != newArmorSupplies) {
             getCampaign().getWarehouse().removePart(newArmorSupplies);
         }
@@ -1602,7 +1604,7 @@ public class Refit extends Part implements IAcquisitionWork {
             MekHQ.getLogger().info(String.format("Saved %s %s to %s",
                     newEntity.getChassis(), newEntity.getModel(), summary.getSourceFile()));
         } catch (EntityLoadingException e) {
-            MekHQ.getLogger().error(String.format("Could not read back refit entity %s %s", 
+            MekHQ.getLogger().error(String.format("Could not read back refit entity %s %s",
                     newEntity.getChassis(), newEntity.getModel()), e);
 
             if (fileNameCampaign != null) {
@@ -1707,7 +1709,7 @@ public class Refit extends Part implements IAcquisitionWork {
             mods.addModifier(2, "custom job");
         }
 
-        if ((null != tech) && tech.getOptions().booleanOption("tech_engineer")) {
+        if ((null != tech) && tech.getOptions().booleanOption(PersonnelOptions.TECH_ENGINEER)) {
             mods.addModifier(-2, "engineer");
         }
         return mods;

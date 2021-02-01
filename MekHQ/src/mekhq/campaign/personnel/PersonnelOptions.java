@@ -74,14 +74,14 @@ public class PersonnelOptions extends PilotOptions {
         }
         if (null == edge) {
             // This really shouldn't happen.
-            MekHQ.getLogger().warning(PersonnelOptions.class, "Could not find edge group");
-            edge = addGroup("edge", PilotOptions.EDGE_ADVANTAGES);
+            MekHQ.getLogger().warning("Could not find edge group");
+            edge = addGroup(OptionsConstants.EDGE, PilotOptions.EDGE_ADVANTAGES);
             addOption(edge, OptionsConstants.EDGE, 0);
         }
         if (null == md) {
             // This really shouldn't happen.
-            MekHQ.getLogger().warning(PersonnelOptions.class, "Could not find augmentation (MD) group");
-            md = addGroup("md", PilotOptions.MD_ADVANTAGES);
+            MekHQ.getLogger().warning("Could not find augmentation (MD) group");
+            md = addGroup(OptionsConstants.MD, PilotOptions.MD_ADVANTAGES);
         }
 
         // Add MekHQ-specific options

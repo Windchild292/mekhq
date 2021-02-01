@@ -35,6 +35,7 @@ import megamek.common.*;
 import megamek.common.enums.Gender;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Portrait;
+import megamek.common.options.OptionsConstants;
 import megamek.common.util.EncodeControl;
 import megamek.common.util.StringUtil;
 import mekhq.campaign.*;
@@ -3011,13 +3012,13 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
     //region edge
     public int getEdge() {
-        return getOptions().intOption("edge");
+        return getOptions().intOption(OptionsConstants.EDGE);
     }
 
     public void setEdge(int e) {
         for (Enumeration<IOption> i = getOptions(PilotOptions.EDGE_ADVANTAGES); i.hasMoreElements(); ) {
             IOption ability = i.nextElement();
-            if (ability.getName().equals("edge")) {
+            if (ability.getName().equals(OptionsConstants.EDGE)) {
                 ability.setValue(e);
             }
         }
@@ -3554,9 +3555,10 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 modifier -= 15;
             }
         } // TODO: Fully implement this for advanced healing
-        if (getOptions().booleanOption("pain_resistance")) {
+
+        if (getOptions().booleanOption(OptionsConstants.MISC_PAIN_RESISTANCE)) {
             modifier -= 15;
-        } else if (getOptions().booleanOption("iron_man")) {
+        } else if (getOptions().booleanOption(OptionsConstants.MISC_IRON_MAN)) {
             modifier -= 10;
         }
 

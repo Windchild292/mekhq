@@ -4826,7 +4826,7 @@ public class CampaignOptionsDialog extends JDialog {
         // Ensure that the MegaMek year GameOption matches the campaign year
         GameOptions gameOpts = campaign.getGameOptions();
         int campaignYear = campaign.getGameYear();
-        gameOpts.getOption("year").setValue(campaignYear);
+        gameOpts.getOption(OptionsConstants.ALLOWED_YEAR).setValue(campaignYear);
         campaign.setFactionCode(Factions.getInstance().getFactionFromFullNameAndYear
                 (String.valueOf(comboFaction.getSelectedItem()), date.getYear()).getShortName());
         if (null != comboFactionNames.getSelectedItem()) {
@@ -4856,7 +4856,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setAssignedTechFirst(assignedTechFirstCheckBox.isSelected());
         options.setResetToFirstTech(resetToFirstTechCheckBox.isSelected());
         options.setQuirks(useQuirksBox.isSelected());
-        campaign.getGameOptions().getOption("stratops_quirks").setValue(useQuirksBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.ADVANCED_STRATOPS_QUIRKS).setValue(useQuirksBox.isSelected());
         options.setClanPriceModifier((Double) spnClanPriceModifier.getModel().getValue());
         for (int i = Part.QUALITY_A; i <= Part.QUALITY_F; i++) {
             options.setUsedPartsValue((Double) spnUsedPartsValue[i].getModel().getValue(), i);
@@ -4867,7 +4867,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setManualUnitRatingModifier((Integer) manualUnitRatingModifier.getValue());
         options.setUseOriginFactionForNames(chkUseOriginFactionForNames.isSelected());
         options.setUseTactics(useTacticsBox.isSelected());
-        campaign.getGameOptions().getOption("command_init").setValue(useTacticsBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.RPG_COMMAND_INIT).setValue(useTacticsBox.isSelected());
         options.setDestroyByMargin(useDamageMargin.isSelected());
         options.setDestroyMargin((Integer) spnDamageMargin.getModel().getValue());
         options.setDestroyPartTarget((Integer) spnDestroyPartTarget.getModel().getValue());
@@ -4957,7 +4957,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setAllowClanPurchases(allowClanPurchasesBox.isSelected());
         options.setAllowISPurchases(allowISPurchasesBox.isSelected());
         options.setAllowCanonOnly(allowCanonOnlyBox.isSelected());
-        campaign.getGameOptions().getOption("canon_only").setValue(allowCanonOnlyBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.ALLOWED_CANON_ONLY).setValue(allowCanonOnlyBox.isSelected());
         campaign.getGameOptions().getOption(OptionsConstants.ALLOWED_ERA_BASED).setValue(variableTechLevelBox.isSelected());
         options.setVariableTechLevel(variableTechLevelBox.isSelected() && options.limitByYear());
         options.setFactionIntroDate(factionIntroDateBox.isSelected());
@@ -4965,7 +4965,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setAllowCanonRefitOnly(allowCanonRefitOnlyBox.isSelected());
         options.setUseAmmoByType(useAmmoByTypeBox.isSelected());
         options.setTechLevel(choiceTechLevel.getSelectedIndex());
-        campaign.getGameOptions().getOption("techlevel").setValue((String)choiceTechLevel.getSelectedItem());
+        campaign.getGameOptions().getOption(OptionsConstants.ALLOWED_TECHLEVEL).setValue((String)choiceTechLevel.getSelectedItem());
 
         rSkillPrefs.setOverallRecruitBonus((Integer) spnOverallRecruitBonus.getModel().getValue());
         for (int i = 0; i < Person.T_NUM; i++) {
@@ -4995,18 +4995,18 @@ public class CampaignOptionsDialog extends JDialog {
 
         //region Personnel Tab
         options.setInitBonus(useInitBonusBox.isSelected());
-        campaign.getGameOptions().getOption("individual_initiative").setValue(useInitBonusBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.RPG_INDIVIDUAL_INITIATIVE).setValue(useInitBonusBox.isSelected());
         options.setToughness(useToughnessBox.isSelected());
-        campaign.getGameOptions().getOption("toughness").setValue(useToughnessBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.RPG_TOUGHNESS).setValue(useToughnessBox.isSelected());
         options.setArtillery(useArtilleryBox.isSelected());
-        campaign.getGameOptions().getOption("artillery_skill").setValue(useArtilleryBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.RPG_ARTILLERY_SKILL).setValue(useArtilleryBox.isSelected());
         options.setAbilities(useAbilitiesBox.isSelected());
-        campaign.getGameOptions().getOption("pilot_advantages").setValue(useAbilitiesBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.RPG_PILOT_ADVANTAGES).setValue(useAbilitiesBox.isSelected());
         options.setEdge(useEdgeBox.isSelected());
-        campaign.getGameOptions().getOption("edge").setValue(useEdgeBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.EDGE).setValue(useEdgeBox.isSelected());
         options.setSupportEdge(useEdgeBox.isSelected() && useSupportEdgeBox.isSelected());
         options.setImplants(useImplantsBox.isSelected());
-        campaign.getGameOptions().getOption("manei_domini").setValue(useImplantsBox.isSelected());
+        campaign.getGameOptions().getOption(OptionsConstants.RPG_MANEI_DOMINI).setValue(useImplantsBox.isSelected());
         options.setAltQualityAveraging(altQualityAveragingCheckBox.isSelected());
         options.setAdvancedMedical(useAdvancedMedicalBox.isSelected());
         options.setDylansRandomXp(useDylansRandomXpBox.isSelected());

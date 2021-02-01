@@ -38,6 +38,7 @@ import javax.swing.table.TableRowSorter;
 import megamek.common.Entity;
 import megamek.common.EntityListFile;
 import megamek.common.event.Subscribe;
+import megamek.common.options.OptionsConstants;
 import megamek.common.util.EncodeControl;
 import megamek.common.util.sorter.NaturalOrderComparator;
 import megameklab.com.util.UnitPrintManager;
@@ -655,7 +656,7 @@ public final class BriefingTab extends CampaignGuiTab {
 
         if (chosen.size() > 0) {
             // Ensure that the MegaMek year GameOption matches the campaign year
-            getCampaign().getGameOptions().getOption("year").setValue(getCampaign().getGameYear());
+            getCampaign().getGameOptions().getOption(OptionsConstants.ALLOWED_YEAR).setValue(getCampaign().getGameYear());
             getCampaignGui().getApplication().startHost(scenario, false, chosen);
         }
     }
