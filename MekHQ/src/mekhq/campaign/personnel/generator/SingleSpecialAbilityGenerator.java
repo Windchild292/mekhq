@@ -28,6 +28,7 @@ import megamek.common.options.IOption;
 import megamek.common.options.OptionsConstants;
 import megamek.common.options.PilotOptions;
 import mekhq.Utilities;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SpecialAbility;
@@ -37,16 +38,12 @@ import mekhq.campaign.personnel.generator.AbstractSpecialAbilityGenerator;
  * Generates a single special ability for a {@link Person}.
  */
 public class SingleSpecialAbilityGenerator extends AbstractSpecialAbilityGenerator {
-
     @Override
-    public boolean generateSpecialAbilities(Person person, int expLvl) {
-        if (getCampaignOptions(person).useAbilities()) {
-            return rollSPA(person) != null;
-        }
-        return false;
+    public boolean generateSpecialAbilities(Campaign campaign, Person person, int expLvl) {
+        return campaign.getCampaignOptions().useAbilities() && (rollSPA(campaign, person) != null);
     }
 
-    public String rollSPA(Person person) {
+    public String rollSPA(Campaign campaign, Person person) {
         List<SpecialAbility> abilityList = getEligibleSPAs(person);
         if (abilityList.isEmpty()) {
             return null;
@@ -108,15 +105,14 @@ public class SingleSpecialAbilityGenerator extends AbstractSpecialAbilityGenerat
             person.getOptions()
                 .acquireAbility(PilotOptions.LVL3_ADVANTAGES, name,
                     SpecialAbility.chooseWeaponSpecialization(person.getPrimaryRole(), person.getOriginFaction().isClan(),
-                            getCampaignOptions(person).getTechLevel(), person.getCampaign().getGameYear(), false));
+                            campaign.getCampaignOptions().getTechLevel(), campaign.getGameYear(), false));
         } else if (name.equals(OptionsConstants.GUNNERY_SANDBLASTER)) {
             person.getOptions()
                 .acquireAbility(PilotOptions.LVL3_ADVANTAGES, name,
                     SpecialAbility.chooseWeaponSpecialization(person.getPrimaryRole(), person.getOriginFaction().isClan(),
-                            getCampaignOptions(person).getTechLevel(), person.getCampaign().getGameYear(), true));
+                            campaign.getCampaignOptions().getTechLevel(), campaign.getGameYear(), true));
         } else {
-            person.getOptions()
-                .acquireAbility(PilotOptions.LVL3_ADVANTAGES, name, true);
+            person.getOptions().acquireAbility(PilotOptions.LVL3_ADVANTAGES, name, true);
         }
         return name;
     }
@@ -127,23 +123,19 @@ public class SingleSpecialAbilityGenerator extends AbstractSpecialAbilityGenerat
             IOption ability = i.nextElement();
             if (!ability.booleanValue()) {
                 SpecialAbility spa = SpecialAbility.getAbility(ability.getName());
-                if(null == spa) {
+                if (null == spa) {
                     continue;
                 }
-                if(!spa.isEligible(person.isClanner(), person.getSkills(),
+                if (!spa.isEligible(person.isClanner(), person.getSkills(),
                         person.getOptions())) {
                     continue;
                 }
-                if(spa.getWeight() <= 0) {
+                if (spa.getWeight() <= 0) {
                     continue;
                 }
                 eligible.add(spa);
             }
         }
         return eligible;
-    }
-
-    private CampaignOptions getCampaignOptions(Person person) {
-        return person.getCampaign().getCampaignOptions();
     }
 }

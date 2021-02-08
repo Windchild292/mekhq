@@ -62,6 +62,7 @@ import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
 import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
+import megamek.common.enums.SkillLevel;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import megamek.common.options.GameOptions;
@@ -77,7 +78,6 @@ import mekhq.Utilities;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.GamePreset;
-import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.event.OptionsChangedEvent;
 import mekhq.campaign.finances.enums.FinancialYearDuration;
@@ -115,11 +115,11 @@ import mekhq.preferences.PreferencesNode;
  */
 public class CampaignOptionsDialog extends JDialog {
     //region Variable Declarations
-    //region General Variables (ones not relating to a specific tab)
     private static final long serialVersionUID = 1935043247792962964L;
+
+    //region General Variables (ones not relating to a specific tab)
     private Campaign campaign;
     private CampaignOptions options;
-    private RandomSkillPreferences rSkillPrefs;
     private LocalDate date;
     private JFrame frame;
     private String camoCategory;
@@ -357,26 +357,25 @@ public class CampaignOptionsDialog extends JDialog {
     //endregion Special Abilities Tab
 
     //region Skill Randomization Tab
-    private JPanel panRandomSkill;
     private JCheckBox chkExtraRandom;
     private JSpinner[] phenotypeSpinners;
-    private JSpinner spnProbAntiMek;
-    private JSpinner spnOverallRecruitBonus;
-    private JSpinner[] spnTypeRecruitBonus;
-    private JSpinner spnArtyProb;
-    private JSpinner spnArtyBonus;
+    private JSpinner spnProbabilityAntiMek;
+    private JSpinner spnOverallRecruitmentBonus;
+    private JSpinner[] spnRoleRecruitmentBonus;
+    private JSpinner spnArtilleryProbability;
+    private JSpinner spnArtilleryBonus;
+    private JSpinner spnSecondaryProbability;
+    private JSpinner spnSecondaryBonus;
     private JSpinner spnTacticsGreen;
-    private JSpinner spnTacticsReg;
-    private JSpinner spnTacticsVet;
+    private JSpinner spnTacticsRegular;
+    private JSpinner spnTacticsVeteran;
     private JSpinner spnTacticsElite;
-    private JSpinner spnCombatSA;
-    private JSpinner spnSupportSA;
-    private JSpinner spnSecondProb;
-    private JSpinner spnSecondBonus;
-    private JSpinner spnAbilGreen;
-    private JSpinner spnAbilReg;
-    private JSpinner spnAbilVet;
-    private JSpinner spnAbilElite;
+    private JSpinner spnSPAsGreen;
+    private JSpinner spnSPAsRegular;
+    private JSpinner spnSPAsVeteran;
+    private JSpinner spnSPAsElite;
+    private JSpinner spnCombatSmallArms;
+    private JSpinner spnSupportSmallArms;
     //endregion Skill Randomization Tab
 
     //region Rank System Tab
@@ -490,6 +489,8 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkUseLightConditions;
     private JCheckBox chkUsePlanetaryConditions;
     //endregion Against the Bot Tab
+
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.CampaignOptionsDialog", new EncodeControl());
     //endregion Variable Declarations
 
     public CampaignOptionsDialog(JFrame parent, boolean modal, Campaign c) {
@@ -511,7 +512,7 @@ public class CampaignOptionsDialog extends JDialog {
         cancelled = false;
 
         initComponents();
-        setOptions(c.getCampaignOptions(), c.getRandomSkillPreferences());
+        setOptions(c.getCampaignOptions());
         setCamoIcon();
         setForceIcon();
         setLocationRelativeTo(parent);
@@ -539,7 +540,6 @@ public class CampaignOptionsDialog extends JDialog {
         panXP = new JPanel();
         panSkill = new JPanel();
         panTech = new JPanel();
-        panRandomSkill = new JPanel();
         panRandomPortrait = new JPanel();
         useEraModsCheckBox = new JCheckBox();
         assignedTechFirstCheckBox = new JCheckBox();
@@ -2791,7 +2791,7 @@ public class CampaignOptionsDialog extends JDialog {
         }
 
         JScrollPane scrSkill = new JScrollPane(panSkill);
-        scrSkill.setPreferredSize(new java.awt.Dimension(500, 400));
+        scrSkill.setPreferredSize(new Dimension(500, 400));
 
         tabOptions.addTab(resourceMap.getString("panSkill.TabConstraints.tabTitle"), scrSkill);
         //endregion Skills Tab
@@ -2813,284 +2813,25 @@ public class CampaignOptionsDialog extends JDialog {
         recreateSPAPanel(!getUnusedSPA().isEmpty());
 
         JScrollPane scrSPA = new JScrollPane(panSpecialAbilities);
-        scrSPA.setPreferredSize(new java.awt.Dimension(500, 400));
+        scrSPA.setPreferredSize(new Dimension(500, 400));
 
         tabOptions.addTab("Special Abilities", scrSPA);
         //endregion Special Abilities Tab
 
         //region Skill Randomization Tab
-        panRandomSkill.setName("panRandomSkill");
-        panRandomSkill.setLayout(new java.awt.GridBagLayout());
-
-        JPanel panRollTable = new JPanel(new GridLayout(6, 3, 5, 0));
-        panRollTable.add(new JLabel("<html><b>Value</b></html>"));
-        panRollTable.add(new JLabel("<html><b>Level</b></html>"));
-        panRollTable.add(new JLabel("<html><b># Abils</b></html>"));
-        panRollTable.add(new JLabel("less than 2"));
-        JLabel lblUltraGreen = new JLabel("Ultra-Green/None");
-        lblUltraGreen.setToolTipText(resourceMap.getString("lblUltraGreen.toolTipText"));
-        panRollTable.add(lblUltraGreen);
-        panRollTable.add(new JLabel("0"));
-        panRollTable.add(new JLabel("2-5"));
-        panRollTable.add(new JLabel(SkillType.SKILL_LEVEL_NAMES[SkillType.EXP_GREEN]));
-        panRollTable.add(new JLabel("0"));
-        panRollTable.add(new JLabel("6-9"));
-        panRollTable.add(new JLabel(SkillType.SKILL_LEVEL_NAMES[SkillType.EXP_REGULAR]));
-        panRollTable.add(new JLabel("0"));
-        panRollTable.add(new JLabel("10-11"));
-        panRollTable.add(new JLabel(SkillType.SKILL_LEVEL_NAMES[SkillType.EXP_VETERAN]));
-        panRollTable.add(new JLabel("1"));
-        panRollTable.add(new JLabel("12 or more"));
-        panRollTable.add(new JLabel(SkillType.SKILL_LEVEL_NAMES[SkillType.EXP_ELITE]));
-        panRollTable.add(new JLabel("2"));
-        panRollTable.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("2d6 + Bonus"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-        JLabel lblOverallRecruitBonus = new JLabel(resourceMap.getString("lblOverallRecruitBonus.text"));
-        chkExtraRandom = new JCheckBox(resourceMap.getString("chkExtraRandom.text"));
-        chkExtraRandom.setToolTipText(resourceMap.getString("chkExtraRandom.toolTipText"));
-        JLabel lblProbAntiMek = new JLabel(resourceMap.getString("lblProbAntiMek.text"));
-        spnProbAntiMek = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
-        ((JSpinner.DefaultEditor) spnProbAntiMek.getEditor()).getTextField().setEditable(false);
-        spnOverallRecruitBonus = new JSpinner(new SpinnerNumberModel(0, -12, 12, 1));
-        ((JSpinner.DefaultEditor) spnOverallRecruitBonus.getEditor()).getTextField().setEditable(false);
-        spnOverallRecruitBonus.setToolTipText(resourceMap.getString("spnOverallRecruitBonus.toolTipText"));
-        spnTypeRecruitBonus = new JSpinner[Person.T_NUM];
-        int nRow = (int) Math.ceil(Person.T_NUM / 4.0);
-        JPanel panTypeRecruitBonus = new JPanel(new GridLayout(nRow, 4));
-        JSpinner spin;
-        JPanel panRecruit;
-        for (int i = 0; i < Person.T_NUM; i++) {
-            panRecruit = new JPanel(new GridBagLayout());
-            spin = new JSpinner(new SpinnerNumberModel(0, -12, 12, 1));
-            ((JSpinner.DefaultEditor) spin.getEditor()).getTextField().setEditable(false);
-            spnTypeRecruitBonus[i] = spin;
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.insets = new Insets(2, 5, 0, 0);
-            panRecruit.add(spin, gridBagConstraints);
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints.weightx = 1.0;
-            panRecruit.add(new JLabel(Person.getRoleDesc(i, false)), gridBagConstraints);
-            panTypeRecruitBonus.add(panRecruit);
-        }
-
-        panTypeRecruitBonus.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(resourceMap.getString("panTypeRecruitBonus.title")),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(chkExtraRandom, gridBagConstraints);
-
-        // Phenotype Percentage Generation
-        List<Phenotype> phenotypes = Phenotype.getExternalPhenotypes();
-        phenotypeSpinners = new JSpinner[phenotypes.size()];
-
-        JPanel phenotypesPanel = new JPanel(new GridLayout((int) Math.ceil(phenotypes.size() / 2.0), 2));
-        phenotypesPanel.setBorder(BorderFactory.createTitledBorder("Trueborn Phenotype Probabilities"));
-
-        for (int i = 0; i < phenotypes.size(); i++) {
-            JSpinner phenotypeSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
-            phenotypeSpinners[i] = phenotypeSpinner;
-            JPanel phenotypePanel = new JPanel();
-            phenotypePanel.add(phenotypeSpinner);
-            phenotypePanel.add(new JLabel(phenotypes.get(i).getName()));
-            phenotypePanel.setToolTipText(phenotypes.get(i).getToolTip());
-            phenotypesPanel.add(phenotypePanel);
-        }
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        panRandomSkill.add(phenotypesPanel, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(panRollTable, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(spnProbAntiMek, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(lblProbAntiMek, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(spnOverallRecruitBonus, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(lblOverallRecruitBonus, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(panTypeRecruitBonus, gridBagConstraints);
-
-        JPanel panArtillery = new JPanel();
-        panArtillery.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Artillery Skill"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        spnArtyProb = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
-        ((JSpinner.DefaultEditor) spnArtyProb.getEditor()).getTextField().setEditable(false);
-        spnArtyProb.setToolTipText(resourceMap.getString("spnArtyProb.toolTipText"));
-        panArtillery.add(spnArtyProb);
-        panArtillery.add(new JLabel("Probability"));
-        spnArtyBonus = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnArtyBonus.getEditor()).getTextField().setEditable(false);
-        panArtillery.add(spnArtyBonus);
-        panArtillery.add(new JLabel("Bonus"));
-        JPanel panSecondary = new JPanel();
-        spnSecondProb = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
-        ((JSpinner.DefaultEditor) spnSecondProb.getEditor()).getTextField().setEditable(false);
-        spnSecondProb.setToolTipText(resourceMap.getString("spnSecondProb.toolTipText"));
-        panSecondary.add(spnSecondProb);
-        panSecondary.add(new JLabel("Probability"));
-        spnSecondBonus = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnSecondBonus.getEditor()).getTextField().setEditable(false);
-        panSecondary.add(spnSecondBonus);
-        panSecondary.add(new JLabel("Bonus"));
-        panSecondary.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Secondary Skills"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        JPanel panTactics = new JPanel();
-        spnTacticsGreen = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnTacticsGreen.getEditor()).getTextField().setEditable(false);
-        spnTacticsGreen.setToolTipText(resourceMap.getString("spnTacticsGreen.toolTipText"));
-        spnTacticsReg = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnTacticsReg.getEditor()).getTextField().setEditable(false);
-        spnTacticsReg.setToolTipText(resourceMap.getString("spnTacticsReg.toolTipText"));
-        spnTacticsVet = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnTacticsVet.getEditor()).getTextField().setEditable(false);
-        spnTacticsVet.setToolTipText(resourceMap.getString("spnTacticsVet.toolTipText"));
-        spnTacticsElite = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnTacticsElite.getEditor()).getTextField().setEditable(false);
-        spnTacticsElite.setToolTipText(resourceMap.getString("spnTacticsElite.toolTipText"));
-        panTactics.add(spnTacticsGreen);
-        panTactics.add(new JLabel("Green"));
-        panTactics.add(spnTacticsReg);
-        panTactics.add(new JLabel("Reg"));
-        panTactics.add(spnTacticsVet);
-        panTactics.add(new JLabel("Vet"));
-        panTactics.add(spnTacticsElite);
-        panTactics.add(new JLabel("Elite"));
-        panTactics.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Tactics Skill"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        JPanel panSmallArms = new JPanel();
-        spnCombatSA = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnCombatSA.getEditor()).getTextField().setEditable(false);
-        spnCombatSA.setToolTipText(resourceMap.getString("spnCombatSA.toolTipText"));
-        spnSupportSA = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnSupportSA.getEditor()).getTextField().setEditable(false);
-        spnSupportSA.setToolTipText(resourceMap.getString("spnSupportSA.toolTipText"));
-        panSmallArms.add(spnCombatSA);
-        panSmallArms.add(new JLabel("Combat Personnel"));
-        panSmallArms.add(spnSupportSA);
-        panSmallArms.add(new JLabel("Support Personnel"));
-        panSmallArms.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Small Arms Skill"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        JPanel panAbilities = new JPanel();
-        spnAbilGreen = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnAbilGreen.getEditor()).getTextField().setEditable(false);
-        spnAbilGreen.setToolTipText(resourceMap.getString("spnAbilGreen.toolTipText"));
-        spnAbilReg = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnAbilReg.getEditor()).getTextField().setEditable(false);
-        spnAbilReg.setToolTipText(resourceMap.getString("spnAbilReg.toolTipText"));
-        spnAbilVet = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnAbilVet.getEditor()).getTextField().setEditable(false);
-        spnAbilVet.setToolTipText(resourceMap.getString("spnAbilVet.toolTipText"));
-        spnAbilElite = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
-        ((JSpinner.DefaultEditor) spnAbilElite.getEditor()).getTextField().setEditable(false);
-        spnAbilElite.setToolTipText(resourceMap.getString("spnAbilElite.toolTipText"));
-        panAbilities.add(spnAbilGreen);
-        panAbilities.add(new JLabel("Green"));
-        panAbilities.add(spnAbilReg);
-        panAbilities.add(new JLabel("Reg"));
-        panAbilities.add(spnAbilVet);
-        panAbilities.add(new JLabel("Vet"));
-        panAbilities.add(spnAbilElite);
-        panAbilities.add(new JLabel("Elite"));
-        panAbilities.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Special Abilities"),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-        JPanel panOtherBonuses = new JPanel(new GridLayout(3, 2));
-        panOtherBonuses.add(panArtillery);
-        panOtherBonuses.add(panSecondary);
-        panOtherBonuses.add(panTactics);
-        panOtherBonuses.add(panAbilities);
-        panOtherBonuses.add(panSmallArms);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        panRandomSkill.add(panOtherBonuses, gridBagConstraints);
-
-        JScrollPane scrRandomSkill = new JScrollPane(panRandomSkill);
-        scrRandomSkill.setPreferredSize(new java.awt.Dimension(500, 400));
-
-        tabOptions.addTab(resourceMap.getString("panRandomSkill.TabConstraints.tabTitle"), scrRandomSkill);
+        tabOptions.addTab(resources.getString("skillRandomization.tabTitle"), createSkillRandomizationTab());
         //endregion Skill Randomization Tab
 
         //region Rank System Tab
         panRank.setName("panRank");
-        panRank.setLayout(new java.awt.GridBagLayout());
+        panRank.setLayout(new GridBagLayout());
 
         JLabel lblRank = new JLabel(resourceMap.getString("lblRank.text"));
         lblRank.setName("lblRank");
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
         panRank.add(lblRank, gridBagConstraints);
 
         DefaultComboBoxModel<String> rankModel = new DefaultComboBoxModel<>();
@@ -4261,6 +4002,526 @@ public class CampaignOptionsDialog extends JDialog {
         pack();
     }
 
+    //region Skill Randomization Tab
+    private JScrollPane createSkillRandomizationTab() {
+        JPanel panRandomSkill = new JPanel();
+        panRandomSkill.setName("panRandomSkill");
+        panRandomSkill.setLayout(new GridBagLayout());
+
+        JPanel panRollTable = createRollTable();
+
+        JLabel lblOverallRecruitBonus = new JLabel(resources.getString("lblOverallRecruitBonus.text"));
+
+        JLabel lblProbAntiMek = new JLabel(resources.getString("lblProbAntiMek.text"));
+        spnProbabilityAntiMek = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
+        ((JSpinner.DefaultEditor) spnProbabilityAntiMek.getEditor()).getTextField().setEditable(false);
+
+        spnOverallRecruitmentBonus = new JSpinner(new SpinnerNumberModel(0, -12, 12, 1));
+        ((JSpinner.DefaultEditor) spnOverallRecruitmentBonus.getEditor()).getTextField().setEditable(false);
+        spnOverallRecruitmentBonus.setToolTipText(resources.getString("spnOverallRecruitBonus.toolTipText"));
+
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+
+        chkExtraRandom = new JCheckBox(resources.getString("chkExtraRandom.text"));
+        chkExtraRandom.setToolTipText(resources.getString("chkExtraRandom.toolTipText"));
+        panRandomSkill.add(chkExtraRandom, gridBagConstraints);
+
+        gridBagConstraints.gridy = 1;
+        panRandomSkill.add(createPhenotypePanel(), gridBagConstraints);
+
+        gridBagConstraints.gridy = 2;
+        panRandomSkill.add(spnProbabilityAntiMek, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+        panRandomSkill.add(panRollTable, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+        panRandomSkill.add(lblProbAntiMek, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+        panRandomSkill.add(spnOverallRecruitmentBonus, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+        panRandomSkill.add(lblOverallRecruitBonus, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+        panRandomSkill.add(createPersonnelRoleRecruitmentBonusPanel(), gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+        panRandomSkill.add(createOtherBonusesPanel(), gridBagConstraints);
+
+        JScrollPane scrRandomSkill = new JScrollPane(panRandomSkill);
+        scrRandomSkill.setPreferredSize(new Dimension(500, 400));
+
+        return scrRandomSkill;
+    }
+
+    public JPanel createPhenotypePanel() {
+        List<Phenotype> phenotypes = Phenotype.getExternalPhenotypes();
+        phenotypeSpinners = new JSpinner[phenotypes.size()];
+
+        JPanel phenotypesPanel = new JPanel(new GridLayout((int) Math.ceil(phenotypes.size() / 2.0), 2));
+        phenotypesPanel.setBorder(BorderFactory.createTitledBorder(resources.getString("phenotypesPanel.border")));
+
+        for (int i = 0; i < phenotypes.size(); i++) {
+            JSpinner phenotypeSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+            phenotypeSpinners[i] = phenotypeSpinner;
+            JPanel phenotypePanel = new JPanel();
+            phenotypePanel.add(phenotypeSpinner);
+            phenotypePanel.add(new JLabel(phenotypes.get(i).getName()));
+            phenotypePanel.setToolTipText(phenotypes.get(i).getToolTip());
+            phenotypesPanel.add(phenotypePanel);
+        }
+        return phenotypesPanel;
+    }
+
+    public JPanel createRollTable() {
+        JLabel lblValueTitle = new JLabel(resources.getString("rollTable.Value.title"));
+        JLabel lblLevelTitle = new JLabel(resources.getString("rollTable.Level.title"));
+        JLabel lblNumberAbilitiesTitle = new JLabel(resources.getString("rollTable.NumberAbilities.title"));
+
+        JLabel lblValueUltraGreenNone = new JLabel(resources.getString("rollTable.Value.UltraGreenNone.text"));
+        JLabel lblLevelUltraGreenNone = new JLabel(SkillLevel.ULTRA_GREEN + "/" + SkillLevel.NONE);
+        lblLevelUltraGreenNone.setToolTipText(resources.getString("rollTable.Level.UltraGreenNone.toolTipText"));
+        JLabel lblNumberAbilitiesUltraGreenNone = new JLabel("0");
+
+        JLabel lblValueGreen = new JLabel("2-5");
+        JLabel lblLevelGreen = new JLabel(SkillLevel.GREEN.toString());
+        JLabel lblNumberAbilitiesGreen = new JLabel("0");
+
+        JLabel lblValueRegular = new JLabel("6-9");
+        JLabel lblLevelRegular = new JLabel(SkillLevel.REGULAR.toString());
+        JLabel lblNumberAbilitiesRegular = new JLabel("0");
+
+        JLabel lblValueVeteran = new JLabel("10-11");
+        JLabel lblLevelVeteran = new JLabel(SkillLevel.VETERAN.toString());
+        JLabel lblNumberAbilitiesVeteran = new JLabel("1");
+
+        JLabel lblValueElite = new JLabel(resources.getString("rollTable.Value.Elite.text"));
+        JLabel lblLevelElite = new JLabel(SkillLevel.ELITE.toString());
+        JLabel lblNumberAbilitiesElite = new JLabel("2");
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(resources.getString("rollTable.border")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblValueTitle)
+                                .addComponent(lblLevelTitle)
+                                .addComponent(lblNumberAbilitiesTitle))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblValueUltraGreenNone)
+                                .addComponent(lblLevelUltraGreenNone)
+                                .addComponent(lblNumberAbilitiesUltraGreenNone))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblValueGreen)
+                                .addComponent(lblLevelGreen)
+                                .addComponent(lblNumberAbilitiesGreen))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblValueRegular)
+                                .addComponent(lblLevelRegular)
+                                .addComponent(lblNumberAbilitiesRegular))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblValueVeteran)
+                                .addComponent(lblLevelVeteran)
+                                .addComponent(lblNumberAbilitiesVeteran))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblValueElite)
+                                .addComponent(lblLevelElite)
+                                .addComponent(lblNumberAbilitiesElite))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblValueTitle)
+                                .addComponent(lblLevelTitle)
+                                .addComponent(lblNumberAbilitiesTitle))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblValueUltraGreenNone)
+                                .addComponent(lblLevelUltraGreenNone)
+                                .addComponent(lblNumberAbilitiesUltraGreenNone))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblValueGreen)
+                                .addComponent(lblLevelGreen)
+                                .addComponent(lblNumberAbilitiesGreen))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblValueRegular)
+                                .addComponent(lblLevelRegular)
+                                .addComponent(lblNumberAbilitiesRegular))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblValueVeteran)
+                                .addComponent(lblLevelVeteran)
+                                .addComponent(lblNumberAbilitiesVeteran))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblValueElite)
+                                .addComponent(lblLevelElite)
+                                .addComponent(lblNumberAbilitiesElite))
+        );
+
+        return panel;
+    }
+
+    private JPanel createPersonnelRoleRecruitmentBonusPanel() {
+        spnRoleRecruitmentBonus = new JSpinner[Person.T_NUM];
+        int nRow = (int) Math.ceil(Person.T_NUM / 4.0);
+        JPanel panRoleRecruitmentBonus = new JPanel(new GridLayout(nRow, 4));
+
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(2, 5, 0, 0);
+
+        for (int i = 0; i < Person.T_NUM; i++) {
+            JPanel panRecruit = new JPanel(new GridBagLayout());
+            JSpinner spin = new JSpinner(new SpinnerNumberModel(0, -12, 12, 1));
+            ((JSpinner.DefaultEditor) spin.getEditor()).getTextField().setEditable(false);
+            spnRoleRecruitmentBonus[i] = spin;
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.weightx = 0;
+            panRecruit.add(spin, gridBagConstraints);
+
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.weightx = 1;
+            panRecruit.add(new JLabel(Person.getRoleDesc(i, false)), gridBagConstraints);
+
+            panRoleRecruitmentBonus.add(panRecruit);
+        }
+
+        panRoleRecruitmentBonus.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(resources.getString("panRoleRecruitmentBonus.border")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+        return panRoleRecruitmentBonus;
+    }
+
+    private JPanel createOtherBonusesPanel() {
+        JPanel panOtherBonuses = new JPanel(new GridLayout(3, 2));
+        panOtherBonuses.add(createArtillerySkillPanel());
+        panOtherBonuses.add(createSecondarySkillPanel());
+        panOtherBonuses.add(createTacticsSkillPanel());
+        panOtherBonuses.add(createSpecialAbilitiesRandomizationPanel());
+        panOtherBonuses.add(createSmallArmsPanel());
+        return panOtherBonuses;
+    }
+
+    private JPanel createArtillerySkillPanel() {
+        spnArtilleryProbability = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
+        ((JSpinner.DefaultEditor) spnArtilleryProbability.getEditor()).getTextField().setEditable(false);
+        spnArtilleryProbability.setToolTipText(resources.getString("spnArtilleryProbability.toolTipText"));
+
+        JLabel lblProbability = new JLabel(resources.getString("lblProbability.text"));
+
+        spnArtilleryBonus = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnArtilleryBonus.getEditor()).getTextField().setEditable(false);
+
+        JLabel lblBonus = new JLabel(resources.getString("lblBonus.text"));
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(resources.getString("artillerySkillsPanel.border")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(spnArtilleryProbability)
+                                .addComponent(lblProbability)
+                                .addComponent(spnArtilleryBonus)
+                                .addComponent(lblBonus, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(spnArtilleryProbability)
+                                .addComponent(lblProbability)
+                                .addComponent(spnArtilleryBonus)
+                                .addComponent(lblBonus))
+        );
+
+        return panel;
+    }
+
+    private JPanel createSecondarySkillPanel() {
+        spnSecondaryProbability = new JSpinner(new SpinnerNumberModel(0, 0, 100, 5));
+        ((JSpinner.DefaultEditor) spnSecondaryProbability.getEditor()).getTextField().setEditable(false);
+        spnSecondaryProbability.setToolTipText(resources.getString("spnSecondaryProbability.toolTipText"));
+
+        JLabel lblProbability = new JLabel(resources.getString("lblProbability.text"));
+
+        spnSecondaryBonus = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnSecondaryBonus.getEditor()).getTextField().setEditable(false);
+
+        JLabel lblBonus = new JLabel(resources.getString("lblBonus.text"));
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(resources.getString("secondarySkillsPanel.border")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(spnSecondaryProbability)
+                                .addComponent(lblProbability)
+                                .addComponent(spnSecondaryBonus)
+                                .addComponent(lblBonus, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(spnSecondaryProbability)
+                                .addComponent(lblProbability)
+                                .addComponent(spnSecondaryBonus)
+                                .addComponent(lblBonus))
+        );
+
+        return panel;
+    }
+
+    private JPanel createTacticsSkillPanel() {
+        spnTacticsGreen = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnTacticsGreen.getEditor()).getTextField().setEditable(false);
+        spnTacticsGreen.setToolTipText(resources.getString("spnTacticsGreen.toolTipText"));
+
+        JLabel lblGreen = new JLabel(SkillLevel.GREEN.toString());
+
+        spnTacticsRegular = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnTacticsRegular.getEditor()).getTextField().setEditable(false);
+        spnTacticsRegular.setToolTipText(resources.getString("spnTacticsRegular.toolTipText"));
+
+        JLabel lblRegular = new JLabel(SkillLevel.REGULAR.toString());
+
+        spnTacticsVeteran = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnTacticsVeteran.getEditor()).getTextField().setEditable(false);
+        spnTacticsVeteran.setToolTipText(resources.getString("spnTacticsVeteran.toolTipText"));
+
+        JLabel lblVeteran = new JLabel(SkillLevel.VETERAN.toString());
+
+        spnTacticsElite = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnTacticsElite.getEditor()).getTextField().setEditable(false);
+        spnTacticsElite.setToolTipText(resources.getString("spnTacticsElite.toolTipText"));
+
+        JLabel lblElite = new JLabel(SkillLevel.ELITE.toString());
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(resources.getString("tacticsSkillPanel.border")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(spnTacticsGreen)
+                                .addComponent(lblGreen)
+                                .addComponent(spnTacticsRegular)
+                                .addComponent(lblRegular)
+                                .addComponent(spnTacticsVeteran)
+                                .addComponent(lblVeteran)
+                                .addComponent(spnTacticsElite)
+                                .addComponent(lblElite, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(spnTacticsGreen)
+                                .addComponent(lblGreen)
+                                .addComponent(spnTacticsRegular)
+                                .addComponent(lblRegular)
+                                .addComponent(spnTacticsVeteran)
+                                .addComponent(lblVeteran)
+                                .addComponent(spnTacticsElite)
+                                .addComponent(lblElite))
+        );
+
+        return panel;
+    }
+
+    private JPanel createSpecialAbilitiesRandomizationPanel() {
+        spnSPAsGreen = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnSPAsGreen.getEditor()).getTextField().setEditable(false);
+        spnSPAsGreen.setToolTipText(resources.getString("spnSPAsGreen.toolTipText"));
+
+        JLabel lblGreen = new JLabel(SkillLevel.GREEN.toString());
+
+        spnSPAsRegular = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnSPAsRegular.getEditor()).getTextField().setEditable(false);
+        spnSPAsRegular.setToolTipText(resources.getString("spnSPAsRegular.toolTipText"));
+
+        JLabel lblRegular = new JLabel(SkillLevel.REGULAR.toString());
+
+        spnSPAsVeteran = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnSPAsVeteran.getEditor()).getTextField().setEditable(false);
+        spnSPAsVeteran.setToolTipText(resources.getString("spnSPAsVeteran.toolTipText"));
+
+        JLabel lblVeteran = new JLabel(SkillLevel.VETERAN.toString());
+
+        spnSPAsElite = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnSPAsElite.getEditor()).getTextField().setEditable(false);
+        spnSPAsElite.setToolTipText(resources.getString("spnSPAsElite.toolTipText"));
+
+        JLabel lblElite = new JLabel(SkillLevel.ELITE.toString());
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(resources.getString("specialAbilitiesRandomizationPanel.border")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(spnSPAsGreen)
+                                .addComponent(lblGreen)
+                                .addComponent(spnSPAsRegular)
+                                .addComponent(lblRegular)
+                                .addComponent(spnSPAsVeteran)
+                                .addComponent(lblVeteran)
+                                .addComponent(spnSPAsElite)
+                                .addComponent(lblElite, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(spnSPAsGreen)
+                                .addComponent(lblGreen)
+                                .addComponent(spnSPAsRegular)
+                                .addComponent(lblRegular)
+                                .addComponent(spnSPAsVeteran)
+                                .addComponent(lblVeteran)
+                                .addComponent(spnSPAsElite)
+                                .addComponent(lblElite))
+        );
+
+        return panel;
+    }
+
+    private JPanel createSmallArmsPanel() {
+        spnCombatSmallArms = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnCombatSmallArms.getEditor()).getTextField().setEditable(false);
+        spnCombatSmallArms.setToolTipText(resources.getString("spnCombatSmallArms.toolTipText"));
+
+        JLabel lblCombatSmallArms = new JLabel(resources.getString("lblCombatSmallArms.text"));
+
+        spnSupportSmallArms = new JSpinner(new SpinnerNumberModel(0, -10, 10, 1));
+        ((JSpinner.DefaultEditor) spnSupportSmallArms.getEditor()).getTextField().setEditable(false);
+        spnSupportSmallArms.setToolTipText(resources.getString("spnSupportSmallArms.toolTipText"));
+
+        JLabel lblSupportSmallArms = new JLabel(resources.getString("lblSupportSmallArms.text"));
+
+        // Layout the Panel
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(resources.getString("smallArmsPanel.border")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(spnCombatSmallArms)
+                                .addComponent(lblCombatSmallArms)
+                                .addComponent(spnSupportSmallArms)
+                                .addComponent(lblSupportSmallArms, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(spnCombatSmallArms)
+                                .addComponent(lblCombatSmallArms)
+                                .addComponent(spnSupportSmallArms)
+                                .addComponent(lblSupportSmallArms))
+        );
+
+        return panel;
+    }
+    //endregion Skill Randomization Tab
+
     private void setUserPreferences() {
         PreferencesNode preferences = MekHQ.getPreferences().forClass(CampaignOptionsDialog.class);
 
@@ -4285,8 +4546,8 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     public void applyPreset(GamePreset gamePreset) {
-        // Handle CampaignOptions and RandomSkillPreferences
-        setOptions(gamePreset.getOptions(), gamePreset.getRandomSkillPreferences());
+        // Handle CampaignOptions
+        setOptions(gamePreset.getOptions());
 
         // Handle SPAs
         tempSPA = (gamePreset.getSpecialAbilities() != null) ? gamePreset.getSpecialAbilities() : new Hashtable<>();
@@ -4315,18 +4576,12 @@ public class CampaignOptionsDialog extends JDialog {
         }
     }
 
-    public void setOptions(CampaignOptions options, RandomSkillPreferences randomSkillPreferences) {
-        // Use the provided options and preferences when possible, but flip if they are null to be safe
+    public void setOptions(CampaignOptions options) {
+        // Use the provided options when possible, but flip if they are null to be safe
         if (options != null) {
             this.options = options;
         } else {
             options = this.options;
-        }
-
-        if (randomSkillPreferences != null) {
-            this.rSkillPrefs = randomSkillPreferences;
-        } else {
-            randomSkillPreferences = this.rSkillPrefs;
         }
 
         //region General Tab
@@ -4468,7 +4723,7 @@ public class CampaignOptionsDialog extends JDialog {
             spnSalaryBase[i].setValue(options.getBaseSalary(i));
         }
 
-        //Prisoners
+        // Prisoners
         comboPrisonerCaptureStyle.setSelectedItem(options.getPrisonerCaptureStyle());
         comboPrisonerStatus.setSelectedItem(options.getDefaultPrisonerStatus());
         chkPrisonerBabyStatus.setSelected(options.getPrisonerBabyStatus());
@@ -4544,30 +4799,30 @@ public class CampaignOptionsDialog extends JDialog {
         //endregion Special Abilities Tab
 
         //region Skill Randomization Tab
-        chkExtraRandom.setSelected(randomSkillPreferences.randomizeSkill());
+        chkExtraRandom.setSelected(options.randomizeSkill());
         int[] phenotypeProbabilities = options.getPhenotypeProbabilities();
         for (int i = 0; i < phenotypeSpinners.length; i++) {
             phenotypeSpinners[i].setValue(phenotypeProbabilities[i]);
         }
-        spnProbAntiMek.setValue(rSkillPrefs.getAntiMekProb());
-        spnOverallRecruitBonus.setValue(rSkillPrefs.getOverallRecruitBonus());
+        spnProbabilityAntiMek.setValue(options.getAntiMekProbability());
+        spnOverallRecruitmentBonus.setValue(options.getOverallRecruitmentBonus());
         for (int i = 0; i < Person.T_NUM; i++) {
-            spnTypeRecruitBonus[i].setValue(rSkillPrefs.getRecruitBonus(i));
+            spnRoleRecruitmentBonus[i].setValue(options.getPersonnelRoleRecruitmentBonuses()[i]);
         }
-        spnArtyProb.setValue(rSkillPrefs.getArtilleryProb());
-        spnArtyBonus.setValue(rSkillPrefs.getArtilleryBonus());
-        spnSecondProb.setValue(rSkillPrefs.getSecondSkillProb());
-        spnSecondBonus.setValue(rSkillPrefs.getSecondSkillBonus());
-        spnTacticsGreen.setValue(rSkillPrefs.getTacticsMod(SkillType.EXP_GREEN));
-        spnTacticsReg.setValue(rSkillPrefs.getTacticsMod(SkillType.EXP_REGULAR));
-        spnTacticsVet.setValue(rSkillPrefs.getTacticsMod(SkillType.EXP_VETERAN));
-        spnTacticsElite.setValue(rSkillPrefs.getTacticsMod(SkillType.EXP_ELITE));
-        spnAbilGreen.setValue(rSkillPrefs.getSpecialAbilBonus(SkillType.EXP_GREEN));
-        spnAbilReg.setValue(rSkillPrefs.getSpecialAbilBonus(SkillType.EXP_REGULAR));
-        spnAbilVet.setValue(rSkillPrefs.getSpecialAbilBonus(SkillType.EXP_VETERAN));
-        spnAbilElite.setValue(rSkillPrefs.getSpecialAbilBonus(SkillType.EXP_ELITE));
-        spnCombatSA.setValue(rSkillPrefs.getCombatSmallArmsBonus());
-        spnSupportSA.setValue(rSkillPrefs.getSupportSmallArmsBonus());
+        spnArtilleryProbability.setValue(options.getArtilleryProbability());
+        spnArtilleryBonus.setValue(options.getArtilleryBonus());
+        spnSecondaryProbability.setValue(options.getSecondarySkillProbability());
+        spnSecondaryBonus.setValue(options.getSecondarySkillBonus());
+        spnTacticsGreen.setValue(options.getTacticsModifier(SkillLevel.GREEN));
+        spnTacticsRegular.setValue(options.getTacticsModifier(SkillLevel.REGULAR));
+        spnTacticsVeteran.setValue(options.getTacticsModifier(SkillLevel.VETERAN));
+        spnTacticsElite.setValue(options.getTacticsModifier(SkillLevel.ELITE));
+        spnSPAsGreen.setValue(options.getSpecialAbilityBonus(SkillLevel.GREEN));
+        spnSPAsRegular.setValue(options.getSpecialAbilityBonus(SkillLevel.REGULAR));
+        spnSPAsVeteran.setValue(options.getSpecialAbilityBonus(SkillLevel.VETERAN));
+        spnSPAsElite.setValue(options.getSpecialAbilityBonus(SkillLevel.ELITE));
+        spnCombatSmallArms.setValue(options.getCombatSmallArmsBonus());
+        spnSupportSmallArms.setValue(options.getSupportSmallArmsBonus());
         //endregion Skill Randomization Tab
 
         //region Rank System Tab
@@ -4794,7 +5049,7 @@ public class CampaignOptionsDialog extends JDialog {
         }
 
         updateOptions();
-        GamePreset preset = new GamePreset(gpdd.getTitle(), gpdd.getDesc(), options, rSkillPrefs,
+        GamePreset preset = new GamePreset(gpdd.getTitle(), gpdd.getDesc(), options,
                 SkillType.lookupHash, SpecialAbility.getAllSpecialAbilities());
 
         // Then save it out to that file.
@@ -4967,28 +5222,6 @@ public class CampaignOptionsDialog extends JDialog {
         options.setTechLevel(choiceTechLevel.getSelectedIndex());
         campaign.getGameOptions().getOption("techlevel").setValue((String)choiceTechLevel.getSelectedItem());
 
-        rSkillPrefs.setOverallRecruitBonus((Integer) spnOverallRecruitBonus.getModel().getValue());
-        for (int i = 0; i < Person.T_NUM; i++) {
-            rSkillPrefs.setRecruitBonus(i, (Integer) spnTypeRecruitBonus[i].getModel().getValue());
-        }
-        rSkillPrefs.setRandomizeSkill(chkExtraRandom.isSelected());
-        rSkillPrefs.setAntiMekProb((Integer) spnProbAntiMek.getModel().getValue());
-        rSkillPrefs.setArtilleryProb((Integer) spnArtyProb.getModel().getValue());
-        rSkillPrefs.setArtilleryBonus((Integer) spnArtyBonus.getModel().getValue());
-        rSkillPrefs.setSecondSkillProb((Integer) spnSecondProb.getModel().getValue());
-        rSkillPrefs.setSecondSkillBonus((Integer) spnSecondBonus.getModel().getValue());
-        rSkillPrefs.setTacticsMod(SkillType.EXP_GREEN, (Integer) spnTacticsGreen.getModel().getValue());
-        rSkillPrefs.setTacticsMod(SkillType.EXP_REGULAR, (Integer) spnTacticsReg.getModel().getValue());
-        rSkillPrefs.setTacticsMod(SkillType.EXP_VETERAN, (Integer) spnTacticsVet.getModel().getValue());
-        rSkillPrefs.setTacticsMod(SkillType.EXP_ELITE, (Integer) spnTacticsElite.getModel().getValue());
-        rSkillPrefs.setCombatSmallArmsBonus((Integer) spnCombatSA.getModel().getValue());
-        rSkillPrefs.setSupportSmallArmsBonus((Integer) spnSupportSA.getModel().getValue());
-        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_GREEN, (Integer) spnAbilGreen.getModel().getValue());
-        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_REGULAR, (Integer) spnAbilReg.getModel().getValue());
-        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_VETERAN, (Integer) spnAbilVet.getModel().getValue());
-        rSkillPrefs.setSpecialAbilBonus(SkillType.EXP_ELITE, (Integer) spnAbilElite.getModel().getValue());
-        campaign.setRandomSkillPreferences(rSkillPrefs);
-
         for (int i = 0; i < phenotypeSpinners.length; i++) {
             options.setPhenotypeProbability(i, (Integer) phenotypeSpinners[i].getValue());
         }
@@ -5071,6 +5304,33 @@ public class CampaignOptionsDialog extends JDialog {
         options.setUseAtBPrisonerDefection(chkAtBPrisonerDefection.isSelected());
         options.setUseAtBPrisonerRansom(chkAtBPrisonerRansom.isSelected());
         //endregion Personnel Tab
+
+        //region Skill Randomization Tab
+        options.setRandomizeSkill(chkExtraRandom.isSelected());
+        for (int i = 0; i < phenotypeSpinners.length; i++) {
+            options.setPhenotypeProbability(i, (Integer) phenotypeSpinners[i].getValue());
+        }
+        options.setAntiMekProbability((Integer) spnProbabilityAntiMek.getModel().getValue());
+        options.setOverallRecruitmentBonus((Integer) spnOverallRecruitmentBonus.getModel().getValue());
+        for (int i = 0; i < Person.T_NUM; i++) {
+            options.setPersonnelRoleRecruitmentBonus(i, (Integer) spnRoleRecruitmentBonus[i].getModel().getValue());
+        }
+        options.setArtilleryProbability((Integer) spnArtilleryProbability.getModel().getValue());
+        options.setArtilleryBonus((Integer) spnArtilleryBonus.getModel().getValue());
+        options.setSecondarySkillProbability((Integer) spnSecondaryProbability.getModel().getValue());
+        options.setSecondarySkillBonus((Integer) spnSecondaryBonus.getModel().getValue());
+        options.setTacticsModifier(SkillLevel.GREEN, (Integer) spnTacticsGreen.getModel().getValue());
+        options.setTacticsModifier(SkillLevel.REGULAR, (Integer) spnTacticsRegular.getModel().getValue());
+        options.setTacticsModifier(SkillLevel.VETERAN, (Integer) spnTacticsVeteran.getModel().getValue());
+        options.setTacticsModifier(SkillLevel.ELITE, (Integer) spnTacticsElite.getModel().getValue());
+        options.setSpecialAbilityBonus(SkillLevel.GREEN, (Integer) spnSPAsGreen.getModel().getValue());
+        options.setSpecialAbilityBonus(SkillLevel.REGULAR, (Integer) spnSPAsRegular.getModel().getValue());
+        options.setSpecialAbilityBonus(SkillLevel.VETERAN, (Integer) spnSPAsVeteran.getModel().getValue());
+        options.setSpecialAbilityBonus(SkillLevel.ELITE, (Integer) spnSPAsElite.getModel().getValue());
+        options.setCombatSmallArmsBonus((Integer) spnCombatSmallArms.getModel().getValue());
+        options.setSupportSmallArmsBonus((Integer) spnSupportSmallArms.getModel().getValue());
+        //endregion Skill Randomization Tab
+
 
         //start SPA
         SpecialAbility.replaceSpecialAbilities(getCurrentSPA());

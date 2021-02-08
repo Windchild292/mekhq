@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 MegaMek team
+ * Copyright (C) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,9 +18,7 @@
  */
 package mekhq.campaign.personnel.generator;
 
-import java.util.Objects;
-
-import mekhq.campaign.RandomSkillPreferences;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 
@@ -29,31 +27,13 @@ import mekhq.campaign.personnel.SkillType;
  * for a {@link Person}.
  */
 public abstract class AbstractSpecialAbilityGenerator {
-
-    private RandomSkillPreferences rskillPrefs = new RandomSkillPreferences();
-
-    /**
-     * Gets the {@link RandomSkillPreferences}.
-     * @return The {@link RandomSkillPreferences} to use.
-     */
-    public RandomSkillPreferences getSkillPreferences() {
-        return rskillPrefs;
-    }
-
-    /**
-     * Sets the {@link RandomSkillPreferences}.
-     * @param skillPreferences A {@link RandomSkillPreferences} to use.
-     */
-    public void setSkillPreferences(RandomSkillPreferences skillPreferences) {
-        rskillPrefs = Objects.requireNonNull(skillPreferences);
-    }
-
     /**
      * Generates special abilities for the {@link Person} given their
      * experience level.
+     * @param campaign The {@link Campaign} the {@link Person} is a member of
      * @param person The {@link Person} to add special abilities.
      * @param expLvl The experience level of the person (e.g. {@link SkillType#EXP_GREEN}).
      * @return A value indicating whether or not a special ability was assigned.
      */
-    public abstract boolean generateSpecialAbilities(Person person, int expLvl);
+    public abstract boolean generateSpecialAbilities(Campaign campaign, Person person, int expLvl);
 }

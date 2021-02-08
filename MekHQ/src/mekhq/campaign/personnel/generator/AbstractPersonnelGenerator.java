@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 MegaMek team
+ * Copyright (C) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel.generator;
 
@@ -27,7 +27,6 @@ import megamek.common.Compute;
 import megamek.common.enums.Gender;
 import mekhq.Utilities;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.Phenotype;
@@ -38,8 +37,6 @@ import mekhq.campaign.personnel.enums.Phenotype;
  */
 public abstract class AbstractPersonnelGenerator {
     private RandomNameGenerator randomNameGenerator = RandomNameGenerator.getInstance();
-
-    private RandomSkillPreferences rSkillPrefs = new RandomSkillPreferences();
 
     /**
      * Gets the {@link RandomNameGenerator}.
@@ -55,22 +52,6 @@ public abstract class AbstractPersonnelGenerator {
      */
     public void setNameGenerator(RandomNameGenerator rng) {
         randomNameGenerator = Objects.requireNonNull(rng);
-    }
-
-    /**
-     * Gets the {@link RandomSkillPreferences}.
-     * @return The {@link RandomSkillPreferences} to use.
-     */
-    public RandomSkillPreferences getSkillPreferences() {
-        return rSkillPrefs;
-    }
-
-    /**
-     * Sets the {@link RandomSkillPreferences}.
-     * @param skillPreferences A {@link RandomSkillPreferences} to use.
-     */
-    public void setSkillPreferences(RandomSkillPreferences skillPreferences) {
-        rSkillPrefs = Objects.requireNonNull(skillPreferences);
     }
 
     /**
@@ -99,8 +80,8 @@ public abstract class AbstractPersonnelGenerator {
      * @return An integer value between {@link SkillType#EXP_ULTRA_GREEN} and {@link SkillType#EXP_ELITE}.
      */
     protected int generateExperienceLevel(Campaign campaign, Person person) {
-        int bonus = getSkillPreferences().getOverallRecruitBonus()
-                + getSkillPreferences().getRecruitBonus(person.getPrimaryRole());
+        int bonus = campaign.getCampaignOptions().getOverallRecruitmentBonus()
+                + campaign.getCampaignOptions().getPersonnelRoleRecruitmentBonuses()[person.getPrimaryRole()];
 
         // LAM pilots get +3 to random experience roll
         if ((person.getPrimaryRole() == Person.T_MECHWARRIOR) && (person.getSecondaryRole() == Person.T_AERO_PILOT)) {

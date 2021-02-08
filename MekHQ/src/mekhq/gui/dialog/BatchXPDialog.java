@@ -416,7 +416,7 @@ public final class BatchXPDialog extends JDialog {
                             && (p.getExperienceLevel(false) > startingExperienceLevel)
                             && (startingExperienceLevel >= SkillType.EXP_REGULAR)) {
                         SingleSpecialAbilityGenerator spaGenerator = new SingleSpecialAbilityGenerator();
-                        String spa = spaGenerator.rollSPA(p);
+                        String spa = spaGenerator.rollSPA(campaign, p);
                         if (null == spa) {
                             if (campaign.getCampaignOptions().useEdge()) {
                                 p.getOptions().acquireAbility(PilotOptions.EDGE_ADVANTAGES, "edge", p.getEdge() + 1);

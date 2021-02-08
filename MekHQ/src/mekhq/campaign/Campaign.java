@@ -243,7 +243,6 @@ public class Campaign implements Serializable, ITechManager {
     private List<String> customs;
 
     private CampaignOptions campaignOptions;
-    private RandomSkillPreferences rskillPrefs = new RandomSkillPreferences();
     private MekHQ app;
 
     private ShoppingList shoppingList;
@@ -1556,7 +1555,6 @@ public class Campaign implements Serializable, ITechManager {
     public AbstractPersonnelGenerator getPersonnelGenerator(AbstractFactionSelector factionSelector, AbstractPlanetSelector planetSelector) {
         DefaultPersonnelGenerator generator = new DefaultPersonnelGenerator(factionSelector, planetSelector);
         generator.setNameGenerator(RandomNameGenerator.getInstance());
-        generator.setSkillPreferences(getRandomSkillPreferences());
         return generator;
     }
     //endregion Personnel Selectors and Generators
@@ -4120,34 +4118,33 @@ public class Campaign implements Serializable, ITechManager {
         writeMapToXml(pw1, indent, "missions", missions); // Missions
         // the forces structure is hierarchical, but that should be handled
         // internally from with writeToXML function for Force
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "forces");
-        forces.writeToXml(pw1, indent + 1);
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "forces");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "forces");
+        forces.writeToXml(pw1, indent);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "forces");
         finances.writeToXml(pw1, indent);
         location.writeToXml(pw1, indent);
         shoppingList.writeToXml(pw1, indent);
 
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "kills");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "kills");
         for (List<Kill> kills : kills.values()) {
             for (Kill k : kills) {
-                k.writeToXml(pw1, indent + 1);
+                k.writeToXml(pw1, indent);
             }
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "kills");
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "skillTypes");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "kills");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "skillTypes");
         for (String name : SkillType.skillList) {
             SkillType type = SkillType.getType(name);
             if (null != type) {
-                type.writeToXml(pw1, indent + 1);
+                type.writeToXml(pw1, indent);
             }
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "skillTypes");
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "specialAbilities");
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "skillTypes");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "specialAbilities");
         for (String key : SpecialAbility.getAllSpecialAbilities().keySet()) {
-            SpecialAbility.getAbility(key).writeToXml(pw1, indent + 1);
+            SpecialAbility.getAbility(key).writeToXml(pw1, indent);
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "specialAbilities");
-        rskillPrefs.writeToXml(pw1, indent);
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "specialAbilities");
         // parts is the biggest so it goes last
         parts.writeToXml(pw1, indent, "parts"); // Parts
 
@@ -5576,14 +5573,6 @@ public class Campaign implements Serializable, ITechManager {
     public int getUnitRatingAsInteger() {
         return getCampaignOptions().getUnitRatingMethod().isEnabled()
                 ? getUnitRating().getUnitRatingAsInteger() : IUnitRating.DRAGOON_C;
-    }
-
-    public RandomSkillPreferences getRandomSkillPreferences() {
-        return rskillPrefs;
-    }
-
-    public void setRandomSkillPreferences(RandomSkillPreferences prefs) {
-        rskillPrefs = prefs;
     }
 
     public void setStartingSystem() {
