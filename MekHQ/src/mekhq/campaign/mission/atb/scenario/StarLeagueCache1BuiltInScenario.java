@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 The Megamek Team. All rights reserved.
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,13 +10,12 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.mission.atb.scenario;
 
 import megamek.client.generator.RandomSkillsGenerator;
@@ -28,7 +27,7 @@ import megamek.common.EntityWeightClass;
 import megamek.common.MechSummary;
 import megamek.common.UnitType;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.AtBUnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBDynamicScenarioFactory;
 import mekhq.campaign.mission.AtBScenario;
@@ -127,7 +126,8 @@ public class StarLeagueCache1BuiltInScenario extends AtBScenario {
                 ms = msl.get(0);
             }
         } else {
-            ms = campaign.getUnitGenerator().generate("SL", UnitType.MEK, UnitMarket.getRandomMechWeight(), 2750,
+            ms = campaign.getUnitGenerator().generate("SL", UnitType.MEK,
+                    AtBUnitMarket.getRandomMechWeight(), 2750,
                     (roll == 6) ? IUnitRating.DRAGOON_A : IUnitRating.DRAGOON_D);
         }
         Entity en = (ms == null) ? null

@@ -91,7 +91,7 @@ public class ContractMarketDialog extends JDialog {
         campaign = c;
         contractMarket = c.getContractMarket();
         possibleRetainerContracts = new ArrayList<>();
-        if (c.getFactionCode().equals("MERC")) { //$NON-NLS-1$
+        if (c.getFactionCode().equals("MERC")) {
             countSuccessfulContracts();
         }
         initComponents();
@@ -485,7 +485,7 @@ public class ContractMarketDialog extends JDialog {
             return;
         }
         contractView = new ContractSummaryPanel(selectedContract, campaign,
-                campaign.getCampaignOptions().getUseAtB()
+                campaign.getCampaignOptions().getContractMarketMethod().isAtB()
                         && selectedContract instanceof AtBContract
                         && !((AtBContract) selectedContract).isSubcontract());
         scrollContractView.setViewportView(contractView);

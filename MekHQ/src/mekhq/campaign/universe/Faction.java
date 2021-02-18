@@ -100,6 +100,22 @@ public class Faction {
         return color;
     }
 
+    public boolean isMercenary() {
+        return is(Tag.MERC);
+    }
+
+    public boolean isRebel() {
+        return is(Tag.REBEL);
+    }
+
+    public boolean isPirate() {
+        return is(Tag.PIRATE);
+    }
+
+    public boolean isRebelOrPirate() {
+        return isRebel() || isPirate();
+    }
+
     public boolean isClan() {
         return is(Tag.CLAN);
     }
@@ -108,8 +124,32 @@ public class Faction {
         return "CS".equals(shortName);
     }
 
+    public boolean isInnerSphere() {
+        return is(Tag.IS);
+    }
+
     public boolean isPeriphery() {
         return is(Tag.PERIPHERY);
+    }
+
+    public boolean isMinorPower() {
+        return is(Tag.MINOR);
+    }
+
+    public boolean isMajorPower() {
+        return is(Tag.MAJOR);
+    }
+
+    public boolean isSuperPower() {
+        return is(Tag.SUPER);
+    }
+
+    public boolean isMajorOrSuperPower() {
+        return isMajorPower() || isSuperPower();
+    }
+
+    public boolean isISMajorOrSuperPower() {
+        return isInnerSphere() || isMajorOrSuperPower();
     }
 
     public String getNameGenerator() {

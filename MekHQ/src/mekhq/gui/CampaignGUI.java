@@ -713,13 +713,13 @@ public class CampaignGUI extends JPanel {
         miContractMarket = new JMenuItem(resourceMap.getString("miContractMarket.text"));
         miContractMarket.setMnemonic(KeyEvent.VK_C);
         miContractMarket.addActionListener(evt -> showContractMarket());
-        miContractMarket.setVisible(getCampaign().getCampaignOptions().getUseAtB());
+        miContractMarket.setVisible(!getCampaign().getCampaignOptions().getContractMarketMethod().isNone());
         menuMarket.add(miContractMarket);
 
         miUnitMarket = new JMenuItem(resourceMap.getString("miUnitMarket.text"));
         miUnitMarket.setMnemonic(KeyEvent.VK_U);
         miUnitMarket.addActionListener(evt -> showUnitMarket());
-        miUnitMarket.setVisible(getCampaign().getCampaignOptions().getUseAtB());
+        miUnitMarket.setVisible(!getCampaign().getCampaignOptions().getUnitMarketMethod().isNone());
         menuMarket.add(miUnitMarket);
 
         miShipSearch = new JMenuItem(resourceMap.getString("miShipSearch.text"));
@@ -1261,13 +1261,21 @@ public class CampaignGUI extends JPanel {
     }
 
     public void showContractMarket() {
-        ContractMarketDialog cmd = new ContractMarketDialog(getFrame(), getCampaign());
-        cmd.setVisible(true);
+        if (getCampaign().getContractMarket() == null) {
+            MekHQ.getLogger().error("Attempted to show the contract market while it is disabled");
+        } else {
+            ContractMarketDialog cmd = new ContractMarketDialog(getFrame(), getCampaign());
+            cmd.setVisible(true);
+        }
     }
 
     public void showUnitMarket() {
-        UnitMarketDialog umd = new UnitMarketDialog(getFrame(), getCampaign());
-        umd.setVisible(true);
+        if (getCampaign().getUnitMarket() == null) {
+            MekHQ.getLogger().error("Attempted to show the unit market while it is disabled");
+        } else {
+            UnitMarketDialog umd = new UnitMarketDialog(getFrame(), getCampaign());
+            umd.setVisible(true);
+        }
     }
 
     public void showShipSearch() {
@@ -1430,14 +1438,15 @@ public class CampaignGUI extends JPanel {
             }
         }
 
+        miContractMarket.setVisible(!getCampaign().getCampaignOptions().getContractMarketMethod().isNone());
+        miUnitMarket.setVisible(!getCampaign().getCampaignOptions().getUnitMarketMethod().isNone());
+
         if (atb != getCampaign().getCampaignOptions().getUseAtB()) {
             if (getCampaign().getCampaignOptions().getUseAtB()) {
                 getCampaign().initAtB(false);
                 //refresh lance assignment table
                 MekHQ.triggerEvent(new OrganizationChangedEvent(getCampaign().getForces()));
             }
-            miContractMarket.setVisible(getCampaign().getCampaignOptions().getUseAtB());
-            miUnitMarket.setVisible(getCampaign().getCampaignOptions().getUseAtB());
             miShipSearch.setVisible(getCampaign().getCampaignOptions().getUseAtB());
             miRetirementDefectionDialog.setVisible(getCampaign().getCampaignOptions().getUseAtB());
             if (getCampaign().getCampaignOptions().getUseAtB()) {

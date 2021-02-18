@@ -45,7 +45,8 @@ import mekhq.campaign.event.OptionsChangedEvent;
  * TODO : Fortress Republic in a way that doesn't involve hard-coding them here.
  */
 public class RandomFactionGenerator {
-    /* When checking for potential enemies, count the planets controlled
+    /*
+     * When checking for potential enemies, count the planets controlled
      * by potentially hostile factions within a certain number of jumps of
      * friendly worlds; the number is based on the region of space.
      */
@@ -202,6 +203,14 @@ public class RandomFactionGenerator {
     }
 
     /**
+     * @return the generated employer as a faction, or null if nothing is returned.
+     */
+    public @Nullable Faction getEmployerFaction() {
+        final String employer = getEmployer();
+        return (employer == null) ? null : Factions.getInstance().getFaction(employer);
+    }
+
+    /**
      * Selects a faction from those with a presence in the region weighted by number of systems controlled.
      * Excludes Clan factions and non-faction place holders (unknown, abandoned, none).
      *
@@ -210,10 +219,7 @@ public class RandomFactionGenerator {
     public String getEmployer() {
         WeightedMap<Faction> employers = buildEmployerMap();
         Faction f = employers.randomItem();
-        if (null != f) {
-            return f.getShortName();
-        }
-        return null;
+        return (f == null) ? null : f.getShortName();
     }
 
     /**
@@ -266,9 +272,9 @@ public class RandomFactionGenerator {
         if (null != enemy) {
             return enemy.getShortName();
         }
-        
+
         MekHQ.getLogger().error("Could not find enemy for " + employerName); //$NON-NLS-1$
-        
+
         // Fallback; there are always pirates.
         return "PIR";
     }
@@ -442,7 +448,7 @@ public class RandomFactionGenerator {
      * @param defender  The faction key of the defender
      * @return          The planetId of the chosen planet, or null if there are no target candidates
      */
-    @Nullable public String getMissionTarget(String attacker, String defender) {
+    public @Nullable String getMissionTarget(String attacker, String defender) {
         Faction f1 = Factions.getInstance().getFaction(attacker);
         Faction f2 = Factions.getInstance().getFaction(defender);
         if (null == f1) {
