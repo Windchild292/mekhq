@@ -535,8 +535,8 @@ public final class CommandCenterTab extends CampaignGuiTab {
     private void getUnit() {
         if (MekHQ.getMekHQOptions().getCommandCenterUseUnitMarket()
                 && !getCampaign().getCampaignOptions().getUnitMarketMethod().isNone()) {
-            UnitMarketDialog umd = new UnitMarketDialog(getFrame(), getCampaign());
-            umd.setVisible(true);
+            UnitMarketDialog unitMarketDialog = new UnitMarketDialog(getFrame(), getCampaign());
+            unitMarketDialog.setVisible(true);
         } else {
             UnitLoadingDialog unitLoadingDialog = new UnitLoadingDialog(getFrame());
             if (!MechSummaryCache.getInstance().isInitialized()) {

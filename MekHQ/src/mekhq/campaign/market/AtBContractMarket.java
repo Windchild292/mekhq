@@ -22,9 +22,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringJoiner;
 
-import megamek.common.util.StringUtil;
 import mekhq.campaign.market.enums.ContractMarketMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -250,30 +248,30 @@ public class AtBContractMarket extends AbstractContractMarket {
     //endregion Process New Day
 
     public int getRerollsUsed(final Contract contract, final int clause) {
-        return (getClauseModifiers().get(contract.getId()) == null) ? 0
-                : getClauseModifiers().get(contract.getId()).getRerollsUsed()[clause];
+        return (getClauseModifiers().get(contract) == null) ? 0
+                : getClauseModifiers().get(contract).getRerollsUsed()[clause];
     }
 
     public void rerollClause(final Campaign campaign, final Contract contract, final int clause) {
-        if (getClauseModifiers().get(contract.getId()) == null) {
+        if (getClauseModifiers().get(contract) == null) {
             return;
         }
 
         switch (clause) {
             case CLAUSE_COMMAND:
-                rollCommandClause(contract, getClauseModifiers().get(contract.getId()).getModifiers()[clause]);
+                rollCommandClause(contract, getClauseModifiers().get(contract).getModifiers()[clause]);
                 break;
             case CLAUSE_SALVAGE:
-                rollSalvageClause(contract, getClauseModifiers().get(contract.getId()).getModifiers()[clause]);
+                rollSalvageClause(contract, getClauseModifiers().get(contract).getModifiers()[clause]);
                 break;
             case CLAUSE_TRANSPORT:
-                rollTransportClause(contract, getClauseModifiers().get(contract.getId()).getModifiers()[clause]);
+                rollTransportClause(contract, getClauseModifiers().get(contract).getModifiers()[clause]);
                 break;
             case CLAUSE_SUPPORT:
-                rollSupportClause(contract, getClauseModifiers().get(contract.getId()).getModifiers()[clause]);
+                rollSupportClause(contract, getClauseModifiers().get(contract).getModifiers()[clause]);
                 break;
         }
-        getClauseModifiers().get(contract.getId()).getRerollsUsed()[clause]++;
+        getClauseModifiers().get(contract).getRerollsUsed()[clause]++;
         contract.calculateContract(campaign);
     }
 
@@ -538,7 +536,7 @@ public class AtBContractMarket extends AbstractContractMarket {
 
     public void addFollowup(final Campaign campaign, final AtBContract contract,
                             final int unitRatingModifier) {
-        if (followupContracts.containsValue(contract.getId())) {
+        if (getFollowupContracts().containsValue(contract)) {
             return;
         }
         AtBContract followup = new AtBContract("Followup Contract");
@@ -616,7 +614,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         if (AtBContract.isMinorPower(contract.getEmployerCode())) {
             mod -= 1;
         }
-        if (contract.getEnemyCode().equals("IND") || contract.getEnemyCode().equals("PIND")) {
+        if (contract.getEnemyFaction().isIndependent()) {
             mod -= 2;
         }
         if (contract.getMissionType() == AtBContract.MT_PLANETARYASSAULT) {
@@ -777,7 +775,7 @@ public class AtBContractMarket extends AbstractContractMarket {
             clauseModifiers.getModifiers()[CLAUSE_TRANSPORT] += 1;
         }
 
-        if (contract.getEmployerCode().equals("IND") || contract.getEmployerCode().equals("PIND")) {
+        if (contract.getEmployerFaction().isIndependent()) {
             clauseModifiers.getModifiers()[CLAUSE_COMMAND] += 0;
             clauseModifiers.getModifiers()[CLAUSE_SALVAGE] += -1;
             clauseModifiers.getModifiers()[CLAUSE_SUPPORT] += -1;
@@ -856,110 +854,44 @@ public class AtBContractMarket extends AbstractContractMarket {
     @Override
     protected void writeBodyToXML(final PrintWriter pw, int indent) {
         super.writeBodyToXML(pw, indent);
-        for (final Contract key : getClauseModifiers().keySet()) {
-            if (!getContracts().contains(key)) {
-                continue;
+        for (final Contract key : getContracts()) {
+            if (getClauseModifiers().containsKey(key)) {
+                getClauseModifiers().get(key).writeToXML(pw, indent, key);
             }
-            pw.println(MekHqXmlUtil.indentStr(indent++) + "<clauseModifiers id=\"" + key.getId() + "\">");
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "modifiers", StringUtils.join(getClauseModifiers().get(key).getModifiers()));
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "rerollsUsed", StringUtils.join(getClauseModifiers().get(key).getRerollsUsed()));
-            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "clauseModifiers");
         }
     }
 
-    public void writeToXml(PrintWriter pw1, int indent) {
-        for (final Contract key : getClauseModifiers().keySet()) {
-            StringBuilder rerolls = new StringBuilder();
-            StringBuilder mods = new StringBuilder();
-            for (int i = 0; i < CLAUSE_NUM; i++) {
-                rerolls.append(getClauseModifiers().get(key).getRerollsUsed()[i]).append((i < CLAUSE_NUM - 1) ? "," : "");
-                mods.append(getClauseModifiers().get(key).getModifiers()[i]).append((i < CLAUSE_NUM - 1) ? "," : "");
+    @Override
+    protected void parseXMLNode(final Node wn, final Campaign campaign, final Version version) {
+        super.parseXMLNode(wn, campaign, version);
+
+        if (wn.getNodeName().equalsIgnoreCase("clauseModifiers")
+                || wn.getNodeName().equalsIgnoreCase("clauseMods")) { // Legacy - 0.49.X removal
+            final ClauseModifiers clauseModifiers = ClauseModifiers.parseFromXML(wn);
+            if (clauseModifiers != null) {
+                getClauseModifiers().put(
+                        getContracts().get(Integer.parseInt(wn.getAttributes().getNamedItem("id").getTextContent())),
+                        clauseModifiers);
             }
-            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "mods", mods.toString());
-            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "rerollsUsed", rerolls.toString());
-            pw1.println(MekHqXmlUtil.indentStr(indent+1) + "</clauseMods>");
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</contractMarket>");
-    }
-
-    public static AtBContractMarket generateInstanceFromXML(Node wn, Campaign c, Version version) {
-        ContractMarket retVal = null;
-
-        try {
-            // Instantiate the correct child class, and call its parsing function.
-            retVal = new ContractMarket();
-
-            // Okay, now load Part-specific fields!
-            NodeList nl = wn.getChildNodes();
-
-            // Loop through the nodes and load our contract offers
-            for (int x = 0; x < nl.getLength(); x++) {
-                Node wn2 = nl.item(x);
-
-                // If it's not an element node, we ignore it.
-                if (wn2.getNodeType() != Node.ELEMENT_NODE) {
-                    continue;
-                }
-
-                if (wn2.getNodeName().equalsIgnoreCase("lastId")) {
-                    retVal.lastId = Integer.parseInt(wn2.getTextContent());
-                } else if (wn2.getNodeName().equalsIgnoreCase("mission")) {
-                    Mission m = Mission.generateInstanceFromXML(wn2, c, version);
-
-                    if (m != null && m instanceof Contract) {
-                        retVal.contracts.add((Contract)m);
-                        retVal.contractIds.put(m.getId(), (Contract)m);
-                    }
-                } else if (wn2.getNodeName().equalsIgnoreCase("clauseMods")) {
-                    int key = Integer.parseInt(wn2.getAttributes().getNamedItem("id").getTextContent());
-                    ClauseMods cm = retVal.new ClauseMods();
-                    NodeList nl2 = wn2.getChildNodes();
-                    for (int i = 0; i < nl2.getLength(); i++) {
-                        Node wn3 = nl2.item(i);
-                        if (wn3.getNodeName().equalsIgnoreCase("mods")) {
-                            String [] s = wn3.getTextContent().split(",");
-                            for (int j = 0; j < s.length; j++) {
-                                cm.getMods()[j] = Integer.parseInt(s[j]);
-                            }
-                        } else if (wn3.getNodeName().equalsIgnoreCase("rerollsUsed")) {
-                            String [] s = wn3.getTextContent().split(",");
-                            for (int j = 0; j < s.length; j++) {
-                                cm.getRerollsUsed()[j] = Integer.parseInt(s[j]);
-                            }
-                        }
-                    }
-                    retVal.clauseMods.put(key, cm);
-                }
-            }
-
-            // Restore any parent contract references
-            for (Contract contract : retVal.contracts) {
-                if (contract instanceof AtBContract) {
-                    final AtBContract atbContract = (AtBContract) contract;
-                    atbContract.restore(c);
-                }
-            }
-        } catch (Exception ex) {
-            // Errrr, apparently either the class name was invalid...
-            // Or the listed name doesn't exist.
-            // Doh!
-            MekHQ.getLogger().error(ex);
-        }
-
-        return retVal;
     }
     //endregion File I/O
 
     //region Local Classes
     /**
      * Keep track of how many rerolls remain for each contract clause based on the administrator's
-     * negotiation skill. Also track bonuses, as the random clause bonuses should be persistent.
+     * negotiation skill. Also tracks bonuses, as the random clause bonuses should be persistent.
      */
     public static class ClauseModifiers {
+        //region Variable Declarations
         private int[] rerollsUsed = {0, 0, 0, 0};
         private int[] modifiers = {0, 0, 0, 0};
+        //endregion Variable Declarations
 
         //region Constructors
+        public ClauseModifiers() {
+
+        }
         //endregion Constructors
 
         //region Getters/Setters
@@ -967,18 +899,53 @@ public class AtBContractMarket extends AbstractContractMarket {
             return rerollsUsed;
         }
 
-        public void setRerollsUsed(final int... rerollsUsed) {
-            this.rerollsUsed = rerollsUsed;
+        public void setRerollsUsed(final int index, final int rerollsUsed) {
+            getRerollsUsed()[index] = rerollsUsed;
         }
 
         public int[] getModifiers() {
             return modifiers;
         }
 
-        public void setModifiers(final int... modifiers) {
-            this.modifiers = modifiers;
+        public void setModifier(final int index, final int modifier) {
+            getModifiers()[index] = modifier;
         }
         //endregion Getters/Setters
+
+        //region File I/O
+        public void writeToXML(final PrintWriter pw, int indent, final Contract key) {
+            pw.println(MekHqXmlUtil.indentStr(indent++) + "<clauseModifiers id=\"" + key.getId() + "\">");
+            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "modifiers", StringUtils.join(getModifiers()));
+            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "rerollsUsed", StringUtils.join(getRerollsUsed()));
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "clauseModifiers");
+        }
+
+        public static ClauseModifiers parseFromXML(final Node wn) {
+            ClauseModifiers clauseModifiers = new ClauseModifiers();
+            try {
+                NodeList nl = wn.getChildNodes();
+                for (int i = 0; i < nl.getLength(); i++) {
+                    Node wn2 = nl.item(i);
+                    if (wn2.getNodeName().equalsIgnoreCase("mods")) {
+                        String[] s = wn2.getTextContent().split(",");
+                        for (int j = 0; j < s.length; j++) {
+                            clauseModifiers.setModifier(j, Integer.parseInt(s[j]));
+                        }
+                    } else if (wn2.getNodeName().equalsIgnoreCase("rerollsUsed")) {
+                        String[] s = wn2.getTextContent().split(",");
+                        for (int j = 0; j < s.length; j++) {
+                            clauseModifiers.setRerollsUsed(j, Integer.parseInt(s[j]));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                MekHQ.getLogger().error(e);
+                clauseModifiers = null;
+            }
+
+            return clauseModifiers;
+        }
+        //endregion File I/O
     }
     //endregion Local Classes
 }

@@ -24,6 +24,7 @@ import mekhq.MekHqXmlUtil;
 import mekhq.Version;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.market.enums.ContractMarketMethod;
+import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.Contract;
 import mekhq.campaign.mission.Mission;
 import org.w3c.dom.Node;
@@ -178,6 +179,13 @@ public abstract class AbstractContractMarket implements Serializable {
         } catch (Exception e) {
             MekHQ.getLogger().error("Failed to parse Contract Market, keeping currently parsed market", e);
         }
+
+        // Restore any parent contract references
+        for (final Contract contract : getContracts()) {
+            if (contract instanceof AtBContract) {
+                ((AtBContract) contract).restore(campaign);
+            }
+        }
     }
 
     /**
@@ -189,7 +197,7 @@ public abstract class AbstractContractMarket implements Serializable {
         if (wn.getNodeName().equalsIgnoreCase("lastId")) {
             setLastId(Integer.parseInt(wn.getTextContent()));
         } else if (wn.getNodeName().equalsIgnoreCase("mission")) {
-            Mission m = Mission.generateInstanceFromXML(wn, campaign, version);
+            final Mission m = Mission.generateInstanceFromXML(wn, campaign, version);
             if (m instanceof Contract) {
                 getContracts().add((Contract) m);
             }

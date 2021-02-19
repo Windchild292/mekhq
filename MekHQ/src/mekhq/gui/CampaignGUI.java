@@ -1264,8 +1264,8 @@ public class CampaignGUI extends JPanel {
         if (getCampaign().getContractMarket() == null) {
             MekHQ.getLogger().error("Attempted to show the contract market while it is disabled");
         } else {
-            ContractMarketDialog cmd = new ContractMarketDialog(getFrame(), getCampaign());
-            cmd.setVisible(true);
+            ContractMarketDialog contractMarketDialog = new ContractMarketDialog(getFrame(), getCampaign());
+            contractMarketDialog.setVisible(true);
         }
     }
 
@@ -1273,8 +1273,8 @@ public class CampaignGUI extends JPanel {
         if (getCampaign().getUnitMarket() == null) {
             MekHQ.getLogger().error("Attempted to show the unit market while it is disabled");
         } else {
-            UnitMarketDialog umd = new UnitMarketDialog(getFrame(), getCampaign());
-            umd.setVisible(true);
+            UnitMarketDialog unitMarketDialog = new UnitMarketDialog(getFrame(), getCampaign());
+            unitMarketDialog.setVisible(true);
         }
     }
 
@@ -1284,7 +1284,7 @@ public class CampaignGUI extends JPanel {
     }
 
     private void menuSaveXmlActionPerformed(ActionEvent evt) {
-        MekHQ.getLogger().info(this, "Saving campaign...");
+        MekHQ.getLogger().info("Saving campaign...");
         // Choose a file...
         File file = selectSaveCampaignFile();
         if (file == null) {
