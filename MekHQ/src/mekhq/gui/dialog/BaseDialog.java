@@ -1,7 +1,7 @@
 /*
  * BaseDialog.java
  *
- * Copyright (c) 2019 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,6 +20,7 @@
  */
 package mekhq.gui.dialog;
 
+import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.preferences.PreferencesNode;
@@ -29,179 +30,176 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ResourceBundle;
 
-/*
- * Base class for dialogs in MekHQ. This class handles setting the UI,
- * managing the Ok/Cancel buttons, managing the X button, and saving the dialog preferences.
+/**
+ * This is the base class for dialogs in MekHQ. This class handles setting the UI, managing the X
+ * button, managing the escape key, and saving the dialog preferences.
  *
  * A class that inherits from this class needs to at least implement the method
- * setCustomUI which will create the custom UI dialog.
- * The methods setCustomPreferences, okAction, and cancelAction allow to customize
+ * createCenterPane to create the dialog's custom center pane.
+ * The methods setCustomPreferences and cancelAction allow one to customize
  * further the behavior of the dialog by child classes.
  *
  * The dialog will be constructed by the child class calling the initialize method.
- *
- * The resources associated with this dialog need to contain at least the following keys:
- * - dialog.text -> title of the dialog
- * - okButton.text -> text for the ok button
- * - cancelButton.text -> text for the cancel button
  */
 public abstract class BaseDialog extends JDialog implements WindowListener {
-    private ResourceBundle resources;
-    private DialogResult result;
+    //region Variable Declarations
+    private JFrame frame;
 
-    protected BaseDialog(JFrame parent) {
-        this(parent, false);
+    protected static final String CLOSE_ACTION = "closeAction";
+
+    protected ResourceBundle resources;
+    //endregion Variable Declarations
+
+    //region Constructors
+    protected BaseDialog(final JFrame frame, final String title) {
+        this(frame, false, title);
     }
 
-    protected BaseDialog(JFrame parent, boolean isModal) {
-        super(parent);
-
-        this.addWindowListener(this);
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.setModal(isModal);
+    protected BaseDialog(final JFrame frame, final boolean modal, final String title) {
+        this(frame, modal, ResourceBundle.getBundle("mekhq.resources.GUI", new EncodeControl()), title);
     }
 
-    /**
-     * Result of closing the dialog.
-     * @return
-     */
-    public DialogResult getResult() {
-        return this.result;
+    protected BaseDialog(final JFrame frame, final boolean modal, final ResourceBundle resources,
+                         final String title) {
+        super(frame, modal);
+        setTitle(resources.getString(title));
+        setFrame(frame);
+        setResources(resources);
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public JFrame getFrame() {
+        return frame;
     }
 
-    /**
-     * Initializes the dialog UI and preferences. Needs to be called by
-     * child classes for initial setup.
-     * @param resources the resources needed for this dialog
-     */
-    protected final void initialize(ResourceBundle resources) {
-        assert resources != null;
+    public void setFrame(final JFrame frame) {
+        this.frame = frame;
+    }
 
+    private void setResources(final ResourceBundle resources) {
         this.resources = resources;
-        this.createUI();
+    }
+    //endregion Getters/Setters
 
-        this.pack();
-        this.setPreferences();
+    //region Initialization
+    /**
+     * Initializes the dialog's UI and preferences. Needs to be called by child classes for initial
+     * setup.
+     */
+    protected void initialize(final String name) {
+        setName(name);
+        setLayout(new BorderLayout());
+
+        add(createCenterPane(), BorderLayout.CENTER);
+        finalizeInitialization();
     }
 
-    /**
-     * Creates the custom UI (body) for the dialog.
-     * This custom UI will be placed in the BorderLayout.CENTER.
-     * @return
-     */
-    protected abstract Container createCustomUI();
+    protected abstract Container createCenterPane();
 
-    /**
-     * Adds custom preferences to this dialog.
-     *
-     * By default, this dialog will track preferences related to the size
-     * and position of the dialog. Other preferences should be added by overriding
-     * this method.
-     * @param preferences
-     */
-    protected void setCustomPreferences(PreferencesNode preferences) {
-    }
+    protected void finalizeInitialization() {
+        pack();
 
-    /**
-     * Action performed when the ok button is clicked.
-     */
-    protected void okAction() {
-    }
+        // Escape keypress
+        final KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        //getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(escape, CLOSE_ACTION);
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, CLOSE_ACTION);
+        getRootPane().getInputMap(JComponent.WHEN_FOCUSED).put(escape, CLOSE_ACTION);
+        getRootPane().getActionMap().put(CLOSE_ACTION, new AbstractAction() {
+            private static final long serialVersionUID = 95171770700983453L;
 
-    /**
-     * Action performed when the cancel button is clicked or
-     * when the dialog is closed by the X button.
-     */
-    protected void cancelAction() {
-    }
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                cancelActionPerformed(evt);
+            }
+        });
 
-    private void createUI() {
-        this.setTitle(resources.getString("dialog.text"));
-
-        // Main body of the dialog
-        this.getContentPane().add(this.createCustomUI(), BorderLayout.CENTER);
-
-        // Ok/Cancel buttons
-        JButton okButton = new JButton(resources.getString("okButton.text"));
-        okButton.addActionListener(this::okButtonActionPerformed);
-        okButton.requestFocus();
-
-        JButton cancelButton = new JButton(resources.getString("cancelButton.text"));
-        cancelButton.addActionListener(this::cancelButtonActionPerformed);
-
-        // Layout buttons
-        JPanel buttonsPanel = new JPanel(new GridLayout(1, 2));
-        buttonsPanel.add(okButton);
-        buttonsPanel.add(cancelButton);
-        JPanel bottom = new JPanel(new GridBagLayout());
-        bottom.add(buttonsPanel);
-        this.getContentPane().add(bottom, BorderLayout.PAGE_END);
+        addWindowListener(this);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setPreferences();
     }
 
     private void setPreferences() {
         PreferencesNode preferences = MekHQ.getPreferences().forClass(getClass());
-
         preferences.manage(new JWindowPreference(this));
-        this.setCustomPreferences(preferences);
-    }
-
-    private void okButtonActionPerformed(ActionEvent evt) {
-        this.okAction();
-        this.result = DialogResult.OK;
-        this.dispose();
+        setCustomPreferences(preferences);
     }
 
     /**
-     * Notes: cancelling a dialog should always allow to close the dialog.
+     * Adds custom preferences to the child dialog.
+     *
+     * By default, this dialog will track preferences related to the size
+     * and position of the dialog. Other preferences can be added by overriding
+     * this method.
+     * @param preferences the preference node for this dialog
      */
-    private void cancelButtonActionPerformed(ActionEvent evt) {
+    protected void setCustomPreferences(final PreferencesNode preferences) {
+
+    }
+    //endregion Initialization
+
+    /**
+     * Note: Cancelling a dialog should always allow one to close the dialog.
+     */
+    protected void cancelActionPerformed(final ActionEvent evt) {
         try {
-            this.cancelAction();
+            cancelAction();
         } catch (Exception e) {
             MekHQ.getLogger().error(e);
-        }
-        finally {
-            this.result = DialogResult.CANCEL;
-            this.dispose();
+        } finally {
+            setVisible(false);
         }
     }
 
     /**
-     * Notes: closing the dialog should always allow to close the dialog.
+     * Action performed when the Cancel button is clicked, the dialog is closed by the X button, or
+     * the escape key is pressed
+     */
+    protected void cancelAction() {
+
+    }
+
+    //region WindowEvents
+    /**
+     * Note: Closing the dialog should always allow one to close the dialog.
      */
     @Override
-    public void windowClosing(WindowEvent e) {
+    public void windowClosing(final WindowEvent e) {
         try {
-            this.cancelAction();
+            cancelAction();
         } catch (Exception ex) {
             MekHQ.getLogger().error(ex);
         }
-        finally {
-            this.result = DialogResult.CANCEL;
-        }
     }
 
     @Override
-    public void windowOpened(WindowEvent e) {
+    public void windowOpened(final WindowEvent e) {
+
     }
 
     @Override
-    public void windowClosed(WindowEvent e) {
+    public void windowClosed(final WindowEvent e) {
+
     }
 
     @Override
-    public void windowIconified(WindowEvent e){
+    public void windowIconified(final WindowEvent e) {
+
     }
 
     @Override
-    public void windowDeiconified(WindowEvent e){
+    public void windowDeiconified(final WindowEvent e) {
+
     }
 
     @Override
-    public void windowActivated(WindowEvent e) {
+    public void windowActivated(final WindowEvent e) {
+
     }
 
     @Override
-    public void windowDeactivated(WindowEvent e) {
+    public void windowDeactivated(final WindowEvent e) {
+
     }
+    //endregion WindowEvents
 }

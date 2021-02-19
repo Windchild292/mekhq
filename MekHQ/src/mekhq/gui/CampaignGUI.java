@@ -683,7 +683,7 @@ public class CampaignGUI extends JPanel {
 
         JMenuItem menuMekHqOptions = new JMenuItem(resourceMap.getString("menuMekHqOptions.text"));
         menuMekHqOptions.setMnemonic(KeyEvent.VK_H);
-        menuMekHqOptions.addActionListener(this::menuMekHqOptionsActionPerformed);
+        menuMekHqOptions.addActionListener(evt -> new MekHqOptionsDialog(getFrame()).setVisible(true));
         menuFile.add(menuMekHqOptions);
 
         menuThemes = new JMenu(resourceMap.getString("menuThemes.text"));
@@ -1485,11 +1485,6 @@ public class CampaignGUI extends JPanel {
             setCampaignOptionsFromGameOptions();
             refreshCalendar();
         }
-    }
-
-    private void menuMekHqOptionsActionPerformed(ActionEvent evt) {
-        MekHqOptionsDialog dialog = new MekHqOptionsDialog(getFrame());
-        dialog.setVisible(true);
     }
 
     private void miLoadForcesActionPerformed(java.awt.event.ActionEvent evt) {

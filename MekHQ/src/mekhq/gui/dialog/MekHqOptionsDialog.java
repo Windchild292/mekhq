@@ -20,6 +20,7 @@
  */
 package mekhq.gui.dialog;
 
+import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.event.MekHQOptionsChangedEvent;
 import mekhq.gui.enums.PersonnelFilterStyle;
@@ -32,10 +33,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-public class MekHqOptionsDialog extends BaseDialog {
+public class MekHqOptionsDialog extends BaseButtonDialog {
     //region Variable Declaration
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.MekHqOptionsDialog");
-
     //region Display
     private JTextField optionDisplayDateFormat;
     private JTextField optionLongDisplayDateFormat;
@@ -78,11 +77,11 @@ public class MekHqOptionsDialog extends BaseDialog {
     //endregion Variable Declaration
 
     //region Constructors
-    public MekHqOptionsDialog(JFrame parent) {
-        super(parent);
-
-        this.initialize(resources);
-        this.setInitialState();
+    public MekHqOptionsDialog(final JFrame frame) {
+        super(frame, ResourceBundle.getBundle("mekhq.resources.MekHqOptionsDialog",
+                new EncodeControl()), "dialog.text");
+        initialize("MekHQOptionsDialog");
+        setInitialState();
     }
     //endregion Constructors
 
@@ -92,7 +91,7 @@ public class MekHqOptionsDialog extends BaseDialog {
      * C, D, M, M, S, U, W, Y
      */
     @Override
-    protected Container createCustomUI() {
+    protected Container createCenterPane() {
         JTabbedPane optionsTabbedPane = new JTabbedPane();
         optionsTabbedPane.setName("optionsTabbedPane");
         optionsTabbedPane.add(resources.getString("displayTab.title"), new JScrollPane(createDisplayTab()));
