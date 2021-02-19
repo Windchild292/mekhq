@@ -53,12 +53,7 @@ import mekhq.campaign.market.AbstractUnitMarket;
 import mekhq.campaign.market.UnitMarketOffer;
 import mekhq.gui.model.UnitMarketTableModel;
 import mekhq.gui.model.XTableColumnModel;
-import mekhq.gui.preferences.JToggleButtonPreference;
-import mekhq.gui.preferences.JIntNumberSpinnerPreference;
-import mekhq.gui.preferences.JTablePreference;
-import mekhq.gui.preferences.JWindowPreference;
 import mekhq.gui.sorter.WeightClassSorter;
-import mekhq.preferences.PreferencesNode;
 
 /**
  * Code copied heavily from PersonnelMarketDialog
@@ -110,8 +105,6 @@ public class OldUnitMarketDialog extends JDialog {
         marketModel.setData(unitMarket.getOffers());
         initComponents();
         filterOffers();
-        setLocationRelativeTo(frame);
-        setUserPreferences();
     }
     //endregion Constructors
 
@@ -135,7 +128,7 @@ public class OldUnitMarketDialog extends JDialog {
         btnPurchase = new JButton();
         btnClose = new JButton();
 
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.OldUnitMarketDialog", new EncodeControl());
+        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.UnitMarketDialog", new EncodeControl());
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(resourceMap.getString("Form.title"));
         getContentPane().setLayout(new BorderLayout());
@@ -288,35 +281,6 @@ public class OldUnitMarketDialog extends JDialog {
         pack();
     }
 
-    private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(OldUnitMarketDialog.class);
-
-        chkShowMeks.setName("showMeks");
-        preferences.manage(new JToggleButtonPreference(chkShowMeks));
-
-        chkShowAero.setName("showAero");
-        preferences.manage(new JToggleButtonPreference(chkShowAero));
-
-        chkShowVees.setName("showVees");
-        preferences.manage(new JToggleButtonPreference(chkShowVees));
-
-        chkPctThreshold.setName("useThreshold");
-        preferences.manage(new JToggleButtonPreference(chkPctThreshold));
-
-        spnThreshold.setName("thresholdValue");
-        preferences.manage(new JIntNumberSpinnerPreference(spnThreshold));
-
-        tableUnits.setName("unitsTable");
-        preferences.manage(new JTablePreference(tableUnits));
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
-    }
-
-    public Entity getUnit() {
-        return selectedEntity;
-    }
-
     private void purchaseUnit(ActionEvent evt) {
         if (null != selectedEntity) {
             int transitDays = campaign.getCampaignOptions().getInstantUnitMarketDelivery() ? 0
@@ -360,11 +324,6 @@ public class OldUnitMarketDialog extends JDialog {
             ((UnitMarketTableModel) tableUnits.getModel()).setData(unitMarket.getOffers());
             refreshOfferView();
         }
-    }
-
-    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {
-        selectedEntity = null;
-        setVisible(false);
     }
 
     private void filterOffers() {
@@ -422,11 +381,5 @@ public class OldUnitMarketDialog extends JDialog {
          }
          btnPurchase.setEnabled(null != selectedEntity);
          btnAdd.setEnabled((selectedEntity != null) && campaign.isGM());
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        filterOffers();
-         super.setVisible(visible);
     }
 }

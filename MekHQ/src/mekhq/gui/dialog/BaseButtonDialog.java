@@ -90,19 +90,23 @@ public abstract class BaseButtonDialog extends BaseDialog {
 
     protected JPanel createButtonPanel() {
         JPanel panel = new JPanel(new GridLayout(1, 2));
+        panel.add(createOkButton("Ok"));
+        panel.add(createCancelButton("Cancel"));
+        return panel;
+    }
 
-        JButton okButton = new JButton(resources.getString("Ok"));
+    protected JButton createOkButton(final String text) {
+        JButton okButton = new JButton(resources.getString(text));
         okButton.setName("okButton");
         okButton.addActionListener(this::okButtonActionPerformed);
-        panel.add(okButton);
+        return okButton;
+    }
 
-
-        JButton cancelButton = new JButton(resources.getString("Cancel"));
+    protected JButton createCancelButton(final String text) {
+        JButton cancelButton = new JButton(resources.getString(text));
         cancelButton.setName("cancelButton");
         cancelButton.addActionListener(this::cancelActionPerformed);
-        panel.add(cancelButton);
-
-        return panel;
+        return cancelButton;
     }
     //endregion Initialization
 

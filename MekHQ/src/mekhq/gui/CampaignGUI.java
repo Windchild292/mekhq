@@ -1264,8 +1264,7 @@ public class CampaignGUI extends JPanel {
         if (getCampaign().getContractMarket() == null) {
             MekHQ.getLogger().error("Attempted to show the contract market while it is disabled");
         } else {
-            ContractMarketDialog contractMarketDialog = new ContractMarketDialog(getFrame(), getCampaign());
-            contractMarketDialog.setVisible(true);
+            new ContractMarketDialog(getFrame(), getCampaign()).setVisible(true);
         }
     }
 
@@ -1273,8 +1272,7 @@ public class CampaignGUI extends JPanel {
         if (getCampaign().getUnitMarket() == null) {
             MekHQ.getLogger().error("Attempted to show the unit market while it is disabled");
         } else {
-            UnitMarketDialog unitMarketDialog = new UnitMarketDialog(getFrame(), getCampaign());
-            unitMarketDialog.setVisible(true);
+            new UnitMarketDialog(getFrame(), getCampaign()).setVisible(true);
         }
     }
 
@@ -2567,6 +2565,8 @@ public class CampaignGUI extends JPanel {
     public void handle(OptionsChangedEvent ev) {
         fundsScheduler.schedule();
         refreshPartsAvailability();
+        miUnitMarket.setVisible(!ev.getOptions().getUnitMarketMethod().isNone());
+        miContractMarket.setVisible(!ev.getOptions().getContractMarketMethod().isNone());
     }
 
     @Subscribe

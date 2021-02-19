@@ -18,10 +18,53 @@
  */
 package mekhq.gui.dialog;
 
-import javax.swing.*;
+import mekhq.campaign.Campaign;
+import mekhq.gui.view.ContractMarketPanel;
 
-public class ContractMarketDialog extends JDialog {
+import javax.swing.*;
+import java.awt.*;
+
+public class ContractMarketDialog extends BaseButtonDialog {
     //region Variable Declarations
+    private Campaign campaign;
+    private ContractMarketPanel contractMarketPanel;
     //endregion Variable Declarations
 
+    //region Constructors
+    public ContractMarketDialog(final JFrame frame, final Campaign campaign) {
+        super(frame, "ContractMarketDialog.title");
+        initialize("ContractMarketDialog");
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(final Campaign campaign) {
+        this.campaign = campaign;
+    }
+
+    public ContractMarketPanel getContractMarketPanel() {
+        return contractMarketPanel;
+    }
+
+    public void setContractMarketPanel(final ContractMarketPanel contractMarketPanel) {
+        this.contractMarketPanel = contractMarketPanel;
+    }
+    //endregion Getters/Setters
+
+    //region Initialization
+    @Override
+    protected Container createCenterPane() {
+        setContractMarketPanel(new ContractMarketPanel(getFrame(), getCampaign()));
+        return getContractMarketPanel();
+    }
+
+    @Override
+    protected JPanel createButtonPanel() {
+        return null;
+    }
+    //endregion Initialization
 }

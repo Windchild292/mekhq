@@ -18,5 +18,31 @@
  */
 package mekhq.gui.view;
 
-public class ContractMarketPanel {
+import mekhq.campaign.Campaign;
+
+import javax.swing.*;
+
+public class ContractMarketPanel extends JPanel {
+    //region Variable Declarations
+    private Campaign campaign;
+    //endregion Variable Declarations
+
+    //region Constructors
+    public ContractMarketPanel(final JFrame frame, final Campaign campaign) {
+        setCampaign(campaign);
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(final Campaign campaign) {
+        this.campaign = campaign;
+    }
+    //endregion Getters/Setters
+
+    //region Initialization
+    //endregion Initialization
 }

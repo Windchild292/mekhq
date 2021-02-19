@@ -18,8 +18,65 @@
  */
 package mekhq.gui.dialog;
 
+import mekhq.campaign.Campaign;
+import mekhq.gui.view.UnitMarketPanel;
+
 import javax.swing.*;
 import java.awt.*;
 
-public class UnitMarketDialog extends JDialog {
+public class UnitMarketDialog extends BaseButtonDialog {
+    //region Variable Declarations
+    private Campaign campaign;
+    private UnitMarketPanel unitMarketPanel;
+    //endregion Variable Declarations
+
+    //region Constructors
+    public UnitMarketDialog(final JFrame frame, final Campaign campaign) {
+        super(frame, "UnitMarketDialog.title");
+        setCampaign(campaign);
+        initialize("UnitMarketDialog");
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(final Campaign campaign) {
+        this.campaign = campaign;
+    }
+
+    public UnitMarketPanel getUnitMarketPanel() {
+        return unitMarketPanel;
+    }
+
+    public void setUnitMarketPanel(UnitMarketPanel unitMarketPanel) {
+        this.unitMarketPanel = unitMarketPanel;
+    }
+    //endregion Getters/Setters
+
+    //region Initialization
+    @Override
+    protected Container createCenterPane() {
+        setUnitMarketPanel(new UnitMarketPanel(getFrame(), getCampaign()));
+        return getUnitMarketPanel();
+    }
+
+    @Override
+    protected JPanel createButtonPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, getCampaign().isGM() ? 3 : 2));
+        panel.add(createOkButton("Purchase"));
+        if (getCampaign().isGM()) {
+            JButton addButton = new JButton(resources.getString("AddGM"));
+            addButton.setName("addButton");
+            addButton.addActionListener(evt -> {
+
+            });
+            panel.add(addButton);
+        }
+        panel.add(createCancelButton("Close"));
+        return panel;
+    }
+    //endregion Initialization
 }
