@@ -1078,7 +1078,8 @@ public class AtBContract extends Contract implements Serializable {
             int roll = Compute.d6();
             if (roll == 6) {
                 if (campaign.getCampaignOptions().getContractMarketMethod().isAtB()) {
-                    ((AtBContractMarket) campaign.getContractMarket()).addFollowup(campaign, this);
+                    ((AtBContractMarket) campaign.getContractMarket()).addFollowup(campaign,
+                            this, campaign.getUnitRatingMod());
                     campaign.addReport("Your employer has offered a follow-up contract (available on the <a href=\"CONTRACT_MARKET\">contract market</a>).");
                 } else {
                     MekHQ.getLogger().error("Illegal Contract Market for AtB of "

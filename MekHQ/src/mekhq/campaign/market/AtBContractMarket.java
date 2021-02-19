@@ -533,8 +533,8 @@ public class AtBContractMarket extends AbstractContractMarket {
         return contract;
     }
 
-    public void addFollowup(Campaign campaign,
-            AtBContract contract) {
+    public void addFollowup(final Campaign campaign, final AtBContract contract,
+                            final int unitRatingModifier) {
         if (followupContracts.containsValue(contract.getId())) {
             return;
         }
@@ -631,7 +631,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         contract.setAllyQuality(getQualityRating(Compute.d6(2) + mod));
     }
 
-    public void setEnemyRating(final AtBContract contract, boolean isAttacker, int year) {
+    public void setEnemyRating(final AtBContract contract, final boolean attacker, final int year) {
         int mod = 0;
         if (contract.getEnemyFaction().isRebelOrPirate()) {
             mod -= 2;
@@ -648,7 +648,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         }
 
         if (contract.getEmployerFaction().isClan()) {
-            mod += isAttacker ? 2 : 4;
+            mod += attacker ? 2 : 4;
         }
 
         contract.setEnemySkill(getSkillRating(Compute.d6(2) + mod));
@@ -716,11 +716,10 @@ public class AtBContractMarket extends AbstractContractMarket {
         }
 
         if (campaign.getCampaignOptions().isMercSizeLimited() && campaign.getFaction().isMercenary()) {
-            int max = (unitRatingModifier + 1) * 12;
-            int numMods = (AtBContract.getEffectiveNumUnits(campaign) - max) / 2;
-            while (numMods > 0) {
+            final int max = (unitRatingModifier + 1) * 12;
+            int numberOfModifiers = (AtBContract.getEffectiveNumUnits(campaign) - max) / 2;
+            while (numberOfModifiers-- > 0) {
                 clauseModifiers.getModifiers()[Compute.randomInt(4)]--;
-                numMods--;
             }
         }
 
@@ -740,8 +739,7 @@ public class AtBContractMarket extends AbstractContractMarket {
             clauseModifiers.getModifiers()[Compute.randomInt(4)] -= 1;
         }
 
-        if (Factions.getInstance().getFaction(contract.getEnemyCode()).isClan() &&
-                !Factions.getInstance().getFaction(contract.getEmployerCode()).isClan()) {
+        if (contract.getEnemyFaction().isClan() && !contract.getEmployerFaction().isClan()) {
             for (int i = 0; i < 4; i++) {
                 clauseModifiers.getModifiers()[i] += (i == CLAUSE_SALVAGE) ? -2 : 1;
             }
@@ -753,17 +751,16 @@ public class AtBContractMarket extends AbstractContractMarket {
             }
         }
 
-        int[][] missionMods = {
+        final int[][] missionModifiers = {
             {1, 0, 1, 0}, {0, 1, -1, -3}, {-3, 0, 2, 1}, {-2, 1, -1, -1},
             {-2, 0, 2, 3}, {-1, 1, 1, 1}, {-2, 3, -2, -1}, {2, 2, -1, -1},
             {0, 2, 2, 1}, {-1, 0, 1, 2}, {-1, -2, 1, -1}, {-1, -1, 2, 1}
         };
         for (int i = 0; i < 4; i++) {
-            clauseModifiers.getModifiers()[i] += missionMods[contract.getMissionType()][i];
+            clauseModifiers.getModifiers()[i] += missionModifiers[contract.getMissionType()][i];
         }
 
-        if (RandomFactionGenerator.getInstance().getFactionHints()
-                .isISMajorPower(Factions.getInstance().getFaction(contract.getEmployerCode()))) {
+        if (RandomFactionGenerator.getInstance().getFactionHints().isISMajorPower(contract.getEmployerFaction())) {
             clauseModifiers.getModifiers()[CLAUSE_SALVAGE] += -1;
             clauseModifiers.getModifiers()[CLAUSE_TRANSPORT] += 1;
         }
@@ -776,7 +773,8 @@ public class AtBContractMarket extends AbstractContractMarket {
             clauseModifiers.getModifiers()[CLAUSE_SUPPORT] += 1;
             clauseModifiers.getModifiers()[CLAUSE_TRANSPORT] += 1;
         }
-        if (contract.getEmployerCode().equals("IND")) {
+
+        if (contract.getEmployerCode().equals("IND") || contract.getEmployerCode().equals("PIND")) {
             clauseModifiers.getModifiers()[CLAUSE_COMMAND] += 0;
             clauseModifiers.getModifiers()[CLAUSE_SALVAGE] += -1;
             clauseModifiers.getModifiers()[CLAUSE_SUPPORT] += -1;
