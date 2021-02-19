@@ -22,8 +22,11 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
+import megamek.common.util.StringUtil;
 import mekhq.campaign.market.enums.ContractMarketMethod;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -68,16 +71,16 @@ public class AtBContractMarket extends AbstractContractMarket {
      */
     private final static int MAXIMUM_ATTEMPTS_TO_FIND_NON_MERC_EMPLOYER = 20;
 
-    private Map<Integer, ClauseModifiers> clauseModifiers;
+    private Map<Contract, ClauseModifiers> clauseModifiers;
 
     /*
      * It is possible to call addFollowup more than once for the same contract by canceling the
      * dialog and running it again; This is the easiest place to track it to prevent multiple
      * followup contracts.
-     * key: followup id
-     * value: main contract id
+     * key: Followup Contract
+     * value: Main Contract
      */
-    private Map<Integer, Integer> followupContracts;
+    private Map<Contract, Contract> followupContracts;
     //endregion Variable Declarations
 
     //region Constructors
@@ -92,23 +95,23 @@ public class AtBContractMarket extends AbstractContractMarket {
     @Override
     public void removeContract(final Contract contract) {
         super.removeContract(contract);
-        getClauseModifiers().remove(contract.getId());
-        getFollowupContracts().remove(contract.getId());
+        getClauseModifiers().remove(contract);
+        getFollowupContracts().remove(contract);
     }
 
-    public Map<Integer, ClauseModifiers> getClauseModifiers() {
+    public Map<Contract, ClauseModifiers> getClauseModifiers() {
         return clauseModifiers;
     }
 
-    public void setClauseModifiers(final Map<Integer, ClauseModifiers> clauseModifiers) {
+    public void setClauseModifiers(final Map<Contract, ClauseModifiers> clauseModifiers) {
         this.clauseModifiers = clauseModifiers;
     }
 
-    public Map<Integer, Integer> getFollowupContracts() {
+    public Map<Contract, Contract> getFollowupContracts() {
         return followupContracts;
     }
 
-    public void setFollowupContracts(final Map<Integer, Integer> followupContracts) {
+    public void setFollowupContracts(final Map<Contract, Contract> followupContracts) {
         this.followupContracts = followupContracts;
     }
     //endregion Getters/Setters
@@ -570,7 +573,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         followup.setId(getLastId());
 
         getContracts().add(followup);
-        getFollowupContracts().put(followup.getId(), contract.getId());
+        getFollowupContracts().put(followup, contract);
     }
 
     protected int findAtBMissionType(final int unitRatingModifier, final boolean majorPower) {
@@ -687,7 +690,7 @@ public class AtBContractMarket extends AbstractContractMarket {
     protected void setAtBContractClauses(final Campaign campaign, final AtBContract contract,
                                          final int unitRatingModifier) {
         final ClauseModifiers clauseModifiers = new ClauseModifiers();
-        getClauseModifiers().put(contract.getId(), clauseModifiers);
+        getClauseModifiers().put(contract, clauseModifiers);
 
         /*
          * AtB rules seem to indicate one admin in each role (though this
@@ -850,26 +853,30 @@ public class AtBContractMarket extends AbstractContractMarket {
     }
 
     //region File I/O
-    public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<contractMarket>");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+1, "lastId", lastId);
-        for (Contract c : contracts) {
-            c.writeToXml(pw1, indent + 1);
-        }
-        for (Integer key : clauseMods.keySet()) {
-            if (!contractIds.containsKey(key)) {
+    @Override
+    protected void writeBodyToXML(final PrintWriter pw, int indent) {
+        super.writeBodyToXML(pw, indent);
+        for (final Contract key : getClauseModifiers().keySet()) {
+            if (!getContracts().contains(key)) {
                 continue;
             }
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    + "<clauseMods id=\"" + key + "\">");
-            String rerolls = "";
-            String mods = "";
+            pw.println(MekHqXmlUtil.indentStr(indent++) + "<clauseModifiers id=\"" + key.getId() + "\">");
+            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "modifiers", StringUtils.join(getClauseModifiers().get(key).getModifiers()));
+            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "rerollsUsed", StringUtils.join(getClauseModifiers().get(key).getRerollsUsed()));
+            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "clauseModifiers");
+        }
+    }
+
+    public void writeToXml(PrintWriter pw1, int indent) {
+        for (final Contract key : getClauseModifiers().keySet()) {
+            StringBuilder rerolls = new StringBuilder();
+            StringBuilder mods = new StringBuilder();
             for (int i = 0; i < CLAUSE_NUM; i++) {
-                rerolls += clauseMods.get(key).getRerollsUsed()[i] + ((i < CLAUSE_NUM - 1)?",":"");
-                mods += clauseMods.get(key).getMods()[i] + ((i < CLAUSE_NUM - 1)?",":"");
+                rerolls.append(getClauseModifiers().get(key).getRerollsUsed()[i]).append((i < CLAUSE_NUM - 1) ? "," : "");
+                mods.append(getClauseModifiers().get(key).getModifiers()[i]).append((i < CLAUSE_NUM - 1) ? "," : "");
             }
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "mods", mods);
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent+2, "rerollsUsed", rerolls);
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "mods", mods.toString());
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent+2, "rerollsUsed", rerolls.toString());
             pw1.println(MekHqXmlUtil.indentStr(indent+1) + "</clauseMods>");
         }
         pw1.println(MekHqXmlUtil.indentStr(indent) + "</contractMarket>");
