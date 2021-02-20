@@ -19,12 +19,13 @@
 package mekhq.gui.dialog;
 
 import mekhq.campaign.Campaign;
+import mekhq.gui.baseComponents.AbstractButtonDialog;
 import mekhq.gui.view.ContractMarketPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ContractMarketDialog extends BaseButtonDialog {
+public class ContractMarketDialog extends AbstractButtonDialog {
     //region Variable Declarations
     private Campaign campaign;
     private ContractMarketPanel contractMarketPanel;
@@ -32,8 +33,8 @@ public class ContractMarketDialog extends BaseButtonDialog {
 
     //region Constructors
     public ContractMarketDialog(final JFrame frame, final Campaign campaign) {
-        super(frame, "ContractMarketDialog.title");
-        initialize("ContractMarketDialog");
+        super(frame, "ContractMarketDialog", "ContractMarketDialog.title");
+        initialize();
     }
     //endregion Constructors
 

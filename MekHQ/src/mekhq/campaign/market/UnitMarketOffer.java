@@ -18,8 +18,13 @@
  */
 package mekhq.campaign.market;
 
+import megamek.MegaMek;
+import megamek.common.Entity;
+import megamek.common.MechFileParser;
 import megamek.common.MechSummary;
 import megamek.common.MechSummaryCache;
+import megamek.common.annotations.Nullable;
+import megamek.common.loaders.EntityLoadingException;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
 import mekhq.campaign.market.enums.UnitMarketType;
@@ -87,10 +92,10 @@ public class UnitMarketOffer {
     //region File I/O
     public void writeToXML(final PrintWriter pw1, int indent) {
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "offer");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "market", getMarketType().name());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "unitType", getUnitType());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "unit", getUnit().getName());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "pct", getPercent());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "market", getMarketType().name());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "unitType", getUnitType());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "unit", getUnit().getName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "pct", getPercent());
         MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "offer");
     }
 

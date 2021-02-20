@@ -49,7 +49,7 @@ public class JWindowPreference extends PreferenceElement implements WindowStateL
         }
 
         if (window instanceof JFrame) {
-            this.isMaximized = (((JFrame)window).getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
+            this.isMaximized = (((JFrame) window).getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
         } else {
             this.isMaximized = false;
         }
@@ -101,7 +101,7 @@ public class JWindowPreference extends PreferenceElement implements WindowStateL
             element.setLocation(this.screenX, this.screenY);
             if (this.isMaximized) {
                 if (element instanceof JFrame) {
-                    ((JFrame)element).setExtendedState(((JFrame)element).getExtendedState() | Frame.MAXIMIZED_BOTH);
+                    ((JFrame) element).setExtendedState(((JFrame) element).getExtendedState() | Frame.MAXIMIZED_BOTH);
                 }
             }
         }

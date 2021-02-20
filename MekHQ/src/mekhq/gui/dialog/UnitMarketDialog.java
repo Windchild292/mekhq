@@ -19,22 +19,23 @@
 package mekhq.gui.dialog;
 
 import mekhq.campaign.Campaign;
-import mekhq.gui.view.UnitMarketPanel;
+import mekhq.gui.baseComponents.AbstractButtonDialog;
+import mekhq.gui.view.UnitMarketPane;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class UnitMarketDialog extends BaseButtonDialog {
+public class UnitMarketDialog extends AbstractButtonDialog {
     //region Variable Declarations
     private Campaign campaign;
-    private UnitMarketPanel unitMarketPanel;
+    private UnitMarketPane unitMarketPane;
     //endregion Variable Declarations
 
     //region Constructors
     public UnitMarketDialog(final JFrame frame, final Campaign campaign) {
-        super(frame, "UnitMarketDialog.title");
+        super(frame, "UnitMarketDialog", "UnitMarketDialog.title");
         setCampaign(campaign);
-        initialize("UnitMarketDialog");
+        initialize();
     }
     //endregion Constructors
 
@@ -47,20 +48,20 @@ public class UnitMarketDialog extends BaseButtonDialog {
         this.campaign = campaign;
     }
 
-    public UnitMarketPanel getUnitMarketPanel() {
-        return unitMarketPanel;
+    public UnitMarketPane getUnitMarketPane() {
+        return unitMarketPane;
     }
 
-    public void setUnitMarketPanel(UnitMarketPanel unitMarketPanel) {
-        this.unitMarketPanel = unitMarketPanel;
+    public void setUnitMarketPane(UnitMarketPane unitMarketPane) {
+        this.unitMarketPane = unitMarketPane;
     }
     //endregion Getters/Setters
 
     //region Initialization
     @Override
     protected Container createCenterPane() {
-        setUnitMarketPanel(new UnitMarketPanel(getFrame(), getCampaign()));
-        return getUnitMarketPanel();
+        setUnitMarketPane(new UnitMarketPane(getFrame(), getCampaign()));
+        return getUnitMarketPane();
     }
 
     @Override
@@ -71,7 +72,7 @@ public class UnitMarketDialog extends BaseButtonDialog {
             JButton addButton = new JButton(resources.getString("AddGM"));
             addButton.setName("addButton");
             addButton.addActionListener(evt -> {
-
+                ???
             });
             panel.add(addButton);
         }
@@ -79,4 +80,14 @@ public class UnitMarketDialog extends BaseButtonDialog {
         return panel;
     }
     //endregion Initialization
+
+    @Override
+    protected void okAction() {
+        ???
+    }
+
+    @Override
+    protected void cancelAction() {
+        ???
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * BaseDialog.java
+ * AbstractDialog.java
  *
  * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-package mekhq.gui.dialog;
+package mekhq.gui.baseComponents;
 
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
@@ -34,14 +34,9 @@ import java.util.ResourceBundle;
  * This is the base class for dialogs in MekHQ. This class handles setting the UI, managing the X
  * button, managing the escape key, and saving the dialog preferences.
  *
- * A class that inherits from this class needs to at least implement the method
- * createCenterPane to create the dialog's custom center pane.
- * The methods setCustomPreferences and cancelAction allow one to customize
- * further the behavior of the dialog by child classes.
- *
- * The dialog will be constructed by the child class calling the initialize method.
+ * Inheriting classes must call initialize() in their constructor and override createCenterPane()
  */
-public abstract class BaseDialog extends JDialog implements WindowListener {
+public abstract class AbstractDialog extends JDialog implements WindowListener {
     //region Variable Declarations
     private JFrame frame;
 
@@ -51,20 +46,21 @@ public abstract class BaseDialog extends JDialog implements WindowListener {
     //endregion Variable Declarations
 
     //region Constructors
-    protected BaseDialog(final JFrame frame, final String title) {
-        this(frame, false, title);
+    protected AbstractDialog(final JFrame frame, final String name, final String title) {
+        this(frame, false, name, title);
     }
 
-    protected BaseDialog(final JFrame frame, final boolean modal, final String title) {
-        this(frame, modal, ResourceBundle.getBundle("mekhq.resources.GUI", new EncodeControl()), title);
+    protected AbstractDialog(final JFrame frame, final boolean modal, final String name, final String title) {
+        this(frame, modal, ResourceBundle.getBundle("mekhq.resources.GUI", new EncodeControl()), name, title);
     }
 
-    protected BaseDialog(final JFrame frame, final boolean modal, final ResourceBundle resources,
-                         final String title) {
+    protected AbstractDialog(final JFrame frame, final boolean modal, final ResourceBundle resources,
+                             final String name, final String title) {
         super(frame, modal);
         setTitle(resources.getString(title));
+        setName(name);
         setFrame(frame);
-        setResources(resources);
+        this.resources = resources;
     }
     //endregion Constructors
 
@@ -76,10 +72,6 @@ public abstract class BaseDialog extends JDialog implements WindowListener {
     public void setFrame(final JFrame frame) {
         this.frame = frame;
     }
-
-    private void setResources(final ResourceBundle resources) {
-        this.resources = resources;
-    }
     //endregion Getters/Setters
 
     //region Initialization
@@ -87,22 +79,27 @@ public abstract class BaseDialog extends JDialog implements WindowListener {
      * Initializes the dialog's UI and preferences. Needs to be called by child classes for initial
      * setup.
      */
-    protected void initialize(final String name) {
-        setName(name);
+    protected void initialize() {
         setLayout(new BorderLayout());
-
         add(createCenterPane(), BorderLayout.CENTER);
         finalizeInitialization();
     }
 
+    /**
+     * This is used to create the dialog's center pane
+     * @return the center pane of the dialog
+     */
     protected abstract Container createCenterPane();
 
+    /**
+     * This MUST be called at the end of initialization to finalize it. This is the key method for
+     * this being the abstract basis for all other dialog
+     */
     protected void finalizeInitialization() {
         pack();
 
         // Escape keypress
         final KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        //getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(escape, CLOSE_ACTION);
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, CLOSE_ACTION);
         getRootPane().getInputMap(JComponent.WHEN_FOCUSED).put(escape, CLOSE_ACTION);
         getRootPane().getActionMap().put(CLOSE_ACTION, new AbstractAction() {
@@ -119,6 +116,9 @@ public abstract class BaseDialog extends JDialog implements WindowListener {
         setPreferences();
     }
 
+    /**
+     * This sets the base preferences for this class, and calls the custom preferences method
+     */
     private void setPreferences() {
         PreferencesNode preferences = MekHQ.getPreferences().forClass(getClass());
         preferences.manage(new JWindowPreference(this));

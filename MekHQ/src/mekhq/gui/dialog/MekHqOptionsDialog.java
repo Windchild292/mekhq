@@ -23,6 +23,7 @@ package mekhq.gui.dialog;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.event.MekHQOptionsChangedEvent;
+import mekhq.gui.baseComponents.AbstractButtonDialog;
 import mekhq.gui.enums.PersonnelFilterStyle;
 
 import javax.swing.*;
@@ -33,7 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-public class MekHqOptionsDialog extends BaseButtonDialog {
+public class MekHqOptionsDialog extends AbstractButtonDialog {
     //region Variable Declaration
     //region Display
     private JTextField optionDisplayDateFormat;
@@ -79,8 +80,8 @@ public class MekHqOptionsDialog extends BaseButtonDialog {
     //region Constructors
     public MekHqOptionsDialog(final JFrame frame) {
         super(frame, ResourceBundle.getBundle("mekhq.resources.MekHqOptionsDialog",
-                new EncodeControl()), "dialog.text");
-        initialize("MekHQOptionsDialog");
+                new EncodeControl()), "MekHQOptionsDialog", "dialog.text");
+        initialize();
         setInitialState();
     }
     //endregion Constructors
