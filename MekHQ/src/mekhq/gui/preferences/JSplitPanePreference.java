@@ -21,9 +21,11 @@ package mekhq.gui.preferences;
 import mekhq.preferences.PreferenceElement;
 
 import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
-public class JSplitPanePreference extends PreferenceElement {
+public class JSplitPanePreference extends PreferenceElement implements PropertyChangeListener {
     //region Variable Declarations
     private final WeakReference<JSplitPane> weakReference;
     private int dividerLocation;
@@ -34,6 +36,7 @@ public class JSplitPanePreference extends PreferenceElement {
         super(splitPane.getName());
         setDividerLocation(splitPane.getDividerLocation());
         weakReference = new WeakReference<>(splitPane);
+        splitPane.addPropertyChangeListener(this);
     }
     //endregion Constructors
 
@@ -51,6 +54,7 @@ public class JSplitPanePreference extends PreferenceElement {
     }
     //endregion Getters/Setters
 
+    //region PreferenceElement
     @Override
     protected String getValue() {
         return Integer.toString(getDividerLocation());
@@ -71,8 +75,16 @@ public class JSplitPanePreference extends PreferenceElement {
     protected void dispose() {
         final JSplitPane element = getWeakReference().get();
         if (element != null) {
-            // TODO : Remove any listeners required
+            element.removePropertyChangeListener(this);
             getWeakReference().clear();
         }
     }
+    //endregion PreferenceElement
+
+    //region PropertyChangeListener
+    @Override
+    public void propertyChange(final PropertyChangeEvent evt) {
+
+    }
+    //endregion PropertyChangeListener
 }

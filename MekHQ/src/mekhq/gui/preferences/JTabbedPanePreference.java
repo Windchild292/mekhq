@@ -21,9 +21,11 @@ package mekhq.gui.preferences;
 import mekhq.preferences.PreferenceElement;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.lang.ref.WeakReference;
 
-public class JTabbedPanePreference extends PreferenceElement {
+public class JTabbedPanePreference extends PreferenceElement implements ChangeListener {
     //region Variable Declarations
     private final WeakReference<JTabbedPane> weakReference;
     private int selectedIndex;
@@ -34,6 +36,7 @@ public class JTabbedPanePreference extends PreferenceElement {
         super(tabbedPane.getName());
         setSelectedIndex(tabbedPane.getSelectedIndex());
         weakReference = new WeakReference<>(tabbedPane);
+        tabbedPane.addChangeListener(this);
     }
     //endregion Constructors
 
@@ -51,6 +54,7 @@ public class JTabbedPanePreference extends PreferenceElement {
     }
     //endregion Getters/Setters
 
+    //region PreferenceElement
     @Override
     protected String getValue() {
         return Integer.toString(getSelectedIndex());
@@ -74,8 +78,16 @@ public class JTabbedPanePreference extends PreferenceElement {
     protected void dispose() {
         final JTabbedPane element = getWeakReference().get();
         if (element != null) {
-            // TODO : Remove any listeners required
+            element.removeChangeListener(this);
             getWeakReference().clear();
         }
     }
+    //endregion PreferenceElement
+
+    //region ChangeListener
+    @Override
+    public void stateChanged(final ChangeEvent evt) {
+
+    }
+    //endregion ChangeListener
 }
