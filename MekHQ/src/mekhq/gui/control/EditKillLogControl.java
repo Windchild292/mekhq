@@ -47,7 +47,7 @@ public class EditKillLogControl extends JPanel {
         this.campaign = campaign;
         this.person = person;
 
-        this.killModel = new KillTableModel(campaign.getKillsFor(this.person.getId()));
+        this.killModel = new KillTableModel(person.getKills());
 
         initComponents();
     }
@@ -126,14 +126,13 @@ public class EditKillLogControl extends JPanel {
     }
 
     private void deleteKill() {
-        Kill kill = killModel.getKillAt(killTable.getSelectedRow());
-        campaign.removeKill(kill);
+        person.getKills().remove(killModel.getKillAt(killTable.getSelectedRow()));
         refreshTable();
     }
 
     private void refreshTable() {
         int selectedRow = killTable.getSelectedRow();
-        killModel.setData(campaign.getKillsFor(person.getId()));
+        killModel.setData(person.getKills());
         if (selectedRow != -1) {
             if (killTable.getRowCount() > 0) {
                 if (killTable.getRowCount() == selectedRow) {

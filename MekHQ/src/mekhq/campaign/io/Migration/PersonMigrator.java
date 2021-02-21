@@ -18,6 +18,11 @@
  */
 package mekhq.campaign.io.Migration;
 
+import mekhq.campaign.Campaign;
+import mekhq.campaign.Kill;
+import mekhq.campaign.personnel.Person;
+import org.w3c.dom.Node;
+
 public class PersonMigrator {
     /**
      * This migrates awards from the Default Set of pre-0.47.6 to the newer standard following 0.47.14
@@ -123,5 +128,13 @@ public class PersonMigrator {
             default:
                 return "?";
         }
+    }
+
+    public static void migrateKills(final Campaign campaign, final Node wn) {
+        ???
+    }
+
+    public static Kill migrateKill(final Campaign campaign, final Person person, final String text) {
+        ???
     }
 }

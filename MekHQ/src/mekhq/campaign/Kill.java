@@ -2,7 +2,7 @@
  * Kill.java
  *
  * Copyright (c) 2011 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -23,15 +23,14 @@ package mekhq.campaign;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.UUID;
 
+import mekhq.campaign.mission.Scenario;
+import mekhq.campaign.personnel.Person;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
-import mekhq.Version;
 
 /**
  * A kill record
@@ -39,92 +38,113 @@ import mekhq.Version;
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
 public class Kill implements Serializable {
+    //region Variable Declarations
     private static final long serialVersionUID = 4680018605784351078L;
-    private UUID pilotId;
-    private LocalDate date;
-    private String killed;
-    private String killer;
 
+    private Person slayer;
+    private Scenario scenario;
+    private String killedUnitName;
+    private String killingUnitName;
+    //endregion Variable Declarations
+
+    //region Constructors
     public Kill() {
+
     }
 
-    public Kill(UUID id, String kill, String killer, LocalDate d) {
-        pilotId = id;
-        this.killed = kill;
-        this.killer = killer;
-        date = d;
+    public Kill(final Person slayer) {
+        setSlayer(slayer);
     }
 
-    public UUID getPilotId() {
-        return pilotId;
+    public Kill(final Kill kill, final Person slayer) {
+        this(slayer, kill.getScenario(), kill.getKilledUnitName(), kill.getKillingUnitName());
     }
 
-    public void setPilotId(UUID id) {
-        pilotId = id;
+    public Kill(final Person slayer, final Scenario scenario, final String killedUnitName,
+                final String killingUnitName) {
+        setSlayer(slayer);
+        setScenario(scenario);
+        setKilledUnitName(killedUnitName);
+        setKillingUnitName(killingUnitName);
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public Person getSlayer() {
+        return slayer;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public void setSlayer(final Person slayer) {
+        this.slayer = slayer;
     }
 
-    public String getWhatKilled() {
-        return killed;
+    public Scenario getScenario() {
+        return scenario;
     }
 
-    public String getKilledByWhat() {
-        return killer;
+    public void setScenario(final Scenario scenario) {
+        this.scenario = scenario;
     }
 
-    public void setDate(LocalDate d) {
-        date = d;
+    public String getKilledUnitName() {
+        return killedUnitName;
     }
 
-    public void setWhatKilled(String s) {
-        killed = s;
+    public void setKilledUnitName(final String killedUnitName) {
+        this.killedUnitName = killedUnitName;
     }
 
-    public void setKilledByWhat(String s) {
-        killer = s;
+    public String getKillingUnitName() {
+        return killingUnitName;
     }
 
-    public static Kill generateInstanceFromXML(Node wn, Version version) {
-        Kill retVal = null;
+    public void setKillingUnitName(final String killingUnitName) {
+        this.killingUnitName = killingUnitName;
+    }
+    //endregion Getters/Setters
+
+    /**
+     * @param kill the kill to compare
+     * @return true if the kills are against the same target, otherwise false
+     */
+    public boolean isSameKill(final Kill kill) {
+        return getScenario().equals(kill.getScenario())
+                && getKilledUnitName().equals(kill.getKilledUnitName())
+                && getKillingUnitName().equals(kill.getKillingUnitName());
+    }
+
+    //region File I/O
+    public void writeToXML(final PrintWriter pw, int indent) {
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw, indent++, "kill");
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "scenario", getScenario().getId());
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "killedUnitName", getKilledUnitName());
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "killingUnitName", getKillingUnitName());
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "kill");
+    }
+
+    public static Kill generateInstanceFromXML(final Node wn, final Campaign campaign, final Person slayer) {
+        Kill kill = new Kill(slayer);
+        final NodeList nl = wn.getChildNodes();
         try {
-            retVal = new Kill();
-            NodeList nl = wn.getChildNodes();
-
             for (int x = 0; x < nl.getLength(); x++) {
                 Node wn2 = nl.item(x);
-                if (wn2.getNodeName().equalsIgnoreCase("killed")) {
-                    retVal.killed = wn2.getTextContent();
-                } else if (wn2.getNodeName().equalsIgnoreCase("pilotId")) {
-                    retVal.pilotId = UUID.fromString(wn2.getTextContent());
-                } else if (wn2.getNodeName().equalsIgnoreCase("killer")) {
-                    retVal.killer = wn2.getTextContent();
-                } else if (wn2.getNodeName().equalsIgnoreCase("date")) {
-                    retVal.date = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
+                if (wn2.getNodeName().equalsIgnoreCase("scenario")) {
+                    final Scenario scenario = campaign.getScenario(Integer.parseInt(wn2.getTextContent().trim()));
+                    if (scenario == null) {
+                        return null;
+                    }
+                    kill.setScenario(scenario);
+                } else if (wn2.getNodeName().equalsIgnoreCase("killedUnitName")) {
+                    kill.setKilledUnitName(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("killingUnitName")) {
+                    kill.setKillingUnitName(wn2.getTextContent().trim());
                 }
             }
-        } catch (Exception ex) {
-            // Errrr, apparently either the class name was invalid...
-            // Or the listed name doesn't exist.
-            // Doh!
-            MekHQ.getLogger().error(ex);
+        } catch (Exception e) {
+            MekHQ.getLogger().error(e);
+            kill = null;
         }
-        return retVal;
+        return kill;
     }
-
-    public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "kill");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "pilotId", pilotId);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "killed", killed);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "killer", killer);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "date", MekHqXmlUtil.saveFormattedDate(date));
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "kill");
-    }
-
-    @Override
-    public Kill clone() {
-        return new Kill(getPilotId(), getWhatKilled(), getKilledByWhat(), getDate());
-    }
+    //endregion File I/O
 }

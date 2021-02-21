@@ -886,30 +886,16 @@ public class PersonnelTableMouseAdapter extends MouseInputAdapter implements Act
                 break;
             }
             case CMD_ADD_KILL: {
-                AddOrEditKillEntryDialog nkd;
-                Unit unit = selectedPerson.getUnit();
-                if (people.length > 1) {
-                    nkd = new AddOrEditKillEntryDialog(gui.getFrame(), true, null,
-                            (unit != null) ? unit.getName() : resourceMap.getString("bareHands.text"),
-                            gui.getCampaign().getLocalDate());
-                } else {
-                    nkd = new AddOrEditKillEntryDialog(gui.getFrame(), true, selectedPerson.getId(),
-                            (unit != null) ? unit.getName() : resourceMap.getString("bareHands.text"),
-                            gui.getCampaign().getLocalDate());
-                }
+                final Unit unit = selectedPerson.getUnit();
+                final AddOrEditKillEntryDialog nkd = new AddOrEditKillEntryDialog(gui.getFrame(),
+                        true, (people.length > 1)  ? null : selectedPerson.getId(),
+                        (unit != null) ? unit.getName() : resourceMap.getString("bareHands.text"),
+                        gui.getCampaign().getLocalDate());
                 nkd.setVisible(true);
                 if (nkd.getKill().isPresent()) {
-                    Kill kill = nkd.getKill().get();
-                    if (people.length > 1) {
-                        for (Person person : people) {
-                            Kill k = kill.clone();
-                            k.setPilotId(person.getId());
-                            gui.getCampaign().addKill(k);
-                            MekHQ.triggerEvent(new PersonLogEvent(person));
-                        }
-                    } else {
-                        gui.getCampaign().addKill(kill);
-                        MekHQ.triggerEvent(new PersonLogEvent(selectedPerson));
+                    final Kill kill = nkd.getKill().get();
+                    for (final Person person : people) {
+                        person.addKill(gui.getCampaign(), new Kill(kill, person));
                     }
                 }
                 break;
