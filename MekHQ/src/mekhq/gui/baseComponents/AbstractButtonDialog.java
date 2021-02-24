@@ -102,6 +102,16 @@ public abstract class AbstractButtonDialog extends AbstractDialog {
 
     /**
      * This creates a standard button for use in the dialog
+     * @param name the name of the button
+     * @param actionListener the {@link ActionListener} to assign to the button
+     * @return the created button
+     */
+    protected JButton createButton(final String name, final ActionListener actionListener) {
+        return createButton(name + ".text", name + ".toolTipText", name, actionListener);
+    }
+
+    /**
+     * This creates a standard button for use in the dialog
      * @param text the text resource string
      * @param toolTipText the toolTipText resource string
      * @param name the name of the button

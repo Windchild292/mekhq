@@ -744,19 +744,10 @@ public class CampaignGUI extends JPanel {
         miHireBulk.addActionListener(evt -> hireBulkPersonnel());
         menuMarket.add(miHireBulk);
 
-        JMenu menuHire = new JMenu(resourceMap.getString("menuHire.text")); // NOI18N
-        menuHire.setMnemonic(KeyEvent.VK_H);
-        for (int i = Person.T_MECHWARRIOR; i < Person.T_NUM; i++) {
-            JMenuItem miHire = new JMenuItem(Person.getRoleDesc(i, getCampaign().getFaction().isClan()));
-            int miHireMnemonic = Person.getRoleMnemonic(i);
-            if (miHireMnemonic != KeyEvent.VK_UNDEFINED) {
-                miHire.setMnemonic(miHireMnemonic);
-            }
-            miHire.setActionCommand(Integer.toString(i));
-            miHire.addActionListener(this::hirePerson);
-            menuHire.add(miHire);
-        }
-        menuMarket.add(menuHire);
+        JMenuItem miHire = new JMenuItem(resourceMap.getString("miHire.text"));
+        miHire.setMnemonic(KeyEvent.VK_H);
+        miHire.addActionListener(evt -> new IndividualHireDialog(getFrame(), this).setVisible(true));
+        menuMarket.add(miHire);
 
         //region Astech Pool
         // The Astech Pool menu uses the following Mnemonic keys as of 19-March-2020:
@@ -1241,13 +1232,6 @@ public class CampaignGUI extends JPanel {
             }
         }
         return false;
-    }
-
-    private void hirePerson(java.awt.event.ActionEvent evt) {
-        int type = Integer.parseInt(evt.getActionCommand());
-        NewRecruitDialog npd = new NewRecruitDialog(this, true,
-                getCampaign().newPerson(type));
-        npd.setVisible(true);
     }
 
     public void hirePersonMarket() {
