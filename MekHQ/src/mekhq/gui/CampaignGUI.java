@@ -41,6 +41,10 @@ import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.common.*;
 import mekhq.MekHqConstants;
 import mekhq.campaign.finances.Money;
+import mekhq.gui.btest.TestDialog;
+import mekhq.gui.btest.TestScrollDialog;
+import mekhq.gui.btest.TestSplitDialog;
+import mekhq.gui.btest.TestTabbedDialog;
 import mekhq.gui.dialog.*;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.preferences.PreferencesNode;
@@ -978,6 +982,22 @@ public class CampaignGUI extends JPanel {
         menuAboutItem.setName("aboutMenuItem");
         menuAboutItem.addActionListener(evt -> showAboutBox());
         menuHelp.add(menuAboutItem);
+
+        JMenuItem testDialogItem = new JMenuItem("Test Dialog");
+        testDialogItem.addActionListener(evt -> new TestDialog(getFrame()).setVisible(true));
+        menuHelp.add(testDialogItem);
+
+        JMenuItem testScrollItem = new JMenuItem("Test Scroll");
+        testScrollItem.addActionListener(evt -> new TestScrollDialog(getFrame()).setVisible(true));
+        menuHelp.add(testScrollItem);
+
+        JMenuItem testSplitItem = new JMenuItem("Test Split");
+        testSplitItem.addActionListener(evt -> new TestSplitDialog(getFrame()).setVisible(true));
+        menuHelp.add(testSplitItem);
+
+        JMenuItem testTabbedItem = new JMenuItem("Test Tabbed");
+        testTabbedItem.addActionListener(evt -> new TestTabbedDialog(getFrame()).setVisible(true));
+        menuHelp.add(testTabbedItem);
 
         menuBar.add(menuHelp);
         //endregion Help Menu
