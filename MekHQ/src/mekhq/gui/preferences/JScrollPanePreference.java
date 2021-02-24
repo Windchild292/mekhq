@@ -29,7 +29,9 @@ public class JScrollPanePreference extends PreferenceElement implements Property
     //region Variable Declarations
     private final WeakReference<JScrollPane> weakReference;
     private int horizontalValue;
+    private int horizontalMaximum;
     private int verticalValue;
+    private int verticalMaximum;
     //endregion Variable Declarations
 
     //region Constructors
@@ -37,8 +39,10 @@ public class JScrollPanePreference extends PreferenceElement implements Property
         super(scrollPane.getName());
         setHorizontalValue((scrollPane.getHorizontalScrollBarPolicy() == JScrollPane.HORIZONTAL_SCROLLBAR_NEVER)
                 ? 0 : scrollPane.getHorizontalScrollBar().getValue());
+        setHorizontalMaximum(scrollPane.getHorizontalScrollBar().getMaximum());
         setVerticalValue((scrollPane.getVerticalScrollBarPolicy() == JScrollPane.VERTICAL_SCROLLBAR_NEVER)
                 ? 0 : scrollPane.getVerticalScrollBar().getValue());
+        setVerticalMaximum(scrollPane.getVerticalScrollBar().getMaximum());
         weakReference = new WeakReference<>(scrollPane);
         scrollPane.addPropertyChangeListener(this);
     }
@@ -57,6 +61,14 @@ public class JScrollPanePreference extends PreferenceElement implements Property
         this.horizontalValue = horizontalValue;
     }
 
+    public int getHorizontalMaximum() {
+        return horizontalMaximum;
+    }
+
+    public void setHorizontalMaximum(int horizontalMaximum) {
+        this.horizontalMaximum = horizontalMaximum;
+    }
+
     public int getVerticalValue() {
         return verticalValue;
     }
@@ -64,12 +76,20 @@ public class JScrollPanePreference extends PreferenceElement implements Property
     public void setVerticalValue(final int verticalValue) {
         this.verticalValue = verticalValue;
     }
+
+    public int getVerticalMaximum() {
+        return verticalMaximum;
+    }
+
+    public void setVerticalMaximum(int verticalMaximum) {
+        this.verticalMaximum = verticalMaximum;
+    }
     //endregion Getters/Setters
 
     //region PreferenceElement
     @Override
     protected String getValue() {
-        return String.format("%d|%d", getHorizontalValue(), getVerticalValue());
+        return String.format("%d|%d|%d|%d", getHorizontalValue(), getHorizontalMaximum(), getVerticalValue(), getVerticalMaximum());
     }
 
     @Override
@@ -81,15 +101,16 @@ public class JScrollPanePreference extends PreferenceElement implements Property
         if (element != null) {
             final String[] parts = value.split("\\|", -1);
             setHorizontalValue(Integer.parseInt(parts[0]));
-            setVerticalValue(Integer.parseInt(parts[1]));
+            setHorizontalMaximum(Integer.parseInt(parts[1]));
+            setVerticalValue(Integer.parseInt(parts[2]));
+            setVerticalMaximum(Integer.parseInt(parts[3]));
 
-            if (element.getHorizontalScrollBarPolicy() != JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
+            SwingUtilities.invokeLater(() -> {
+                element.getHorizontalScrollBar().setMaximum(getHorizontalMaximum());
                 element.getHorizontalScrollBar().setValue(getHorizontalValue());
-            }
-
-            if (element.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
+                element.getVerticalScrollBar().setMaximum(getVerticalMaximum());
                 element.getVerticalScrollBar().setValue(getVerticalValue());
-            }
+            });
         }
     }
 
@@ -110,8 +131,10 @@ public class JScrollPanePreference extends PreferenceElement implements Property
         if (element != null) {
             setHorizontalValue((element.getHorizontalScrollBarPolicy() == JScrollPane.HORIZONTAL_SCROLLBAR_NEVER)
                     ? 0 : element.getHorizontalScrollBar().getValue());
+            setHorizontalMaximum(element.getHorizontalScrollBar().getMaximum());
             setVerticalValue((element.getVerticalScrollBarPolicy() == JScrollPane.VERTICAL_SCROLLBAR_NEVER)
                     ? 0 : element.getVerticalScrollBar().getValue());
+            setVerticalMaximum(element.getVerticalScrollBar().getMaximum());
         }
     }
     //endregion PropertyChangeListener

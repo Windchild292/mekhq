@@ -104,6 +104,7 @@ import mekhq.gui.FileDialogs;
 import mekhq.gui.SpecialAbilityPanel;
 import mekhq.gui.model.RankTableModel;
 import mekhq.gui.model.SortedComboBoxModel;
+import mekhq.gui.preferences.JListPreference;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.gui.utilities.TableCellListener;
 import mekhq.module.PersonnelMarketServiceManager;

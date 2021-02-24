@@ -82,7 +82,7 @@ public abstract class AbstractScrollPane extends JScrollPane {
     /**
      * This sets the base preferences for this class, and calls the custom preferences method
      */
-    protected void setPreferences() {
+    public void setPreferences() {
         final PreferencesNode preferences = MekHQ.getPreferences().forClass(getClass());
         preferences.manage(new JScrollPanePreference(this));
         setCustomPreferences(preferences);
