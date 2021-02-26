@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -35,24 +35,95 @@ import java.util.Map;
  * The root class for MekHQ user nameToPreferencesMap system.
  */
 public class MekHqPreferences {
+    //region Variable Declarations
     private static final String PREFERENCES_TOKEN = "preferences";
     private static final String CLASS_TOKEN = "class";
     private static final String ELEMENTS_TOKEN = "elements";
     private static final String NAME_TOKEN = "element";
     private static final String VALUE_TOKEN = "value";
     private final Map<String, PreferencesNode> nameToPreferencesMap;
+    //endregion Variable Declarations
 
+    //region Constructors
     public MekHqPreferences() {
-        this.nameToPreferencesMap = new HashMap<>();
+        nameToPreferencesMap = new HashMap<>();
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public Map<String, PreferencesNode> getNameToPreferencesMap() {
+        return nameToPreferencesMap;
+    }
+    //endregion Getters/Setters
+
+    public PreferencesNode forClass(final Class<?> classToManage) {
+        return getNameToPreferencesMap().computeIfAbsent(classToManage.getName(), c -> new PreferencesNode(classToManage));
     }
 
-    public void loadFromFile(String filePath) {
+    //region Write To File
+    public void saveToFile(final String filePath) {
+        try {
+            try (FileOutputStream output = new FileOutputStream(filePath)) {
+                MekHQ.getLogger().debug("Saving MekHQ nameToPreferencesMap to: " + filePath);
+
+                final JsonFactory factory = new JsonFactory();
+                final JsonGenerator writer = factory.createGenerator(output).useDefaultPrettyPrinter();
+                writer.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
+
+                writer.writeStartObject();
+                writer.writeFieldName(PREFERENCES_TOKEN);
+                writer.writeStartArray();
+
+                // Write each PreferencesNode
+                for (final Map.Entry<String, PreferencesNode> preferences : getNameToPreferencesMap().entrySet()) {
+                    writePreferencesNode(writer, preferences);
+                }
+
+                writer.writeEndArray();
+                writer.writeEndObject();
+
+                writer.close();
+            }
+        } catch (FileNotFoundException e) {
+            MekHQ.getLogger().error("Could not save nameToPreferencesMap to: " + filePath, e);
+        } catch (IOException e) {
+            MekHQ.getLogger().error("Error writing to the nameToPreferencesMap file: " + filePath, e);
+        }
+    }
+
+    private static void writePreferencesNode(final JsonGenerator writer,
+                                             final Map.Entry<String, PreferencesNode> nodeInfo) throws IOException {
+        writer.writeStartObject();
+        writer.writeStringField(CLASS_TOKEN, nodeInfo.getKey());
+        writer.writeFieldName(ELEMENTS_TOKEN);
+        writer.writeStartArray();
+
+        // Write all PreferenceElement in this node
+        for (final Map.Entry<String, String> element : nodeInfo.getValue().getFinalValues().entrySet()) {
+            writePreferenceElement(writer, element);
+        }
+
+        writer.writeEndArray();
+        writer.writeEndObject();
+    }
+
+    private static void writePreferenceElement(final JsonGenerator writer,
+                                               final Map.Entry<String, String> element) throws IOException {
+        writer.writeStartObject();
+        writer.writeStringField(NAME_TOKEN, element.getKey());
+        writer.writeStringField(VALUE_TOKEN, element.getValue());
+        writer.writeEndObject();
+    }
+    //endregion Write To File
+
+    //region Load From File
+    public void loadFromFile(final String filePath) {
         try {
             try (FileInputStream input = new FileInputStream(filePath)) {
-                MekHQ.getLogger().info(this, "Loading MekHQ user preferences from: " + filePath);
+                MekHQ.getLogger().info("Loading MekHQ user preferences from: " + filePath);
 
-                JsonFactory factory = new JsonFactory();
-                JsonParser parser = factory.createParser(input);
+                final JsonFactory factory = new JsonFactory();
+                final JsonParser parser = factory.createParser(input);
 
                 if (parser.nextToken() != JsonToken.START_OBJECT) {
                     throw new IOException("Expected an object start ({)" + getParserInformation(parser));
@@ -63,133 +134,81 @@ public class MekHqPreferences {
                 }
 
                 // Parse all PreferencesNode
-                while (parser.nextToken() != JsonToken.END_ARRAY){
+                while (parser.nextToken() != JsonToken.END_ARRAY) {
                     try {
-                        readPreferencesNode(parser, this.nameToPreferencesMap);
+                        readPreferencesNode(parser, getNameToPreferencesMap());
                     } catch (IOException e) {
-                        MekHQ.getLogger().error(this, "Error reading node. " + getParserInformation(parser), e);
+                        MekHQ.getLogger().error("Error reading node. " + getParserInformation(parser), e);
                     }
                 }
 
                 parser.close();
 
-                MekHQ.getLogger().info(this, "Finished loading user preferences");
-            }
-        }
-        catch (FileNotFoundException e) {
-            MekHQ.getLogger().error(this, "No MekHQ user preferences file found: " + filePath, e);
-        }
-        catch (IOException e) {
-            MekHQ.getLogger().error(this, "Error reading from the user preferences file: " + filePath, e);
-        }
-    }
-
-    public void saveToFile(String filePath) {
-        try {
-            try (FileOutputStream output = new FileOutputStream(filePath)) {
-                MekHQ.getLogger().debug(this, "Saving MekHQ nameToPreferencesMap to: " + filePath);
-
-                JsonFactory factory = new JsonFactory();
-                JsonGenerator writer = factory.createGenerator(output);
-                writer = writer.useDefaultPrettyPrinter();
-                writer.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
-
-                writer.writeStartObject();
-                writer.writeFieldName(PREFERENCES_TOKEN);
-                writer.writeStartArray();
-
-                // Write each PreferencesNode
-                for (Map.Entry<String, PreferencesNode> preferences : this.nameToPreferencesMap.entrySet()) {
-                    writePreferencesNode(writer, preferences);
-                }
-
-                writer.writeEndArray();
-                writer.writeEndObject();
-
-                writer.close();
+                MekHQ.getLogger().info("Finished loading user preferences");
             }
         } catch (FileNotFoundException e) {
-            MekHQ.getLogger().error(this, "Could not save nameToPreferencesMap to: " + filePath, e);
+            MekHQ.getLogger().error("No MekHQ user preferences file found: " + filePath, e);
         } catch (IOException e) {
-            MekHQ.getLogger().error(this, "Error writing to the nameToPreferencesMap file: " + filePath, e);
+            MekHQ.getLogger().error("Error reading from the user preferences file: " + filePath, e);
         }
     }
 
-    public PreferencesNode forClass(Class classToManage) {
-        PreferencesNode preferences = this.nameToPreferencesMap.getOrDefault(classToManage.getName(), null);
-        if (preferences == null) {
-            preferences = new PreferencesNode(classToManage);
-            this.nameToPreferencesMap.put(classToManage.getName(), preferences);
-        }
-
-        return preferences;
+    private static String getParserInformation(final JsonParser parser) throws IOException {
+        return (parser == null) ? "" : ". Current token: " + parser.getCurrentName() +
+                ". Line number: " + parser.getCurrentLocation().getLineNr() +
+                ". Column number: " + parser.getCurrentLocation().getColumnNr();
     }
 
-    private static void readPreferencesNode(JsonParser parser, Map<String, PreferencesNode> nodes) throws IOException {
-        final String METHOD_NAME = "readPreferencesNode";
-
-        String className;
-        HashMap<String, String> elements = new HashMap<>();
-
+    private static void readPreferencesNode(final JsonParser parser,
+                                            final Map<String, PreferencesNode> nodes) throws IOException {
         if (parser.currentToken() != JsonToken.START_OBJECT) {
             return;
-        }
-
-        if (parser.nextToken() != JsonToken.FIELD_NAME && !parser.getCurrentName().equals(CLASS_TOKEN)) {
+        } else if ((parser.nextToken() != JsonToken.FIELD_NAME) && !parser.getCurrentName().equals(CLASS_TOKEN)) {
             return;
         }
 
-        className = parser.nextTextValue();
+        final String className = parser.nextTextValue();
 
-        if (parser.nextToken() != JsonToken.FIELD_NAME && !parser.getCurrentName().equals(ELEMENTS_TOKEN)) {
+        if ((parser.nextToken() != JsonToken.FIELD_NAME) && !parser.getCurrentName().equals(ELEMENTS_TOKEN)) {
+            return;
+        } else if (parser.nextToken() != JsonToken.START_ARRAY) {
             return;
         }
 
-        if (parser.nextToken() != JsonToken.START_ARRAY) {
-            return;
-        }
+        final Map<String, String> elements = new HashMap<>();
 
         // Parse all PreferenceElement in this node
         while (parser.nextToken() != JsonToken.END_ARRAY) {
             try {
                 readPreferenceElement(parser, elements);
-            }
-            catch (IOException e) {
-                MekHQ.getLogger().warning(MekHqPreferences.class, METHOD_NAME,
-                        "Error reading elements for node: " + className + ".", e);
+            } catch (IOException e) {
+                MekHQ.getLogger().warning("Error reading elements for node: " + className + ".", e);
             }
         }
 
         try {
-            PreferencesNode node = new PreferencesNode(Class.forName(className));
+            final PreferencesNode node = new PreferencesNode(Class.forName(className));
             node.initialize(elements);
-            nodes.put(node.getNodeName(), node);
-        }
-        catch (ClassNotFoundException e) {
-            MekHQ.getLogger().error(MekHqPreferences.class, METHOD_NAME,
-                    "No class with name " + className + " found", e);
+            nodes.put(node.getNode().getName(), node);
+        } catch (ClassNotFoundException e) {
+            MekHQ.getLogger().error("No class with name " + className + " found", e);
         }
     }
 
-    private static void readPreferenceElement(JsonParser parser, HashMap<String, String> elements) throws IOException {
-        String name;
-        String value;
-
+    private static void readPreferenceElement(final JsonParser parser, final Map<String, String> elements) throws IOException {
         if (parser.currentToken() != JsonToken.START_OBJECT) {
             return;
-        }
-
-        if (parser.nextToken() != JsonToken.FIELD_NAME && !parser.getCurrentName().equals(NAME_TOKEN)) {
+        } else if ((parser.nextToken() != JsonToken.FIELD_NAME) && !parser.getCurrentName().equals(NAME_TOKEN)) {
             return;
         }
 
-        name = parser.nextTextValue();
+        final String name = parser.nextTextValue();
 
-        if (parser.nextToken() != JsonToken.FIELD_NAME && !parser.getCurrentName().equals(VALUE_TOKEN)) {
+        if ((parser.nextToken() != JsonToken.FIELD_NAME) && !parser.getCurrentName().equals(VALUE_TOKEN)) {
             return;
         }
 
-        value = parser.nextTextValue();
+        final String value = parser.nextTextValue();
 
         if (parser.nextToken() != JsonToken.END_OBJECT) {
             return;
@@ -197,36 +216,5 @@ public class MekHqPreferences {
 
         elements.put(name, value);
     }
-
-    private static void writePreferencesNode(JsonGenerator writer, Map.Entry<String, PreferencesNode> nodeInfo) throws IOException {
-        writer.writeStartObject();
-        writer.writeStringField(CLASS_TOKEN, nodeInfo.getKey());
-        writer.writeFieldName(ELEMENTS_TOKEN);
-        writer.writeStartArray();
-
-        // Write all PreferenceElement in this node
-        for (Map.Entry<String, String> element : nodeInfo.getValue().getFinalValues().entrySet()) {
-            writePreferenceElement(writer, element);
-        }
-
-        writer.writeEndArray();
-        writer.writeEndObject();
-    }
-
-    private static void writePreferenceElement(JsonGenerator writer, Map.Entry<String, String> element) throws IOException {
-        writer.writeStartObject();
-        writer.writeStringField(NAME_TOKEN, element.getKey());
-        writer.writeStringField(VALUE_TOKEN, element.getValue());
-        writer.writeEndObject();
-    }
-
-    private static String getParserInformation(JsonParser parser) throws IOException {
-        if (parser == null) {
-            return "";
-        }
-
-        return ". Current token: " + parser.getCurrentName() +
-                ". Line number: " + parser.getCurrentLocation().getLineNr() +
-                ". Column number: " + parser.getCurrentLocation().getColumnNr();
-    }
+    //endregion Load From File
 }

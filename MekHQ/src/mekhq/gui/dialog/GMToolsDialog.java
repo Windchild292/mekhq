@@ -57,6 +57,7 @@ import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.IUnitGenerator;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.preferences.JComboBoxPreference;
+import mekhq.gui.preferences.JDoubleNumberSpinnerPreference;
 import mekhq.gui.preferences.JIntNumberSpinnerPreference;
 import mekhq.gui.preferences.JTextFieldPreference;
 import mekhq.gui.preferences.JWindowPreference;
@@ -198,7 +199,7 @@ public class GMToolsDialog extends JDialog {
         sides.setName("sides");
         dicePanel.add(sides, newGridBagConstraints(gridx++, gridy));
 
-        sizeDice = new JSpinner(new SpinnerNumberModel(6, 1, 200, 1));
+        sizeDice = new JSpinner(new SpinnerNumberModel(6.0, 1.0, 200.0, 1.5));
         sizeDice.setName("sizeDice");
         ((JSpinner.DefaultEditor) sizeDice.getEditor()).getTextField().setEditable(true);
         dicePanel.add(sizeDice, newGridBagConstraints(gridx++, gridy++));
@@ -604,7 +605,7 @@ public class GMToolsDialog extends JDialog {
 
         preferences.manage(new JIntNumberSpinnerPreference(numDice));
 
-        preferences.manage(new JIntNumberSpinnerPreference(sizeDice));
+        preferences.manage(new JDoubleNumberSpinnerPreference(sizeDice));
 
         preferences.manage(new JTextFieldPreference(yearPicker));
 

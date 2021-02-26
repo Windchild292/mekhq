@@ -1,7 +1,8 @@
 /*
  * CampaignGUI.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All Rights Reserved.
+ * Copyright (c) 2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -40,6 +41,10 @@ import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.common.*;
 import mekhq.MekHqConstants;
 import mekhq.campaign.finances.Money;
+import mekhq.gui.btest.TestDialog;
+import mekhq.gui.btest.TestScrollDialog;
+import mekhq.gui.btest.TestSplitDialog;
+import mekhq.gui.btest.TestTabbedDialog;
 import mekhq.gui.dialog.*;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.preferences.PreferencesNode;
@@ -666,24 +671,24 @@ public class CampaignGUI extends JPanel {
         menuFile.add(menuExport);
         //endregion menuExport
 
-        JMenuItem miMercRoster = new JMenuItem(resourceMap.getString("miMercRoster.text")); // NOI18N
+        JMenuItem miMercRoster = new JMenuItem(resourceMap.getString("miMercRoster.text"));
         miMercRoster.setMnemonic(KeyEvent.VK_U);
         miMercRoster.addActionListener(evt -> showMercRosterDialog());
         menuFile.add(miMercRoster);
 
-        JMenuItem menuOptions = new JMenuItem(resourceMap.getString("menuOptions.text")); // NOI18N
+        JMenuItem menuOptions = new JMenuItem(resourceMap.getString("menuOptions.text"));
         menuOptions.setMnemonic(KeyEvent.VK_C);
         menuOptions.addActionListener(this::menuOptionsActionPerformed);
         menuFile.add(menuOptions);
 
-        JMenuItem menuOptionsMM = new JMenuItem(resourceMap.getString("menuOptionsMM.text")); // NOI18N
+        JMenuItem menuOptionsMM = new JMenuItem(resourceMap.getString("menuOptionsMM.text"));
         menuOptionsMM.setMnemonic(KeyEvent.VK_M);
         menuOptionsMM.addActionListener(this::menuOptionsMMActionPerformed);
         menuFile.add(menuOptionsMM);
 
         JMenuItem menuMekHqOptions = new JMenuItem(resourceMap.getString("menuMekHqOptions.text"));
         menuMekHqOptions.setMnemonic(KeyEvent.VK_H);
-        menuMekHqOptions.addActionListener(this::menuMekHqOptionsActionPerformed);
+        menuMekHqOptions.addActionListener(evt -> new MekHqOptionsDialog(getFrame()).setVisible(true));
         menuFile.add(menuMekHqOptions);
 
         menuThemes = new JMenu(resourceMap.getString("menuThemes.text"));
@@ -977,6 +982,22 @@ public class CampaignGUI extends JPanel {
         menuAboutItem.setName("aboutMenuItem");
         menuAboutItem.addActionListener(evt -> showAboutBox());
         menuHelp.add(menuAboutItem);
+
+        JMenuItem testDialogItem = new JMenuItem("Test Dialog");
+        testDialogItem.addActionListener(evt -> new TestDialog(getFrame()).setVisible(true));
+        menuHelp.add(testDialogItem);
+
+        JMenuItem testScrollItem = new JMenuItem("Test Scroll");
+        testScrollItem.addActionListener(evt -> new TestScrollDialog(getFrame()).setVisible(true));
+        menuHelp.add(testScrollItem);
+
+        JMenuItem testSplitItem = new JMenuItem("Test Split");
+        testSplitItem.addActionListener(evt -> new TestSplitDialog(getFrame()).setVisible(true));
+        menuHelp.add(testSplitItem);
+
+        JMenuItem testTabbedItem = new JMenuItem("Test Tabbed");
+        testTabbedItem.addActionListener(evt -> new TestTabbedDialog(getFrame()).setVisible(true));
+        menuHelp.add(testTabbedItem);
 
         menuBar.add(menuHelp);
         //endregion Help Menu
@@ -1351,10 +1372,6 @@ public class CampaignGUI extends JPanel {
         return FileDialogs.saveCampaign(frame, getCampaign()).orElse(null);
     }
 
-    private String getExtensionForSaveFile(Campaign c) {
-        return MekHQ.getMekHQOptions().getPreferGzippedOutput() ? ".cpnx.gz" : ".cpnx";
-    }
-
     private void menuLoadXmlActionPerformed(java.awt.event.ActionEvent evt) {
         File f = selectLoadCampaignFile();
         if (null == f) {
@@ -1476,11 +1493,6 @@ public class CampaignGUI extends JPanel {
             setCampaignOptionsFromGameOptions();
             refreshCalendar();
         }
-    }
-
-    private void menuMekHqOptionsActionPerformed(ActionEvent evt) {
-        MekHqOptionsDialog dialog = new MekHqOptionsDialog(getFrame());
-        dialog.setVisible(true);
     }
 
     private void miLoadForcesActionPerformed(java.awt.event.ActionEvent evt) {
