@@ -16,25 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-package mekhq.gui.dialog;
+package mekhq.gui.view;
 
 import mekhq.campaign.Campaign;
-import mekhq.gui.baseComponents.AbstractButtonDialog;
-import mekhq.gui.view.ContractMarketPanel;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class ContractMarketDialog extends AbstractButtonDialog {
+public class ContractMarketPanel extends JPanel {
     //region Variable Declarations
     private Campaign campaign;
-    private ContractMarketPanel contractMarketPanel;
     //endregion Variable Declarations
 
     //region Constructors
-    public ContractMarketDialog(final JFrame frame, final Campaign campaign) {
-        super(frame, "ContractMarketDialog", "ContractMarketDialog.title");
-        initialize();
+    public ContractMarketPanel(final JFrame frame, final Campaign campaign) {
+        setCampaign(campaign);
     }
     //endregion Constructors
 
@@ -46,26 +41,8 @@ public class ContractMarketDialog extends AbstractButtonDialog {
     public void setCampaign(final Campaign campaign) {
         this.campaign = campaign;
     }
-
-    public ContractMarketPanel getContractMarketPanel() {
-        return contractMarketPanel;
-    }
-
-    public void setContractMarketPanel(final ContractMarketPanel contractMarketPanel) {
-        this.contractMarketPanel = contractMarketPanel;
-    }
     //endregion Getters/Setters
 
     //region Initialization
-    @Override
-    protected Container createCenterPane() {
-        setContractMarketPanel(new ContractMarketPanel(getFrame(), getCampaign()));
-        return getContractMarketPanel();
-    }
-
-    @Override
-    protected JPanel createButtonPanel() {
-        return null;
-    }
     //endregion Initialization
 }

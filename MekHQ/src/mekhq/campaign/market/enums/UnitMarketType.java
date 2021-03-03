@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -34,8 +34,7 @@ public enum UnitMarketType {
 
     //region Variable Declarations
     private final String name;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market",
-            new EncodeControl());
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
@@ -43,6 +42,12 @@ public enum UnitMarketType {
         this.name = resources.getString(name);
     }
     //endregion Constructors
+
+    //region Boolean Comparison Methods
+    public boolean isBlackMarket() {
+        return this == BLACK_MARKET;
+    }
+    //endregion Boolean Comparison Methods
 
     //region File IO
     public static UnitMarketType parseFromString(String text) {

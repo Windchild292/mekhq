@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 The MegaMek Team. All rights reserved.
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,13 +10,12 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.gui.preferences;
 
 import mekhq.preferences.PreferenceElement;
@@ -30,15 +29,18 @@ import java.awt.event.WindowStateListener;
 import java.lang.ref.WeakReference;
 
 public class JWindowPreference extends PreferenceElement implements WindowStateListener, ComponentListener {
+    //region Variable Declarations
     private final WeakReference<Window> weakRef;
     private int width;
     private int height;
     private int screenX;
     private int screenY;
     private boolean isMaximized;
+    //endregion Variable Declarations
 
+    //region Constructors
     public JWindowPreference(Window window) {
-        super (window.getName());
+        super(window.getName());
 
         this.width = window.getWidth();
         this.height = window.getHeight();
@@ -49,7 +51,7 @@ public class JWindowPreference extends PreferenceElement implements WindowStateL
         }
 
         if (window instanceof JFrame) {
-            this.isMaximized = (((JFrame)window).getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
+            this.isMaximized = (((JFrame) window).getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
         } else {
             this.isMaximized = false;
         }
@@ -58,6 +60,7 @@ public class JWindowPreference extends PreferenceElement implements WindowStateL
         window.addWindowStateListener(this);
         window.addComponentListener(this);
     }
+    //endregion Constructors
 
     @Override
     public void windowStateChanged(WindowEvent e) {
@@ -101,7 +104,7 @@ public class JWindowPreference extends PreferenceElement implements WindowStateL
             element.setLocation(this.screenX, this.screenY);
             if (this.isMaximized) {
                 if (element instanceof JFrame) {
-                    ((JFrame)element).setExtendedState(((JFrame)element).getExtendedState() | Frame.MAXIMIZED_BOTH);
+                    ((JFrame) element).setExtendedState(((JFrame) element).getExtendedState() | Frame.MAXIMIZED_BOTH);
                 }
             }
         }
@@ -119,9 +122,11 @@ public class JWindowPreference extends PreferenceElement implements WindowStateL
 
     @Override
     public void componentShown(ComponentEvent e) {
+
     }
 
     @Override
     public void componentHidden(ComponentEvent e) {
+
     }
 }

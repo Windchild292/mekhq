@@ -51,7 +51,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.AtBUnitMarket;
 import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
 import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
 import mekhq.campaign.mission.atb.IAtBScenario;
@@ -785,8 +785,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                 for (int i = 0; i < Compute.d6() - 3; i++) {
                     addLance(enemyEntities, getContract(campaign).getEnemyCode(),
                             getContract(campaign).getEnemySkill(), getContract(campaign).getEnemyQuality(),
-                            UnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
-                                campaign.getCampaignOptions().getRegionalMechVariations()),
+                            AtBUnitMarket.getRandomWeight(campaign, UnitType.MEK, getContract(campaign).getEnemyFaction()),
                             EntityWeightClass.WEIGHT_ASSAULT, campaign);
                 }
             } else if (getLanceRole() == AtBLanceRole.SCOUTING) {

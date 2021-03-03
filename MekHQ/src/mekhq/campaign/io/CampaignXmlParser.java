@@ -78,10 +78,8 @@ import mekhq.campaign.Warehouse;
 import mekhq.campaign.finances.Finances;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
-import mekhq.campaign.market.ContractMarket;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.market.ShoppingList;
-import mekhq.campaign.market.UnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.Mission;
 import mekhq.campaign.mission.Scenario;
@@ -302,11 +300,18 @@ public class CampaignXmlParser {
                     retVal.setPersonnelMarket(PersonnelMarket.generateInstanceFromXML(wn, retVal, version));
                     foundPersonnelMarket = true;
                 } else if (xn.equalsIgnoreCase("contractMarket")) {
-                    // CAW: implicit DEPENDS-ON to the <missions> node
-                    retVal.setContractMarket(ContractMarket.generateInstanceFromXML(wn, retVal, version));
+                    // CAW: implicit DEPENDS ON to the <missions> and <campaignOptions> nodes
+                    retVal.setContractMarket(retVal.getCampaignOptions().getContractMarketMethod().getContractMarket());
+                    if (retVal.getContractMarket() != null) {
+                        retVal.getContractMarket().fillFromXML(wn, retVal, version);
+                    }
                     foundContractMarket = true;
                 } else if (xn.equalsIgnoreCase("unitMarket")) {
-                    retVal.setUnitMarket(UnitMarket.generateInstanceFromXML(wn, retVal, version));
+                    // Windchild: implicit DEPENDS ON to the <campaignOptions> nodes
+                    retVal.setUnitMarket(retVal.getCampaignOptions().getUnitMarketMethod().getUnitMarket());
+                    if (retVal.getUnitMarket() != null) {
+                        retVal.getUnitMarket().fillFromXML(wn);
+                    }
                     foundUnitMarket = true;
                 } else if (xn.equalsIgnoreCase("lances")) {
                     processLanceNodes(retVal, wn);
@@ -323,7 +328,6 @@ public class CampaignXmlParser {
                 } else if (xn.equalsIgnoreCase("customPlanetaryEvents")) {
                     updatePlanetaryEventsFromXML(wn);
                 }
-
             } else {
                 // If it's a text node or attribute or whatever at this level,
                 // it's probably white-space.
@@ -500,10 +504,10 @@ public class CampaignXmlParser {
             retVal.setPersonnelMarket(new PersonnelMarket(retVal));
         }
         if (!foundContractMarket) {
-            retVal.setContractMarket(new ContractMarket());
+            retVal.setContractMarket(retVal.getCampaignOptions().getContractMarketMethod().getContractMarket());
         }
         if (!foundUnitMarket) {
-            retVal.setUnitMarket(new UnitMarket());
+            retVal.setUnitMarket(retVal.getCampaignOptions().getUnitMarketMethod().getUnitMarket());
         }
         if (null == retVal.getRetirementDefectionTracker()) {
             retVal.setRetirementDefectionTracker(new RetirementDefectionTracker());

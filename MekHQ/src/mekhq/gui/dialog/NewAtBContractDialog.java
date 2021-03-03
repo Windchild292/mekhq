@@ -35,6 +35,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Transaction;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.RandomFactionGenerator;
 import mekhq.campaign.universe.Systems;
@@ -64,8 +65,8 @@ public class NewAtBContractDialog extends NewContractDialog {
     protected JSpinner spnShares;
     protected JLabel lblRequiredLances;
 
-    Set<String> currentFactions;
-    Set<String> employerSet;
+    Set<Faction> currentFactions;
+    Set<Faction> employerSet;
 
     int dragoonRating;
 
@@ -75,7 +76,7 @@ public class NewAtBContractDialog extends NewContractDialog {
     }
 
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(NewAtBContractDialog.class);
+        PreferencesNode preferences = MekHQ.getPreferences().forClass(getClass());
 
         this.setName("dialog");
         preferences.manage(new JWindowPreference(this));
@@ -119,7 +120,7 @@ public class NewAtBContractDialog extends NewContractDialog {
 
     @Override
     protected void initDescPanel(ResourceBundle resourceMap, JPanel descPanel) {
-        AtBContract contract = (AtBContract)(this.contract);
+        AtBContract contract = (AtBContract) this.contract;
 
         java.awt.GridBagConstraints gbc;
         txtName = new javax.swing.JTextField();
@@ -130,10 +131,10 @@ public class NewAtBContractDialog extends NewContractDialog {
         cbEnemy = new FactionComboBox();
         JLabel lblEnemy = new JLabel();
         chkShowAllFactions = new JCheckBox();
-        cbPlanets = new JComboBox<String>();
-        cbPlanets.setModel(new SortedComboBoxModel<String>());
+        cbPlanets = new JComboBox<>();
+        cbPlanets.setModel(new SortedComboBoxModel<>());
         chkShowAllPlanets = new JCheckBox();
-        cbMissionType = new JComboBox<String>(AtBContract.missionTypeNames);
+        cbMissionType = new JComboBox<>(AtBContract.missionTypeNames);
         JLabel lblType = new JLabel();
         btnOK = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
@@ -147,7 +148,7 @@ public class NewAtBContractDialog extends NewContractDialog {
         cbAllyQuality = new JComboBox<>(ratingNames);
         JLabel lblAllyRating = new JLabel();
         cbEnemySkill = new JComboBox<>(skillNames);
-        cbEnemyQuality = new JComboBox<>(ratingNames);;
+        cbEnemyQuality = new JComboBox<>(ratingNames);
         JLabel lblEnemyRating = new JLabel();
         JLabel lblShares = new JLabel();
         spnShares = new JSpinner(new SpinnerNumberModel(20, 20, 50, 10));
