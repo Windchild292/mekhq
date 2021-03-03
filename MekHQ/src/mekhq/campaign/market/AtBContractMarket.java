@@ -43,7 +43,6 @@ import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.rating.IUnitRating;
 import mekhq.campaign.universe.Faction;
-import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.RandomFactionGenerator;
 import mekhq.campaign.universe.Systems;
@@ -143,7 +142,7 @@ public class AtBContractMarket extends AbstractContractMarket {
          */
         for (Faction faction : campaign.getCurrentSystem().getFactionSet(campaign.getLocalDate())) {
             if (faction.getStartingPlanet(campaign.getLocalDate()).equals(campaign.getCurrentSystem().getId())
-                    && RandomFactionGenerator.getInstance().getEmployerSet().contains(faction.getShortName())) {
+                    && RandomFactionGenerator.getInstance().getEmployerSet().contains(faction)) {
                 final Contract contract = generateAtBContract(campaign, faction, unitRatingModifier);
                 if (contract != null) {
                     getContracts().add(contract);
@@ -167,8 +166,8 @@ public class AtBContractMarket extends AbstractContractMarket {
 
         Set<Faction> currentFactions = campaign.getCurrentSystem().getFactionSet(campaign.getLocalDate());
         boolean inMinorFaction = true;
-        for (Faction f : currentFactions) {
-            if (RandomFactionGenerator.getInstance().getFactionHints().isISMajorPower(f) || f.isClan()) {
+        for (Faction faction : currentFactions) {
+            if (faction.isISMajorOrSuperPower() || faction.isClan()) {
                 inMinorFaction = false;
                 break;
             }
@@ -180,8 +179,8 @@ public class AtBContractMarket extends AbstractContractMarket {
         boolean inBackwater = true;
         if (currentFactions.size() > 1) {
             // More than one faction, if any is *not* periphery, we're not in backwater either
-            for (Faction f : currentFactions) {
-                if (!f.isPeriphery()) {
+            for (Faction faction : currentFactions) {
+                if (!faction.isPeriphery()) {
                     inBackwater = false;
                 }
             }
@@ -320,7 +319,7 @@ public class AtBContractMarket extends AbstractContractMarket {
                 AtBContract retVal = null;
                 while ((retries > 0) && (retVal == null)) {
                     // Send only 1 retry down because we're handling retries in our loop
-                    retVal = generateAtBContract(campaign, RandomFactionGenerator.getInstance().getEmployerFaction(),
+                    retVal = generateAtBContract(campaign, RandomFactionGenerator.getInstance().getEmployer(),
                             unitRatingModifier, 1);
                     retries--;
                 }
@@ -359,7 +358,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         if (employer.isMercenary()) {
             contract.setMercSubcontract(true);
             for (int attempts = 0; attempts < MAXIMUM_ATTEMPTS_TO_FIND_NON_MERC_EMPLOYER; attempts++) {
-                employer = RandomFactionGenerator.getInstance().getEmployerFaction();
+                employer = RandomFactionGenerator.getInstance().getEmployer();
                 if ((employer != null) && !employer.isMercenary()) {
                     break;
                 }
@@ -455,15 +454,16 @@ public class AtBContractMarket extends AbstractContractMarket {
         contract.setMissionType(findAtBMissionType(unitRatingModifier,
                 contract.getEmployerFaction().isISMajorOrSuperPower()));
 
-        if (contract.getMissionType() == AtBContract.MT_PIRATEHUNTING)
+        if (contract.getMissionType() == AtBContract.MT_PIRATEHUNTING) {
             contract.setEnemyCode("PIR");
-        else if (contract.getMissionType() == AtBContract.MT_RIOTDUTY)
+        } else if (contract.getMissionType() == AtBContract.MT_RIOTDUTY) {
             contract.setEnemyCode("REB");
-        else {
-            boolean rebsAllowed = contract.getMissionType() <= AtBContract.MT_RIOTDUTY;
-            contract.setEnemyCode(RandomFactionGenerator.getInstance().getEnemy(contract.getEmployerCode(), rebsAllowed));
+        } else {
+            contract.setEnemyCode(RandomFactionGenerator.getInstance().getEnemy(contract.getEmployerCode(),
+                    contract.getMissionType() <= AtBContract.MT_RIOTDUTY));
         }
-        if (contract.getMissionType() == AtBContract.MT_GARRISONDUTY && contract.getEnemyCode().equals("REB")) {
+
+        if ((contract.getMissionType() == AtBContract.MT_GARRISONDUTY) && contract.getEnemyFaction().isRebel()) {
             contract.setMissionType(AtBContract.MT_RIOTDUTY);
         }
 
@@ -486,9 +486,12 @@ public class AtBContractMarket extends AbstractContractMarket {
         if (!contract.getEnemyFaction().isRebelOrPirate()) {
             boolean factionValid = false;
             for (PlanetarySystem p : Systems.getInstance().getNearbySystems(campaign.getCurrentSystem(), 30)) {
-                if (factionValid) break;
-                for (Faction f : p.getFactionSet(campaign.getLocalDate())) {
-                    if (f.getShortName().equals(contract.getEnemyCode())) {
+                if (factionValid) {
+                    break;
+                }
+
+                for (final Faction faction : p.getFactionSet(campaign.getLocalDate())) {
+                    if (faction.equals(contract.getEnemyFaction())) {
                         factionValid = true;
                         break;
                     }
@@ -498,10 +501,11 @@ public class AtBContractMarket extends AbstractContractMarket {
                 contract.setEnemyCode(parent.getEnemyCode());
             }
         }
-        boolean isAttacker = (contract.getMissionType() == AtBContract.MT_PLANETARYASSAULT ||
-                contract.getMissionType() >= AtBContract.MT_PLANETARYASSAULT ||
-                (contract.getMissionType() == AtBContract.MT_RELIEFDUTY && Compute.d6() < 4) ||
-                contract.getEnemyCode().equals("REB"));
+
+        final boolean isAttacker = ((contract.getMissionType() == AtBContract.MT_PLANETARYASSAULT)
+                || (contract.getMissionType() >= AtBContract.MT_PLANETARYASSAULT)
+                || ((contract.getMissionType() == AtBContract.MT_RELIEFDUTY) && (Compute.d6() < 4))
+                || contract.getEnemyFaction().isRebel());
         contract.setSystemId(parent.getSystemId());
         setAllyRating(contract, isAttacker, campaign.getGameYear());
         setEnemyRating(contract, isAttacker, campaign.getGameYear());
@@ -591,6 +595,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         if (roll > 12) {
             roll = 12;
         }
+
         if (roll < 2) {
             roll = 2;
         }
@@ -604,6 +609,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         if (contract.getEnemyFaction().isRebelOrPirate()) {
             mod -= 1;
         }
+
         if ((contract.getMissionType() == AtBContract.MT_GUERRILLAWARFARE)
                 || (contract.getMissionType() == AtBContract.MT_CADREDUTY)) {
             mod -= 3;
@@ -611,22 +617,25 @@ public class AtBContractMarket extends AbstractContractMarket {
                 || (contract.getMissionType() == AtBContract.MT_SECURITYDUTY)) {
             mod -= 2;
         }
+
         if (AtBContract.isMinorPower(contract.getEmployerCode())) {
             mod -= 1;
         }
+
         if (contract.getEnemyFaction().isIndependent()) {
             mod -= 2;
         }
+
         if (contract.getMissionType() == AtBContract.MT_PLANETARYASSAULT) {
             mod += 1;
         }
+
         if (contract.getEmployerFaction().isClan() && !isAttacker) {
             //facing front-line units
             mod += 1;
         }
         contract.setAllySkill(getSkillRating(Compute.d6(2) + mod));
-        if (year > 2950 && year < 3039 &&
-                !Factions.getInstance().getFaction(contract.getEmployerCode()).isClan()) {
+        if ((year > 2950) && (year < 3039) && !contract.getEmployerFaction().isClan()) {
             mod -= 1;
         }
         contract.setAllyQuality(getQualityRating(Compute.d6(2) + mod));
@@ -708,7 +717,7 @@ public class AtBContractMarket extends AbstractContractMarket {
         final int adminLogisticsExp = (adminLogistics == null) ? SkillType.EXP_ULTRA_GREEN
                 : adminLogistics.getSkill(SkillType.S_ADMIN).getExperienceLevel();
 
-        /* Treat government units like merc units that have a retainer contract */
+        /* Treat government units like Mercenary units that have a retainer contract */
         if ((!campaign.getFaction().isMercenary() && !campaign.getFaction().isPirate())
                 || (campaign.getRetainerEmployerCode() != null)) {
             for (int i = 0; i < CLAUSE_NUM; i++) {
@@ -757,6 +766,7 @@ public class AtBContractMarket extends AbstractContractMarket {
             {-2, 0, 2, 3}, {-1, 1, 1, 1}, {-2, 3, -2, -1}, {2, 2, -1, -1},
             {0, 2, 2, 1}, {-1, 0, 1, 2}, {-1, -2, 1, -1}, {-1, -1, 2, 1}
         };
+
         for (int i = 0; i < 4; i++) {
             clauseModifiers.getModifiers()[i] += missionModifiers[contract.getMissionType()][i];
         }
@@ -765,9 +775,11 @@ public class AtBContractMarket extends AbstractContractMarket {
             clauseModifiers.getModifiers()[CLAUSE_SALVAGE] += -1;
             clauseModifiers.getModifiers()[CLAUSE_TRANSPORT] += 1;
         }
+
         if (AtBContract.isMinorPower(contract.getEmployerCode())) {
             clauseModifiers.getModifiers()[CLAUSE_SALVAGE] += -2;
         }
+
         if (contract.getEmployerFaction().isMercenary()) {
             clauseModifiers.getModifiers()[CLAUSE_COMMAND] += -1;
             clauseModifiers.getModifiers()[CLAUSE_SALVAGE] += 2;
@@ -776,10 +788,8 @@ public class AtBContractMarket extends AbstractContractMarket {
         }
 
         if (contract.getEmployerFaction().isIndependent()) {
-            clauseModifiers.getModifiers()[CLAUSE_COMMAND] += 0;
             clauseModifiers.getModifiers()[CLAUSE_SALVAGE] += -1;
             clauseModifiers.getModifiers()[CLAUSE_SUPPORT] += -1;
-            clauseModifiers.getModifiers()[CLAUSE_TRANSPORT] += 0;
         }
 
         if (campaign.getFaction().isMercenary()) {
@@ -926,7 +936,8 @@ public class AtBContractMarket extends AbstractContractMarket {
                 NodeList nl = wn.getChildNodes();
                 for (int i = 0; i < nl.getLength(); i++) {
                     Node wn2 = nl.item(i);
-                    if (wn2.getNodeName().equalsIgnoreCase("mods")) {
+                    if (wn2.getNodeName().equalsIgnoreCase("modifiers")
+                            || wn2.getNodeName().equalsIgnoreCase("mods")) { // Legacy, 0.49.x removal
                         String[] s = wn2.getTextContent().split(",");
                         for (int j = 0; j < s.length; j++) {
                             clauseModifiers.setModifier(j, Integer.parseInt(s[j]));
@@ -938,12 +949,11 @@ public class AtBContractMarket extends AbstractContractMarket {
                         }
                     }
                 }
+                return clauseModifiers;
             } catch (Exception e) {
                 MekHQ.getLogger().error(e);
-                clauseModifiers = null;
+                return null;
             }
-
-            return clauseModifiers;
         }
         //endregion File I/O
     }
