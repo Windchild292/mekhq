@@ -23,6 +23,7 @@ import megamek.client.ui.swing.tileset.MMStaticDirectoryManager;
 import megamek.common.annotations.Nullable;
 import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.fileUtils.ImageFileFactory;
+import mekhq.io.AwardFileFactory;
 
 import java.io.File;
 
@@ -84,7 +85,7 @@ public class MHQStaticDirectoryManager extends MMStaticDirectoryManager {
             parseAwardIconDirectory = false;
             try {
                 awardIconDirectory = new DirectoryItems(new File("data/images/awards"),
-                        "", new ImageFileFactory());
+                        "", new AwardFileFactory());
             } catch (Exception e) {
                 MegaMek.getLogger().error("Could not parse the award icon directory!", e);
             }

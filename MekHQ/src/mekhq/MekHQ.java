@@ -97,7 +97,6 @@ public class MekHQ implements GameListener {
     // TODO : So it should be backed down to 1 for releases...
     // TODO : It's intended for 1 to be critical, 3 to be typical, and 5 to be debug/informational.
     public static int VERBOSITY_LEVEL = 5;
-    public static final String CAMPAIGN_DIRECTORY = "./campaigns/";
     public static final String PREFERENCES_FILE = "mmconf/mekhq.preferences";
     public static final String PRESET_DIR = "./mmconf/mhqPresets/";
     public static final String DEFAULT_LOG_FILE_NAME = "mekhqlog.txt";
@@ -297,16 +296,24 @@ public class MekHQ implements GameListener {
     }
 
     public void exit() {
-        if (JOptionPane.showConfirmDialog(null,
-                "Do you really want to quit MekHQ?",
-                "Quit?",
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-            if (null != campaigngui) {
-                campaigngui.getFrame().dispose();
-            }
-            getPreferences().saveToFile(PREFERENCES_FILE);
-            System.exit(0);
+        int savePrompt = JOptionPane.showConfirmDialog(null,
+                "Do you want to save the game before quitting MekHQ?",
+                "Save First?",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if ((savePrompt == JOptionPane.CANCEL_OPTION) || (savePrompt == JOptionPane.CLOSED_OPTION)) {
+            return;
+        } else if ((savePrompt == JOptionPane.YES_OPTION) && !getCampaigngui().saveCampaign(null)) {
+            // When the user did not actually save the game, don't close MHQ
+            return;
         }
+
+        // Actually close MHQ
+        if (campaigngui != null) {
+            campaigngui.getFrame().dispose();
+        }
+        getPreferences().saveToFile(PREFERENCES_FILE);
+        System.exit(0);
     }
 
     public void showNewView() {
@@ -713,7 +720,7 @@ public class MekHQ implements GameListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource().equals(selectedTheme)) {
-                setLookAndFeel((String)evt.getNewValue());
+                setLookAndFeel((String) evt.getNewValue());
             }
         }
     }

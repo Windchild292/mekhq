@@ -294,14 +294,14 @@ public class UnitTableModel extends DataTableModel {
                     applyColors(colors.getMothballing());
                 } else if (u.isMothballed()) {
                     applyColors(colors.getMothballed());
+                } else if (u.isUnmaintained()) {
+                    applyColors(colors.getUnmaintained());
                 } else if (!u.isRepairable()) {
                     applyColors(colors.getNotRepairable());
                 } else if (!u.isFunctional()) {
                     applyColors(colors.getNonFunctional());
                 } else if (u.hasPartsNeedingFixing()) {
                     applyColors(colors.getNeedsPartsFixed());
-                } else if (u.isUnmaintained()) {
-                    applyColors(colors.getUnmaintained());
                 } else if (u.getActiveCrew().size() < u.getFullCrewSize()) {
                     applyColors(colors.getUncrewed());
                 } else {
@@ -344,7 +344,7 @@ public class UnitTableModel extends DataTableModel {
                     }
                     desc += "<br>" + u.getStatus() + "</html>";
                     setHtmlText(desc);
-                    Image mekImage = getImageFor(u);
+                    Image mekImage = u.getImage(this);
                     if (mekImage != null) {
                         setImage(mekImage);
                     } else {

@@ -29,24 +29,22 @@ import megamek.common.enums.Gender;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.Ranks;
+import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.preferences.JWindowPreference;
 import mekhq.gui.view.PersonViewPanel;
 import mekhq.preferences.PreferencesNode;
 
 public class NewRecruitDialog extends javax.swing.JDialog {
-
     /**
      * This dialog is used to both hire new pilots and to edit existing ones
-     *
      */
     private static final long serialVersionUID = -6265589976779860566L;
     private Person person;
 
     private CampaignGUI hqView;
 
-    private javax.swing.JComboBox<String> choiceRanks;
+    private JComboBox<String> choiceRanks;
 
     private JScrollPane scrollView;
 
