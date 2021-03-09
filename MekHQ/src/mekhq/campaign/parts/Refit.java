@@ -973,9 +973,9 @@ public class Refit extends Part implements IAcquisitionWork {
 
         //infantry take zero time to re-organize
         //also check for squad size and number changes
-        if (oldUnit.getEntity() instanceof Infantry && !(oldUnit.getEntity() instanceof BattleArmor)) {
-            if (((Infantry)oldUnit.getEntity()).getSquadN() != ((Infantry)newEntity).getSquadN()
-                    ||((Infantry)oldUnit.getEntity()).getSquadSize() != ((Infantry)newEntity).getSquadSize()) {
+        if (oldUnit.isConventionalInfantry()) {
+            if (((Infantry) oldUnit.getEntity()).getSquadN() != ((Infantry) newEntity).getSquadN()
+                    ||((Infantry) oldUnit.getEntity()).getSquadSize() != ((Infantry) newEntity).getSquadSize()) {
                 updateRefitClass(CLASS_A);
             }
             time = 0;
@@ -2270,8 +2270,8 @@ public class Refit extends Part implements IAcquisitionWork {
     }
 
     public void suggestNewName() {
-        if (newEntity instanceof Infantry && !(newEntity instanceof BattleArmor)) {
-            Infantry infantry = (Infantry)newEntity;
+        if (newEntity.isConventionalInfantry()) {
+            Infantry infantry = (Infantry) newEntity;
             String chassis;
             switch (infantry.getMovementMode()) {
             case INF_UMU:
