@@ -474,7 +474,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
      * refresh the procurement list
      */
     private void refreshProcurementList() {
-        procurementModel.setData(getCampaign().getShoppingList().getAllShoppingItems());
+        procurementModel.setData(getCampaign().getShoppingList().getShoppingList());
     }
 
     /**
