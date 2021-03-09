@@ -2285,13 +2285,15 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
                     partsToRemove.add(part);
                 }
             } else if (part instanceof BattleArmorSuit) {
-                if (((BattleArmorSuit) part).getTrooper() < locations.length) {
+                if ((entity instanceof BattleArmor)
+                        && ((BattleArmorSuit) part).getTrooper() < locations.length) {
                     locations[((BattleArmorSuit) part).getTrooper()] = part;
                 } else {
                     partsToRemove.add(part);
                 }
             } else if (part instanceof MissingBattleArmorSuit) {
-                if (((MissingBattleArmorSuit) part).getTrooper() < locations.length) {
+                if ((entity instanceof BattleArmor)
+                        && ((MissingBattleArmorSuit) part).getTrooper() < locations.length) {
                     locations[((MissingBattleArmorSuit) part).getTrooper()] = part;
                 } else {
                     partsToRemove.add(part);
@@ -2325,19 +2327,27 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
             } else if (part instanceof MissingJumpJet) {
                 jumpJets.put(((MissingJumpJet)part).getEquipmentNum(), part);
             }  else if (part instanceof BattleArmorEquipmentPart) {
-                Part[] parts = baEquipParts.get(((BattleArmorEquipmentPart)part).getEquipmentNum());
-                if (null == parts) {
-                    parts = new Part[((BattleArmor)entity).getSquadSize()];
+                if (!(entity instanceof BattleArmor)) {
+                    partsToRemove.add(part);
+                } else {
+                    Part[] parts = baEquipParts.get(((BattleArmorEquipmentPart) part).getEquipmentNum());
+                    if (null == parts) {
+                        parts = new Part[((BattleArmor) entity).getSquadSize()];
+                    }
+                    parts[((BattleArmorEquipmentPart) part).getTrooper() - BattleArmor.LOC_TROOPER_1] = part;
+                    baEquipParts.put(((BattleArmorEquipmentPart) part).getEquipmentNum(), parts);
                 }
-                parts[((BattleArmorEquipmentPart)part).getTrooper()-BattleArmor.LOC_TROOPER_1] = part;
-                baEquipParts.put(((BattleArmorEquipmentPart)part).getEquipmentNum(), parts);
             } else if (part instanceof MissingBattleArmorEquipmentPart) {
-                Part[] parts = baEquipParts.get(((MissingBattleArmorEquipmentPart)part).getEquipmentNum());
-                if (null == parts) {
-                    parts = new Part[((BattleArmor)entity).getSquadSize()];
+                if (!(entity instanceof BattleArmor)) {
+                    partsToRemove.add(part);
+                } else {
+                    Part[] parts = baEquipParts.get(((MissingBattleArmorEquipmentPart) part).getEquipmentNum());
+                    if (null == parts) {
+                        parts = new Part[((BattleArmor) entity).getSquadSize()];
+                    }
+                    parts[((MissingBattleArmorEquipmentPart) part).getTrooper() - BattleArmor.LOC_TROOPER_1] = part;
+                    baEquipParts.put(((MissingBattleArmorEquipmentPart) part).getEquipmentNum(), parts);
                 }
-                parts[((MissingBattleArmorEquipmentPart)part).getTrooper()-BattleArmor.LOC_TROOPER_1] = part;
-                baEquipParts.put(((MissingBattleArmorEquipmentPart)part).getEquipmentNum(), parts);
             } else if (part instanceof EquipmentPart) {
                 equipParts.put(((EquipmentPart)part).getEquipmentNum(), part);
             } else if (part instanceof MissingEquipmentPart) {
@@ -3135,7 +3145,8 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
                 jj--;
             }
         }
-        if (entity.isConventionalInfantry()) {
+
+        if (isConventionalInfantry()) {
             if ((null == motiveType) && (entity.getMovementMode() != EntityMovementMode.INF_LEG)) {
                 int number = entity.getOInternal(Infantry.LOC_INFANTRY);
                 if (((Infantry) entity).isMechanized()) {
@@ -4880,8 +4891,8 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
     }
 
     public boolean isSelfCrewed() {
-        return (getEntity() instanceof Dropship || getEntity() instanceof Jumpship
-                || getEntity() instanceof Infantry && !(getEntity() instanceof BattleArmor));
+        return (getEntity() instanceof Dropship) || (getEntity() instanceof Jumpship)
+                || isConventionalInfantry();
     }
 
     public boolean isUnderRepair() {
@@ -4933,7 +4944,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
      * This requires the suit to not be destroyed and to have not missing equipment parts
      */
     public boolean isBattleArmorSuitOperable(int trooper) {
-        if (null == getEntity() || !(getEntity() instanceof BattleArmor)) {
+        if (!(getEntity() instanceof BattleArmor)) {
             return false;
         }
         if (getEntity().getInternal(trooper) < 0) {
@@ -4948,6 +4959,13 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
         return true;
     }
 
+    /**
+     * @return true if the unit is conventional infantry, otherwise false
+     */
+    public boolean isConventionalInfantry() {
+        return (getEntity() != null) && getEntity().isConventionalInfantry();
+    }
+
     public boolean isIntroducedBy(int year) {
         return null != entity && entity.getYear() <= year;
     }
@@ -4958,6 +4976,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
         return false;
     }
 
+    @Override
     public String toString() {
         String entName = "None";
         if (getEntity() != null) {
