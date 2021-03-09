@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -29,14 +29,20 @@ import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
 public abstract class AbstractRandomDeathMethod {
     //region Variable Declarations
-    protected RandomDeathMethod type;
+    protected final RandomDeathMethod method;
     //endregion Variable Declarations
 
     //region Constructors
-    protected AbstractRandomDeathMethod(RandomDeathMethod type) {
-        this.type = type;
+    protected AbstractRandomDeathMethod(final RandomDeathMethod method) {
+        this.method = method;
     }
     //endregion Constructors
+
+    //region Getters
+    public RandomDeathMethod getMethod() {
+        return method;
+    }
+    //endregion Getters
 
     /**
      * @param campaign the campaign the person is in
@@ -45,14 +51,15 @@ public abstract class AbstractRandomDeathMethod {
      * @param gender the person's gender
      * @return true if the person is selected to randomly die, otherwise false
      */
-    public abstract boolean randomDeath(Campaign campaign, AgeRange ageRange, int age, Gender gender);
+    public abstract boolean randomDeath(final Campaign campaign, final AgeRange ageRange,
+                                        final int age, final Gender gender);
 
     /**
      * @param campaign the campaign the person is in
      * @param ageRange the person's age range
      * @return true if the random death is enabled for the age
      */
-    public boolean validateAgeEnabled(Campaign campaign, AgeRange ageRange) {
+    public boolean validateAgeEnabled(final Campaign campaign, final AgeRange ageRange) {
         switch (ageRange) {
             case ELDER:
             case ADULT:
@@ -79,7 +86,7 @@ public abstract class AbstractRandomDeathMethod {
      * @param campaign the campaign the person is a part of
      * @return the cause of the Person's random death
      */
-    public PersonnelStatus getCause(Person person, AgeRange ageRange, Campaign campaign) {
+    public PersonnelStatus getCause(final Person person, final AgeRange ageRange, final Campaign campaign) {
         if (person.getStatus().isMIA()) {
             return PersonnelStatus.KIA;
         } else if (person.hasInjuries(false)) {
@@ -89,7 +96,7 @@ public abstract class AbstractRandomDeathMethod {
             }
         }
 
-        if (person.isPregnant() && person.getPregnancyWeek(campaign.getLocalDate()) > 22) {
+        if (person.isPregnant() && (person.getPregnancyWeek(campaign.getLocalDate()) > 22)) {
             return PersonnelStatus.PREGNANCY_COMPLICATIONS;
         } else if (ageRange.isElder()) {
             return PersonnelStatus.OLD_AGE;
@@ -103,9 +110,9 @@ public abstract class AbstractRandomDeathMethod {
      * @return the personnel status applicable to the form of injury that caused the death, or
      * ACTIVE if it wasn't determined that injuries caused the death
      */
-    private PersonnelStatus determineIfInjuriesCausedTheDeath(Person person) {
-        for (Injury injury : person.getInjuries()) {
-            InjuryLevel level = injury.getLevel();
+    private PersonnelStatus determineIfInjuriesCausedTheDeath(final Person person) {
+        for (final Injury injury : person.getInjuries()) {
+            final InjuryLevel level = injury.getLevel();
 
             // We care about injuries that are major or deadly. We do not want any chronic
             // conditions nor scratches

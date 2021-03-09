@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All rights reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -28,14 +28,14 @@ import mekhq.campaign.personnel.enums.RandomDeathMethod;
 public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod {
     //region Variable Declarations
     // the following are a list of variables in the format m * 10^n
-    private double[] maleM;
-    private int[] maleN;
-    private double[] femaleM;
-    private int[] femaleN;
+    private final double[] maleM;
+    private final int[] maleN;
+    private final double[] femaleM;
+    private final int[] femaleN;
     //endregion Variable Declarations
 
     //region Constructors
-    public SixthOrderDifferentialRandomDeath(Campaign campaign) {
+    public SixthOrderDifferentialRandomDeath(final Campaign campaign) {
         super(RandomDeathMethod.STANDARD);
         maleM = campaign.getCampaignOptions().getRandomDeathMaleMValues();
         maleN = campaign.getCampaignOptions().getRandomDeathMaleNValues();
@@ -45,7 +45,7 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
     //endregion Constructors
 
     @Override
-    public boolean randomDeath(Campaign campaign, AgeRange ageRange, int age, Gender gender) {
+    public boolean randomDeath(final Campaign campaign, final AgeRange ageRange, final int age, final Gender gender) {
         if (!validateAgeEnabled(campaign, ageRange)) {
             return false;
         }

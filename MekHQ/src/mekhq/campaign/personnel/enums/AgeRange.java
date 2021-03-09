@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -31,22 +31,17 @@ public enum AgeRange {
     PRETEEN("AgeRange.PRETEEN.text", 10),
     CHILD("AgeRange.CHILD.text", 3),
     TODDLER("AgeRange.TODDLER.text", 1),
-    BABY("AgeRange.BABY.text");
+    BABY("AgeRange.BABY.text", -1);
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String rangeName;
     private final int rangeLowerBound; // the lower bound, inclusive
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
-            new EncodeControl());
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    AgeRange(String rangeName) {
-        this(rangeName, -1);
-    }
-
-    AgeRange(String rangeName, int rangeLowerBound) {
+    AgeRange(final String rangeName, final int rangeLowerBound) {
         this.rangeName = resources.getString(rangeName);
         this.rangeLowerBound = rangeLowerBound;
     }
@@ -88,9 +83,9 @@ public enum AgeRange {
     }
     //endregion Boolean Comparison Methods
 
-    public static AgeRange determineAgeRange(int age) {
+    public static AgeRange determineAgeRange(final int age) {
         if (age > -1) {
-            for (AgeRange range : AgeRange.values()) {
+            for (final AgeRange range : AgeRange.values()) {
                 if (age >= range.getRangeLowerBound()) {
                     return range;
                 }

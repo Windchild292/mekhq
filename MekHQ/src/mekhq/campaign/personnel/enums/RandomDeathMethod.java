@@ -40,13 +40,13 @@ public enum RandomDeathMethod {
     //endregion Enum Declarations
 
     //region Variable Declarations
-    private String name;
-    private String toolTip;
+    private final String name;
+    private final String toolTip;
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    RandomDeathMethod(String name, String toolTip) {
+    RandomDeathMethod(final String name, final String toolTip) {
         this.name = resources.getString(name);
         this.toolTip = resources.getString(toolTip);
     }
@@ -64,7 +64,7 @@ public enum RandomDeathMethod {
     }
     //endregion Boolean Comparison Methods
 
-    public AbstractRandomDeathMethod getMethod(Campaign campaign) {
+    public AbstractRandomDeathMethod getMethod(final Campaign campaign) {
         switch (this) {
             case STANDARD:
                 return new SixthOrderDifferentialRandomDeath(campaign);
