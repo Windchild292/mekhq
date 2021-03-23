@@ -346,7 +346,7 @@ public class PersonnelTableModel extends DataTableModel {
 
         switch (col) {
             case COL_RANK:
-                return p.makeHTMLRank();
+                return p.makeHTMLRank(getCampaign());
             case COL_GIVEN_NAME:
                 return p.getGivenName();
             case COL_LAST_NAME:
@@ -621,7 +621,7 @@ public class PersonnelTableModel extends DataTableModel {
                 Force force = getCampaign().getForceFor(p);
                 return (force != null) ? force.getName() : resources.getString("force_none.text");
             case COL_SALARY:
-                return p.getSalary().toAmountAndSymbolString();
+                return p.getSalary(getCampaign()).toAmountAndSymbolString();
             case COL_KILLS:
                 return Integer.toString(getCampaign().getKillsFor(p.getId()).size());
             case COL_ORIGIN_FACTION:
@@ -736,7 +736,7 @@ public class PersonnelTableModel extends DataTableModel {
             switch (actualCol) {
                 case COL_RANK:
                     setPortrait(p);
-                    setText(p.getFullDesc());
+                    setText(p.getFullDesc(getCampaign()));
                     break;
                 case COL_ASSIGN:
                     if (loadAssignmentFromMarket) {

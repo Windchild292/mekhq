@@ -49,6 +49,7 @@ import mekhq.campaign.personnel.*;
 import mekhq.campaign.personnel.enums.*;
 import mekhq.campaign.personnel.generator.SingleSpecialAbilityGenerator;
 import mekhq.campaign.personnel.ranks.Rank;
+import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.unit.HangarSorter;
 import mekhq.campaign.unit.Unit;
@@ -209,9 +210,11 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
 
         switch (command) {
             case CMD_RANKSYSTEM: {
-                int system = Integer.parseInt(data[1]);
+                final String rankSystemCode = data[1];
+                final RankSystem rankSystem = gui.getCampaign().getRanks().getRankSystemCode().equals(rankSystemCode)
+                        ? null : Ranks.getRankSystemFromCode(rankSystemCode);
                 for (Person person : people) {
-                    person.setRankSystem(system);
+                    person.setRankSystem(rankSystem);
                 }
                 break;
             }
@@ -640,7 +643,8 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonnelStatus status = PersonnelStatus.valueOf(data[1]);
                 for (Person person : people) {
                     if (status.isActive() || (JOptionPane.showConfirmDialog(null,
-                            String.format(resourceMap.getString("confirmRetireQ.format"), person.getFullTitle()),
+                            String.format(resourceMap.getString("confirmRetireQ.format"),
+                                    person.getFullTitle(gui.getCampaign())),
                             status.toString(), JOptionPane.YES_NO_OPTION) == 0)) {
                         person.changeStatus(gui.getCampaign(), status);
                     }
@@ -671,7 +675,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             case CMD_FREE: {
                 // TODO: Warn in particular for "freeing" in deep space, leading to Geneva Conventions violation (#1400 adding Crime to MekHQ)
                 // TODO: Record the people into some NPC pool, if still alive
-                String title = (people.length == 1) ? people[0].getFullTitle()
+                String title = (people.length == 1) ? people[0].getFullTitle(gui.getCampaign())
                         : String.format(resourceMap.getString("numPrisoners.text"), people.length);
                 if (0 == JOptionPane.showConfirmDialog(null,
                         String.format(resourceMap.getString("confirmFree.format"), title),
@@ -725,7 +729,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 break;
             }
             case CMD_REMOVE: {
-                String title = (people.length == 1) ? people[0].getFullTitle()
+                String title = (people.length == 1) ? people[0].getFullTitle(gui.getCampaign())
                         : String.format(resourceMap.getString("numPersonnel.text"), people.length);
                 if (0 == JOptionPane.showConfirmDialog(null,
                         String.format(resourceMap.getString("confirmRemove.format"), title),
@@ -741,31 +745,24 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 boolean showDialog = false;
                 ArrayList<UUID> toRemove = new ArrayList<>();
                 for (Person person : people) {
-                    if (gui.getCampaign().getRetirementDefectionTracker()
-                            .removeFromCampaign(
-                                    person,
-                                    false,
-                                    gui.getCampaign().getCampaignOptions()
-                                            .getUseShareSystem() ? person
-                                            .getNumShares(gui.getCampaign()
-                                                    .getCampaignOptions()
-                                                    .getSharesForAll()) : 0,
-                                    gui.getCampaign(), null)) {
+                    if (gui.getCampaign().getRetirementDefectionTracker().removeFromCampaign(person,
+                            false, gui.getCampaign().getCampaignOptions().getUseShareSystem()
+                                    ? person.getNumShares(gui.getCampaign().getCampaignOptions().getSharesForAll())
+                                    : 0,
+                            gui.getCampaign(), null)) {
                         showDialog = true;
                     } else {
                         toRemove.add(person.getId());
                     }
                 }
                 if (showDialog) {
-                    RetirementDefectionDialog rdd = new RetirementDefectionDialog(
-                            gui, null, false);
+                    RetirementDefectionDialog rdd = new RetirementDefectionDialog(gui, null, false);
                     rdd.setVisible(true);
                     if (rdd.wasAborted()
                             || !gui.getCampaign().applyRetirement(rdd.totalPayout(),
                             rdd.getUnitAssignments())) {
                         for (Person person : people) {
-                            gui.getCampaign().getRetirementDefectionTracker()
-                                    .removePayout(person);
+                            gui.getCampaign().getRetirementDefectionTracker().removePayout(person);
                         }
                     } else {
                         for (UUID id : toRemove) {
@@ -775,12 +772,12 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 } else {
                     String question;
                     if (people.length > 1) {
-                        question = resourceMap.getString("confirmRemoveMultiple.text"); //$NON-NLS-1$
+                        question = resourceMap.getString("confirmRemoveMultiple.text");
                     } else {
-                        question = String.format(resourceMap.getString("confirmRemove.format"), people[0].getFullTitle()); //$NON-NLS-1$
+                        question = String.format(resourceMap.getString("confirmRemove.format"), people[0].getFullTitle(gui.getCampaign()));
                     }
                     if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
-                            null, question, resourceMap.getString("removeQ.text"), //$NON-NLS-1$
+                            null, question, resourceMap.getString("removeQ.text"),
                             JOptionPane.YES_NO_OPTION)) {
                         for (Person person : people) {
                             gui.getCampaign().removePerson(person.getId());
@@ -981,11 +978,13 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                     for (Person p : gui.getCampaign().getPersonnel()) {
                         if (p.isCommander() && !p.getId().equals(selectedPerson.getId())) {
                             p.setCommander(false);
-                            gui.getCampaign().addReport(String.format(resourceMap.getString("removedCommander.format"), p.getHyperlinkedFullTitle())); //$NON-NLS-1$
+                            gui.getCampaign().addReport(String.format(resourceMap.getString("removedCommander.format"),
+                                    p.getHyperlinkedFullTitle(gui.getCampaign())));
                             gui.getCampaign().personUpdated(p);
                         }
                     }
-                    gui.getCampaign().addReport(String.format(resourceMap.getString("setAsCommander.format"), selectedPerson.getHyperlinkedFullTitle())); //$NON-NLS-1$
+                    gui.getCampaign().addReport(String.format(resourceMap.getString("setAsCommander.format"),
+                            selectedPerson.getHyperlinkedFullTitle(gui.getCampaign())));
                     gui.getCampaign().personUpdated(selectedPerson);
                 }
                 break;
@@ -1095,13 +1094,10 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 break;
             }
             case CMD_EDIT_SALARY: {
-                PopupValueChoiceDialog pcvd = new PopupValueChoiceDialog(
-                        gui.getFrame(),
-                        true,
-                        resourceMap.getString("changeSalary.text"), //$NON-NLS-1$
-                        selectedPerson.getSalary().getAmount().intValue(),
-                        -1,
-                        100000);
+                PopupValueChoiceDialog pcvd = new PopupValueChoiceDialog(gui.getFrame(), true,
+                        resourceMap.getString("changeSalary.text"),
+                        selectedPerson.getSalary(gui.getCampaign()).getAmount().intValue(),
+                        -1, 100000);
                 pcvd.setVisible(true);
                 int salary = pcvd.getValue();
                 if (salary < -1) {
@@ -1153,14 +1149,13 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
         // lets fill the pop up menu
         if (StaticChecks.areAllEligible(selected, true)) {
             menu = new JMenu(resourceMap.getString("changeRank.text"));
-            Ranks ranks = person.getRanks();
-            for (int rankOrder = 0; rankOrder < Ranks.RC_NUM; rankOrder++) {
-                Rank rank = ranks.getAllRanks().get(rankOrder);
+            for (int rankOrder = 0; rankOrder < RankSystem.RC_NUM; rankOrder++) {
+                Rank rank = person.getRankSystem().getRanks().get(rankOrder);
                 int profession = person.getProfession();
 
                 // Empty professions need swapped before the continuation
-                while (ranks.isEmptyProfession(profession) && (profession != Ranks.RPROF_MW)) {
-                    profession = ranks.getAlternateProfession(profession);
+                while (person.getRankSystem().isEmptyProfession(profession)) {
+                    profession = person.getRankSystem().getAlternateProfession(profession);
                 }
 
                 if (rank.getName(profession).equals(HYPHEN)) {
@@ -1169,11 +1164,11 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
 
                 // re-route through any profession redirections,
                 // starting with the empty profession check
-                while (rank.getName(profession).startsWith("--") && (profession != Ranks.RPROF_MW)) {
+                while (rank.getName(profession).startsWith("--")) {
                     if (rank.getName(profession).equals("--")) {
-                        profession = ranks.getAlternateProfession(profession);
+                        profession = person.getRankSystem().getAlternateProfession(profession);
                     } else if (rank.getName(profession).startsWith("--")) {
-                        profession = ranks.getAlternateProfession(rank.getName(profession));
+                        profession = person.getRankSystem().getAlternateProfession(rank.getName(profession));
                     }
                 }
 
@@ -1204,31 +1199,23 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             }
             JMenuHelpers.addMenuIfNonEmpty(popup, menu, MAX_POPUP_ITEMS);
         }
+
         menu = new JMenu(resourceMap.getString("changeRankSystem.text"));
         // First allow them to revert to the campaign system
         cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("useCampaignRankSystem.text"));
-        cbMenuItem.setActionCommand(makeCommand(CMD_RANKSYSTEM, "-1"));
+        cbMenuItem.setActionCommand(makeCommand(CMD_RANKSYSTEM, gui.getCampaign().getRanks().getRankSystemCode()));
         cbMenuItem.addActionListener(this);
-        cbMenuItem.setEnabled(true);
         menu.add(cbMenuItem);
-        for (int system = 0; system < Ranks.RS_NUM; system++) {
-            if (system == Ranks.RS_CUSTOM) {
-                continue;
-            }
-            final Ranks ranks = Ranks.getRanksFromSystem(system);
-            if (ranks == null) {
-                continue;
-            }
-            cbMenuItem = new JCheckBoxMenuItem(ranks.getRankSystemName());
-            cbMenuItem.setActionCommand(makeCommand(CMD_RANKSYSTEM, String.valueOf(system)));
+        for (final RankSystem rankSystem : Ranks.getBaseRankSystems().values()) {
+            cbMenuItem = new JCheckBoxMenuItem(rankSystem.getRankSystemName());
+            cbMenuItem.setActionCommand(makeCommand(CMD_RANKSYSTEM, rankSystem.getRankSystemCode()));
             cbMenuItem.addActionListener(this);
-            cbMenuItem.setEnabled(true);
-            if (system == person.getRanks().getRankSystem()) {
+            if (rankSystem.getRankSystemCode().equals(person.getRankSystem().getRankSystemCode())) {
                 cbMenuItem.setSelected(true);
             }
             menu.add(cbMenuItem);
         }
-        JMenuHelpers.addMenuIfNonEmpty(popup, menu, MAX_POPUP_ITEMS);
+        JMenuHelpers.addMenuIfNonEmpty(popup, menu);
 
         if (StaticChecks.areAllWoB(selected)) {
             // MD Ranks
@@ -1356,7 +1343,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
         }
         popup.add(menu);
         // Bloodnames
-        if (StaticChecks.areAllClanEligible(selected)) {
+        if (StaticChecks.areAllClanEligible(gui.getCampaign().getRanks(), selected)) {
             menuItem = new JMenuItem(resourceMap.getString("giveRandomBloodname.text"));
             menuItem.setActionCommand(CMD_BLOODNAME);
             menuItem.addActionListener(this);

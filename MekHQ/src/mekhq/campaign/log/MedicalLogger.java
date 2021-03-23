@@ -19,6 +19,7 @@
 package mekhq.campaign.log;
 
 import megamek.common.util.EncodeControl;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Injury;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.GenderDescriptors;
@@ -104,24 +105,30 @@ public class MedicalLogger {
         person.addLogEntry(entry);
     }
 
-    public static void docMadeAMistake(Person doctor, Person patient, Injury injury, LocalDate date) {
+    public static void docMadeAMistake(final Campaign campaign, final Person doctor,
+                                       final Person patient, final Injury injury,
+                                       final LocalDate date) {
         String message = logEntriesResourceMap.getString("docMadeAMistake.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName()));
+                MessageFormat.format(message, doctor.getFullTitle(campaign), injury.getName()));
         patient.addLogEntry(medicalLogEntry);
     }
 
-    public static void docAmazingWork(Person doctor, Person patient, Injury injury, LocalDate date, int critTimeReduction) {
+    public static void docAmazingWork(final Campaign campaign, final Person doctor,
+                                      final Person patient, final Injury injury,
+                                      final LocalDate date, final int critTimeReduction) {
         String message = logEntriesResourceMap.getString("docAmazingWork.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName(), critTimeReduction));
+                MessageFormat.format(message, doctor.getFullTitle(campaign), injury.getName(), critTimeReduction));
         patient.addLogEntry(medicalLogEntry);
     }
 
-    public static void successfullyTreated(Person doctor, Person patient, LocalDate date, Injury injury) {
+    public static void successfullyTreated(final Campaign campaign, final Person doctor,
+                                           final Person patient, final LocalDate date,
+                                           final Injury injury) {
         String message = logEntriesResourceMap.getString("successfullyTreated.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName()));
+                MessageFormat.format(message, doctor.getFullTitle(campaign), injury.getName()));
         patient.addLogEntry(medicalLogEntry);
     }
 

@@ -3443,7 +3443,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
                 entity.getCrew().setMissing(true, 0);
                 return;
             }
-            entity.getCrew().setName(commander.getFullTitle(), 0);
+            entity.getCrew().setName(commander.getFullTitle(getCampaign()), 0);
             entity.getCrew().setNickname(commander.getCallsign(), 0);
             entity.getCrew().setGender(commander.getGender(), 0);
             entity.getCrew().setPortraitCategory(commander.getPortraitCategory(), 0);
@@ -3851,7 +3851,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
      * @param driveType
      */
     private void assignToCrewSlot(Person p, int slot, String gunType, String driveType) {
-        entity.getCrew().setName(p.getFullTitle(), slot);
+        entity.getCrew().setName(p.getFullTitle(getCampaign()), slot);
         entity.getCrew().setNickname(p.getCallsign(), slot);
         entity.getCrew().setGender(p.getGender(), slot);
         entity.getCrew().setPortraitCategory(p.getPortraitCategory(), slot);
@@ -3918,7 +3918,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
                 engineer.setOvertimeLeft(overtimeLeft);
                 engineer.setId(getCommander().getId());
                 engineer.setPrimaryRole(Person.T_MECHANIC);
-                engineer.setRankNumeric(getCommander().getRankNumeric());
+                engineer.setRank(getCommander().getRankNumeric());
                 //will only be reloading ammo, so doesn't really matter what skill level we give them - set to regular
                 engineer.addSkill(SkillType.S_TECH_MECHANIC, SkillType.getType(SkillType.S_TECH_MECHANIC).getRegularLevel(), 0);
             } else {
@@ -3984,7 +3984,7 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
                     engineer.setId(getCommander().getId());
                     engineer.setPrimaryRole(Person.T_SPACE_CREW);
                     if (bestRank > -1) {
-                        engineer.setRankNumeric(bestRank);
+                        engineer.setRank(bestRank);
                     }
                     engineer.addSkill(SkillType.S_TECH_VESSEL, sumSkill / nCrew, sumBonus / nCrew);
                     engineer.setEdgeUsed(sumEdgeUsed);
@@ -4925,11 +4925,11 @@ public class Unit implements MekHqXmlSerializable, ITechnology {
 
     /**
      * Removes all of the parts from a unit.
-     * 
+     *
      * NOTE: this puts the unit in an inconsistent state, and
      *       the unit should not be used until its parts have
      *       been re-assigned.
-     * 
+     *
      */
     public void removeParts() {
         for (Part part : parts) {

@@ -342,9 +342,8 @@ public class MassMothballDialog extends JDialog implements ActionListener, ListS
     /**
      * Custom list cell renderer that displays a * next to the name of a person who's maintaining units.
      * @author NickAragua
-     *
      */
-    private static class TechListCellRenderer extends DefaultListCellRenderer {
+    private class TechListCellRenderer extends DefaultListCellRenderer {
         private static final long serialVersionUID = -1552997620131149101L;
 
         @Override
@@ -355,7 +354,7 @@ public class MassMothballDialog extends JDialog implements ActionListener, ListS
             Person person = (Person) value;
 
             boolean maintainsUnits = !person.getTechUnits().isEmpty();
-            setText((maintainsUnits ? "(*) " : "") + person.getFullTitle() + " ("
+            setText((maintainsUnits ? "(*) " : "") + person.getFullTitle(campaign) + " ("
                     + person.getMinutesLeft() + " min)");
 
             return this;

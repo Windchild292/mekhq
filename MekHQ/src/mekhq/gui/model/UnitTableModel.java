@@ -234,14 +234,14 @@ public class UnitTableModel extends DataTableModel {
             case COL_QUALITY:
                 return u.getQualityName();
             case COL_PILOT:
-                return (u.getCommander() != null) ? u.getCommander().getFullTitle() : "-";
+                return (u.getCommander() != null) ? u.getCommander().getFullTitle(getCampaign()) : "-";
             case COL_FORCE:
                 Force force = u.getCampaign().getForce(u.getForceId());
                 return (force != null) ? force.getFullName() : "-";
             case COL_CREW:
                 return u.getActiveCrew().size() + "/" + u.getFullCrewSize();
             case COL_TECH_CRW:
-                return (u.getTech() != null) ? u.getTech().getFullTitle() : "-";
+                return (u.getTech() != null) ? u.getTech().getFullTitle(getCampaign()) : "-";
             case COL_MAINTAIN:
                 return u.getMaintenanceCost();
             case COL_BV:
@@ -356,7 +356,7 @@ public class UnitTableModel extends DataTableModel {
                     Person p = u.getCommander();
                     if (p != null) {
                         setPortrait(p);
-                        setText(p.getFullDesc());
+                        setText(p.getFullDesc(getCampaign()));
                     } else {
                         clearImage();
                     }
@@ -392,7 +392,7 @@ public class UnitTableModel extends DataTableModel {
                     Person p = u.getTech();
                     if (p != null) {
                         setPortrait(p);
-                        setText(p.getFullDesc());
+                        setText(p.getFullDesc(getCampaign()));
                     } else {
                         clearImage();
                     }

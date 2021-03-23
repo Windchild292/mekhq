@@ -18,16 +18,15 @@
  */
 package mekhq.gui.utilities;
 
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.Vector;
-
 import megamek.common.Entity;
 import megamek.common.UnitType;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.unit.Unit;
+
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.Vector;
 
 public class StaticChecks {
 
@@ -568,9 +567,9 @@ public class StaticChecks {
                 return false;
             }
         }
-        int system = people[0].getRankSystem();
+        final String rankSystemCode = people[0].getRankSystem().getRankSystemCode();
         for (Person person : people) {
-            if (person.getRankSystem() != system) {
+            if (!person.getRankSystem().getRankSystemCode().equals(rankSystemCode)) {
                 return false;
             }
         }
@@ -700,17 +699,18 @@ public class StaticChecks {
 
     public static boolean areAllWoB(Person[] people) {
         for (Person p : people) {
-            if (p.getRankSystem() != Ranks.RS_WOB)
+            if (!p.getRankSystem().isWoBMilitia()) {
                 return false;
+            }
         }
         return true;
     }
 
     public static boolean areAllWoBOrComstar(Person[] people) {
         for (Person p : people) {
-            if (p.getRankSystem() != Ranks.RS_WOB
-                    && p.getRankSystem() != Ranks.RS_COM)
+            if (!p.getRankSystem().isCGOrWoBM()) {
                 return false;
+            }
         }
         return true;
     }

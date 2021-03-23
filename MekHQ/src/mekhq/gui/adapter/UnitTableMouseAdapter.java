@@ -841,7 +841,7 @@ public class UnitTableMouseAdapter extends JPopupMenuAdapter {
                         }
 
                         if (subMenu != null) {
-                            cbMenuItem = new JCheckBoxMenuItem(tech.getFullTitle()
+                            cbMenuItem = new JCheckBoxMenuItem(tech.getFullTitle(gui.getCampaign())
                                     + " (" + tech.getMaintenanceTimeUsing() + "m)");
                             cbMenuItem.setActionCommand(COMMAND_ASSIGN_TECH + ":" + tech.getId());
 

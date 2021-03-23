@@ -20,6 +20,23 @@
  */
 package mekhq.campaign.personnel;
 
+import megamek.common.Compute;
+import megamek.common.TargetRoll;
+import megamek.common.options.IOption;
+import megamek.common.options.PilotOptions;
+import mekhq.MekHQ;
+import mekhq.MekHqXmlSerializable;
+import mekhq.MekHqXmlUtil;
+import mekhq.Utilities;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.finances.FinancialReport;
+import mekhq.campaign.finances.Money;
+import mekhq.campaign.mission.AtBContract;
+import mekhq.campaign.personnel.ranks.RankSystem;
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -30,25 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
-
-import mekhq.campaign.finances.FinancialReport;
-import mekhq.campaign.finances.Money;
-
-import mekhq.campaign.personnel.ranks.Ranks;
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import megamek.common.Compute;
-import megamek.common.TargetRoll;
-import megamek.common.options.IOption;
-import megamek.common.options.PilotOptions;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlSerializable;
-import mekhq.MekHqXmlUtil;
-import mekhq.Utilities;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.mission.AtBContract;
 
 /**
  * @author Neoancient
@@ -269,8 +267,8 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                 if (null != contract) {
                     unresolvedPersonnel.get(contract.getId()).add(id);
                 }
-                payouts.put(id, new Payout(campaign.getPerson(id),
-                        shareValue, false, campaign.getCampaignOptions().getSharesForAll()));
+                payouts.put(id, new Payout(campaign.getPerson(id), shareValue, false,
+                        campaign.getCampaignOptions().getSharesForAll()));
             }
         }
         if (null != contract) {
@@ -308,8 +306,8 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                 || !person.getPrisonerStatus().isFree()) {
             return false;
         }
-        payouts.put(person.getId(), new Payout(person, getShareValue(campaign),
-                killed, campaign.getCampaignOptions().getSharesForAll()));
+        payouts.put(person.getId(), new Payout(person, getShareValue(campaign), killed,
+                campaign.getCampaignOptions().getSharesForAll()));
         if (null != contract) {
             unresolvedPersonnel.computeIfAbsent(contract.getId(), k -> new HashSet<>());
             unresolvedPersonnel.get(contract.getId()).add(person.getId());
@@ -419,14 +417,14 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
     public static Money getBonusCost(Person person) {
         switch (person.getExperienceLevel(false)) {
             case SkillType.EXP_ELITE:
-                return Money.of((person.getProfession() == Ranks.RPROF_MW)?300000:150000);
+                return Money.of((person.getProfession() == RankSystem.RPROF_MW) ? 300000 : 150000);
             case SkillType.EXP_VETERAN:
-                return Money.of((person.getProfession() == Ranks.RPROF_MW)?150000:50000);
+                return Money.of((person.getProfession() == RankSystem.RPROF_MW) ? 150000 : 50000);
             case SkillType.EXP_REGULAR:
-                return Money.of((person.getProfession() == Ranks.RPROF_MW)?50000:20000);
+                return Money.of((person.getProfession() == RankSystem.RPROF_MW) ? 50000 : 20000);
             case SkillType.EXP_GREEN:
             default:
-                return Money.of((person.getProfession() == Ranks.RPROF_MW)?20000:10000);
+                return Money.of((person.getProfession() == RankSystem.RPROF_MW) ? 20000 : 10000);
         }
     }
 
@@ -448,7 +446,8 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
 
         }
 
-        public Payout(Person p, Money shareValue, boolean killed, boolean sharesForAll) {
+        public Payout(final Person p, final Money shareValue, final boolean killed,
+                      final boolean sharesForAll) {
             calculatePayout(p, killed, shareValue.isPositive());
             if (shareValue.isPositive()) {
                 payoutAmount = payoutAmount.plus(shareValue.multipliedBy(p.getNumShares(sharesForAll)));
@@ -475,8 +474,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             }
         }
 
-        private void calculatePayout(Person p, boolean killed,
-                boolean shareSystem) {
+        private void calculatePayout(final Person p, final boolean killed, final boolean shareSystem) {
             int roll;
             if (killed) {
                 roll = Utilities.dice(1, 5);
@@ -490,7 +488,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                     p.getSecondaryRole() == Person.T_AERO_PILOT)) {
                 stolenUnit = true;
             } else {
-                if (p.getProfession() == Ranks.RPROF_INF) {
+                if (p.getProfession() == RankSystem.RPROF_INF) {
                     if (p.getUnit() != null) {
                         payoutAmount = Money.of(50000);
                     }
@@ -501,7 +499,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
                     }
                 }
                 if (!shareSystem &&
-                        ((p.getProfession() == Ranks.RPROF_MW) || (p.getProfession() == Ranks.RPROF_ASF))
+                        ((p.getProfession() == RankSystem.RPROF_MW) || (p.getProfession() == RankSystem.RPROF_ASF))
                         && (p.getOriginalUnitWeight() > 0)) {
                     weightClass = p.getOriginalUnitWeight() + p.getOriginalUnitTech();
                     if (roll <= 1) {

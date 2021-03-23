@@ -78,7 +78,7 @@ public class ForceStub implements Serializable {
         for (UUID uid : force.getUnits()) {
             Unit u = c.getUnit(uid);
             if (null != u) {
-                units.add(new UnitStub(u));
+                units.add(new UnitStub(c, u));
             }
         }
     }

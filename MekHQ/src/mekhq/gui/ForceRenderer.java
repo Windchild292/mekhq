@@ -30,17 +30,25 @@ import megamek.common.Entity;
 import megamek.common.GunEmplacement;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
 
 public class ForceRenderer extends DefaultTreeCellRenderer {
+    //region Variable Declarations
     private static final long serialVersionUID = -553191867660269247L;
 
+    private final Campaign campaign;
     private final MekHqColors colors = new MekHqColors();
+    //endregion Variable Declarations
 
-    public ForceRenderer() {
+    public ForceRenderer(final Campaign campaign) {
+        this.campaign = campaign;
+    }
 
+    public Campaign getCampaign() {
+        return campaign;
     }
 
     @Override
@@ -61,7 +69,7 @@ public class ForceRenderer extends DefaultTreeCellRenderer {
             Unit u = (Unit) value;
             Person person = u.getCommander();
             if (person != null) {
-                name = person.getFullTitle();
+                name = person.getFullTitle(getCampaign());
                 name += " (" + u.getEntity().getCrew().getGunnery() + "/"
                         + u.getEntity().getCrew().getPiloting() + ")";
                 if (person.needsFixing() || (u.getEntity().getCrew().getHits() > 0)) {

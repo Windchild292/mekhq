@@ -19,6 +19,7 @@
 package mekhq.campaign.log;
 
 import megamek.common.util.EncodeControl;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.GenderDescriptors;
 
@@ -104,14 +105,14 @@ public class ServiceLogger {
         person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("rehired.text")));
     }
 
-    public static void promotedTo(Person person, LocalDate date) {
+    public static void promotedTo(final Campaign campaign, final Person person, final LocalDate date) {
         String message = logEntriesResourceMap.getString("promotedTo.text");
-        person.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, person.getRankName())));
+        person.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, person.getRankName(campaign))));
     }
 
-    public static void demotedTo(Person person, LocalDate date) {
+    public static void demotedTo(final Campaign campaign, final Person person, final LocalDate date) {
         String message = logEntriesResourceMap.getString("demotedTo.text");
-        person.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, person.getRankName())));
+        person.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, person.getRankName(campaign))));
     }
 
     public static void participatedInMission(Person person, LocalDate date, String scenarioName, String missionName) {

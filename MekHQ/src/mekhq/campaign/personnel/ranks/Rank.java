@@ -19,31 +19,34 @@
  */
 package mekhq.campaign.personnel.ranks;
 
+import megamek.common.annotations.Nullable;
+import mekhq.MekHQ;
+import mekhq.MekHqXmlUtil;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
-import mekhq.MekHQ;
-import mekhq.MekHqXmlSerializable;
-import mekhq.MekHqXmlUtil;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 /**
  * A specific rank with information about officer status and payment multipliers
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
-
-public class Rank implements MekHqXmlSerializable {
+public class Rank implements Serializable {
+    //region Variable Declarations
+    private static final long serialVersionUID = 1677999967776587426L;
 
     private List<String> rankNames;
     private boolean officer;
     private double payMultiplier;
     private List<Integer> rankLevels;
+    //endregion Variable Declarations
 
+    //region Constructors
     public Rank() {
         this(new ArrayList<>(), false, 1.0);
     }
@@ -74,6 +77,7 @@ public class Rank implements MekHqXmlSerializable {
         	}
         }
     }
+    //endregion Constructors
 
     public String getName(int profession) {
     	if (profession >= rankNames.size()) {
@@ -121,64 +125,48 @@ public class Rank implements MekHqXmlSerializable {
     	return joiner.toString();
     }
 
-    public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<rank>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<rankNames>"
-                +MekHqXmlUtil.escape(getRankNamesAsString())
-                +"</rankNames>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<officer>"
-                +officer
-                +"</officer>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<payMultiplier>"
-                +payMultiplier
-                +"</payMultiplier>");
-        pw1.print(MekHqXmlUtil.indentStr(indent) + "</rank>");
+    //region File IO
+    public void writeToXML(final PrintWriter pw, int indent) {
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw, indent++, "rank");
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "rankNames", getRankNamesAsString());
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "officer", isOfficer());
+        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "payMultiplier", getPayMultiplier());
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "rank");
     }
 
-    public static Rank generateInstanceFromXML(Node wn) {
-        final String METHOD_NAME = "generateInstanceFromXML(Node)"; //$NON-NLS-1$
-
-        Rank retVal = null;
-
+    public static @Nullable Rank generateInstanceFromXML(final Node wn) {
+        final Rank rank = new Rank();
         try {
-            retVal = new Rank();
+            final NodeList nl = wn.getChildNodes();
 
-            // Okay, now load Skill-specific fields!
-            NodeList nl = wn.getChildNodes();
-
-            for (int x=0; x<nl.getLength(); x++) {
-                Node wn2 = nl.item(x);
+            for (int x = 0; x < nl.getLength(); x++) {
+                final Node wn2 = nl.item(x);
 
                 if (wn2.getNodeName().equalsIgnoreCase("rankName")) {
                 	String[] rNames = { wn2.getTextContent(), "--MW", "--MW", "--MW", "--MW", "--MW" };
-                    retVal.rankNames = Arrays.asList(rNames);
+                    rank.rankNames = Arrays.asList(rNames);
                 } else if (wn2.getNodeName().equalsIgnoreCase("rankNames")) {
-                    retVal.rankNames = Arrays.asList(wn2.getTextContent().split(",", -1));
-                    for (int i = 0; i < retVal.rankNames.size(); i++) {
-                    	retVal.rankLevels.add(0);
-                    	if (retVal.rankNames.get(i).matches(".+:\\d+\\s*$")) {
-                    		String[] temp = retVal.rankNames.get(i).split(":");
-                    		retVal.rankNames.set(i, temp[0].trim());
-                    		retVal.rankLevels.set(i, Integer.parseInt(temp[1].trim()));
+                    rank.rankNames = Arrays.asList(wn2.getTextContent().split(",", -1));
+                    for (int i = 0; i < rank.rankNames.size(); i++) {
+                    	rank.rankLevels.add(0);
+                    	if (rank.rankNames.get(i).matches(".+:\\d+\\s*$")) {
+                    		String[] temp = rank.rankNames.get(i).split(":");
+                    		rank.rankNames.set(i, temp[0].trim());
+                    		rank.rankLevels.set(i, Integer.parseInt(temp[1].trim()));
                     	}
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("officer")) {
-                    retVal.officer = Boolean.parseBoolean(wn2.getTextContent());
+                    rank.officer = Boolean.parseBoolean(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("payMultiplier")) {
-                    retVal.payMultiplier = Double.parseDouble(wn2.getTextContent());
+                    rank.payMultiplier = Double.parseDouble(wn2.getTextContent());
                 }
             }
-        } catch (Exception ex) {
-            // Errrr, apparently either the class name was invalid...
-            // Or the listed name doesn't exist.
-            // Doh!
-            MekHQ.getLogger().error(Rank.class, METHOD_NAME, ex);
+        } catch (Exception e) {
+            MekHQ.getLogger().error(e);
+            return null;
         }
 
-        return retVal;
+        return rank;
     }
-
+    //endregion File IO
 }

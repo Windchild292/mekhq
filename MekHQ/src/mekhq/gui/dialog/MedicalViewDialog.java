@@ -346,7 +346,7 @@ public class MedicalViewDialog extends JDialog {
         Person doc = c.getPerson(p.getDoctorId());
         String doctor = resourceMap.getString("none.text");
         if ((null != doc) && doc.getStatus().isActive()) {
-            doctor = doc.getFullTitle();
+            doctor = doc.getFullTitle(campaign);
         }
         panel.add(genLabel(resourceMap.getString("familyName.text")));
         panel.add(genLabel(resourceMap.getString("givenNames.text")));

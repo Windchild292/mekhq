@@ -434,7 +434,7 @@ public class PersonViewPanel extends ScrollablePanel {
 
     private JPanel fillInfo() {
         JPanel pnlInfo = new JPanel(new GridBagLayout());
-        pnlInfo.setBorder(BorderFactory.createTitledBorder(person.getFullTitle()));
+        pnlInfo.setBorder(BorderFactory.createTitledBorder(person.getFullTitle(gui.getCampaign())));
         JLabel lblType = new JLabel();
         JLabel lblStatus1 = new JLabel();
         JLabel lblStatus2 = new JLabel();

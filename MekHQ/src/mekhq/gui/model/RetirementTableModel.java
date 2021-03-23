@@ -183,7 +183,7 @@ public class RetirementTableModel extends AbstractTableModel {
         }
         switch (col) {
             case COL_PERSON:
-                return p.makeHTMLRank();
+                return p.makeHTMLRank(campaign);
             case COL_ASSIGN:
                 Unit u = p.getUnit();
                 if (null != u) {
@@ -421,7 +421,7 @@ public class RetirementTableModel extends AbstractTableModel {
             setText(getValueAt(actualRow, actualCol).toString());
             if (actualCol == COL_PERSON) {
                 setPortrait(p);
-                setText(p.getFullDesc());
+                setText(p.getFullDesc(campaign));
             }
             if (actualCol == COL_ASSIGN) {
                 Unit u = p.getUnit();

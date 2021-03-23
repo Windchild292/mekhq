@@ -204,7 +204,7 @@ public class ForceViewPanel extends ScrollablePanel {
  		//sort person vector by rank
  		people.sort((p1, p2) -> ((Comparable<Integer>) p2.getRankNumeric()).compareTo(p1.getRankNumeric()));
     	if (people.size() > 0) {
-    		commander = people.get(0).getFullTitle();
+    		commander = people.get(0).getFullTitle(campaign);
     	}
 
     	if (null != force.getTechID()) {
@@ -460,7 +460,7 @@ public class ForceViewPanel extends ScrollablePanel {
     }
 
     public String getSummaryFor(Person person, Unit unit) {
-        String toReturn = "<html><font size='2'><b>" + person.getFullTitle() + "</b><br/>";
+        String toReturn = "<html><font size='2'><b>" + person.getFullTitle(campaign) + "</b><br/>";
         toReturn += person.getSkillSummary() + " " + person.getRoleDesc();
         if (null != unit && null != unit.getEntity()
         		&& null != unit.getEntity().getCrew() && unit.getEntity().getCrew().getHits() > 0) {
@@ -561,7 +561,7 @@ public class ForceViewPanel extends ScrollablePanel {
  		//sort person vector by rank
  		people.sort((p1, p2) -> ((Comparable<Integer>) p2.getRankNumeric()).compareTo(p1.getRankNumeric()));
     	if (people.size() > 0) {
-    		commander = people.get(0).getFullTitle();
+    		commander = people.get(0).getFullTitle(campaign);
     	}
         String toReturn = "<html><font size='2'><b>" + f.getName() + "</b> (" + commander + ")<br/>";
         toReturn += "<b>Number of Units:</b> " + number + "<br/>";

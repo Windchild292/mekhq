@@ -281,7 +281,7 @@ public final class InjuryUtil {
                         && (doc.getCurrentEdge() > 0)) {
                     result.add(new GameEffect(
                     String.format("%s made a mistake in the treatment of %s, but used Edge to reroll.",
-                            doc.getHyperlinkedFullTitle(), p.getHyperlinkedName())));
+                            doc.getHyperlinkedFullTitle(c), p.getHyperlinkedFullTitle(c))));
                     doc.changeCurrentEdge(-1);
                     roll = Compute.randomInt(100);
                 }
@@ -289,12 +289,12 @@ public final class InjuryUtil {
                 if (roll < fumbleLimit) {
                     result.add(new GameEffect(
                         String.format("%s made a mistake in the treatment of %s and caused %s %s to worsen.",
-                            doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(),
+                            doc.getHyperlinkedFullTitle(c), p.getHyperlinkedFullTitle(c),
                             GenderDescriptors.HIS_HER.getDescriptor(p.getGender()), i.getName()),
                         rnd -> {
                             int time = i.getTime();
                             i.setTime((int) Math.max(Math.ceil(time * 1.2), time + 5));
-                            MedicalLogger.docMadeAMistake(doc, p, i, c.getLocalDate());
+                            MedicalLogger.docMadeAMistake(c, doc, p, i, c.getLocalDate());
 
                             // TODO: Add in special handling of the critical
                             //if (rnd.applyAsInt(100) < (fumbleLimit / 4)) {
@@ -306,16 +306,16 @@ public final class InjuryUtil {
                 } else if ((roll > critLimit) && (critTimeReduction > 0)) {
                     result.add(new GameEffect(
                         String.format("%s performed some amazing work in treating %s of %s (%d fewer day(s) to heal).",
-                                doc.getHyperlinkedFullTitle(), i.getName(), p.getHyperlinkedName(), critTimeReduction),
+                                doc.getHyperlinkedFullTitle(c), i.getName(), p.getHyperlinkedFullTitle(c), critTimeReduction),
                         rnd -> {
                             i.setTime(i.getTime() - critTimeReduction);
-                            MedicalLogger.docAmazingWork(doc, p, i, c.getLocalDate(), critTimeReduction);
+                            MedicalLogger.docAmazingWork(c, doc, p, i, c.getLocalDate(), critTimeReduction);
                         }));
                 } else {
                     final int xpChance = (int) Math.round(100.0 / c.getCampaignOptions().getNTasksXP());
                     result.add(new GameEffect(
                             String.format("%s successfully treated %s [%d%% chance of gaining %d XP]",
-                                    doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(),
+                                    doc.getHyperlinkedFullTitle(c), p.getHyperlinkedFullTitle(c),
                                     xpChance, c.getCampaignOptions().getTaskXP()),
                         rnd -> {
                             int taskXP = c.getCampaignOptions().getTaskXP();
@@ -328,7 +328,7 @@ public final class InjuryUtil {
                                 doc.setNTasks(doc.getNTasks() + 1);
                             }
                             i.setWorkedOn(true);
-                            MedicalLogger.successfullyTreated(doc, p, c.getLocalDate(), i);
+                            MedicalLogger.successfullyTreated(c, doc, p, c.getLocalDate(), i);
                             Unit u = p.getUnit();
                             if (null != u) {
                                 u.resetPilotAndEntity();
@@ -357,10 +357,10 @@ public final class InjuryUtil {
             final String treatmentSummary = (xpGained > 0)
                 ? String.format("%s successfully treated %s for %d injuries "
                     + "(%d XP gained, %d for mistakes, %d for critical successes, and %d for tasks).",
-                    doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(), numTreated,
+                    doc.getHyperlinkedFullTitle(c), p.getHyperlinkedFullTitle(c), numTreated,
                     xp, mistakeXP, successXP, xp - mistakeXP - successXP)
                 : String.format("%s successfully treated %s for %d injuries.",
-                    doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(), numTreated);
+                    doc.getHyperlinkedFullTitle(c), p.getHyperlinkedFullTitle(c), numTreated);
 
             result.add(new GameEffect(treatmentSummary,
                 rnd -> {

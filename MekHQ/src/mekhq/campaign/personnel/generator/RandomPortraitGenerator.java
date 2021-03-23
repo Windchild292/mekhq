@@ -101,11 +101,11 @@ public class RandomPortraitGenerator {
             if (temp.length == 2) {
                 return new Portrait(temp[0], temp[1]);
             } else {
-                MekHQ.getLogger().error("Failed to generate portrait for " + p.getFullTitle() + ". "
+                MekHQ.getLogger().error("Failed to generate portrait for " + p.getFullName() + ". "
                         + chosenPortrait + " does not split into an array of length 2.");
             }
         } else {
-            MekHQ.getLogger().warning("Failed to generate portrait for " + p.getFullTitle()
+            MekHQ.getLogger().warning("Failed to generate portrait for " + p.getFullName()
                     + ". No possible portraits found.");
         }
 

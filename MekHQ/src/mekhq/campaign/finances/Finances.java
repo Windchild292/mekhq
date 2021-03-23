@@ -329,7 +329,7 @@ public class Finances implements Serializable {
 
                     if (campaign.getCampaignOptions().trackTotalEarnings()) {
                         for (Person person : campaign.getActivePersonnel()) {
-                            person.payPersonSalary();
+                            person.payPersonSalary(campaign);
                         }
                     }
                 } else {
@@ -397,14 +397,13 @@ public class Finances implements Serializable {
 
                 if (campaign.getCampaignOptions().trackTotalEarnings()) {
                     int numberOfShares = 0;
-                    boolean sharesForAll = campaign.getCampaignOptions().getSharesForAll();
                     for (Person person : campaign.getActivePersonnel()) {
-                        numberOfShares += person.getNumShares(sharesForAll);
+                        numberOfShares += person.getNumShares(campaign.getCampaignOptions().getSharesForAll());
                     }
 
                     Money singleShare = shares.dividedBy(numberOfShares);
                     for (Person person : campaign.getActivePersonnel()) {
-                        person.payPersonShares(singleShare, sharesForAll);
+                        person.payPersonShares(singleShare, campaign.getCampaignOptions().getSharesForAll());
                     }
                 }
             } else {
@@ -413,8 +412,7 @@ public class Finances implements Serializable {
                  * payment that has just been made.
                  */
                 campaign.addReport(String.format(resourceMap.getString("NotImplemented.text"), "shares"));
-                MekHQ.getLogger().error(getClass(), "payoutShares",
-                        "Attempted to payout share amount larger than the payment of the contract");
+                MekHQ.getLogger().error("Attempted to payout share amount larger than the payment of the contract");
             }
         }
     }

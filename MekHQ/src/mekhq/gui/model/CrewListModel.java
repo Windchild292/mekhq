@@ -30,6 +30,7 @@ import javax.swing.ListCellRenderer;
 import megamek.common.Aero;
 import megamek.common.Tank;
 import megamek.common.VTOL;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.unit.Unit;
@@ -95,20 +96,27 @@ public class CrewListModel extends AbstractListModel<Person> {
 
     }
 
-    Unit unit;
-    List<Person> crew;
+    private final Campaign campaign;
+    private Unit unit;
+    private List<Person> crew;
 
-    public void setData(final Unit u) {
+    public CrewListModel(final Campaign campaign, final Unit u) {
+        this.campaign = campaign;
         this.unit = u;
         this.crew = new ArrayList<>(u.getCrew());
         crew.sort(Comparator.comparingInt(p -> CrewRole.getCrewRole(p, u).getSortOrder()));
         fireContentsChanged(this, 0, crew.size());
     }
 
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
     @Override
     public int getSize() {
         return crew.size();
     }
+
     @Override
     public Person getElementAt(int index) {
         if (index < 0 || index >= crew.size()) {
@@ -136,7 +144,7 @@ public class CrewListModel extends AbstractListModel<Person> {
             Person p = getElementAt(index);
             String gunSkill = SkillType.getGunnerySkillFor(unit.getEntity());
             String driveSkill = SkillType.getDrivingSkillFor(unit.getEntity());
-            String sb = "<html><font size='2'><b>" + p.getFullTitle() + "</b><br/>"
+            String sb = "<html><font size='2'><b>" + p.getFullTitle(getCampaign()) + "</b><br/>"
                     + CrewRole.getCrewRole(p, unit).getDisplayName()
                     + " ("
                     + (p.hasSkill(gunSkill) ? p.getSkill(gunSkill).getFinalSkillValue() : "-")

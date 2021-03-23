@@ -98,7 +98,7 @@ public class PersonnelReport extends Report {
                 } else if (p.getHits() > 0) {
                     countInjured++;
                 }
-                salary = salary.plus(p.getSalary());
+                salary = salary.plus(p.getSalary(getCampaign()));
             } else if (p.getStatus().isRetired()) {
                 countRetired++;
             } else if (p.getStatus().isMIA()) {
@@ -156,7 +156,7 @@ public class PersonnelReport extends Report {
                 if ((p.getInjuries().size() > 0) || (p.getHits() > 0)) {
                     countInjured++;
                 }
-                salary = salary.plus(p.getSalary());
+                salary = salary.plus(p.getSalary(getCampaign()));
             } else if (p.getPrisonerStatus().isPrisoner() && p.getStatus().isActive()) {
                 prisoners++;
                 if (p.getInjuries().size() > 0 || p.getHits() > 0) {

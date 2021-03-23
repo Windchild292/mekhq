@@ -736,7 +736,7 @@ public class ResolveScenarioWizardDialog extends JDialog {
                 if (u.getEntity() instanceof GunEmplacement) {
                     assignModel.addElement("AutoTurret, " + u.getName());
                 } else {
-                    assignModel.addElement(u.getCommander().getFullTitle() + ", " + u.getName());
+                    assignModel.addElement(u.getCommander().getFullTitle(tracker.getCampaign()) + ", " + u.getName());
                 }
 
                 if (u.getId().toString().equals(tracker.getKillCredits().get(killName))) {
@@ -1725,10 +1725,9 @@ public class ResolveScenarioWizardDialog extends JDialog {
         Person person = isPrisoner ? ((OppositionPersonnelStatus) status).getPerson()
                 : tracker.getCampaign().getPerson(status.getId());
         if (person == null) {
-            MekHQ.getLogger().error(getClass(), "showPerson",
-                    "Failed to show person after selecting view personnel for a "
-                            + (isPrisoner ? "Prisoner" : "member of the force") +
-                            " because the person could not be found.");
+            MekHQ.getLogger().error("Failed to show person after selecting view personnel for a "
+                    + (isPrisoner ? "Prisoner" : "member of the force") +
+                    " because the person could not be found.");
             return;
         }
         PersonViewPanel personViewPanel = new PersonViewPanel(person, tracker.getCampaign(),

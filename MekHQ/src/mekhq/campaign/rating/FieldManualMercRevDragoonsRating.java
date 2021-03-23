@@ -108,7 +108,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             Person p = u.getCommander();
             if (null != p) {
                 MekHQ.getLogger().debug("Unit " + u.getName()
-                        + " -- Adding commander (" + p.getFullTitle() + "" + ") to commander list.");
+                        + " -- Adding commander (" + p.getFullTitle(getCampaign()) + "" + ") to commander list.");
                 getCommanderList().add(p);
             }
 
@@ -338,7 +338,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        MekHQ.getLogger().debug(this, "Person, " + p.getFullTitle() + ", provides " + hours + " tech support hours.");
+        MekHQ.getLogger().debug("Person, " + p.getFullName() + ", provides " + hours + " tech support hours.");
         techSupportHours += hours;
     }
 
@@ -352,7 +352,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        MekHQ.getLogger().debug(this, "Person, " + p.getFullTitle() + " provides " + hours + " medical support hours.");
+        MekHQ.getLogger().debug("Person, " + p.getFullTitle(getCampaign()) + " provides " + hours + " medical support hours.");
         medSupportHours += hours;
     }
 
@@ -366,7 +366,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        MekHQ.getLogger().debug(this, "Person, " + p.getFullTitle() + ", provides " + hours + " admin support hours.");
+        MekHQ.getLogger().debug("Person, " + p.getFullTitle(getCampaign()) + ", provides " + hours + " admin support hours.");
         adminSupportHours += hours;
     }
 
@@ -376,7 +376,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             return;
         }
 
-        MekHQ.getLogger().debug(this, "Unit " + u.getName() + " updating unit skill rating.");
+        MekHQ.getLogger().debug("Unit " + u.getName() + " updating unit skill rating.");
 
         //Calculate the unit's average combat skill.
         Crew p = u.getEntity().getCrew();
@@ -637,8 +637,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
     private String getCommandDetails() {
         StringBuilder out = new StringBuilder();
         Person commander = getCommander();
-        String commanderName = (null == commander) ? "" :
-                               " (" + commander.getFullTitle() + ")";
+        String commanderName = (null == commander) ? "" : " (" + commander.getFullTitle(getCampaign()) + ")";
         out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s",
                                  "Command:", getCommanderValue(),
                                  commanderName)).append("\n");

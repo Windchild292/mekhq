@@ -1698,7 +1698,7 @@ public class CampaignGUI extends JPanel {
                 if (!ignoreMaintenance) {
                     time -= Math.max(0, tech.getMaintenanceTimeUsing());
                 }
-                name = tech.getFullTitle() + ", "
+                name = tech.getFullTitle(getCampaign()) + ", "
                         + SkillType.getExperienceLevelName(tech.getSkillForWorkingOn(u).getExperienceLevel())
                         + " (" + time + "min)";
                 techHash.put(name, tech);
@@ -2056,10 +2056,10 @@ public class CampaignGUI extends JPanel {
 
             if (rows.length > 1) {
                 for (int i = 0; i < rows.length; i++) {
-                    people[i].writeToXml(pw, 1);
+                    people[i].writeToXML(getCampaign(), pw, 1);
                 }
             } else {
-                selectedPerson.writeToXml(pw, 1);
+                selectedPerson.writeToXML(getCampaign(), pw, 1);
             }
             // Okay, we're done.
             // Close everything out and be done with it.

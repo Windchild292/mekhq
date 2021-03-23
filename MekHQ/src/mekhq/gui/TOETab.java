@@ -77,7 +77,7 @@ public final class TOETab extends CampaignGuiTab {
         orgModel = new OrgTreeModel(getCampaign());
         orgTree = new JTree(orgModel);
         TOEMouseAdapter.connect(getCampaignGui(), orgTree);
-        orgTree.setCellRenderer(new ForceRenderer());
+        orgTree.setCellRenderer(new ForceRenderer(getCampaign()));
         orgTree.setRowHeight(60);
         orgTree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         orgTree.addTreeSelectionListener(ev -> refreshForceView());
@@ -132,13 +132,12 @@ public final class TOETab extends CampaignGuiTab {
                 JPanel crewPanel = new JPanel(new BorderLayout());
                 final JScrollPane scrollPerson = new JScrollPane();
                 crewPanel.add(scrollPerson, BorderLayout.CENTER);
-                CrewListModel model = new CrewListModel();
-                model.setData(u);
+                CrewListModel model = new CrewListModel(getCampaign(), u);
                 /* For units with multiple crew members, present a horizontal list above the PersonViewPanel.
                  * This custom version of JList was the only way I could figure out how to limit the JList
                  * to a single row with a horizontal scrollbar.
                  */
-                final JList<Person> crewList = new JList<Person>(model) {
+                final JList<Person> crewList = new JList<>(model) {
                     private static final long serialVersionUID = 2138771416032676227L;
                     @Override
                     public Dimension getPreferredScrollableViewportSize() {

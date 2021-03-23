@@ -28,6 +28,7 @@ import megamek.common.icons.Portrait;
 import megamek.common.util.StringUtil;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
 
@@ -45,9 +46,9 @@ public class UnitStub implements Serializable {
         desc = "";
     }
 
-    public UnitStub(Unit u) {
-        desc = getUnitDescription(u);
-        Person commander = u.getCommander();
+    public UnitStub(final Campaign campaign, final Unit unit) {
+        desc = getUnitDescription(campaign, unit);
+        Person commander = unit.getCommander();
         portrait = (commander == null) ? new Portrait() : commander.getPortrait();
     }
 
@@ -60,12 +61,12 @@ public class UnitStub implements Serializable {
         return portrait;
     }
 
-    private String getUnitDescription(Unit u) {
+    private String getUnitDescription(final Campaign campaign, final Unit u) {
         String name = "<font color='red'>No Crew</font>";
         String uname;
         Person pp = u.getCommander();
         if (null != pp) {
-            name = pp.getFullTitle();
+            name = pp.getFullTitle(campaign);
             name += " (" + u.getEntity().getCrew().getGunnery() + "/" + u.getEntity().getCrew().getPiloting() + ")";
             if (pp.needsFixing()) {
                 name = "<font color='red'>" + name + "</font>";

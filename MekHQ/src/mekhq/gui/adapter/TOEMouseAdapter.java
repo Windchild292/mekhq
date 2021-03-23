@@ -731,7 +731,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                                 }
                             }
 
-                            menuItem = new JMenuItem(tech.getFullTitle() + " (" + tech.getRoleDesc() + ")");
+                            menuItem = new JMenuItem(tech.getFullTitle(gui.getCampaign()) + " (" + tech.getRoleDesc() + ")");
                             menuItem.setActionCommand(TOEMouseAdapter.COMMAND_ADD_LANCE_TECH + tech.getId() + "|" + forceIds);
                             menuItem.addActionListener(this);
                             switch (skillLvl) {
@@ -823,7 +823,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     if (null != u.getCommander()) {
                         Person p = u.getCommander();
                         if (p.getStatus().isActive() && (u.getForceId() < 1) && u.isPresent()) {
-                            JMenuItem menuItem0 = new JMenuItem(p.getFullTitle() + ", " + u.getName());
+                            JMenuItem menuItem0 = new JMenuItem(p.getFullTitle(gui.getCampaign()) + ", " + u.getName());
                             menuItem0.setActionCommand(TOEMouseAdapter.COMMAND_ADD_UNIT + u.getId() + "|" + forceIds);
                             menuItem0.addActionListener(this);
                             menuItem0.setEnabled(u.isAvailable());

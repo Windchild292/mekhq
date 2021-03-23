@@ -87,6 +87,7 @@ import mekhq.campaign.market.PersonnelMarketRandom;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.SpecialAbility;
@@ -106,7 +107,6 @@ import mekhq.gui.SpecialAbilityPanel;
 import mekhq.gui.model.RankTableModel;
 import mekhq.gui.model.SortedComboBoxModel;
 import megamek.client.ui.preferences.JWindowPreference;
-import mekhq.gui.utilities.TableCellListener;
 import mekhq.module.PersonnelMarketServiceManager;
 import mekhq.module.api.PersonnelMarketMethod;
 import megamek.client.ui.preferences.PreferencesNode;
@@ -382,7 +382,7 @@ public class CampaignOptionsDialog extends JDialog {
 
     //region Rank System Tab
     private JPanel panRank;
-    private JComboBox<Ranks> comboRanks;
+    private JComboBox<RankSystem> comboRanks;
     @SuppressWarnings("unused")
     private JButton btnAddRank; // FIXME: Unused
     @SuppressWarnings("unused")
@@ -3093,13 +3093,8 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         panRank.add(lblRank, gridBagConstraints);
 
-        DefaultComboBoxModel<Ranks> rankModel = new DefaultComboBoxModel<>();
-        for (int i = 0; i < Ranks.RS_NUM; i++) {
-            final Ranks ranks = Ranks.getRanksFromSystem(i);
-            if (ranks != null) {
-                rankModel.addElement(ranks);
-            }
-        }
+        DefaultComboBoxModel<RankSystem> rankModel = new DefaultComboBoxModel<>();
+        rankModel.addAll(Ranks.getBaseRankSystems().values());
         comboRanks = new JComboBox<>(rankModel);
         comboRanks.setName("comboRanks");
         comboRanks.addActionListener(evt -> fillRankInfo());
@@ -4221,7 +4216,7 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private void fillRankInfo() {
-        final Ranks ranks = (Ranks) comboRanks.getSelectedItem();
+        final RankSystem ranks = (RankSystem) comboRanks.getSelectedItem();
         if (ranks != null) {
             ranksModel.setDataVector(ranks.getRanksForModel(), rankColNames);
             TableColumn column;
@@ -4785,10 +4780,8 @@ public class CampaignOptionsDialog extends JDialog {
             RandomNameGenerator.getInstance().setChosenFaction((String) comboFactionNames.getSelectedItem());
         }
         RandomGenderGenerator.setPercentFemale(sldGender.getValue());
-        campaign.setRanks((Ranks) Objects.requireNonNull(comboRanks.getSelectedItem()));
-        if (campaign.getRanks().isCustom()) {
-            campaign.getRanks().setRanksFromModel(ranksModel);
-        }
+        campaign.setRanks((RankSystem) Objects.requireNonNull(comboRanks.getSelectedItem()));
+        campaign.getRanks().setRanksFromModel(ranksModel);
         campaign.setCamoCategory(camoCategory);
         campaign.setCamoFileName(camoFileName);
         campaign.setColour(colour);

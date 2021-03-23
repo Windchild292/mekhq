@@ -70,7 +70,7 @@ public class Accountant {
         for (Person p : getCampaign().getActivePersonnel()) {
             // Optionized infantry (Unofficial)
             if (!(noInfantry && (p.getPrimaryRole() == Person.T_INFANTRY))) {
-                salaries = salaries.plus(p.getSalary());
+                salaries = salaries.plus(p.getSalary(getCampaign()));
             }
         }
         // add in astechs from the astech pool

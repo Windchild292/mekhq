@@ -52,6 +52,7 @@ import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
 import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
 import mekhq.campaign.personnel.generator.RandomPortraitGenerator;
 import mekhq.campaign.personnel.ranks.Rank;
+import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.service.AutosaveService;
 import mekhq.service.IAutosaveService;
@@ -212,7 +213,7 @@ public class Campaign implements Serializable, ITechManager {
     private String factionCode;
     private int techFactionCode;
     private String retainerEmployerCode; //AtB
-    private Ranks ranks;
+    private RankSystem ranks;
 
     private ArrayList<String> currentReport;
     private transient String currentReportHTML;
@@ -291,7 +292,7 @@ public class Campaign implements Serializable, ITechManager {
         factionCode = "MERC";
         techFactionCode = ITechnology.F_MERC;
         retainerEmployerCode = null;
-        ranks = Ranks.getRanksFromSystem(Ranks.RS_SL);
+        ranks = Ranks.getRankSystemFromCode(Ranks.DEFAULT_SYSTEM_CODE);
         forces = new Force(name);
         forceIds.put(0, forces);
         lances = new Hashtable<>();
@@ -1354,7 +1355,7 @@ public class Campaign implements Serializable, ITechManager {
         }
         // Only pay if option set, they weren't GM added, and they aren't a dependent, prisoner or bondsman
         if (getCampaignOptions().payForRecruitment() && !dependent && !gmAdd && prisonerStatus.isFree()) {
-            if (!getFinances().debit(p.getSalary().multipliedBy(2), Transaction.C_SALARY,
+            if (!getFinances().debit(p.getSalary(this).multipliedBy(2), Transaction.C_SALARY,
                     "Recruitment of " + p.getFullName(), getLocalDate())) {
                 addReport("<font color='red'><b>Insufficient funds to recruit "
                         + p.getFullName() + "</b></font>");
@@ -1403,7 +1404,7 @@ public class Campaign implements Serializable, ITechManager {
         // current bloodname or assign a new one
         if (person.getBloodname().length() > 0) {
             int result = JOptionPane.showConfirmDialog(null,
-                    person.getFullTitle() + " already has the bloodname " + person.getBloodname()
+                    person.getFullTitle(this) + " already has the bloodname " + person.getBloodname()
                             + "\nDo you wish to remove that bloodname and generate a new one?",
                     "Already Has Bloodname", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (result == JOptionPane.NO_OPTION) {
@@ -1529,7 +1530,7 @@ public class Campaign implements Serializable, ITechManager {
             }
 
             // Officers have better chance; no penalty for non-officer
-            bloodnameTarget += Math.min(0, ranks.getOfficerCut() - person.getRankNumeric());
+            bloodnameTarget += Math.min(0, getRanks().getOfficerCut() - person.getRankNumeric());
         }
 
         if (ignoreDice || (Compute.d6(2) >= bloodnameTarget)) {
@@ -1984,7 +1985,7 @@ public class Campaign implements Serializable, ITechManager {
             return "";
         }
         String report = "";
-        report += doctor.getHyperlinkedFullTitle() + " attempts to heal "
+        report += doctor.getHyperlinkedFullTitle(this) + " attempts to heal "
                 + medWork.getFullName();
         TargetRoll target = getTargetFor(medWork, doctor);
         int roll = Compute.d6(2);
@@ -1997,7 +1998,7 @@ public class Campaign implements Serializable, ITechManager {
             if ((roll == 2) && (doctor.getCurrentEdge() > 0) && (target.getValue() != TargetRoll.AUTOMATIC_SUCCESS)) {
                 doctor.changeCurrentEdge(-1);
                 roll = Compute.d6(2);
-                report += medWork.fail() + "\n" + doctor.getHyperlinkedFullTitle() + " uses Edge to reroll:"
+                report += medWork.fail() + "\n" + doctor.getHyperlinkedFullTitle(this) + " uses Edge to reroll:"
                         + " rolls " + roll + ":";
             }
         }
@@ -2274,7 +2275,7 @@ public class Campaign implements Serializable, ITechManager {
                 break;
             }
 
-            String personTitle = person.getHyperlinkedFullTitle() + " ";
+            String personTitle = person.getHyperlinkedFullTitle(this) + " ";
 
             for (PlanetarySystem system: systems) {
                 if (currentList.isEmpty()) {
@@ -2443,7 +2444,7 @@ public class Campaign implements Serializable, ITechManager {
         String report = "";
 
         if (null != person) {
-            report += person.getHyperlinkedFullTitle() + " ";
+            report += person.getHyperlinkedFullTitle(this) + " ";
         }
 
         TargetRoll target = getTargetForAcquisition(acquisition, person, false);
@@ -2575,7 +2576,7 @@ public class Campaign implements Serializable, ITechManager {
 
         u.setMothballTime(u.getMothballTime() - minutes);
 
-        String report = tech.getHyperlinkedFullTitle() + " spent " + minutes + " minutes mothballing " + u.getHyperlinkedName();
+        String report = tech.getHyperlinkedFullTitle(this) + " spent " + minutes + " minutes mothballing " + u.getHyperlinkedName();
         if (!u.isMothballing()) {
             u.completeMothball();
             report += ". Mothballing complete.";
@@ -2598,7 +2599,7 @@ public class Campaign implements Serializable, ITechManager {
      */
     public void activate(Unit u) {
         if (!u.isMothballed()) {
-            MekHQ.getLogger().warning(Campaign.class, "activate(Unit)", "Unit is already activated, cannot activate.");
+            MekHQ.getLogger().warning("Unit is already activated, cannot activate.");
             return;
         }
 
@@ -2622,7 +2623,7 @@ public class Campaign implements Serializable, ITechManager {
 
         u.setMothballTime(u.getMothballTime() - minutes);
 
-        String report = tech.getHyperlinkedFullTitle() + " spent " + minutes + " minutes activating " + u.getHyperlinkedName();
+        String report = tech.getHyperlinkedFullTitle(this) + " spent " + minutes + " minutes activating " + u.getHyperlinkedName();
 
         tech.setMinutesLeft(tech.getMinutesLeft() - minutes);
         if (!u.isSelfCrewed()) {
@@ -2651,7 +2652,7 @@ public class Campaign implements Serializable, ITechManager {
         if (!r.acquireParts()) {
             return;
         }
-        String report = tech.getHyperlinkedFullTitle() + " works on " + r.getPartName();
+        String report = tech.getHyperlinkedFullTitle(this) + " works on " + r.getPartName();
         int minutes = r.getTimeLeft();
         // FIXME: Overtime?
         if (minutes > tech.getMinutesLeft()) {
@@ -2758,7 +2759,7 @@ public class Campaign implements Serializable, ITechManager {
         }
         if ((partWork instanceof ProtomekArmor) && !partWork.isSalvaging()) {
             if (!((ProtomekArmor) partWork).isInSupply()) {
-                report += "<b>Not enough Protomech armor remaining.  Task suspended.</b>";
+                report += "<b>Not enough ProtoMech armor remaining.  Task suspended.</b>";
                 addReport(report);
                 return report;
             }
@@ -2772,10 +2773,10 @@ public class Campaign implements Serializable, ITechManager {
         }
         if (partWork instanceof SpacecraftCoolingSystem) {
             //Change the string since we're not working on the part itself
-            report += tech.getHyperlinkedFullTitle() + " attempts to" + action
+            report += tech.getHyperlinkedFullTitle(this) + " attempts to" + action
                     + "a heat sink";
         } else {
-            report += tech.getHyperlinkedFullTitle() + " attempts to" + action
+            report += tech.getHyperlinkedFullTitle(this) + " attempts to" + action
                     + partWork.getPartName();
         }
         if (null != partWork.getUnit()) {
@@ -3211,7 +3212,7 @@ public class Campaign implements Serializable, ITechManager {
                         addReport(healPerson(p, doctor));
                     }
                 } else if (p.checkNaturalHealing(15)) {
-                    addReport(p.getHyperlinkedFullTitle() + " heals naturally!");
+                    addReport(p.getHyperlinkedFullTitle(this) + " heals naturally!");
                     Unit u = p.getUnit();
                     if (u != null) {
                         u.resetPilotAndEntity();
@@ -3242,7 +3243,7 @@ public class Campaign implements Serializable, ITechManager {
                 if (p.getIdleMonths() >= getCampaignOptions().getMonthsIdleXP()) {
                     if (Compute.d6(2) >= getCampaignOptions().getTargetIdleXP()) {
                         p.awardXP(getCampaignOptions().getIdleXP());
-                        addReport(p.getHyperlinkedFullTitle() + " has gained "
+                        addReport(p.getHyperlinkedFullTitle(this) + " has gained "
                                 + getCampaignOptions().getIdleXP() + " XP");
                     }
                     p.setIdleMonths(0);
@@ -3342,7 +3343,7 @@ public class Campaign implements Serializable, ITechManager {
                 } else {
                     addReport(String.format(
                             "%s looks at %s, recalls his total lack of skill for working with such technology, then slowly puts the tools down before anybody gets hurt.",
-                            tech.getHyperlinkedFullTitle(), part.getName()));
+                            tech.getHyperlinkedFullTitle(this), part.getName()));
                     part.setTech(null);
                 }
             } else {
@@ -3519,7 +3520,7 @@ public class Campaign implements Serializable, ITechManager {
         getRetirementDefectionTracker().removePerson(person);
 
         if (log) {
-            addReport(person.getFullTitle() + " has been removed from the personnel roster.");
+            addReport(person.getFullTitle(this) + " has been removed from the personnel roster.");
         }
 
         personnel.remove(id);
@@ -4048,8 +4049,7 @@ public class Campaign implements Serializable, ITechManager {
             MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "retainerEmployerCode", retainerEmployerCode);
         }
 
-        // Ranks
-        ranks.writeToXml(pw1, indent + 1);
+        getRanks().writeToXML(pw1, indent + 1);
 
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "nameGen",
                 RandomNameGenerator.getInstance().getChosenFaction());
@@ -4098,7 +4098,14 @@ public class Campaign implements Serializable, ITechManager {
 
         // Lists of objects:
         units.writeToXml(pw1, indent, "units"); // Units
-        writeMapToXml(pw1, indent, "personnel", personnel); // Personnel
+
+        //region Personnel
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "personnel");
+        for (final Person person : getPersonnel()) {
+            person.writeToXML(this, pw1, indent);
+        }
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "personnel");
+        //endregion Personnel
         writeMapToXml(pw1, indent, "missions", missions); // Missions
         // the forces structure is hierarchical, but that should be handled
         // internally from with writeToXML function for Force
@@ -4136,7 +4143,7 @@ public class Campaign implements Serializable, ITechManager {
         writeGameOptions(pw1);
 
         // Personnel Market
-        personnelMarket.writeToXml(pw1, indent);
+        personnelMarket.writeToXML(this, pw1, indent);
 
         // Against the Bot
         if (getCampaignOptions().getUseAtB()) {
@@ -4317,19 +4324,19 @@ public class Campaign implements Serializable, ITechManager {
         return Systems.getInstance().getSystemByName(name, getLocalDate());
     }
 
-    public void setRanks(Ranks r) {
-        ranks = r;
+    public RankSystem getRanks() {
+        return ranks;
     }
 
-    public Ranks getRanks() {
-        return ranks;
+    public void setRanks(final RankSystem ranks) {
+        this.ranks = ranks;
     }
 
     public List<String> getAllRankNamesFor(int p) {
         List<String> retVal = new ArrayList<>();
-        for (Rank rank : getRanks().getAllRanks()) {
+        for (Rank rank : getRanks().getRanks()) {
             // Grab rank from correct profession as needed
-            while (rank.getName(p).startsWith("--") && p != Ranks.RPROF_MW) {
+            while (rank.getName(p).startsWith("--") && p != RankSystem.RPROF_MW) {
                 if (rank.getName(p).equals("--")) {
                     p = getRanks().getAlternateProfession(p);
                 } else if (rank.getName(p).startsWith("--")) {
@@ -5400,7 +5407,7 @@ public class Campaign implements Serializable, ITechManager {
     public void changeRank(Person person, int rank, int rankLevel, boolean report) {
         int oldRank = person.getRankNumeric();
         int oldRankLevel = person.getRankLevel();
-        person.setRankNumeric(rank);
+        person.setRank(rank);
         person.setRankLevel(rankLevel);
 
         if (getCampaignOptions().getUseTimeInRank()) {
@@ -5415,9 +5422,9 @@ public class Campaign implements Serializable, ITechManager {
 
         if (report) {
             if (rank > oldRank || ((rank == oldRank) && (rankLevel > oldRankLevel))) {
-                ServiceLogger.promotedTo(person, getLocalDate());
+                ServiceLogger.promotedTo(this, person, getLocalDate());
             } else if ((rank < oldRank) || (rankLevel < oldRankLevel)) {
-                ServiceLogger.demotedTo(person, getLocalDate());
+                ServiceLogger.demotedTo(this, person, getLocalDate());
             }
         }
     }
@@ -6323,8 +6330,8 @@ public class Campaign implements Serializable, ITechManager {
             String techName = "Nobody";
             String techNameLinked = techName;
             if (null != tech) {
-                techName = tech.getFullTitle();
-                techNameLinked = tech.getHyperlinkedFullTitle();
+                techName = tech.getFullTitle(this);
+                techNameLinked = tech.getHyperlinkedFullTitle(this);
             }
             // don't do actual damage until we clear the for loop to avoid
             // concurrent mod problems
