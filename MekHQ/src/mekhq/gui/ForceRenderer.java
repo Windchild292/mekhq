@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2013-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -67,7 +67,11 @@ public class ForceRenderer extends DefaultTreeCellRenderer {
                 if (person.needsFixing() || (u.getEntity().getCrew().getHits() > 0)) {
                     name = "<font color='red'>" + name + "</font>";
                 }
+                setIcon(person.getPortrait().getImageIcon(58));
+            } else {
+                setIcon(null);
             }
+
             uname = "<i>" + u.getName() + "</i>";
             if (u.isDamaged()) {
                 uname = "<font color='red'>" + uname + "</font>";
@@ -143,35 +147,12 @@ public class ForceRenderer extends DefaultTreeCellRenderer {
                 colors.getDeployed().getAlternateColor().ifPresent(this::setForeground);
                 setOpaque(true);
             }
+            setIcon(((Force) value).getForceIcon().getImageIcon(58));
         } else {
             MekHQ.getLogger().error("Attempted to render node with unknown node class of "
                     + ((value != null) ? value.getClass() : "null"));
         }
 
-        setIcon(getIcon(value));
-
         return this;
-    }
-
-    protected Icon getIcon(Object node) {
-        if (node instanceof Unit) {
-            final Person person = ((Unit) node).getCommander();
-            return (person == null) ? null : person.getPortrait().getImageIcon(58);
-        } else if (node instanceof Force) {
-            return getIconFrom((Force) node);
-        } else {
-            return null;
-        }
-    }
-
-    protected Icon getIconFrom(Force force) {
-        try {
-            return new ImageIcon(MHQStaticDirectoryManager.buildForceIcon(force.getIconCategory(),
-                    force.getIconFileName(), force.getIconMap())
-                    .getScaledInstance(58, -1, Image.SCALE_SMOOTH));
-        } catch (Exception e) {
-            MekHQ.getLogger().error(e);
-            return null;
-        }
     }
 }

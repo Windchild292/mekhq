@@ -149,8 +149,7 @@ public class CrewListModel extends AbstractListModel<Person> {
             } else {
                 unhighlightBorder();
             }
-
-            setPortrait(p);
+            getLabel().setIcon(p.getPortrait().getImageIcon(54));
             return c;
         }
     }

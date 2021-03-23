@@ -420,7 +420,7 @@ public class RetirementTableModel extends AbstractTableModel {
             Person p = getPerson(actualRow);
             setText(getValueAt(actualRow, actualCol).toString());
             if (actualCol == COL_PERSON) {
-                setPortrait(p);
+                getLabel().setIcon(p.getPortrait().getImageIcon(54));
                 setText(p.getFullDesc());
             }
             if (actualCol == COL_ASSIGN) {
@@ -436,14 +436,9 @@ public class RetirementTableModel extends AbstractTableModel {
                     }
                     desc += "<br>" + u.getStatus() + "";
                     setText(desc);
-                    Image mekImage = u.getImage(this);
-                    if (null != mekImage) {
-                        setImage(mekImage);
-                    } else {
-                        clearImage();
-                    }
+                    setImage(u.getImage(this));
                 } else {
-                    clearImage();
+                    getLabel().setIcon(null);
                 }
             }
             if (actualCol == COL_FORCE) {
@@ -460,14 +455,9 @@ public class RetirementTableModel extends AbstractTableModel {
                     }
                     desc += "</html>";
                     setHtmlText(desc);
-                    Image forceImage = getImageFor(force);
-                    if (null != forceImage) {
-                        setImage(forceImage);
-                    } else {
-                        clearImage();
-                    }
+                    getLabel().setIcon(force.getForceIcon().getImageIcon(54));
                 } else {
-                    clearImage();
+                    getLabel().setIcon(null);
                 }
             }
 

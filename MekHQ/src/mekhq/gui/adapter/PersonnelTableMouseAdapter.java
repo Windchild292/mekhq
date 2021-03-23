@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 
 import javax.swing.*;
 
-import megamek.client.ui.swing.dialog.imageChooser.AbstractIconChooserDialog;
-import megamek.client.ui.swing.dialog.imageChooser.PortraitChooserDialog;
+import megamek.client.ui.dialogs.AbstractIconChooserDialog;
+import megamek.client.ui.dialogs.PortraitChooserDialog;
 import megamek.client.ui.swing.util.MenuScroller;
 import megamek.common.*;
 import megamek.common.options.IOption;
@@ -814,10 +814,9 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 break;
             }
             case CMD_EDIT_PORTRAIT: {
-                AbstractIconChooserDialog portraitDialog = new PortraitChooserDialog(gui.getFrame(),
+                final AbstractIconChooserDialog portraitDialog = new PortraitChooserDialog(gui.getFrame(),
                         selectedPerson.getPortrait());
-                int result = portraitDialog.showDialog();
-                if ((result == JOptionPane.OK_OPTION) && (portraitDialog.getSelectedItem() != null)) {
+                if (portraitDialog.showDialog().isConfirmed()) {
                     for (Person person : people) {
                         if (!person.getPortrait().equals(portraitDialog.getSelectedItem())) {
                             person.setPortrait(portraitDialog.getSelectedItem());

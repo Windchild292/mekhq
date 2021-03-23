@@ -163,14 +163,9 @@ public class UnitAssignmentTableModel extends AbstractTableModel {
                     }
                     desc += "<br>" + u.getStatus() + "";
                     setText(desc);
-                    Image mekImage = u.getImage(this);
-                    if (null != mekImage) {
-                        setImage(mekImage);
-                    } else {
-                        clearImage();
-                    }
+                    setImage(u.getImage(this));
                 } else {
-                    clearImage();
+                    getLabel().setIcon(null);
                 }
             }
 

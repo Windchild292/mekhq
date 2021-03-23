@@ -20,18 +20,9 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ResourceBundle;
-import java.util.Set;
-
-import javax.swing.*;
-
-import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
+import megamek.client.ui.dialogs.CamoChooserDialog;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.icons.Camouflage;
 import megamek.common.util.EncodeControl;
@@ -43,10 +34,14 @@ import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.RandomFactionGenerator;
 import mekhq.campaign.universe.Systems;
 import mekhq.gui.FactionComboBox;
-import megamek.client.ui.preferences.JWindowPreference;
 import mekhq.gui.utilities.JSuggestField;
 import mekhq.gui.utilities.MarkdownEditorPanel;
-import megamek.client.ui.preferences.PreferencesNode;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * @author Neoancient
@@ -440,7 +435,13 @@ public class CustomizeAtBContractDialog extends JDialog {
         gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gbc.insets = new java.awt.Insets(5, 5, 5, 5);
         rightPanel.add(btnAllyCamo, gbc);
-        btnAllyCamo.addActionListener(camoButtonListener);
+        btnAllyCamo.addActionListener(evt -> {
+            final CamoChooserDialog ccd = new CamoChooserDialog(frame, allyCamouflage);
+            if (ccd.showDialog().isConfirmed()) {
+                allyCamouflage = ccd.getSelectedItem();
+                btnAllyCamo.setIcon(allyCamouflage.getImageIcon());
+            }
+        });
         btnAllyCamo.setIcon(allyCamouflage.getImageIcon());
 
         lblEnemyCamo.setText(resourceMap.getString("lblEnemyCamo.text")); // NOI18N
@@ -460,7 +461,13 @@ public class CustomizeAtBContractDialog extends JDialog {
         gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gbc.insets = new java.awt.Insets(5, 5, 5, 5);
         rightPanel.add(btnEnemyCamo, gbc);
-        btnEnemyCamo.addActionListener(camoButtonListener);
+        btnEnemyCamo.addActionListener(evt -> {
+            final CamoChooserDialog ccd = new CamoChooserDialog(frame, enemyCamouflage);
+            if (ccd.showDialog().isConfirmed()) {
+                enemyCamouflage = ccd.getSelectedItem();
+                btnEnemyCamo.setIcon(enemyCamouflage.getImageIcon());
+            }
+        });
         btnEnemyCamo.setIcon(enemyCamouflage.getImageIcon());
 
         btnOK.setText(resourceMap.getString("btnOkay.text"));
@@ -482,28 +489,6 @@ public class CustomizeAtBContractDialog extends JDialog {
         this.setName("dialog");
         preferences.manage(new JWindowPreference(this));
     }
-
-    ActionListener camoButtonListener = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            CamoChooserDialog ccd;
-            if (e.getSource().equals(btnAllyCamo)) {
-                ccd = new CamoChooserDialog(frame, allyCamouflage);
-                if ((ccd.showDialog() == JOptionPane.CANCEL_OPTION) || (ccd.getSelectedItem() == null)) {
-                    return;
-                }
-                allyCamouflage = ccd.getSelectedItem();
-                btnEnemyCamo.setIcon(allyCamouflage.getImageIcon());
-            } else {
-                ccd = new CamoChooserDialog(frame, enemyCamouflage);
-                if ((ccd.showDialog() == JOptionPane.CANCEL_OPTION) || (ccd.getSelectedItem() == null)) {
-                    return;
-                }
-                enemyCamouflage = ccd.getSelectedItem();
-                btnEnemyCamo.setIcon(enemyCamouflage.getImageIcon());
-            }
-        }
-    };
 
     private void btnOKActionPerformed(ActionEvent evt) {
         contract.setName(txtName.getText());

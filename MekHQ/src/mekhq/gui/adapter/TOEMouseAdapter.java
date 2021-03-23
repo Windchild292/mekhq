@@ -18,20 +18,7 @@
  */
 package mekhq.gui.adapter;
 
-import java.awt.event.ActionEvent;
-import java.util.*;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JTree;
-import javax.swing.tree.TreePath;
-
-import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
-import mekhq.MHQStaticDirectoryManager;
-import mekhq.gui.utilities.JMenuHelpers;
-
+import megamek.client.ui.dialogs.CamoChooserDialog;
 import megamek.client.ui.swing.util.MenuScroller;
 import megamek.common.EntityWeightClass;
 import megamek.common.GunEmplacement;
@@ -54,9 +41,22 @@ import mekhq.campaign.unit.HangarSorter;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.dialog.ForceTemplateAssignmentDialog;
-import mekhq.gui.dialog.ImageChoiceDialog;
 import mekhq.gui.dialog.MarkdownEditorDialog;
+import mekhq.gui.utilities.JMenuHelpers;
 import mekhq.gui.utilities.StaticChecks;
+
+import javax.swing.*;
+import javax.swing.tree.TreePath;
+import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.StringTokenizer;
+import java.util.UUID;
+import java.util.Vector;
 
 public class TOEMouseAdapter extends JPopupMenuAdapter {
     private final CampaignGUI gui;
@@ -345,27 +345,21 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             }
         } else if (command.contains(CHANGE_ICON)) {
             if (singleForce != null) {
-                ImageChoiceDialog pcd = new ImageChoiceDialog(gui.getFrame(), true,
-                        singleForce.getIconCategory(), singleForce.getIconFileName(),
-                        singleForce.getIconMap(), MHQStaticDirectoryManager.getForceIcons(), true);
-                pcd.setVisible(true);
-                if (pcd.isChanged()) {
-                    singleForce.setIconCategory(pcd.getCategory());
-                    singleForce.setIconFileName(pcd.getFileName());
-                    singleForce.setIconMap(pcd.getCategory().equals(Force.ROOT_LAYERED) ? pcd.getIconMap() : new LinkedHashMap<>());
-                    MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
+                LayeredForceIconDialog layeredForceIconDialog = new LayeredForceIconDialog(
+                        gui.getFrame(), true, singleForce.getForceIcon());
+                if ((layeredForceIconDialog.showDialog() == JOptionPane.OK_OPTION)
+                        && (layeredForceIconDialog.getForceIcon() != null)) {
+                    singleForce.setForceIcon(layeredForceIconDialog.getForceIcon());
                 }
             }
         } else if (command.contains(CHANGE_CAMO)) {
             if (singleForce != null) {
-                CamoChooserDialog ccd = new CamoChooserDialog(gui.getFrame(),
+                final CamoChooserDialog ccd = new CamoChooserDialog(gui.getFrame(),
                         singleForce.getCamouflageOrElse(gui.getCampaign().getCamouflage()), true);
-
-                if ((ccd.showDialog() == JOptionPane.CANCEL_OPTION) || (ccd.getSelectedItem() == null)) {
-                    return;
+                if (ccd.showDialog().isConfirmed()) {
+                    singleForce.setCamouflage(ccd.getSelectedItem());
+                    MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
                 }
-                singleForce.setCamouflage(ccd.getSelectedItem());
-                MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
             }
         } else if (command.contains(CHANGE_NAME)) {
             if (null != singleForce) {
@@ -480,9 +474,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                             int optionChoice = JOptionPane.showConfirmDialog(null, TOEMouseAdapter.LOAD_UNITS_DIALOG_TEXT,
                                     TOEMouseAdapter.LOAD_UNITS_DIALOG_TITLE, JOptionPane.YES_NO_OPTION);
                             if (optionChoice == JOptionPane.YES_OPTION) {
-                                for (Unit cargo : unit.getTransportedUnits()) {
-                                    extraUnits.add(cargo);
-                                }
+                                extraUnits.addAll(unit.getTransportedUnits());
                             }
                         }
                         scenario.addUnit(unit.getId());

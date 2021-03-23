@@ -18,15 +18,66 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Insets;
+import megamek.client.generator.RandomGenderGenerator;
+import megamek.client.generator.RandomNameGenerator;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
+import megamek.client.ui.dialogs.CamoChooserDialog;
+import megamek.client.ui.swing.util.PlayerColour;
+import megamek.common.EquipmentType;
+import megamek.common.ITechnology;
+import megamek.common.icons.Camouflage;
+import megamek.common.options.GameOptions;
+import megamek.common.options.IOption;
+import megamek.common.options.IOptionGroup;
+import megamek.common.options.OptionsConstants;
+import megamek.common.options.PilotOptions;
+import megamek.common.util.EncodeControl;
+import megamek.common.util.sorter.NaturalOrderComparator;
+import mekhq.MekHQ;
+import mekhq.Utilities;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.CampaignOptions;
+import mekhq.campaign.GamePreset;
+import mekhq.campaign.RandomSkillPreferences;
+import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
+import mekhq.campaign.event.OptionsChangedEvent;
+import mekhq.campaign.finances.enums.FinancialYearDuration;
+import mekhq.campaign.force.icons.StandardForceIcon;
+import mekhq.campaign.market.PersonnelMarketDylan;
+import mekhq.campaign.market.PersonnelMarketRandom;
+import mekhq.campaign.mission.AtBContract;
+import mekhq.campaign.parts.Part;
+import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.SpecialAbility;
+import mekhq.campaign.personnel.enums.BabySurnameStyle;
+import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
+import mekhq.campaign.personnel.enums.Marriage;
+import mekhq.campaign.personnel.enums.Phenotype;
+import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
+import mekhq.campaign.personnel.enums.PrisonerStatus;
+import mekhq.campaign.personnel.enums.TimeInDisplayFormat;
+import mekhq.campaign.personnel.ranks.Ranks;
+import mekhq.campaign.rating.UnitRatingMethod;
+import mekhq.campaign.universe.Faction;
+import mekhq.campaign.universe.Factions;
+import mekhq.campaign.universe.RATManager;
+import mekhq.gui.FileDialogs;
+import mekhq.gui.SpecialAbilityPanel;
+import mekhq.gui.model.RankTableModel;
+import mekhq.gui.model.SortedComboBoxModel;
+import mekhq.module.PersonnelMarketServiceManager;
+import mekhq.module.api.PersonnelMarketMethod;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -49,68 +100,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-
-import megamek.client.generator.RandomGenderGenerator;
-import megamek.client.generator.RandomNameGenerator;
-import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
-import megamek.client.ui.swing.util.PlayerColour;
-import megamek.common.EquipmentType;
-import megamek.common.ITechnology;
-import megamek.common.icons.AbstractIcon;
-import megamek.common.icons.Camouflage;
-import megamek.common.options.GameOptions;
-import megamek.common.options.IOption;
-import megamek.common.options.IOptionGroup;
-import megamek.common.options.OptionsConstants;
-import megamek.common.options.PilotOptions;
-import megamek.common.util.EncodeControl;
-import megamek.common.util.sorter.NaturalOrderComparator;
-import mekhq.MHQStaticDirectoryManager;
-import mekhq.MekHQ;
-import mekhq.Utilities;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.CampaignOptions;
-import mekhq.campaign.GamePreset;
-import mekhq.campaign.RandomSkillPreferences;
-import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
-import mekhq.campaign.event.OptionsChangedEvent;
-import mekhq.campaign.finances.enums.FinancialYearDuration;
-import mekhq.campaign.market.PersonnelMarketDylan;
-import mekhq.campaign.market.PersonnelMarketRandom;
-import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.parts.Part;
-import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.ranks.Ranks;
-import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.personnel.SpecialAbility;
-import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
-import mekhq.campaign.personnel.enums.Phenotype;
-import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
-import mekhq.campaign.personnel.enums.PrisonerStatus;
-import mekhq.campaign.personnel.enums.Marriage;
-import mekhq.campaign.personnel.enums.BabySurnameStyle;
-import mekhq.campaign.personnel.enums.TimeInDisplayFormat;
-import mekhq.campaign.rating.UnitRatingMethod;
-import mekhq.campaign.universe.Faction;
-import mekhq.campaign.universe.Factions;
-import mekhq.campaign.universe.RATManager;
-import mekhq.gui.FileDialogs;
-import mekhq.gui.SpecialAbilityPanel;
-import mekhq.gui.model.RankTableModel;
-import mekhq.gui.model.SortedComboBoxModel;
-import megamek.client.ui.preferences.JWindowPreference;
-import mekhq.gui.utilities.TableCellListener;
-import mekhq.module.PersonnelMarketServiceManager;
-import mekhq.module.api.PersonnelMarketMethod;
-import megamek.client.ui.preferences.PreferencesNode;
-
 /**
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
@@ -125,8 +114,7 @@ public class CampaignOptionsDialog extends JDialog {
     private JFrame frame;
     private Camouflage camouflage;
     private PlayerColour colour;
-    private String iconCategory;
-    private String iconFileName;
+    private StandardForceIcon unitIcon;
     private Hashtable<String, JSpinner> hashSkillTargets;
     private Hashtable<String, JSpinner> hashGreenSkill;
     private Hashtable<String, JSpinner> hashRegSkill;
@@ -500,8 +488,7 @@ public class CampaignOptionsDialog extends JDialog {
         this.date = campaign.getLocalDate();
         this.camouflage = campaign.getCamouflage();
         this.colour = campaign.getColour();
-        this.iconCategory = campaign.getIconCategory();
-        this.iconFileName = campaign.getIconFileName();
+        setUnitIcon(c.getUnitIcon());
         hashSkillTargets = new Hashtable<>();
         hashGreenSkill = new Hashtable<>();
         hashRegSkill = new Hashtable<>();
@@ -511,12 +498,22 @@ public class CampaignOptionsDialog extends JDialog {
 
         initComponents();
         setOptions(c.getCampaignOptions(), c.getRandomSkillPreferences());
-        btnCamo.setIcon(camouflage.getImageIcon());
-        setForceIcon();
+        btnCamo.setIcon(camouflage.getImageIcon(75));
+        btnIcon.setIcon(getUnitIcon().getImageIcon(75));
         setLocationRelativeTo(parent);
 
         setUserPreferences();
     }
+
+    //region Getters/Setters
+    public StandardForceIcon getUnitIcon() {
+        return unitIcon;
+    }
+
+    public void setUnitIcon(final StandardForceIcon unitIcon) {
+        this.unitIcon = Objects.requireNonNull(unitIcon);
+    }
+    //endregion Getters/Setters
 
     //region Initialization
     /**
@@ -706,7 +703,13 @@ public class CampaignOptionsDialog extends JDialog {
         btnCamo.setMinimumSize(new Dimension(84, 72));
         btnCamo.setPreferredSize(new Dimension(84, 72));
         btnCamo.setMaximumSize(new Dimension(84, 72));
-        btnCamo.addActionListener(this::btnCamoActionPerformed);
+        btnCamo.addActionListener(evt -> {
+            final CamoChooserDialog camoChooserDialog = new CamoChooserDialog(frame, camouflage);
+            if (camoChooserDialog.showDialog().isConfirmed()) {
+                camouflage = camoChooserDialog.getSelectedItem();
+                btnCamo.setIcon(camouflage.getImageIcon());
+            }
+        });
         gridBagConstraints.gridx = gridx--;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panGeneral.add(btnCamo, gridBagConstraints);
@@ -718,7 +721,13 @@ public class CampaignOptionsDialog extends JDialog {
         panGeneral.add(lblIcon, gridBagConstraints);
 
         btnIcon = new JButton();
-        btnIcon.addActionListener(this::btnIconActionPerformed);
+        btnIcon.addActionListener(evt -> {
+            final StandardForceIconChooserDialog standardForceIconChooser = new StandardForceIconChooserDialog(frame, unitIcon);
+            if (standardForceIconChooser.showDialog().isConfirmed()) {
+                unitIcon = standardForceIconChooser.getSelectedItem();
+            }
+            btnIcon.setIcon(unitIcon.getImageIcon(75));
+        });
         btnIcon.setMinimumSize(new Dimension(84, 72));
         btnIcon.setPreferredSize(new Dimension(84, 72));
         btnIcon.setMaximumSize(new Dimension(84, 72));
@@ -4790,8 +4799,7 @@ public class CampaignOptionsDialog extends JDialog {
         campaign.setCamouflage(camouflage);
         campaign.setColour(colour);
 
-        campaign.setIconCategory(iconCategory);
-        campaign.setIconFileName(iconFileName);
+        campaign.setUnitIcon(getUnitIcon());
 
         for (int i = 0; i < chkUsePortrait.length; i++) {
             options.setUsePortraitForType(i, chkUsePortrait[i].isSelected());
@@ -5177,26 +5185,6 @@ public class CampaignOptionsDialog extends JDialog {
         }
     }
 
-    private void btnIconActionPerformed(ActionEvent evt) {
-        ImageChoiceDialog pcd = new ImageChoiceDialog(frame, true, iconCategory, iconFileName,
-                MHQStaticDirectoryManager.getForceIcons());
-        pcd.setVisible(true);
-        if (pcd.isChanged()) {
-            iconCategory = pcd.getCategory();
-            iconFileName = pcd.getFileName();
-        }
-        setForceIcon();
-    }
-
-    private void btnCamoActionPerformed(ActionEvent evt) {
-        CamoChooserDialog ccd = new CamoChooserDialog(frame, camouflage);
-        if ((ccd.showDialog() == JOptionPane.CANCEL_OPTION) || (ccd.getSelectedItem() == null)) {
-            return;
-        }
-        camouflage = ccd.getSelectedItem();
-        btnCamo.setIcon(camouflage.getImageIcon());
-    }
-
     private Vector<String> getUnusedSPA() {
         Vector<String> unused = new Vector<>();
         PilotOptions poptions = new PilotOptions();
@@ -5285,32 +5273,6 @@ public class CampaignOptionsDialog extends JDialog {
         });
         panSpecialAbilities.revalidate();
         panSpecialAbilities.repaint();
-    }
-
-    public void setForceIcon() {
-        if (null == iconCategory) {
-            return;
-        }
-
-        if (AbstractIcon.DEFAULT_ICON_FILENAME.equals(iconFileName)) {
-            btnIcon.setIcon(null);
-            btnIcon.setText("None");
-            return;
-        }
-
-        // Try to get the root file.
-        try {
-            // Translate the root icon directory name.
-            if (AbstractIcon.ROOT_CATEGORY.equals(iconCategory)) {
-                iconCategory = "";
-            }
-            Image icon = (Image) MHQStaticDirectoryManager.getForceIcons().getItem(iconCategory, iconFileName);
-            icon = icon.getScaledInstance(75, -1, Image.SCALE_DEFAULT);
-            btnIcon.setIcon(new ImageIcon(icon));
-        } catch (Exception err) {
-            iconFileName = AbstractIcon.DEFAULT_ICON_FILENAME;
-            setForceIcon();
-        }
     }
 
     private void enableAtBComponents(JPanel panel, boolean enabled) {

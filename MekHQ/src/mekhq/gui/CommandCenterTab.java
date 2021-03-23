@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -110,9 +110,8 @@ public final class CommandCenterTab extends CampaignGuiTab {
         initReportsPanel();
         initProcurementPanel();
         panIcon = new JPanel(new BorderLayout());
-        lblIcon = new JLabel();
+        lblIcon = new JLabel(getCampaign().getUnitIcon().getImageIcon(150));
         panIcon.add(lblIcon, BorderLayout.CENTER);
-        setIcon();
 
         /* Set overall layout */
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -441,38 +440,6 @@ public final class CommandCenterTab extends CampaignGuiTab {
         panReports.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("panReports.title")));
     }
 
-    /**
-     * set the icon for the unit if it exits in the icon panel
-     */
-    public void setIcon() {
-        // TODO : AbstractIcon : Swap me over
-        lblIcon.setIcon(null);
-
-        String category = getCampaign().getIconCategory();
-        String filename = getCampaign().getIconFileName();
-
-        if (AbstractIcon.ROOT_CATEGORY.equals(category)) {
-            category = "";
-        }
-
-        // Return a null if the player has selected no icon file.
-        if ((null != category) && (null != filename) && !AbstractIcon.DEFAULT_ICON_FILENAME.equals(filename)) {
-            // Try to get the icon file.
-            Image icon;
-            try {
-                icon = (Image) MHQStaticDirectoryManager.getForceIcons().getItem(category, filename);
-                if (null != icon) {
-                    icon = icon.getScaledInstance(150, -1, Image.SCALE_DEFAULT);
-                } else {
-                    return;
-                }
-                lblIcon.setIcon(new ImageIcon(icon));
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
-            }
-        }
-    }
-
     @Override
     public GuiTabType tabType() {
         return GuiTabType.COMMAND;
@@ -609,7 +576,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
         btnUnitRating.setVisible(evt.getOptions().getUnitRatingMethod().isEnabled());
         basicInfoScheduler.schedule();
         procurementListScheduler.schedule();
-        setIcon();
+        lblIcon.setIcon(getCampaign().getUnitIcon().getImageIcon(150));
     }
 
     @Subscribe

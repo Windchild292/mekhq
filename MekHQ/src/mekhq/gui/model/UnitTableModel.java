@@ -344,21 +344,16 @@ public class UnitTableModel extends DataTableModel {
                     }
                     desc += "<br>" + u.getStatus() + "</html>";
                     setHtmlText(desc);
-                    Image mekImage = u.getImage(this);
-                    if (mekImage != null) {
-                        setImage(mekImage);
-                    } else {
-                        clearImage();
-                    }
+                    setImage(u.getImage(this));
                     break;
                 }
                 case COL_PILOT: {
                     Person p = u.getCommander();
                     if (p != null) {
-                        setPortrait(p);
+                        getLabel().setIcon(p.getPortrait().getImageIcon(54));
                         setText(p.getFullDesc());
                     } else {
-                        clearImage();
+                        getLabel().setIcon(null);
                     }
                     break;
                 }
@@ -377,24 +372,19 @@ public class UnitTableModel extends DataTableModel {
                         }
                         desc.append("</html>");
                         setHtmlText(desc.toString());
-                        Image forceImage = getImageFor(force);
-                        if (forceImage != null) {
-                            setImage(forceImage);
-                        } else {
-                            clearImage();
-                        }
+                        getLabel().setIcon(force.getForceIcon().getImageIcon(54));
                     } else {
-                        clearImage();
+                        getLabel().setIcon(null);
                     }
                     break;
                 }
                 case COL_TECH_CRW: {
                     Person p = u.getTech();
                     if (p != null) {
-                        setPortrait(p);
+                        getLabel().setIcon(p.getPortrait().getImageIcon(54));
                         setText(p.getFullDesc());
                     } else {
-                        clearImage();
+                        getLabel().setIcon(null);
                     }
                     break;
                 }

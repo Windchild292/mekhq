@@ -42,6 +42,7 @@ import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.event.MissionRemovedEvent;
 import mekhq.campaign.event.ScenarioRemovedEvent;
 import mekhq.campaign.finances.*;
+import mekhq.campaign.force.icons.StandardForceIcon;
 import mekhq.campaign.log.*;
 import mekhq.campaign.mission.enums.MissionStatus;
 import mekhq.campaign.personnel.*;
@@ -227,11 +228,8 @@ public class Campaign implements Serializable, ITechManager {
     private transient boolean overviewLoadingValue = true;
 
     private Camouflage camouflage = new Camouflage(Camouflage.COLOUR_CAMOUFLAGE, PlayerColour.BLUE.name());
+    private StandardForceIcon unitIcon = new StandardForceIcon();
     private PlayerColour colour = PlayerColour.BLUE;
-
-    //unit icon
-    private String iconCategory = AbstractIcon.ROOT_CATEGORY;
-    private String iconFileName = AbstractIcon.DEFAULT_ICON_FILENAME;
 
     private Finances finances;
 
@@ -4012,8 +4010,16 @@ public class Campaign implements Serializable, ITechManager {
         return camouflage;
     }
 
-    public void setCamouflage(Camouflage camouflage) {
-        this.camouflage = camouflage;
+    public void setCamouflage(final Camouflage camouflage) {
+        this.camouflage = Objects.requireNonNull(camouflage);
+    }
+
+    public StandardForceIcon getUnitIcon() {
+        return unitIcon;
+    }
+
+    public void setUnitIcon(final StandardForceIcon unitIcon) {
+        this.unitIcon = Objects.requireNonNull(unitIcon);
     }
 
     public PlayerColour getColour() {
@@ -4022,22 +4028,6 @@ public class Campaign implements Serializable, ITechManager {
 
     public void setColour(PlayerColour colour) {
         this.colour = Objects.requireNonNull(colour, "Colour cannot be set to null");
-    }
-
-    public String getIconCategory() {
-        return iconCategory;
-    }
-
-    public void setIconCategory(String s) {
-        this.iconCategory = s;
-    }
-
-    public String getIconFileName() {
-        return iconFileName;
-    }
-
-    public void setIconFileName(String s) {
-        this.iconFileName = s;
     }
 
     public void addFunds(Money quantity) {
@@ -4094,20 +4084,12 @@ public class Campaign implements Serializable, ITechManager {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "overtime", overtime);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "gmMode", gmMode);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPool", astechPool);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPoolMinutes",
-                astechPoolMinutes);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPoolOvertime",
-                astechPoolOvertime);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPoolMinutes", astechPoolMinutes);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "astechPoolOvertime", astechPoolOvertime);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "medicPool", medicPool);
-        if (!getCamouflage().hasDefaultCategory()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoCategory", getCamouflage().getCategory());
-        }
-        if (!getCamouflage().hasDefaultFilename()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "camoFileName", getCamouflage().getFilename());
-        }
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconCategory", iconCategory);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "iconFileName", iconFileName);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "colour", getColour().name());
+        getCamouflage().writeToXML(pw1, indent + 1);
+        getUnitIcon().writeToXML(pw1, indent + 1);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "colour", getColour().name());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastForceId", lastForceId);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastMissionId", lastMissionId);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "lastScenarioId", lastScenarioId);

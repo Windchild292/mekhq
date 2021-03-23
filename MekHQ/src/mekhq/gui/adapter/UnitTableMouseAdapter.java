@@ -41,7 +41,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 
 import megamek.client.ui.swing.UnitEditorDialog;
-import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
+import megamek.client.ui.dialogs.CamoChooserDialog;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.icons.Camouflage;

@@ -18,22 +18,11 @@
  */
 package mekhq.gui;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Insets;
+import megamek.common.annotations.Nullable;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.LineBorder;
-
-import mekhq.MHQStaticDirectoryManager;
-import mekhq.MekHQ;
-import mekhq.campaign.force.Force;
-import mekhq.campaign.personnel.Person;
+import java.awt.*;
 
 /**
  * An extension of JPanel that is intended to be used for visual table renderers
@@ -102,12 +91,8 @@ public class BasicInfo extends JPanel {
         lblImage.setBorder(javax.swing.BorderFactory.createEtchedBorder());
     }
 
-    public void clearImage() {
-        lblImage.setIcon(null);
-    }
-
-    public void setImage(Image img) {
-        lblImage.setIcon(new ImageIcon(img));
+    public void setImage(final @Nullable Image image) {
+        lblImage.setIcon((image == null) ? null : new ImageIcon(image));
     }
 
     public JLabel getLabel() {
@@ -122,21 +107,6 @@ public class BasicInfo extends JPanel {
             lblLoad.setText(" +");
         } else {
             lblLoad.setText("");
-        }
-    }
-
-    protected void setPortrait(Person p) {
-        setImage(p.getPortrait().getImage(54));
-    }
-
-    protected Image getImageFor(Force force) {
-        try {
-            return MHQStaticDirectoryManager.buildForceIcon(force.getIconCategory(),
-                    force.getIconFileName(), force.getIconMap())
-                    .getScaledInstance(54, -1, Image.SCALE_SMOOTH);
-        } catch (Exception e) {
-            MekHQ.getLogger().error("Failed to build force icon", e);
-            return null;
         }
     }
 }

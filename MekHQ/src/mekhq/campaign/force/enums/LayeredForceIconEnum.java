@@ -16,25 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-package mekhq.gui.enums;
+package mekhq.campaign.force.enums;
 
 import megamek.common.util.EncodeControl;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public enum LayeredForceIcon {
+public enum LayeredForceIconEnum {
     //region Enum Declarations
-    TYPE("LayeredForceIcon.types", "Pieces/Type/", "tableTypes", ListSelectionModel.SINGLE_SELECTION),
-    FORMATION("LayeredForceIcon.formations", "Pieces/Formations/", "tableFormations", ListSelectionModel.SINGLE_SELECTION),
-    ADJUSTMENT("LayeredForceIcon.adjustments", "Pieces/Adjustments/", "tableAdjustments", ListSelectionModel.MULTIPLE_INTERVAL_SELECTION),
-    ALPHANUMERIC("LayeredForceIcon.alphanumerics", "Pieces/Alphanumerics/", "tableAlphanumerics", ListSelectionModel.SINGLE_SELECTION),
-    SPECIAL_MODIFIER("LayeredForceIcon.special", "Pieces/Special Modifiers/", "tableSpecialModifiers", ListSelectionModel.MULTIPLE_INTERVAL_SELECTION),
-    BACKGROUND("LayeredForceIcon.backgrounds", "Pieces/Backgrounds/", "tableBackgrounds", ListSelectionModel.MULTIPLE_INTERVAL_SELECTION),
-    FRAME("LayeredForceIcon.frame", "Pieces/Frames/", "tableFrames", ListSelectionModel.SINGLE_SELECTION),
-    LOGO("LayeredForceIcon.logos", "Pieces/Logos/", "tableLogos", ListSelectionModel.SINGLE_SELECTION);
+    TYPE("LayeredForceIconEnum.TYPE.text", "Pieces/Type/", "tableTypes", ListSelectionModel.MULTIPLE_INTERVAL_SELECTION),
+    FORMATION("LayeredForceIconEnum.FORMATION.text", "Pieces/Formations/", "tableFormations", ListSelectionModel.SINGLE_SELECTION),
+    ADJUSTMENT("LayeredForceIconEnum.ADJUSTMENT.text", "Pieces/Adjustments/", "tableAdjustments", ListSelectionModel.MULTIPLE_INTERVAL_SELECTION),
+    ALPHANUMERIC("LayeredForceIconEnum.ALPHANUMERIC.text", "Pieces/Alphanumerics/", "tableAlphanumerics", ListSelectionModel.MULTIPLE_INTERVAL_SELECTION),
+    SPECIAL_MODIFIER("LayeredForceIconEnum.SPECIAL_MODIFIER.text", "Pieces/Special Modifiers/", "tableSpecialModifiers", ListSelectionModel.MULTIPLE_INTERVAL_SELECTION),
+    BACKGROUND("LayeredForceIconEnum.BACKGROUND.text", "Pieces/Backgrounds/", "tableBackgrounds", ListSelectionModel.SINGLE_SELECTION),
+    FRAME("LayeredForceIconEnum.FRAME.text", "Pieces/Frames/", "tableFrames", ListSelectionModel.SINGLE_SELECTION),
+    LOGO("LayeredForceIconEnum.LOGO.text", "Pieces/Logos/", "tableLogos", ListSelectionModel.SINGLE_SELECTION);
     //endregion Enum Declarations
 
     //region Variable Declarations
@@ -44,7 +43,7 @@ public enum LayeredForceIcon {
     private final int listSelectionModel; // The int used to determine how the selection
     //endregion Variable Declarations
 
-    LayeredForceIcon(String name, String layerPath, String tableName, int listSelectionModel) {
+    LayeredForceIconEnum(String name, String layerPath, String tableName, int listSelectionModel) {
         this.name = ResourceBundle.getBundle("mekhq.resources.GUIEnums", new EncodeControl())
                 .getString(name);
         this.layerPath = layerPath;
@@ -67,17 +66,8 @@ public enum LayeredForceIcon {
     /**
      * @return the layered force icon enum values in the order they are drawn in
      */
-    public static List<LayeredForceIcon> getInDrawOrder() {
-        List<LayeredForceIcon> drawOrder = new ArrayList<>();
-        drawOrder.add(BACKGROUND);
-        drawOrder.add(FRAME);
-        drawOrder.add(TYPE);
-        drawOrder.add(FORMATION);
-        drawOrder.add(ADJUSTMENT);
-        drawOrder.add(ALPHANUMERIC);
-        drawOrder.add(SPECIAL_MODIFIER);
-        drawOrder.add(LOGO);
-        return drawOrder;
+    public static List<LayeredForceIconEnum> getInDrawOrder() {
+        return List.of(BACKGROUND, FRAME, TYPE, FORMATION, ADJUSTMENT, ALPHANUMERIC, SPECIAL_MODIFIER, LOGO);
     }
 
     @Override

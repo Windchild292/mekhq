@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -735,7 +735,7 @@ public class PersonnelTableModel extends DataTableModel {
 
             switch (actualCol) {
                 case COL_RANK:
-                    setPortrait(p);
+                    getLabel().setIcon(p.getPortrait().getImageIcon(54));
                     setText(p.getFullDesc());
                     break;
                 case COL_ASSIGN:
@@ -756,14 +756,9 @@ public class PersonnelTableModel extends DataTableModel {
                             }
                             desc += "<br>" + u.getStatus() + "";
                             setText(desc);
-                            Image mekImage = u.getImage(this);
-                            if (mekImage != null) {
-                                setImage(mekImage);
-                            } else {
-                                clearImage();
-                            }
+                            setImage(u.getImage(this));
                         } else {
-                            clearImage();
+                            getLabel().setIcon(null);
                         }
                     }
                     break;
@@ -782,23 +777,14 @@ public class PersonnelTableModel extends DataTableModel {
                         }
                         desc.append("</html>");
                         setHtmlText(desc.toString());
-                        Image forceImage = getImageFor(force);
-                        if (forceImage != null) {
-                            setImage(forceImage);
-                        } else {
-                            clearImage();
-                        }
+
+                        getLabel().setIcon(force.getForceIcon().getImageIcon(54));
                     } else {
-                        clearImage();
+                        getLabel().setIcon(null);
                     }
                     break;
                 case COL_HITS:
-                    Image hitImage = getHitsImage(p.getHits());
-                    if (hitImage != null) {
-                        setImage(hitImage);
-                    } else {
-                        clearImage();
-                    }
+                    setImage(getHitsImage(p.getHits()));
                     setHtmlText("");
                     break;
             }

@@ -18,36 +18,9 @@
  */
 package mekhq.campaign.io;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.xml.parsers.DocumentBuilder;
-
-import megamek.client.ui.swing.util.PlayerColour;
-import megamek.common.icons.Camouflage;
-import mekhq.campaign.personnel.enums.FamilialRelationshipType;
 import megamek.client.generator.RandomGenderGenerator;
 import megamek.client.generator.RandomNameGenerator;
-
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
+import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.Entity;
 import megamek.common.EntityMovementMode;
 import megamek.common.EquipmentType;
@@ -59,6 +32,7 @@ import megamek.common.Mounted;
 import megamek.common.SmallCraft;
 import megamek.common.Tank;
 import megamek.common.TechConstants;
+import megamek.common.icons.Camouflage;
 import megamek.common.options.IOption;
 import megamek.common.options.PilotOptions;
 import megamek.common.weapons.bayweapons.BayWeapon;
@@ -68,16 +42,17 @@ import mekhq.MhqFileUtil;
 import mekhq.NullEntityException;
 import mekhq.Utilities;
 import mekhq.Version;
-import mekhq.campaign.againstTheBot.AtBConfiguration;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.CurrentLocation;
 import mekhq.campaign.Kill;
 import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.Warehouse;
+import mekhq.campaign.againstTheBot.AtBConfiguration;
 import mekhq.campaign.finances.Finances;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
+import mekhq.campaign.force.icons.StandardForceIcon;
 import mekhq.campaign.market.ContractMarket;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.market.ShoppingList;
@@ -104,16 +79,39 @@ import mekhq.campaign.parts.equipment.MissingEquipmentPart;
 import mekhq.campaign.parts.equipment.MissingLargeCraftAmmoBin;
 import mekhq.campaign.parts.equipment.MissingMASC;
 import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.personnel.RetirementDefectionTracker;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.SpecialAbility;
+import mekhq.campaign.personnel.enums.FamilialRelationshipType;
+import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.Planet.PlanetaryEvent;
 import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.Systems;
 import mekhq.module.atb.AtBEventProcessor;
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class CampaignXmlParser {
 
@@ -627,17 +625,27 @@ public class CampaignXmlParser {
                 // They're all primitives anyway...
                 if (xn.equalsIgnoreCase("calendar")) {
                     retVal.setLocalDate(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
-                } else if (xn.equalsIgnoreCase("camoCategory")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (!val.equals("null")) {
-                        retVal.getCamouflage().setCategory(val);
+                } else if (xn.equalsIgnoreCase("camoCategory")) { // Legacy, 0.49.X removal
+                    final String value = wn.getTextContent().trim();
+                    retVal.getCamouflage().setCategory("null".equals(value) ? null : value);
+                } else if (xn.equalsIgnoreCase("camoFileName")) { // Legacy, 0.49.X removal
+                    final String value = wn.getTextContent().trim();
+                    retVal.getCamouflage().setFilename("null".equals(value) ? null : value);
+                } else if (xn.equalsIgnoreCase(Camouflage.XML_TAG)) {
+                    final Camouflage icon = Camouflage.parseFromXML(wn);
+                    if (!icon.isDefault()) {
+                        retVal.setCamouflage(icon);
                     }
-                } else if (xn.equalsIgnoreCase("camoFileName")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (!val.equals("null")) {
-                        retVal.getCamouflage().setFilename(val);
+                } else if (xn.equalsIgnoreCase("iconCategory")) { // Legacy, 0.49.X removal
+                    final String value = wn.getTextContent().trim();
+                    retVal.getUnitIcon().setCategory("null".equals(value) ? null : value);
+                } else if (xn.equalsIgnoreCase("iconFileName")) { // Legacy, 0.49.X removal
+                    final String value = wn.getTextContent().trim();
+                    retVal.getUnitIcon().setFilename("null".equals(value) ? null : value);
+                } else if (xn.equalsIgnoreCase(StandardForceIcon.XML_TAG)) {
+                    final StandardForceIcon icon = StandardForceIcon.parseFromXML(wn);
+                    if (!icon.isDefault()) {
+                        retVal.setUnitIcon(icon);
                     }
                 } else if (xn.equalsIgnoreCase("colour")) {
                     retVal.setColour(PlayerColour.parseFromString(wn.getTextContent().trim()));
@@ -646,22 +654,6 @@ public class CampaignXmlParser {
                     if (Camouflage.NO_CAMOUFLAGE.equals(retVal.getCamouflage().getCategory())) {
                         retVal.getCamouflage().setCategory(Camouflage.COLOUR_CAMOUFLAGE);
                         retVal.getCamouflage().setFilename(retVal.getColour().name());
-                    }
-                } else if (xn.equalsIgnoreCase("iconCategory")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (val.equals("null")) {
-                        retVal.setIconCategory(null);
-                    } else {
-                        retVal.setIconCategory(val);
-                    }
-                } else if (xn.equalsIgnoreCase("iconFileName")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (val.equals("null")) {
-                        retVal.setIconFileName(null);
-                    } else {
-                        retVal.setIconFileName(val);
                     }
                 } else if (xn.equalsIgnoreCase("nameGen")) {
                     // First, get all the child nodes;

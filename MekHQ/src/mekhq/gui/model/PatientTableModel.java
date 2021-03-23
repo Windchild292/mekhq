@@ -69,7 +69,7 @@ public class PatientTableModel extends AbstractListModel<Person> {
                 boolean isSelected,
                 boolean cellHasFocus) {
             Person p = getElementAt(index);
-            setPortrait(p);
+            getLabel().setIcon(p.getPortrait().getImageIcon(54));
             if (getCampaign().getCampaignOptions().useAdvancedMedical()) {
                 setHtmlText(getInjuriesDesc(p));
             } else {
