@@ -26,7 +26,7 @@ public class AbstractJMenu extends JMenu {
 
     /**
      * This is used to add a JMenu to this, provided the former isn't empty, and then add a scroller
-     * to the former if it is above the default minimum threshold
+     * to the child if it is above the default minimum threshold
      * @param child the JMenu to add
      */
     public void add(JMenu child) {
@@ -35,7 +35,7 @@ public class AbstractJMenu extends JMenu {
 
     /**
      * This is used to add a JMenu to this, provided the former isn't empty, and then add a scroller
-     * to the former if it is above the minimum threshold
+     * to the child if it is above the provided threshold
      * @param child the JMenu to add
      * @param scrollerThreshold the threshold for adding a scroller
      */

@@ -35,7 +35,7 @@ public abstract class AbstractJPopupMenu extends JPopupMenu {
     //endregion Constructors
 
     /**
-     * This is used to add a JMenu to this, provided it isn't empty, and then add a scroller
+     * This is used to add a JMenu to this, provided the former isn't empty, and then add a scroller
      * to the child if it is above the default minimum threshold
      * @param child the JMenu to add
      */
@@ -44,7 +44,7 @@ public abstract class AbstractJPopupMenu extends JPopupMenu {
     }
 
     /**
-     * This is used to add a JMenu this, provided it isn't empty, and then add a scroller
+     * This is used to add a JMenu this, provided the former isn't empty, and then add a scroller
      * to the child if it is above the provided threshold
      * @param child the JMenu to add
      * @param scrollerThreshold the threshold for adding a scroller

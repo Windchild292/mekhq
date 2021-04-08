@@ -19,6 +19,7 @@
 package mekhq.gui.utilities;
 
 import megamek.client.ui.swing.util.MenuScroller;
+import mekhq.gui.baseComponents.AbstractJMenu;
 import mekhq.gui.baseComponents.AbstractJPopupMenu;
 
 import javax.swing.*;
@@ -32,6 +33,7 @@ public class JMenuHelpers {
      * @param menu the JMenu to add the child to
      * @param child the JMenu to add
      */
+    @Deprecated /** replaced by {@link AbstractJMenu} */
     public static void addMenuIfNonEmpty(JMenu menu, JMenu child) {
         addMenuIfNonEmpty(menu, child, DEFAULT_SCROLLER_THRESHOLD);
     }
@@ -43,6 +45,7 @@ public class JMenuHelpers {
      * @param child the JMenu to add
      * @param scrollerThreshold the threshold for adding a scroller
      */
+    @Deprecated /** replaced by {@link AbstractJMenu} */
     public static void addMenuIfNonEmpty(JMenu menu, JMenu child, int scrollerThreshold) {
         if (child.getItemCount() > 0) {
             menu.add(child);
