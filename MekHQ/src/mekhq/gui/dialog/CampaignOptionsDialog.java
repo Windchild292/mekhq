@@ -4811,7 +4811,7 @@ public class CampaignOptionsDialog extends JDialog {
 
     private JPanel createRandomDeathPanel() {
         // Initialize Components Used in ActionListeners
-        final JPanel sixthOrderDifferentialRandomDeathPanel = new JPanel();
+        final JPanel sixthOrderDifferentialRandomDeathPanel = new JDisableablePanel("sixthOrderDifferentialRandomDeathPanel");
 
         // Create Panel Components
         final JLabel lblRandomDeathMethod = new JLabel(resources.getString("lblRandomDeathMethod.text"));
@@ -4835,6 +4835,7 @@ public class CampaignOptionsDialog extends JDialog {
         });
         comboRandomDeathMethod.addActionListener(evt -> {
             // TODO : Windchild fix me
+            sixthOrderDifferentialRandomDeathPanel.setEnabled(!((RandomDeathMethod) comboRandomDeathMethod.getSelectedItem()).isNone());
         });
 
         chkEnableTeenRandomDeaths = new JCheckBox(resources.getString("chkEnableTeenRandomDeaths.text"));
@@ -4968,10 +4969,10 @@ public class CampaignOptionsDialog extends JDialog {
         final JLabel lblCloseBracketBottom = new JLabel(")");
 
         // Layout the Panel
-        final JPanel panel = new JDisableablePanel();
+        final JPanel panel = new JDisableablePanel(gender.isFemale()
+                ? "sixthOrderDifferentialFemalePanel" : "sixthOrderDifferentialMalePanel");
         panel.setBorder(BorderFactory.createTitledBorder(resources.getString(gender.isFemale()
                 ? "sixthOrderDifferentialFemalePanel.title" : "sixthOrderDifferentialMalePanel.title")));
-        panel.setName(gender.isFemale() ? "sixthOrderDifferentialFemalePanel" : "sixthOrderDifferentialMalePanel");
         GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
 

@@ -19,8 +19,31 @@
 package mekhq.gui.baseComponents;
 
 import javax.swing.*;
+import java.awt.*;
 
+/**
+ * This panel is used when you want a JPanel that enables/disables all of its children when it is
+ * enabled/disabled. This is purposefully not recursive, as we only want child components to be
+ * disabled based on the settings here.
+ */
 public class JDisableablePanel extends JPanel {
     //region Constructors
+    public JDisableablePanel(final String name) {
+        super();
+        setName(name);
+    }
     //endregion Constructors
+
+    /**
+     * This override forces all child components to be the same value for enabled as this component,
+     * thus allowing one to easily enable/disable child components and panels.
+     * @param enabled whether to enable the child components or not
+     */
+    @Override
+    public void setEnabled(final boolean enabled) {
+        super.setEnabled(enabled);
+        for (final Component component : getComponents()) {
+            component.setEnabled(enabled);
+        }
+    }
 }
