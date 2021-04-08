@@ -257,17 +257,17 @@ public class CampaignOptions implements Serializable {
     private boolean determineFatherAtBirth;
 
     // Death
+    private boolean keepMarriedNameUponSpouseDeath;
     private RandomDeathMethod randomDeathMethod;
-    private double[] randomDeathMaleMValues;
-    private int[] randomDeathMaleNValues;
-    private double[] randomDeathFemaleMValues;
-    private int[] randomDeathFemaleNValues;
     private boolean enableTeenRandomDeaths;
     private boolean enablePreteenRandomDeaths;
     private boolean enableChildRandomDeaths;
     private boolean enableToddlerRandomDeaths;
-    private boolean enableBabyRandomDeaths;
-    private boolean keepMarriedNameUponSpouseDeath;
+    private boolean enableInfantMortality;
+    private double[] randomDeathMaleMValues;
+    private int[] randomDeathMaleNValues;
+    private double[] randomDeathFemaleMValues;
+    private int[] randomDeathFemaleNValues;
     //endregion Personnel Tab
 
     //region Finance tab
@@ -655,7 +655,13 @@ public class CampaignOptions implements Serializable {
         setDetermineFatherAtBirth(false);
 
         // Death
+        setKeepMarriedNameUponSpouseDeath(true);
         setRandomDeathMethod(RandomDeathMethod.NONE);
+        setEnableTeenRandomDeaths(false);
+        setEnablePreteenRandomDeaths(false);
+        setEnableChildRandomDeaths(false);
+        setEnableToddlerRandomDeaths(false);
+        setEnableInfantMortality(false);
         randomDeathMaleMValues = new double[7];
         randomDeathMaleNValues = new int[7];
         randomDeathMaleMValues[6] = 7;
@@ -688,12 +694,6 @@ public class CampaignOptions implements Serializable {
         randomDeathFemaleNValues[1] = -3;
         randomDeathFemaleMValues[0] = 3.4;
         randomDeathFemaleNValues[0] = -3;
-        setEnableTeenRandomDeaths(false);
-        setEnablePreteenRandomDeaths(false);
-        setEnableChildRandomDeaths(false);
-        setEnableToddlerRandomDeaths(false);
-        setEnableBabyRandomDeaths(false);
-        setKeepMarriedNameUponSpouseDeath(true);
         //endregion Personnel Tab
 
         //region Finances Tab
@@ -1694,108 +1694,6 @@ public class CampaignOptions implements Serializable {
 
     //region Death
     /**
-     * @return the random death method to use
-     */
-    public RandomDeathMethod getRandomDeathMethod() {
-        return randomDeathMethod;
-    }
-
-    /**
-     * @param randomDeathMethod the random death method to use
-     */
-    public void setRandomDeathMethod(RandomDeathMethod randomDeathMethod) {
-        this.randomDeathMethod = randomDeathMethod;
-    }
-
-    public double[] getRandomDeathMaleMValues() {
-        return randomDeathMaleMValues;
-    }
-
-    public double getRandomDeathMaleMValue(int pos) {
-        return randomDeathMaleMValues[pos];
-    }
-
-    public void setRandomDeathMaleMValue(int pos, double value) {
-        randomDeathMaleMValues[pos] = value;
-    }
-
-    public int[] getRandomDeathMaleNValues() {
-        return randomDeathMaleNValues;
-    }
-
-    public double getRandomDeathMaleNValue(int pos) {
-        return randomDeathMaleNValues[pos];
-    }
-
-    public void setRandomDeathMaleNValue(int pos, int value) {
-        randomDeathMaleNValues[pos] = value;
-    }
-
-    public double[] getRandomDeathFemaleMValues() {
-        return randomDeathFemaleMValues;
-    }
-
-    public double getRandomDeathFemaleMValue(int pos) {
-        return randomDeathFemaleMValues[pos];
-    }
-
-    public void setRandomDeathFemaleMValue(int pos, double value) {
-        randomDeathFemaleMValues[pos] = value;
-    }
-
-    public int[] getRandomDeathFemaleNValues() {
-        return randomDeathFemaleNValues;
-    }
-
-    public double getRandomDeathFemaleNValue(int pos) {
-        return randomDeathFemaleNValues[pos];
-    }
-
-    public void setRandomDeathFemaleNValue(int pos, int value) {
-        randomDeathFemaleNValues[pos] = value;
-    }
-
-    public boolean teenDeathsEnabled() {
-        return enableTeenRandomDeaths;
-    }
-
-    public void setEnableTeenRandomDeaths(boolean b) {
-        enableTeenRandomDeaths = b;
-    }
-
-    public boolean preteenDeathsEnabled() {
-        return enablePreteenRandomDeaths;
-    }
-
-    public void setEnablePreteenRandomDeaths(boolean b) {
-        enablePreteenRandomDeaths = b;
-    }
-
-    public boolean childDeathsEnabled() {
-        return enableChildRandomDeaths;
-    }
-
-    public void setEnableChildRandomDeaths(boolean b) {
-        enableChildRandomDeaths = b;
-    }
-
-    public boolean toddlerDeathsEnabled() {
-        return enableToddlerRandomDeaths;
-    }
-
-    public void setEnableToddlerRandomDeaths(boolean b) {
-        enableToddlerRandomDeaths = b;
-    }
-
-    public boolean infantMortalityEnabled() {
-        return enableBabyRandomDeaths;
-    }
-
-    public void setEnableBabyRandomDeaths(boolean b) {
-        enableBabyRandomDeaths = b;
-    }
-
-    /**
      * @return whether to keep ones married name upon spouse death or not
      */
     public boolean getKeepMarriedNameUponSpouseDeath() {
@@ -1807,6 +1705,92 @@ public class CampaignOptions implements Serializable {
      */
     public void setKeepMarriedNameUponSpouseDeath(final boolean keepMarriedNameUponSpouseDeath) {
         this.keepMarriedNameUponSpouseDeath = keepMarriedNameUponSpouseDeath;
+    }
+
+    /**
+     * @return the random death method to use
+     */
+    public RandomDeathMethod getRandomDeathMethod() {
+        return randomDeathMethod;
+    }
+
+    /**
+     * @param randomDeathMethod the random death method to use
+     */
+    public void setRandomDeathMethod(final RandomDeathMethod randomDeathMethod) {
+        this.randomDeathMethod = randomDeathMethod;
+    }
+
+    public boolean isEnableTeenRandomDeaths() {
+        return enableTeenRandomDeaths;
+    }
+
+    public void setEnableTeenRandomDeaths(final boolean enableTeenRandomDeaths) {
+        this.enableTeenRandomDeaths = enableTeenRandomDeaths;
+    }
+
+    public boolean isEnablePreteenRandomDeaths() {
+        return enablePreteenRandomDeaths;
+    }
+
+    public void setEnablePreteenRandomDeaths(final boolean enablePreteenRandomDeaths) {
+        this.enablePreteenRandomDeaths = enablePreteenRandomDeaths;
+    }
+
+    public boolean isEnableChildRandomDeaths() {
+        return enableChildRandomDeaths;
+    }
+
+    public void setEnableChildRandomDeaths(final boolean enableChildRandomDeaths) {
+        this.enableChildRandomDeaths = enableChildRandomDeaths;
+    }
+
+    public boolean isEnableToddlerRandomDeaths() {
+        return enableToddlerRandomDeaths;
+    }
+
+    public void setEnableToddlerRandomDeaths(final boolean enableToddlerRandomDeaths) {
+        this.enableToddlerRandomDeaths = enableToddlerRandomDeaths;
+    }
+
+    public boolean isEnableInfantMortality() {
+        return enableInfantMortality;
+    }
+
+    public void setEnableInfantMortality(final boolean enableInfantMortality) {
+        this.enableInfantMortality = enableInfantMortality;
+    }
+
+    public double[] getRandomDeathMaleMValues() {
+        return randomDeathMaleMValues;
+    }
+
+    public void setRandomDeathMaleMValues(final double... randomDeathMaleMValues) {
+        this.randomDeathMaleMValues = randomDeathMaleMValues;
+    }
+
+    public int[] getRandomDeathMaleNValues() {
+        return randomDeathMaleNValues;
+    }
+
+    public void setRandomDeathMaleNValues(final int... randomDeathMaleNValues) {
+        this.randomDeathMaleNValues = randomDeathMaleNValues;
+    }
+
+    public double[] getRandomDeathFemaleMValues() {
+        return randomDeathFemaleMValues;
+    }
+
+    public void setRandomDeathFemaleMValues(final double... randomDeathFemaleMValues) {
+        this.randomDeathFemaleMValues = randomDeathFemaleMValues;
+    }
+
+    public int[] getRandomDeathFemaleNValues() {
+        return randomDeathFemaleNValues;
+    }
+
+    public void setRandomDeathFemaleNValues(final int... randomDeathFemaleNValues) {
+        this.randomDeathFemaleNValues = randomDeathFemaleNValues;
     }
     //endregion Death
     //endregion Personnel Tab
@@ -3397,11 +3381,11 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathMaleNValues", getRandomDeathMaleNValues());
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathFemaleMValues", getRandomDeathFemaleMValues());
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathFemaleNValues", getRandomDeathFemaleNValues());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableTeenRandomDeaths", teenDeathsEnabled());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enablePreteenRandomDeaths", preteenDeathsEnabled());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableChildRandomDeaths", childDeathsEnabled());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableToddlerRandomDeaths", toddlerDeathsEnabled());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableInfantRandomDeaths", infantMortalityEnabled());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableTeenRandomDeaths", isEnableTeenRandomDeaths());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enablePreteenRandomDeaths", isEnablePreteenRandomDeaths());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableChildRandomDeaths", isEnableChildRandomDeaths());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableToddlerRandomDeaths", isEnableToddlerRandomDeaths());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableInfantMortality", isEnableInfantMortality());
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent--, "keepMarriedNameUponSpouseDeath", getKeepMarriedNameUponSpouseDeath());
         //endregion Death
         //endregion Personnel Tab
@@ -3955,8 +3939,8 @@ public class CampaignOptions implements Serializable {
                 retVal.enableChildRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("enableToddlerRandomDeaths")) {
                 retVal.enableToddlerRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("enableInfantRandomDeaths")) {
-                retVal.enableBabyRandomDeaths = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableInfantMortality")) {
+                retVal.enableInfantMortality = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("keepMarriedNameUponSpouseDeath")) {
                 retVal.setKeepMarriedNameUponSpouseDeath(Boolean.parseBoolean(wn2.getTextContent().trim()));
             //endregion Death

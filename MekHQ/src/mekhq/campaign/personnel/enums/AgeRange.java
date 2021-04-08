@@ -35,14 +35,14 @@ public enum AgeRange {
     //endregion Enum Declarations
 
     //region Variable Declarations
-    private final String rangeName;
+    private final String name;
     private final int rangeLowerBound; // the lower bound, inclusive
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    AgeRange(final String rangeName, final int rangeLowerBound) {
-        this.rangeName = resources.getString(rangeName);
+    AgeRange(final String name, final int rangeLowerBound) {
+        this.name = resources.getString(name);
         this.rangeLowerBound = rangeLowerBound;
     }
     //endregion Constructors
@@ -100,6 +100,6 @@ public enum AgeRange {
 
     @Override
     public String toString() {
-        return rangeName;
+        return name;
     }
 }

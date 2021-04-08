@@ -22,6 +22,7 @@ import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.randomDeath.AbstractRandomDeathMethod;
+import mekhq.campaign.personnel.randomDeath.DisabledRandomDeath;
 import mekhq.campaign.personnel.randomDeath.SixthOrderDifferentialRandomDeath;
 
 import java.util.ResourceBundle;
@@ -31,36 +32,36 @@ public enum RandomDeathMethod {
     /**
      * This disables Random Deaths
      */
-    NONE("RandomDeathType.NONE.text", "RandomDeathType.NONE.toolTipText"),
+    NONE("RandomDeathMethod.NONE.text", "RandomDeathMethod.NONE.toolTipText"),
     /**
      * This is the standard type for Random Deaths, which uses a sixth order differential equation
      * to determine the chance of random deaths
      */
-    STANDARD("RandomDeathType.STANDARD.text", "RandomDeathType.STANDARD.toolTipText");
+    STANDARD("RandomDeathMethod.STANDARD.text", "RandomDeathMethod.STANDARD.toolTipText");
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
-    private final String toolTip;
+    private final String toolTipText;
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    RandomDeathMethod(final String name, final String toolTip) {
+    RandomDeathMethod(final String name, final String toolTipText) {
         this.name = resources.getString(name);
-        this.toolTip = resources.getString(toolTip);
+        this.toolTipText = resources.getString(toolTipText);
     }
     //endregion Constructors
 
     //region Getters
-    public String getToolTip() {
-        return toolTip;
+    public String getToolTipText() {
+        return toolTipText;
     }
     //endregion Getters
 
     //region Boolean Comparison Methods
-    public boolean isEnabled() {
-        return this != NONE;
+    public boolean isNone() {
+        return this == NONE;
     }
     //endregion Boolean Comparison Methods
 
@@ -70,9 +71,7 @@ public enum RandomDeathMethod {
                 return new SixthOrderDifferentialRandomDeath(campaign);
             case NONE:
             default:
-                MekHQ.getLogger().error("RandomDeath: Error: Attempted to get the method while disabled."
-                        + "Returning the standard sixth order method, and please report this on our GitHub");
-                return new SixthOrderDifferentialRandomDeath(campaign);
+                return new DisabledRandomDeath();
         }
     }
 

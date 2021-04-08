@@ -45,7 +45,8 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
     //endregion Constructors
 
     @Override
-    public boolean randomDeath(final Campaign campaign, final AgeRange ageRange, final int age, final Gender gender) {
+    public boolean randomDeath(final Campaign campaign, final AgeRange ageRange, final int age,
+                               final Gender gender) {
         if (!validateAgeEnabled(campaign, ageRange)) {
             return false;
         }
@@ -66,7 +67,7 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
         }
 
         MekHQ.getLogger().warning("The odds of randomly dying were calculated to be " + chance + " for a "
-                + (gender.isFemale() ? "female" : "male") + " person of " + age + " years.");
+                + gender.name() + " person of " + age + " years.");
 
         return Compute.randomFloat() < chance;
     }

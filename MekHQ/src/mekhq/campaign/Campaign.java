@@ -3190,15 +3190,14 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     public void processNewDayPersonnel() {
-        final AbstractRandomDeathMethod randomDeathMethod =
-                getCampaignOptions().getRandomDeathMethod().isEnabled() ?
-                getCampaignOptions().getRandomDeathMethod().getMethod(this) : null;
+        final AbstractRandomDeathMethod randomDeathMethod = getCampaignOptions()
+                .getRandomDeathMethod().getMethod(this);
 
         // This MUST use getActivePersonnel as we only want to process active personnel, and
         // furthermore this allows us to add and remove personnel without issue
         for (Person p : getActivePersonnel()) {
             // Random Death
-            if (randomDeathMethod != null) {
+            if (!randomDeathMethod.getMethod().isNone()) {
                 final AgeRange ageRange = AgeRange.determineAgeRange(p.getAge(getLocalDate()));
                 if (randomDeathMethod.randomDeath(this, ageRange, p.getAge(getLocalDate()), p.getGender())) {
                     p.changeStatus(this, randomDeathMethod.getCause(p, ageRange, this));

@@ -65,15 +65,15 @@ public abstract class AbstractRandomDeathMethod {
             case ADULT:
                 return true;
             case TEENAGER:
-                return campaign.getCampaignOptions().teenDeathsEnabled();
+                return campaign.getCampaignOptions().isEnableTeenRandomDeaths();
             case PRETEEN:
-                return campaign.getCampaignOptions().preteenDeathsEnabled();
+                return campaign.getCampaignOptions().isEnablePreteenRandomDeaths();
             case CHILD:
-                return campaign.getCampaignOptions().childDeathsEnabled();
+                return campaign.getCampaignOptions().isEnableChildRandomDeaths();
             case TODDLER:
-                return campaign.getCampaignOptions().toddlerDeathsEnabled();
+                return campaign.getCampaignOptions().isEnableToddlerRandomDeaths();
             case BABY:
-                return campaign.getCampaignOptions().infantMortalityEnabled();
+                return campaign.getCampaignOptions().isEnableInfantMortality();
             default:
                 return false;
         }
