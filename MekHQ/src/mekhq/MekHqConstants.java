@@ -21,6 +21,11 @@
 package mekhq;
 
 public final class MekHqConstants {
+    //region GUI Constants
+    public static final String COMMAND_OPEN_POPUP = "SHIFT_F10";
+    public static final int BASE_SCROLLER_THRESHOLD = 20;
+    //endregion Constants
+
     //region MekHQ Options
     //region Display
     public static final String DISPLAY_NODE = "mekhq/prefs/display";
