@@ -32,8 +32,8 @@ import java.util.Optional;
 
 /**
  * This is the base Popup Menu Adapter.
- * Provides a popup menu adapter for a component which also ensures that
- * the accessibility chord SHIFT+F10 opens the popup as well.
+ * Provides a popup menu adapter for a component which also ensures that the accessibility chord
+ * SHIFT+F10 opens the popup as well.
  */
 public abstract class AbstractPopupMenuAdapter extends MouseInputAdapter implements ActionListener, Serializable {
     //region Variable Declarations

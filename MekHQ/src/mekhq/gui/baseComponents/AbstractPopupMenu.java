@@ -23,13 +23,13 @@ import mekhq.MekHqConstants;
 
 import javax.swing.*;
 
-public abstract class AbstractJPopupMenu extends JPopupMenu {
+public abstract class AbstractPopupMenu extends JPopupMenu {
     //region Constructors
-    public AbstractJPopupMenu() {
+    public AbstractPopupMenu() {
         super();
     }
 
-    public AbstractJPopupMenu(final String text) {
+    public AbstractPopupMenu(final String text) {
         super(text);
     }
     //endregion Constructors

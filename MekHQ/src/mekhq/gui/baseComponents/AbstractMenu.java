@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2021 - The MegaMek Team. All Rights Reserved.
+ *
+ * This file is part of MekHQ.
+ *
+ * MekHQ is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MekHQ is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
+ */
 package mekhq.gui.baseComponents;
 
 import megamek.client.ui.swing.util.MenuScroller;
@@ -5,21 +23,21 @@ import mekhq.MekHqConstants;
 
 import javax.swing.*;
 
-public class AbstractJMenu extends JMenu {
+public class AbstractMenu extends JMenu {
     //region Constructors
-    public AbstractJMenu() {
+    public AbstractMenu() {
         super();
     }
 
-    public AbstractJMenu(final String text) {
+    public AbstractMenu(final String text) {
         super(text);
     }
 
-    public AbstractJMenu(final Action action) {
+    public AbstractMenu(final Action action) {
         super(action);
     }
 
-    public AbstractJMenu(final String text, final boolean b) {
+    public AbstractMenu(final String text, final boolean b) {
         super(text, b);
     }
     //endregion Constructors
@@ -29,7 +47,7 @@ public class AbstractJMenu extends JMenu {
      * to the child if it is above the default minimum threshold
      * @param child the JMenu to add
      */
-    public void add(JMenu child) {
+    public void add(final JMenu child) {
         add(child, MekHqConstants.BASE_SCROLLER_THRESHOLD);
     }
 
