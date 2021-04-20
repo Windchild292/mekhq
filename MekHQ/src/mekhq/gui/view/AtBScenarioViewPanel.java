@@ -556,12 +556,12 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         panStats.add(lblLight, gridBagConstraints);
 
         chkReroll[REROLL_LIGHT] = new JCheckBox();
-        if (scenario.isCurrent() && campaign.getCampaignOptions().getUseLightConditions()) {
+        if (scenario.isCurrent() && !campaign.getCampaignOptions().getLightConditionsGenerationMethod().isNone()) {
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = y;
             gridBagConstraints.gridwidth = 1;
             panStats.add(chkReroll[REROLL_LIGHT], gridBagConstraints);
-            chkReroll[REROLL_LIGHT].setVisible(scenario.getRerollsRemaining() > 0 && scenario.canRerollLight());
+            chkReroll[REROLL_LIGHT].setVisible((scenario.getRerollsRemaining() > 0) && scenario.canRerollLight());
             chkReroll[REROLL_LIGHT].addItemListener(checkBoxListener);
         }
 
@@ -569,8 +569,8 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = y++;
         panStats.add(lblLightDesc, gridBagConstraints);
-        lblLight.setVisible(campaign.getCampaignOptions().getUseLightConditions());
-        lblLightDesc.setVisible(campaign.getCampaignOptions().getUseLightConditions());
+        lblLight.setVisible(!campaign.getCampaignOptions().getLightConditionsGenerationMethod().isNone());
+        lblLightDesc.setVisible(!campaign.getCampaignOptions().getLightConditionsGenerationMethod().isNone());
 
         lblWeather.setText(resourceMap.getString("lblWeather.text"));
         gridBagConstraints.gridx = 0;
@@ -579,7 +579,7 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         panStats.add(lblWeather, gridBagConstraints);
 
         chkReroll[REROLL_WEATHER] = new JCheckBox();
-        if (scenario.isCurrent() && campaign.getCampaignOptions().getUseWeatherConditions()) {
+        if (scenario.isCurrent() && !campaign.getCampaignOptions().getWeatherGenerationMethod().isNone()) {
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = y;
             gridBagConstraints.gridwidth = 1;
@@ -592,8 +592,8 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = y++;
         panStats.add(lblWeatherDesc, gridBagConstraints);
-        lblWeather.setVisible(campaign.getCampaignOptions().getUseWeatherConditions());
-        lblWeatherDesc.setVisible(campaign.getCampaignOptions().getUseWeatherConditions());
+        lblWeather.setVisible(!campaign.getCampaignOptions().getWeatherGenerationMethod().isNone());
+        lblWeatherDesc.setVisible(!campaign.getCampaignOptions().getWeatherGenerationMethod().isNone());
 
         lblWind.setText(resourceMap.getString("lblWind.text"));
         gridBagConstraints.gridx = 0;
@@ -605,8 +605,8 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = y++;
         panStats.add(lblWindDesc, gridBagConstraints);
-        lblWind.setVisible(campaign.getCampaignOptions().getUseWeatherConditions());
-        lblWindDesc.setVisible(campaign.getCampaignOptions().getUseWeatherConditions());
+        lblWind.setVisible(!campaign.getCampaignOptions().getWeatherGenerationMethod().isNone());
+        lblWindDesc.setVisible(!campaign.getCampaignOptions().getWeatherGenerationMethod().isNone());
 
         lblFog.setText(resourceMap.getString("lblFog.text"));
         gridBagConstraints.gridx = 0;
@@ -618,8 +618,8 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = y++;
         panStats.add(lblFogDesc, gridBagConstraints);
-        lblFog.setVisible(campaign.getCampaignOptions().getUseWeatherConditions());
-        lblFogDesc.setVisible(campaign.getCampaignOptions().getUseWeatherConditions());
+        lblFog.setVisible(!campaign.getCampaignOptions().getWeatherGenerationMethod().isNone());
+        lblFogDesc.setVisible(!campaign.getCampaignOptions().getWeatherGenerationMethod().isNone());
 
         lblGravity.setText(resourceMap.getString("lblGravity.text"));
         gridBagConstraints.gridx = 0;
@@ -777,14 +777,14 @@ public class AtBScenarioViewPanel extends ScrollablePanel {
             chkReroll[REROLL_MAPSIZE].setSelected(false);
             lblMapSizeDesc.setText(scenario.getMapSizeX() + "x" + scenario.getMapSizeY());
         }
-        if (chkReroll[REROLL_LIGHT] != null && chkReroll[REROLL_LIGHT].isSelected()) {
-            scenario.setLightConditions();
+        if ((chkReroll[REROLL_LIGHT] != null) && chkReroll[REROLL_LIGHT].isSelected()) {
+            scenario.setLightConditions(campaign);
             scenario.useReroll();
             chkReroll[REROLL_LIGHT].setSelected(false);
             lblLightDesc.setText(PlanetaryConditions.getLightDisplayableName(scenario.getLight()));
         }
         if (chkReroll[REROLL_WEATHER] != null && chkReroll[REROLL_WEATHER].isSelected()) {
-            scenario.setWeather();
+            scenario.setWeather(campaign);
             scenario.useReroll();
             chkReroll[REROLL_WEATHER].setSelected(false);
             lblWeatherDesc.setText(PlanetaryConditions.getWeatherDisplayableName(scenario.getWeather()));

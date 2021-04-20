@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.Vector;
 
 import megamek.common.*;
+import megamek.common.annotations.Nullable;
 import megamek.common.icons.Camouflage;
 import megamek.common.util.StringUtil;
 import mekhq.MekHqConstants;
@@ -61,7 +62,6 @@ import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.PlanetarySystem;
-import mekhq.campaign.universe.Systems;
 
 /**
  * @author Neoancient
@@ -268,7 +268,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
             }
         }
 
-        light = PlanetaryConditions.L_DAY;
+        setLightConditions(c);
         weather = PlanetaryConditions.WE_NONE;
         wind = PlanetaryConditions.WI_NONE;
         fog = PlanetaryConditions.FOG_NONE;
@@ -319,15 +319,9 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
      */
     private void initBattle(Campaign campaign) {
         setTerrain();
-        if (campaign.getCampaignOptions().getUseLightConditions()) {
-            setLightConditions();
-        }
-        if (campaign.getCampaignOptions().getUseWeatherConditions()) {
-            setWeather();
-        }
         if (campaign.getCampaignOptions().getUsePlanetaryConditions() &&
                 null != campaign.getMission(getMissionId())) {
-            setPlanetaryConditions(campaign.getMission(getMissionId()), campaign);
+            setPlanetaryConditions(campaign, campaign.getMission(getMissionId()));
         }
         setMapSize();
         setMapFile();
@@ -349,58 +343,28 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         terrainType = terrainChart[Compute.d6(2) - 2];
     }
 
-    public void setLightConditions() {
-        light = PlanetaryConditions.L_DAY;
-
-        int roll = Compute.randomInt(10) + 1;
-        if (roll < 6) light = PlanetaryConditions.L_DAY;
-        else if (roll < 8) light = PlanetaryConditions.L_DUSK;
-        else if (roll == 8) light = PlanetaryConditions.L_FULL_MOON;
-        else if (roll == 9) light = PlanetaryConditions.L_MOONLESS;
-        else light = PlanetaryConditions.L_PITCH_BLACK;
+    public void setLightConditions(final Campaign campaign) {
+        setLight(campaign.getCampaignOptions().getLightConditionsGenerationMethod().getGenerator().generate());
     }
 
-    public void setWeather() {
-        weather = PlanetaryConditions.WE_NONE;
-        wind = PlanetaryConditions.WI_NONE;
-        fog = PlanetaryConditions.FOG_NONE;
-
-        int roll = Compute.randomInt(10) + 1;
-        int r2 = Compute.d6();
-        if (roll == 6) {
-            if (r2 < 4) weather = PlanetaryConditions.WE_LIGHT_RAIN;
-            else if (r2 < 6) weather = PlanetaryConditions.WE_MOD_RAIN;
-            else weather = PlanetaryConditions.WE_HEAVY_RAIN;
-        } else if (roll == 7) {
-            if (r2 < 4) weather = PlanetaryConditions.WE_LIGHT_SNOW;
-            else if (r2 < 6) weather = PlanetaryConditions.WE_MOD_SNOW;
-            else weather = PlanetaryConditions.WE_HEAVY_SNOW;
-        } else if (roll == 8) {
-            if (r2 < 4) wind = PlanetaryConditions.WI_LIGHT_GALE;
-            else if (r2 < 6) wind = PlanetaryConditions.WI_MOD_GALE;
-            else wind = PlanetaryConditions.WI_STRONG_GALE;
-        } else if (roll == 9) {
-            if (r2 == 1) wind = PlanetaryConditions.WI_STORM;
-            else if (r2 == 2) weather = PlanetaryConditions.WE_DOWNPOUR;
-            else if (r2 == 3) weather = PlanetaryConditions.WE_SLEET;
-            else if (r2 == 4) weather = PlanetaryConditions.WE_ICE_STORM;
-            else if (r2 == 5) wind = PlanetaryConditions.WI_TORNADO_F13; // tornadoes are classified as wind rather than weather.
-            else if (r2 == 6) wind = PlanetaryConditions.WI_TORNADO_F4;
-        } else if (roll > 9) {
-            if (r2 < 5) fog = PlanetaryConditions.FOG_LIGHT;
-            else fog = PlanetaryConditions.FOG_HEAVY;
+    public void setWeather(final Campaign campaign) {
+        // Weather is irrelevant in these situations.
+        if ((getTerrainType() == TER_SPACE) || (getTerrainType() == TER_LOW_ATMO)) {
+            return;
         }
-        // roll < 6 can be ignored, as it would just return nothing
+
+        campaign.getCampaignOptions().getWeatherGenerationMethod().getGenerator().generate(getContract(campaign), this);
     }
 
-    public void setPlanetaryConditions(Mission mission, Campaign campaign) {
-        if (null != mission) {
-            PlanetarySystem psystem = Systems.getInstance().getSystemById(mission.getSystemId());
-            //assume primary planet for now
-            Planet p = psystem.getPrimaryPlanet();
-            if (null != p) {
-                atmosphere = Utilities.nonNull(p.getPressure(campaign.getLocalDate()), atmosphere);
-                gravity = Utilities.nonNull(p.getGravity(), gravity).floatValue();
+    public void setPlanetaryConditions(final Campaign campaign, final @Nullable Mission mission) {
+        if (mission != null) {
+            final PlanetarySystem system = mission.getSystem();
+            // TODO : Contracts specify planets, or (preferably) individual scenarios on different
+            // TODO : planets within a system
+            final Planet planet = system.getPrimaryPlanet();
+            if (planet != null) {
+                setAtmosphere(Utilities.nonNull(planet.getPressure(campaign.getLocalDate()), getAtmosphere()));
+                setGravity(Utilities.nonNull(planet.getGravity(), getGravity()).floatValue());
             }
         }
     }
