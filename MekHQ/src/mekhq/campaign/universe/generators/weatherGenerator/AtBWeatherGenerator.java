@@ -33,8 +33,8 @@ public class AtBWeatherGenerator extends AbstractWeatherGenerator {
 
     @Override
     public void generate(final Mission mission, final AtBScenario scenario) {
-        // Apply defaults
-        super.generate(mission, scenario);
+        // Clear the skies by default
+        clearSkies(scenario);
 
         // Then determine the generation from a shifted table (starting at 0 instead of 1)
         switch (Compute.randomInt(10)) {

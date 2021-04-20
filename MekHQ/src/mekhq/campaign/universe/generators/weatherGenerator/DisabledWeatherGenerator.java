@@ -31,7 +31,7 @@ public class DisabledWeatherGenerator extends AbstractWeatherGenerator {
 
     @Override
     public void generate(final Mission mission, final AtBScenario scenario) {
-        // Apply defaults
-        super.generate(mission, scenario);
+        // Clear the skies by default
+        clearSkies(scenario);
     }
 }

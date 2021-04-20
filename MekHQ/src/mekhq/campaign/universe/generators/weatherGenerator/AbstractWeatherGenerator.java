@@ -40,8 +40,9 @@ public abstract class AbstractWeatherGenerator {
     }
     //endregion Getters
 
-    public void generate(final Mission mission, final AtBScenario scenario) {
-        // Set Default Weather Conditions
+    public abstract void generate(final Mission mission, final AtBScenario scenario);
+
+    protected void clearSkies(final AtBScenario scenario) {
         scenario.setWeather(PlanetaryConditions.WE_NONE);
         scenario.setWind(PlanetaryConditions.WI_NONE);
         scenario.setFog(PlanetaryConditions.FOG_NONE);

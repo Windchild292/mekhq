@@ -24,6 +24,9 @@ import mekhq.campaign.mission.AtBScenario;
 import mekhq.campaign.mission.Mission;
 import mekhq.campaign.universe.enums.WeatherGenerationMethod;
 
+import java.util.Set;
+import java.util.stream.Stream;
+
 public class LimiterDriveWeatherGenerator extends AbstractWeatherGenerator {
     //region Constructors
     public LimiterDriveWeatherGenerator() {
@@ -33,8 +36,8 @@ public class LimiterDriveWeatherGenerator extends AbstractWeatherGenerator {
 
     @Override
     public void generate(final Mission mission, final AtBScenario scenario) {
-        // Apply defaults
-        super.generate(mission, scenario);
+        // Clear the skies by default
+        clearSkies(scenario);
 
         // Then determine the generation from a shifted table (starting at 0 instead of 1)
         switch (Compute.randomInt(10)) {
@@ -113,19 +116,152 @@ public class LimiterDriveWeatherGenerator extends AbstractWeatherGenerator {
         switch (Compute.randomInt(10)) {
             case 0:
             case 1:
+                clearSkies(scenario);
+                break;
             case 2:
             case 3:
             case 4:
+                break;
             case 5:
             case 6:
-                break;
             case 7:
+                scenario.setFog(PlanetaryConditions.FOG_NONE);
+                break;
             case 8:
-                scenario.setFog(PlanetaryConditions.FOG_LIGHT);
+                scenario.setWind(PlanetaryConditions.WI_NONE);
                 break;
             case 9:
             default: // useless default, but required for Java parsing
-                scenario.setFog(PlanetaryConditions.FOG_HEAVY);
+                scenario.setWeather(PlanetaryConditions.WE_NONE);
+                break;
+        }
+    }
+
+    private void generateSpringFallConditions(final AtBScenario scenario) {
+        switch (Compute.randomInt(10)) {
+            case 0:
+            case 1:
+            case 2:
+                clearSkies(scenario);
+                break;
+            case 3:
+                break;
+            case 4:
+            case 5:
+            case 6:
+                generateRain(scenario);
+                break;
+            case 7:
+                generateSnowfall(scenario);
+                break;
+            case 8:
+                generateHeatwave(scenario);
+                break;
+            case 9:
+            default: // useless default, but required for Java parsing
+                generateExtremeWeather(scenario);
+                break;
+        }
+    }
+
+    private void generateSummerConditions(final AtBScenario scenario) {
+        switch (Compute.randomInt(10)) {
+            case 0:
+            case 1:
+            case 2:
+                clearSkies(scenario);
+                break;
+            case 3:
+            case 4:
+            case 5:
+                break;
+            case 6:
+            case 7:
+                generateRain(scenario);
+                break;
+            case 8:
+                generateHeatwave(scenario);
+                break;
+            case 9:
+            default: // useless default, but required for Java parsing
+                generateExtremeWeather(scenario);
+                break;
+        }
+    }
+
+    private void generateWinterConditions(final AtBScenario scenario) {
+        switch (Compute.randomInt(10)) {
+            case 0:
+            case 1:
+            case 2:
+                clearSkies(scenario);
+                break;
+            case 3:
+            case 4:
+            case 5:
+                break;
+            case 6:
+                generateRain(scenario);
+                break;
+            case 7:
+            case 8:
+                generateSnowfall(scenario);
+                break;
+            case 9:
+            default: // useless default, but required for Java parsing
+                generateExtremeWeather(scenario);
+                break;
+        }
+    }
+
+    private void generateEquatorialConditions(final AtBScenario scenario) {
+        switch (Compute.randomInt(10)) {
+            case 0:
+            case 1:
+            case 2:
+                clearSkies(scenario);
+                break;
+            case 3:
+                break;
+            case 4:
+            case 5:
+            case 6:
+                generateRain(scenario);
+                break;
+            case 7:
+            case 8:
+                generateHeatwave(scenario);
+                break;
+            case 9:
+            default: // useless default, but required for Java parsing
+                generateExtremeWeather(scenario);
+                break;
+        }
+    }
+
+    private void generateAridConditions(final AtBScenario scenario) {
+        switch (Compute.randomInt(10)) {
+            case 0:
+            case 1:
+                clearSkies(scenario);
+                break;
+            case 2:
+            case 3:
+                break;
+            case 4:
+                scenario.setWeather(PlanetaryConditions);
+            case 5:
+                break;
+            case 6:
+                generateRain(scenario);
+                break;
+            case 7:
+            case 8:
+                generateSnowfall(scenario);
+                break;
+            case 9:
+            default: // useless default, but required for Java parsing
+                generateExtremeWeather(scenario);
                 break;
         }
     }
