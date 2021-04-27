@@ -1414,9 +1414,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void addKills(final Campaign campaign, final List<Kill> kills) {
-        for (final Kill kill : kills) {
-            addKill(campaign, kill);
-        }
+        kills.forEach(kill -> addKill(campaign, kill));
     }
 
     public void addKill(final Campaign campaign, final @Nullable Kill kill) {
@@ -1443,13 +1441,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
 
     public void clearInvalidKills(final Collection<Scenario> scenarios) {
-        final List<Kill> invalidKills = new ArrayList<>();
-        for (final Kill kill : getKills()) {
-            if (!scenarios.contains(kill.getScenario())) {
-                invalidKills.add(kill);
-            }
-        }
-        getKills().removeAll(invalidKills);
+        getKills().removeIf(kill -> !scenarios.contains(kill.getScenario()));
     }
     //endregion Kills
 
