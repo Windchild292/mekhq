@@ -47,6 +47,7 @@ import megamek.common.MechFileParser;
 import megamek.common.MechSummary;
 import megamek.common.UnitType;
 import megamek.common.loaders.EntityLoadingException;
+import megamek.common.util.WeightedMap;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
 import mekhq.campaign.Campaign;
@@ -54,6 +55,9 @@ import mekhq.campaign.mission.atb.AtBScenarioFactory;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.stratcon.StratconCampaignState;
+import mekhq.campaign.stratcon.StratconContractDefinition;
+import mekhq.campaign.stratcon.StratconContractInitializer;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
@@ -163,6 +167,8 @@ public class AtBContract extends Contract implements Serializable {
     protected int battleTypeMod;
     /* Only applies to next week */
     protected int nextWeekBattleTypeMod;
+    
+    private StratconCampaignState stratconCampaignState;
 
     protected AtBContract() {
         this(null);
@@ -441,6 +447,7 @@ public class AtBContract extends Contract implements Serializable {
             if (today.isAfter(routEnd)) {
                 moraleLevel = MORALE_NORMAL;
                 routEnd = null;
+                updateEnemy(today); // mix it up a little
             } else {
                 moraleLevel = MORALE_ROUT;
             }
@@ -548,6 +555,19 @@ public class AtBContract extends Contract implements Serializable {
         moraleMod = 0;
     }
 
+    /**
+     * Changes the enemy to a randomly selected faction that's an enemy of 
+     * the current employer
+     */
+    private void updateEnemy(LocalDate today) {
+        String enemyCode = RandomFactionGenerator.getInstance().getEnemy(
+                Factions.getInstance().getFaction(employerCode), false, true);
+        setEnemyCode(enemyCode);
+        
+        Faction enemyFaction = Factions.getInstance().getFaction(enemyCode);
+        setEnemyBotName(enemyFaction.getFullName(today.getYear()));
+    }
+    
     public int getRepairLocation(int dragoonRating) {
         int retval = Unit.SITE_BAY;
         if ((missionType == MT_GUERRILLAWARFARE) ||
@@ -651,8 +671,6 @@ public class AtBContract extends Contract implements Serializable {
     }
 
     public void doBonusRoll(Campaign c) {
-        final String METHOD_NAME = "doBonusRoll(Campaign)"; //$NON-NLS-1$
-
         int number;
         String rat = null;
         int roll = Compute.d6();
@@ -662,7 +680,7 @@ public class AtBContract extends Contract implements Serializable {
                 number = Compute.d6();
                 c.addReport("Bonus: " + number + " dependent" + ((number > 1) ? "s" : ""));
                 for (int i = 0; i < number; i++) {
-                    Person p = c.newDependent(Person.T_ASTECH, false);
+                    Person p = c.newDependent(false);
                     c.recruitPerson(p);
                 }
             }
@@ -696,7 +714,7 @@ public class AtBContract extends Contract implements Serializable {
                 try {
                     en = new MechFileParser(msl.get(0).getSourceFile(), msl.get(0).getEntryName()).getEntity();
                 } catch (EntityLoadingException ex) {
-                    MekHQ.getLogger().error(this, "Unable to load entity: " + msl.get(0).getSourceFile()
+                    MekHQ.getLogger().error("Unable to load entity: " + msl.get(0).getSourceFile()
                             + ": " + msl.get(0).getEntryName() + ": " + ex.getMessage(), ex);
                 }
             }
@@ -1192,6 +1210,10 @@ public class AtBContract extends Contract implements Serializable {
                     MekHqXmlUtil.saveFormattedDate(specialEventScenarioDate));
             MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "specialEventScenarioType", specialEventScenarioType);
         }
+        
+        if(stratconCampaignState != null) {
+            stratconCampaignState.Serialize(pw1);
+        }
     }
 
     @Override
@@ -1274,6 +1296,10 @@ public class AtBContract extends Contract implements Serializable {
                 specialEventScenarioDate = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("specialEventScenarioType")) {
                 specialEventScenarioType = Integer.parseInt(wn2.getTextContent());
+            } else if (wn2.getNodeName().equalsIgnoreCase(StratconCampaignState.ROOT_XML_ELEMENT_NAME)) {
+                stratconCampaignState = StratconCampaignState.Deserialize(wn2);
+                stratconCampaignState.setContract(this);
+                this.setStratconCampaignState(stratconCampaignState);
             } else if (wn2.getNodeName().equalsIgnoreCase("parentContractId")) {
                 parentContract = new AtBContractRef(Integer.parseInt(wn2.getTextContent()));
             }
@@ -1496,7 +1522,23 @@ public class AtBContract extends Contract implements Serializable {
     public int getBattleTypeMod() {
         return battleTypeMod + nextWeekBattleTypeMod;
     }
+    
+    public StratconCampaignState getStratconCampaignState() {
+        return stratconCampaignState;
+    }
+    
+    public void setStratconCampaignState(StratconCampaignState state) {
+        stratconCampaignState = state;
+    }
 
+    @Override
+    public void acceptContract(Campaign campaign) {
+        if (campaign.getCampaignOptions().getUseStratCon()) {
+            StratconContractInitializer.initializeCampaignState(this, campaign, 
+                    StratconContractDefinition.getContractDefinition(getMissionType()));
+        }
+    }
+    
     public AtBContract(Contract c, Campaign campaign) {
         this(c.getName());
 
