@@ -883,26 +883,12 @@ public class Person implements Serializable, MekHqXmlSerializable {
                 }
                 break;
             case MIA:
-                ServiceLogger.mia(this, campaign.getLocalDate());
-                break;
             case KIA:
-                ServiceLogger.kia(this, campaign.getLocalDate());
-                break;
             case NATURAL_CAUSES:
-                MedicalLogger.diedOfNaturalCauses(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
-                break;
             case WOUNDS:
-                MedicalLogger.diedFromWounds(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
-                break;
             case DISEASE:
-                MedicalLogger.diedFromDisease(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
-                break;
             case OLD_AGE:
-                MedicalLogger.diedOfOldAge(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
+                ServiceLogger.passedAway(this, campaign.getLocalDate(), status);
                 break;
             case PREGNANCY_COMPLICATIONS:
                 // The child might be able to be born, albeit into a world without their mother.
@@ -932,8 +918,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
                         birth(campaign);
                     }
                 }
-                MedicalLogger.diedFromPregnancyComplications(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
+                ServiceLogger.passedAway(this, campaign.getLocalDate(), status);
                 break;
         }
 

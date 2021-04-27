@@ -21,6 +21,7 @@ package mekhq.campaign.log;
 import megamek.common.util.EncodeControl;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.GenderDescriptors;
+import mekhq.campaign.personnel.enums.PersonnelStatus;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -75,17 +76,9 @@ public class ServiceLogger {
                 MessageFormat.format(message, name) + rankEntry));
     }
 
-    public static void kia(Person person, LocalDate date) {
-        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("kia.text")));
-    }
-
-    public static void mia(Person person, LocalDate date) {
-        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("mia.text")));
-    }
-
-    public static void passedAway(Person person, LocalDate date, String cause) {
-        String message = logEntriesResourceMap.getString("passedAway.text");
-        person.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, cause)));
+    public static void passedAway(final Person person, final LocalDate date,
+                                  final PersonnelStatus status) {
+        person.addLogEntry(new ServiceLogEntry(date, status.toString()));
     }
 
     public static void retired(Person person, LocalDate date) {

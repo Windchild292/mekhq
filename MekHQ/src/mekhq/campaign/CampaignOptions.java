@@ -668,38 +668,10 @@ public class CampaignOptions implements Serializable {
         setEnableChildRandomDeaths(false);
         setEnableToddlerRandomDeaths(false);
         setEnableInfantMortality(false);
-        randomDeathMaleMValues = new double[7];
-        randomDeathMaleNValues = new int[7];
-        randomDeathMaleMValues[6] = 7;
-        randomDeathMaleNValues[6] = -12;
-        randomDeathMaleMValues[5] = -2;
-        randomDeathMaleNValues[5] = -9;
-        randomDeathMaleMValues[4] = 2;
-        randomDeathMaleNValues[4] = -7;
-        randomDeathMaleMValues[3] = -7;
-        randomDeathMaleNValues[3] = -6;
-        randomDeathMaleMValues[2] = 2;
-        randomDeathMaleNValues[2] = -4;
-        randomDeathMaleMValues[1] = -1.5;
-        randomDeathMaleNValues[1] = -3;
-        randomDeathMaleMValues[0] = 4.1;
-        randomDeathMaleNValues[0] = -3;
-        randomDeathFemaleMValues = new double[7];
-        randomDeathFemaleNValues = new int[7];
-        randomDeathFemaleMValues[6] = 7;
-        randomDeathFemaleNValues[6] = -12;
-        randomDeathFemaleMValues[5] = -2;
-        randomDeathFemaleNValues[5] = -9;
-        randomDeathFemaleMValues[4] = 2;
-        randomDeathFemaleNValues[4] = -7;
-        randomDeathFemaleMValues[3] = -7;
-        randomDeathFemaleNValues[3] = -6;
-        randomDeathFemaleMValues[2] = 1;
-        randomDeathFemaleNValues[2] = -4;
-        randomDeathFemaleMValues[1] = -1.3;
-        randomDeathFemaleNValues[1] = -3;
-        randomDeathFemaleMValues[0] = 3.4;
-        randomDeathFemaleNValues[0] = -3;
+        setRandomDeathMaleMValues(1.1, -4.1, 5.5, -1.9, 5.5, -5.5, 1.9);
+        setRandomDeathMaleNValues(-5, -6, -7, -8, -10, -12, -14);
+        setRandomDeathFemaleMValues(9.3, -3.6, 2.7, -1.9, 5.5, -5.5, 1.9);
+        setRandomDeathFemaleNValues(-6, -6, -7, -8, -10, -12, -14);
         //endregion Personnel Tab
 
         //region Finances Tab
@@ -2687,8 +2659,8 @@ public class CampaignOptions implements Serializable {
     public void setUseStratCon(boolean useStratCon) {
         this.useStratCon = useStratCon;
     }
-    
-    
+
+
     public boolean getUseAtBUnitMarket() {
         return useAtBUnitMarket;
     }
