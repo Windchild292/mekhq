@@ -62,6 +62,10 @@ public enum RandomDeathMethod {
     public boolean isNone() {
         return this == NONE;
     }
+
+    public boolean isStandard() {
+        return this == STANDARD;
+    }
     //endregion Boolean Comparison Methods
 
     public AbstractRandomDeathMethod getMethod(final Campaign campaign) {
