@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -24,33 +24,36 @@ import java.util.ResourceBundle;
 
 public enum PersonnelStatus {
     //region Enum Declarations
-    ACTIVE("PersonnelStatus.ACTIVE.text"),
-    RETIRED("PersonnelStatus.RETIRED.text"),
-    MIA("PersonnelStatus.MIA.text"),
-    KIA("PersonnelStatus.KIA.text"),
-    NATURAL_CAUSES("PersonnelStatus.NATURAL_CAUSES.text"),
-    WOUNDS("PersonnelStatus.WOUNDS.text"),
-    DISEASE("PersonnelStatus.DISEASE.text"),
-    OLD_AGE("PersonnelStatus.OLD_AGE.text"),
-    PREGNANCY_COMPLICATIONS("PersonnelStatus.PREGNANCY_COMPLICATIONS.text");
+    ACTIVE("PersonnelStatus.ACTIVE.text", "PersonnelStatus.ACTIVE.toolTipText"),
+    RETIRED("PersonnelStatus.RETIRED.text", "PersonnelStatus.RETIRED.toolTipText"),
+    MIA("PersonnelStatus.MIA.text", "PersonnelStatus.MIA.toolTipText"),
+    KIA("PersonnelStatus.KIA.text", "PersonnelStatus.KIA.toolTipText"),
+    NATURAL_CAUSES("PersonnelStatus.NATURAL_CAUSES.text", "PersonnelStatus.NATURAL_CAUSES.toolTipText"),
+    WOUNDS("PersonnelStatus.WOUNDS.text", "PersonnelStatus.WOUNDS.toolTipText"),
+    DISEASE("PersonnelStatus.DISEASE.text", "PersonnelStatus.DISEASE.toolTipText"),
+    OLD_AGE("PersonnelStatus.OLD_AGE.text", "PersonnelStatus.OLD_AGE.toolTipText"),
+    PREGNANCY_COMPLICATIONS("PersonnelStatus.PREGNANCY_COMPLICATIONS.text", "PersonnelStatus.PREGNANCY_COMPLICATIONS.toolTipText");
     //endregion Enum Declarations
 
     //region Variable Declarations
-    private final String statusName;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
-            new EncodeControl());
+    private final String name;
+    private final String toolTipText;
+
+    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    PersonnelStatus(String status) {
-        this.statusName = resources.getString(status);
+    PersonnelStatus(final String name, final String toolTipText) {
+        this.name = resources.getString(name);
+        this.toolTipText = resources.getString(toolTipText);
     }
     //endregion Constructors
 
-    @Override
-    public String toString() {
-        return statusName;
+    //region Getters
+    public String getToolTipText() {
+        return toolTipText;
     }
+    //endregion Getters
 
     //region Boolean Information Methods
     /**
@@ -135,7 +138,7 @@ public enum PersonnelStatus {
      * @param text containing the PersonnelStatus
      * @return the saved PersonnelStatus
      */
-    public static PersonnelStatus parseFromString(String text) {
+    public static PersonnelStatus parseFromString(final String text) {
         try {
             return valueOf(text);
         } catch (Exception ignored) {
@@ -159,4 +162,10 @@ public enum PersonnelStatus {
 
         return ACTIVE;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
 }
