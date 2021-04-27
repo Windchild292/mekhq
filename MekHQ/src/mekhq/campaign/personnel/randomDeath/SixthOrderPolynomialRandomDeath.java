@@ -25,7 +25,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.enums.AgeRange;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
-public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod {
+public class SixthOrderPolynomialRandomDeath extends AbstractRandomDeathMethod {
     //region Variable Declarations
     // the following are a list of variables in the format m * 10^n
     private final double[] maleM;
@@ -35,7 +35,7 @@ public class SixthOrderDifferentialRandomDeath extends AbstractRandomDeathMethod
     //endregion Variable Declarations
 
     //region Constructors
-    public SixthOrderDifferentialRandomDeath(final Campaign campaign) {
+    public SixthOrderPolynomialRandomDeath(final Campaign campaign) {
         super(RandomDeathMethod.STANDARD);
         maleM = campaign.getCampaignOptions().getRandomDeathMaleMValues();
         maleN = campaign.getCampaignOptions().getRandomDeathMaleNValues();

@@ -299,7 +299,7 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkEnableChildRandomDeaths;
     private JCheckBox chkEnableToddlerRandomDeaths;
     private JCheckBox chkEnableInfantMortality;
-    private JPanel sixthOrderDifferentialRandomDeathPanel;
+    private JPanel sixthOrderPolynomialRandomDeathPanel;
     private JSpinner[] spnRandomDeathMaleMValues;
     private JSpinner[] spnRandomDeathMaleNValues;
     private JSpinner[] spnRandomDeathFemaleMValues;
@@ -4798,7 +4798,7 @@ public class CampaignOptionsDialog extends JDialog {
         final JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder(resources.getString("deathPanel.title")));
         panel.setName("deathPanel");
-        GroupLayout layout = new GroupLayout(panel);
+        final GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
 
         layout.setAutoCreateGaps(true);
@@ -4821,7 +4821,7 @@ public class CampaignOptionsDialog extends JDialog {
 
     private JPanel createRandomDeathPanel() {
         // Initialize Components Used in ActionListeners
-        final JPanel sixthOrderDifferentialRandomDeathPanel = new JDisableablePanel("sixthOrderDifferentialRandomDeathPanel");
+        final JPanel sixthOrderPolynomialRandomDeathPanel = new JDisableablePanel("sixthOrderPolynomialRandomDeathPanel");
 
         // Create Panel Components
         final JLabel lblRandomDeathMethod = new JLabel(resources.getString("lblRandomDeathMethod.text"));
@@ -4844,8 +4844,14 @@ public class CampaignOptionsDialog extends JDialog {
             }
         });
         comboRandomDeathMethod.addActionListener(evt -> {
-            // TODO : Windchild fix me
-            sixthOrderDifferentialRandomDeathPanel.setEnabled(!((RandomDeathMethod) comboRandomDeathMethod.getSelectedItem()).isNone());
+            final RandomDeathMethod method = (RandomDeathMethod) Objects.requireNonNull(comboRandomDeathMethod.getSelectedItem());
+            final boolean enabled = !method.isNone();
+            chkEnableTeenRandomDeaths.setEnabled(enabled);
+            chkEnablePreteenRandomDeaths.setEnabled(enabled);
+            chkEnableChildRandomDeaths.setEnabled(enabled);
+            chkEnableToddlerRandomDeaths.setEnabled(enabled);
+            chkEnableInfantMortality.setEnabled(enabled);
+            sixthOrderPolynomialRandomDeathPanel.setEnabled(method.isStandard());
         });
 
         chkEnableTeenRandomDeaths = new JCheckBox(resources.getString("chkEnableTeenRandomDeaths.text"));
@@ -4868,13 +4874,13 @@ public class CampaignOptionsDialog extends JDialog {
         chkEnableInfantMortality.setToolTipText(resources.getString("chkEnableInfantMortality.toolTipText"));
         chkEnableInfantMortality.setName("chkEnableInfantMortality");
 
-        createSixthOrderDifferentialRandomDeathPanel(sixthOrderDifferentialRandomDeathPanel);
+        createSixthOrderPolynomialRandomDeathPanel(sixthOrderPolynomialRandomDeathPanel);
 
         // Layout the Panel
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder(resources.getString("randomDeathPanel.title")));
         panel.setName("randomDeathPanel");
-        GroupLayout layout = new GroupLayout(panel);
+        final GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
 
         layout.setAutoCreateGaps(true);
@@ -4890,7 +4896,7 @@ public class CampaignOptionsDialog extends JDialog {
                         .addComponent(chkEnableChildRandomDeaths)
                         .addComponent(chkEnableToddlerRandomDeaths)
                         .addComponent(chkEnableInfantMortality)
-                        .addComponent(sixthOrderDifferentialRandomDeathPanel)
+                        .addComponent(sixthOrderPolynomialRandomDeathPanel)
         );
 
         layout.setHorizontalGroup(
@@ -4903,13 +4909,13 @@ public class CampaignOptionsDialog extends JDialog {
                         .addComponent(chkEnableChildRandomDeaths)
                         .addComponent(chkEnableToddlerRandomDeaths)
                         .addComponent(chkEnableInfantMortality)
-                        .addComponent(sixthOrderDifferentialRandomDeathPanel)
+                        .addComponent(sixthOrderPolynomialRandomDeathPanel)
         );
 
         return panel;
     }
 
-    private void createSixthOrderDifferentialRandomDeathPanel(final JPanel panel) {
+    private void createSixthOrderPolynomialRandomDeathPanel(final JPanel panel) {
         // Create Panel Components
         spnRandomDeathMaleMValues = new JSpinner[7];
         spnRandomDeathMaleNValues = new JSpinner[spnRandomDeathMaleMValues.length];
@@ -4923,16 +4929,17 @@ public class CampaignOptionsDialog extends JDialog {
             spnRandomDeathFemaleNValues[i] = new JSpinner(new SpinnerNumberModel(0.0, -100, 100, 1));
         }
 
-        final JPanel malePanel = createSixthOrderDifferentialIndividualPanel(Gender.MALE,
+        final JPanel malePanel = createSixthOrderPolynomialIndividualPanel(Gender.MALE,
                 spnRandomDeathMaleMValues, spnRandomDeathMaleNValues);
 
-        final JPanel femalePanel = createSixthOrderDifferentialIndividualPanel(Gender.FEMALE,
+        final JPanel femalePanel = createSixthOrderPolynomialIndividualPanel(Gender.FEMALE,
                 spnRandomDeathFemaleMValues, spnRandomDeathFemaleNValues);
 
         // Layout the Panel
-        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("sixthOrderDifferentialPanel.title")));
-        panel.setName("sixthOrderDifferentialPanel");
-        GroupLayout layout = new GroupLayout(panel);
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("sixthOrderPolynomialPanel.title")));
+        panel.setToolTipText(resources.getString("sixthOrderPolynomialPanel.toolTipText"));
+        panel.setName("sixthOrderPolynomialPanel");
+        final GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
 
         layout.setAutoCreateGaps(true);
@@ -4951,9 +4958,9 @@ public class CampaignOptionsDialog extends JDialog {
         );
     }
 
-    private JPanel createSixthOrderDifferentialIndividualPanel(final Gender gender,
-                                                               final JSpinner[] mValues,
-                                                               final JSpinner[] nValues) {
+    private JPanel createSixthOrderPolynomialIndividualPanel(final Gender gender,
+                                                             final JSpinner[] mValues,
+                                                             final JSpinner[] nValues) {
         final JLabel lblOpenBracket = new JLabel("(");
         final JLabel lblSixthExponential = new JLabel(resources.getString("lblExponential.text"));
         final JLabel lblSixthAgeExponential = new JLabel(resources.getString("lblSixthAgeExponential.text"));
@@ -4980,10 +4987,11 @@ public class CampaignOptionsDialog extends JDialog {
 
         // Layout the Panel
         final JPanel panel = new JDisableablePanel(gender.isFemale()
-                ? "sixthOrderDifferentialFemalePanel" : "sixthOrderDifferentialMalePanel");
+                ? "sixthOrderPolynomialFemalePanel" : "sixthOrderPolynomialMalePanel");
         panel.setBorder(BorderFactory.createTitledBorder(resources.getString(gender.isFemale()
-                ? "sixthOrderDifferentialFemalePanel.title" : "sixthOrderDifferentialMalePanel.title")));
-        GroupLayout layout = new GroupLayout(panel);
+                ? "sixthOrderPolynomialFemalePanel.title" : "sixthOrderPolynomialMalePanel.title")));
+        panel.setToolTipText(resources.getString("sixthOrderPolynomialPanel.toolTipText"));
+        final GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
 
         layout.setAutoCreateGaps(true);

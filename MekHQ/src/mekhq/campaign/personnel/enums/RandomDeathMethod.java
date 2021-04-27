@@ -19,11 +19,10 @@
 package mekhq.campaign.personnel.enums;
 
 import megamek.common.util.EncodeControl;
-import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.randomDeath.AbstractRandomDeathMethod;
 import mekhq.campaign.personnel.randomDeath.DisabledRandomDeath;
-import mekhq.campaign.personnel.randomDeath.SixthOrderDifferentialRandomDeath;
+import mekhq.campaign.personnel.randomDeath.SixthOrderPolynomialRandomDeath;
 
 import java.util.ResourceBundle;
 
@@ -34,7 +33,7 @@ public enum RandomDeathMethod {
      */
     NONE("RandomDeathMethod.NONE.text", "RandomDeathMethod.NONE.toolTipText"),
     /**
-     * This is the standard type for Random Deaths, which uses a sixth order differential equation
+     * This is the standard type for Random Deaths, which uses a sixth order polynomial equation
      * to determine the chance of random deaths
      */
     STANDARD("RandomDeathMethod.STANDARD.text", "RandomDeathMethod.STANDARD.toolTipText");
@@ -68,7 +67,7 @@ public enum RandomDeathMethod {
     public AbstractRandomDeathMethod getMethod(final Campaign campaign) {
         switch (this) {
             case STANDARD:
-                return new SixthOrderDifferentialRandomDeath(campaign);
+                return new SixthOrderPolynomialRandomDeath(campaign);
             case NONE:
             default:
                 return new DisabledRandomDeath();
