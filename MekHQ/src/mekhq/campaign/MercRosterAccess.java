@@ -550,15 +550,7 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
                 final List<Kill> kills = new ArrayList<>();
                 for (final Person person : campaign.getPersonnel()) {
                     for (final Kill kill : person.getKills()) {
-                        boolean killExists = false;
-                        for (final Kill addedKill : kills) {
-                            if (kill.isSameKill(addedKill)) {
-                                killExists = true;
-                                break;
-                            }
-                        }
-
-                        if (killExists) {
+                        if (kills.stream().anyMatch(kill::isSameKill)) {
                             continue;
                         }
 
