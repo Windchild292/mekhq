@@ -484,7 +484,7 @@ public class ResolveScenarioTracker {
                                     + " when trying to assign kills");
                             continue;
                         }
-                        status.addKill(new Kill(p.getId(), killed, u.getEntity().getShortNameRaw(), campaign.getLocalDate()));
+                        status.addKill(new Kill(p, getScenario(), killed, u.getEntity().getShortNameRaw()));
                     }
                 }
             }
@@ -1390,9 +1390,7 @@ public class ResolveScenarioTracker {
                 ServiceLogger.participatedInMission(person, campaign.getLocalDate(),
                         scenario.getName(), mission.getName());
             }
-            for (Kill k : status.getKills()) {
-                campaign.addKill(k);
-            }
+            person.addKills(getCampaign(), status.getKills());
             if (status.isMissing()) {
                 person.changeStatus(getCampaign(), PersonnelStatus.MIA);
             } else if (status.isDead()) {
@@ -1455,9 +1453,7 @@ public class ResolveScenarioTracker {
 
             ServiceLogger.participatedInMission(person, campaign.getLocalDate(), scenario.getName(), mission.getName());
 
-            for (Kill k : status.getKills()) {
-                campaign.addKill(k);
-            }
+            person.addKills(getCampaign(), status.getKills());
 
             if (campaign.getCampaignOptions().useAdvancedMedical()) {
                 person.diagnose(status.getHits());

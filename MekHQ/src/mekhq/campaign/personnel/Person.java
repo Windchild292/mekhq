@@ -39,6 +39,7 @@ import mekhq.campaign.*;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.io.CampaignXmlParser;
 import mekhq.campaign.log.*;
+import mekhq.campaign.mission.Scenario;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.enums.*;
 import mekhq.campaign.personnel.familyTree.Genealogy;
@@ -219,6 +220,8 @@ public class Person implements Serializable, MekHqXmlSerializable {
     private UUID originalUnitId;
     //endregion Against the Bot
 
+    private List<Kill> kills;
+
     // Generic extra data, for use with plugins and mods
     private ExtraData extraData;
 
@@ -353,6 +356,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         originalUnitTech = TECH_IS1;
         originalUnitId = null;
         acquisitions = 0;
+        setKills(new ArrayList<>());
         extraData = new ExtraData();
 
         // Initialize Data based on these settings
@@ -1400,6 +1404,47 @@ public class Person implements Serializable, MekHqXmlSerializable {
     }
     //endregion Experience
 
+    //region Kills
+    public List<Kill> getKills() {
+        return kills;
+    }
+
+    public void setKills(final List<Kill> kills) {
+        this.kills = kills;
+    }
+
+    public void addKills(final Campaign campaign, final List<Kill> kills) {
+        kills.forEach(kill -> addKill(campaign, kill));
+    }
+
+    public void addKill(final Campaign campaign, final @Nullable Kill kill) {
+        if (kill == null) {
+            return;
+        }
+        addKillDirect(kill);
+        if (campaign.getCampaignOptions().awardXPForKills()) {
+            if ((getKills().size() % campaign.getCampaignOptions().getKillsForXP()) == 0) {
+                awardXP(campaign.getCampaignOptions().getKillXPAward());
+                MekHQ.triggerEvent(new PersonChangedEvent(this));
+            }
+        }
+    }
+
+    /**
+     * This directly adds a kill to the list without any checks
+     * @param kill the kill to add to this Person's list
+     */
+    public void addKillDirect(final @Nullable Kill kill) {
+        if (kill != null) {
+            getKills().add(kill);
+        }
+    }
+
+    public void clearInvalidKills(final Collection<Scenario> scenarios) {
+        getKills().removeIf(kill -> !scenarios.contains(kill.getScenario()));
+    }
+    //endregion Kills
+
     public int getAcquisitions() {
         return acquisitions;
     }
@@ -1451,6 +1496,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
         return extraData;
     }
 
+    //region File I/O
     @Override
     public void writeToXml(PrintWriter pw1, int indent) {
         pw1.println(MekHqXmlUtil.indentStr(indent) + "<person id=\"" + id.toString()
@@ -2007,6 +2053,7 @@ public class Person implements Serializable, MekHqXmlSerializable {
 
         return retVal;
     }
+    //endregion File I/O
 
     public void setSalary(Money s) {
         salary = s;

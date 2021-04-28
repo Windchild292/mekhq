@@ -2022,6 +2022,13 @@ public class CampaignOptions implements Serializable {
         scenarioXP = xp;
     }
 
+    /**
+     * @return true to award XP to a person for kills, otherwise false
+     */
+    public boolean awardXPForKills() {
+        return (getKillsForXP() > 0) && (getKillXPAward() > 0);
+    }
+
     public int getKillsForXP() {
         return killsForXP;
     }

@@ -255,12 +255,12 @@ public class PersonViewPanel extends ScrollablePanel {
             gridy++;
         }
 
-        if (!campaign.getKillsFor(person.getId()).isEmpty()) {
+        if (!person.getKills().isEmpty()) {
             JPanel pnlKills = fillKillRecord();
 
-            pnlKills.setName("txtKills"); //$NON-NLS-1$
+            pnlKills.setName("txtKills");
             pnlKills.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createTitledBorder(resourceMap.getString("pnlKills.title")), //$NON-NLS-1$
+                    BorderFactory.createTitledBorder(resourceMap.getString("pnlKills.title")),
                     BorderFactory.createEmptyBorder(5, 5, 5, 5)));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -1486,7 +1486,7 @@ public class PersonViewPanel extends ScrollablePanel {
     }
 
     private JPanel fillKillRecord() {
-        List<Kill> kills = campaign.getKillsFor(person.getId());
+        final List<Kill> kills = person.getKills();
 
         JPanel pnlKills = new JPanel(new GridBagLayout());
 

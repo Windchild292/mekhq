@@ -623,7 +623,7 @@ public class PersonnelTableModel extends DataTableModel {
             case COL_SALARY:
                 return p.getSalary().toAmountAndSymbolString();
             case COL_KILLS:
-                return Integer.toString(getCampaign().getKillsFor(p.getId()).size());
+                return Integer.toString(p.getKills().size());
             case COL_ORIGIN_FACTION:
                 return p.getOriginFaction().getFullName(getCampaign().getGameYear());
             case COL_ORIGIN_PLANET:

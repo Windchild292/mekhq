@@ -56,7 +56,6 @@ import mekhq.MekHQ;
 import mekhq.NullEntityException;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignFactory;
-import mekhq.campaign.Kill;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.Transaction;
 import mekhq.campaign.force.Force;
@@ -542,10 +541,7 @@ public class CampaignExportWizard extends JDialog {
 
             destinationCampaign.importPerson(person);
             destinationCampaign.getPerson(person.getId()).resetMinutesLeft();
-
-            for (Kill kill : sourceCampaign.getKillsFor(person.getId())) {
-                destinationCampaign.importKill(kill);
-            }
+            person.clearInvalidKills(destinationCampaign.getScenarios().values());
         }
 
         destinationCampaign.getHangar().forEachUnit(Unit::resetEngineer);

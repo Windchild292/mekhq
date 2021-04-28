@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -40,6 +41,7 @@ import megamek.common.icons.Camouflage;
 import megamek.client.generator.RandomGenderGenerator;
 import megamek.client.generator.RandomNameGenerator;
 
+import mekhq.campaign.io.Migration.PersonMigrator;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -277,7 +279,7 @@ public class CampaignXmlParser {
                     // TODO: hoist registerAll out of this
                     InjuryTypes.registerAll();
                     processPersonnelNodes(retVal, wn, version);
-                } else if (xn.equalsIgnoreCase("ancestors")) { // Legacy
+                } else if (xn.equalsIgnoreCase("ancestors")) { // Legacy - 0.47.X removal
                     migrateAncestorNodes(retVal, wn);
                 } else if (xn.equalsIgnoreCase("units")) {
                     processUnitNodes(retVal, wn, version);
@@ -295,8 +297,8 @@ public class CampaignXmlParser {
                     processSpecialAbilityNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("gameOptions")) {
                     processGameOptionNodes(retVal, wn);
-                } else if (xn.equalsIgnoreCase("kills")) {
-                    processKillNodes(retVal, wn, version);
+                } else if (xn.equalsIgnoreCase("kills")) { // Legacy - 0.49.X removal
+                    PersonMigrator.migrateKills(retVal, wn);
                 } else if (xn.equalsIgnoreCase("shoppingList")) {
                     retVal.setShoppingList(ShoppingList.generateInstanceFromXML(wn, retVal, version));
                 } else if (xn.equalsIgnoreCase("personnelMarket")) {
@@ -324,7 +326,6 @@ public class CampaignXmlParser {
                 } else if (xn.equalsIgnoreCase("customPlanetaryEvents")) {
                     updatePlanetaryEventsFromXML(wn);
                 }
-
             } else {
                 // If it's a text node or attribute or whatever at this level,
                 // it's probably white-space.
@@ -332,15 +333,12 @@ public class CampaignXmlParser {
             }
         }
 
-        // Fix any Person Id References
-        PersonIdReference.fixPersonIdReferences(retVal);
-
-        // Okay, after we've gone through all the nodes and constructed the
-        // Campaign object...
+        // Okay, after we've gone through all the nodes and constructed the Campaign object...
         // We need to do a post-process pass to restore a number of references.
 
-        // Fixup any ghost kills
-        cleanupGhostKills(retVal);
+        // Fix any Id Reference Class References
+        PersonIdReference.fixPersonIdReferences(retVal);
+        ScenarioIdReference.fixScenarioIdReferences(retVal);
 
         long timestamp = System.currentTimeMillis();
 
@@ -386,9 +384,12 @@ public class CampaignXmlParser {
             System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
-        for (Person psn : retVal.getPersonnel()) {
-            // skill types might need resetting
-            psn.resetSkillTypes();
+        for (final Person person : retVal.getPersonnel()) {
+            // Skill types might need resetting
+            person.resetSkillTypes();
+
+            // Kills might need reordering
+            person.getKills().sort(Comparator.comparing(o -> o.getScenario().getDate()));
         }
 
         MekHQ.getLogger().info(String.format("[Campaign Load] Rank references fixed in %dms",
@@ -786,22 +787,6 @@ public class CampaignXmlParser {
         }
     }
 
-    private static void cleanupGhostKills(Campaign retVal) {
-        // check for kills with missing person references
-        List<Kill> ghostKills = new ArrayList<>();
-        for (Kill k : retVal.getKills()) {
-            if (null == k.getPilotId()) {
-                ghostKills.add(k);
-            }
-        }
-
-        for (Kill k : ghostKills) {
-            if (null == k.getPilotId()) {
-                retVal.removeKill(k);
-            }
-        }
-    }
-
     private static void processFinances(Campaign retVal, Node wn) {
         MekHQ.getLogger().info("Loading Finances from XML...");
         retVal.setFinances(Finances.generateInstanceFromXML(wn));
@@ -936,34 +921,6 @@ public class CampaignXmlParser {
         }
 
         MekHQ.getLogger().info("Load Special Ability Nodes Complete!");
-    }
-
-    private static void processKillNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Kill Nodes from XML...");
-
-        NodeList wList = wn.getChildNodes();
-
-        // Okay, lets iterate through the children, eh?
-        for (int x = 0; x < wList.getLength(); x++) {
-            Node wn2 = wList.item(x);
-
-            // If it's not an element node, we ignore it.
-            if (wn2.getNodeType() != Node.ELEMENT_NODE) {
-                continue;
-            } else if (!wn2.getNodeName().equalsIgnoreCase("kill")) {
-                // Error condition of sorts!
-                // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Kill nodes: " + wn2.getNodeName());
-                continue;
-            }
-
-            Kill kill = Kill.generateInstanceFromXML(wn2, version);
-            if (kill != null) {
-                retVal.importKill(kill);
-            }
-        }
-
-        MekHQ.getLogger().info("Load Kill Nodes Complete!");
     }
 
     private static void processGameOptionNodes(Campaign retVal, Node wn) {
@@ -1718,5 +1675,28 @@ public class CampaignXmlParser {
         }
     }
     //endregion Ancestry Migration
+
+
+    private static void migrateKillNodes(final Campaign campaign, final Node wn, final Version version) {
+        MekHQ.getLogger().info("Loading Kill Nodes from XML...");
+        final NodeList wList = wn.getChildNodes();
+        for (int x = 0; x < wList.getLength(); x++) {
+            final Node wn2 = wList.item(x);
+            if (wn2.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            } else if (!wn2.getNodeName().equalsIgnoreCase("kill")) {
+                MekHQ.getLogger().error("Unknown node type not loaded in Kill nodes: " + wn2.getNodeName());
+                continue;
+            }
+
+            final Kill kill = new Kill();
+            final Person person;
+            if (kill != null) {
+                person.addKillDirect(kill);
+            }
+        }
+
+        MekHQ.getLogger().info("Load Kill Nodes Complete!");
+    }
     //endregion Migration Methods
 }

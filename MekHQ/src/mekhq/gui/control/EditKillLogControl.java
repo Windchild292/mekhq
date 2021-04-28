@@ -23,6 +23,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.Kill;
 import mekhq.campaign.personnel.Person;
 import mekhq.gui.dialog.AddOrEditKillEntryDialog;
+import mekhq.gui.dialog.KillEntryDialog;
 import mekhq.gui.model.KillTableModel;
 
 import javax.swing.*;
@@ -47,7 +48,7 @@ public class EditKillLogControl extends JPanel {
         this.campaign = campaign;
         this.person = person;
 
-        this.killModel = new KillTableModel(campaign.getKillsFor(this.person.getId()));
+        this.killModel = new KillTableModel(person.getKills());
 
         initComponents();
     }
@@ -107,33 +108,32 @@ public class EditKillLogControl extends JPanel {
     }
 
     private void addKill() {
-        AddOrEditKillEntryDialog dialog = new AddOrEditKillEntryDialog(parent, true,
-                person.getId(), "", campaign.getLocalDate());
+        final KillEntryDialog killEntryDialog = new KillEntryDialog(parent,
+                person, "", campaign.getLocalDate());
         dialog.setVisible(true);
-        if (dialog.getKill().isPresent()) {
+        if () {
             campaign.addKill(dialog.getKill().get());
         }
         refreshTable();
     }
 
     private void editKill() {
-        Kill kill = killModel.getKillAt(killTable.getSelectedRow());
+        final Kill kill = killModel.getKillAt(killTable.getSelectedRow());
         if (null != kill) {
-            AddOrEditKillEntryDialog dialog = new AddOrEditKillEntryDialog(parent, true, kill);
+            AddOrEditKillEntryDialog dialog = new AddOrEditKillEntryDialog(parent, kill);
             dialog.setVisible(true);
             refreshTable();
         }
     }
 
     private void deleteKill() {
-        Kill kill = killModel.getKillAt(killTable.getSelectedRow());
-        campaign.removeKill(kill);
+        person.getKills().remove(killModel.getKillAt(killTable.getSelectedRow()));
         refreshTable();
     }
 
     private void refreshTable() {
         int selectedRow = killTable.getSelectedRow();
-        killModel.setData(campaign.getKillsFor(person.getId()));
+        killModel.setData(person.getKills());
         if (selectedRow != -1) {
             if (killTable.getRowCount() > 0) {
                 if (killTable.getRowCount() == selectedRow) {

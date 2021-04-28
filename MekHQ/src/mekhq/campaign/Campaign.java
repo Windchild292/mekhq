@@ -185,7 +185,6 @@ public class Campaign implements Serializable, ITechManager {
     private TreeMap<Integer, Force> forceIds = new TreeMap<>();
     private TreeMap<Integer, Mission> missions = new TreeMap<>();
     private TreeMap<Integer, Scenario> scenarios = new TreeMap<>();
-    private Map<UUID, List<Kill>> kills = new HashMap<>();
 
     private final UnitNameTracker unitNameTracker = new UnitNameTracker();
 
@@ -1004,6 +1003,10 @@ public class Campaign implements Serializable, ITechManager {
         }
 
         MekHQ.triggerEvent(new ScenarioNewEvent(s));
+    }
+
+    public Map<Integer, Scenario> getScenarios() {
+        return scenarios;
     }
 
     public Scenario getScenario(int id) {
@@ -3531,7 +3534,6 @@ public class Campaign implements Serializable, ITechManager {
         }
         removeAllPatientsFor(person);
         removeAllTechJobsFor(person);
-        removeKillsFor(person.getId());
         getRetirementDefectionTracker().removePerson(person);
 
         if (log) {
@@ -3678,16 +3680,6 @@ public class Campaign implements Serializable, ITechManager {
 
         missions.remove(id);
         MekHQ.triggerEvent(new MissionRemovedEvent(mission));
-    }
-
-    public void removeKill(Kill k) {
-        if (kills.containsKey(k.getPilotId())) {
-            kills.get(k.getPilotId()).remove(k);
-        }
-    }
-
-    public void removeKillsFor(UUID personID) {
-        kills.remove(personID);
     }
 
     public void removeForce(Force force) {
@@ -4125,14 +4117,6 @@ public class Campaign implements Serializable, ITechManager {
         finances.writeToXml(pw1, indent);
         location.writeToXml(pw1, indent);
         shoppingList.writeToXml(pw1, indent);
-
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "kills");
-        for (List<Kill> kills : kills.values()) {
-            for (Kill k : kills) {
-                k.writeToXml(pw1, indent + 1);
-            }
-        }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "kills");
         MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "skillTypes");
         for (String name : SkillType.skillList) {
             SkillType type = SkillType.getType(name);
@@ -5463,52 +5447,6 @@ public class Campaign implements Serializable, ITechManager {
         for (IBasicOption option : options) {
             gameOptions.getOption(option.getName()).setValue(option.getValue());
         }
-    }
-
-    /**
-     * Imports a {@link Kill} into a campaign.
-     * @param k A {@link Kill} to import into the campaign.
-     */
-    public void importKill(Kill k) {
-        if (!kills.containsKey(k.getPilotId())) {
-            kills.put(k.getPilotId(), new ArrayList<>());
-        }
-
-        kills.get(k.getPilotId()).add(k);
-    }
-
-    public void addKill(Kill k) {
-        importKill(k);
-
-        if ((getCampaignOptions().getKillsForXP() > 0) && (getCampaignOptions().getKillXPAward() > 0)) {
-            if ((getKillsFor(k.getPilotId()).size() % getCampaignOptions().getKillsForXP()) == 0) {
-                Person p = getPerson(k.getPilotId());
-                if (null != p) {
-                    p.awardXP(getCampaignOptions().getKillXPAward());
-                    MekHQ.triggerEvent(new PersonChangedEvent(p));
-                }
-            }
-        }
-    }
-
-    public List<Kill> getKills() {
-        List<Kill> flattenedKills = new ArrayList<>();
-        for (List<Kill> personKills : kills.values()) {
-            flattenedKills.addAll(personKills);
-        }
-
-        return Collections.unmodifiableList(flattenedKills);
-    }
-
-    public List<Kill> getKillsFor(UUID pid) {
-        List<Kill> personalKills = kills.get(pid);
-
-        if (personalKills == null) {
-            return Collections.emptyList();
-        }
-
-        personalKills.sort(Comparator.comparing(Kill::getDate));
-        return personalKills;
     }
 
     public PartsStore getPartsStore() {

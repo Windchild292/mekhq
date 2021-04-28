@@ -18,6 +18,18 @@
  */
 package mekhq.campaign;
 
+import megamek.common.UnitType;
+import mekhq.MekHQ;
+import mekhq.campaign.force.Force;
+import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.Skill;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.enums.PersonnelRole;
+import mekhq.campaign.personnel.ranks.Rank;
+import mekhq.campaign.personnel.ranks.Ranks;
+import mekhq.campaign.unit.Unit;
+
+import javax.swing.*;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -26,23 +38,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
-
-import javax.swing.SwingWorker;
-
-import megamek.common.UnitType;
-import mekhq.MekHQ;
-import mekhq.campaign.force.Force;
-import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.ranks.Rank;
-import mekhq.campaign.personnel.ranks.Ranks;
-import mekhq.campaign.personnel.Skill;
-import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.personnel.enums.PersonnelRole;
-import mekhq.campaign.unit.Unit;
 
 public class MercRosterAccess extends SwingWorker<Void, Void> {
     //region Variable Declarations
@@ -545,16 +546,24 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
                         preparedStatement.executeUpdate();
                     }
                 }
+
                 //add kills
-                //FIXME: the only issue here is we get duplicate kills for crewed vehicles
-                //TODO: clean up the getWhatKilled string
-                for (Kill k : campaign.getKillsFor(p.getId())) {
-                    preparedStatement = connect.prepareStatement("INSERT INTO " + table + ".kills (parent, type, killdate, equipment) VALUES (?, ?, ?, ?)");
-                    preparedStatement.setInt(1, id);
-                    preparedStatement.setString(2, truncateString(k.getWhatKilled(), 45));
-                    preparedStatement.setDate(3, Date.valueOf(k.getDate().toString()));
-                    preparedStatement.setString(4, truncateString(k.getKilledByWhat(), 45));
-                    preparedStatement.executeUpdate();
+                final List<Kill> kills = new ArrayList<>();
+                for (final Person person : campaign.getPersonnel()) {
+                    for (final Kill kill : person.getKills()) {
+                        if (kills.stream().anyMatch(kill::isSameKill)) {
+                            continue;
+                        }
+
+                        kills.add(kill);
+
+                        preparedStatement = connect.prepareStatement("INSERT INTO " + table + ".kills (parent, type, killdate, equipment) VALUES (?, ?, ?, ?)");
+                        preparedStatement.setInt(1, id);
+                        preparedStatement.setString(2, truncateString(kill.getKilledUnitName(), 45));
+                        preparedStatement.setDate(3, Date.valueOf(kill.getScenario().getDate().toString()));
+                        preparedStatement.setString(4, truncateString(kill.getKillingUnitName(), 45));
+                        preparedStatement.executeUpdate();
+                    }
                 }
                 progressTicker += 4;
                 determineProgress();
