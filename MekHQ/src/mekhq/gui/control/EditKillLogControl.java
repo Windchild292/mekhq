@@ -23,6 +23,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.Kill;
 import mekhq.campaign.personnel.Person;
 import mekhq.gui.dialog.AddOrEditKillEntryDialog;
+import mekhq.gui.dialog.KillEntryDialog;
 import mekhq.gui.model.KillTableModel;
 
 import javax.swing.*;
@@ -107,7 +108,7 @@ public class EditKillLogControl extends JPanel {
     }
 
     private void addKill() {
-        final KillEntryDialog killEntryDialog = new AddOrEditKillEntryDialog(parent, true,
+        final KillEntryDialog killEntryDialog = new KillEntryDialog(parent,
                 person, "", campaign.getLocalDate());
         dialog.setVisible(true);
         if () {
@@ -117,9 +118,9 @@ public class EditKillLogControl extends JPanel {
     }
 
     private void editKill() {
-        Kill kill = killModel.getKillAt(killTable.getSelectedRow());
+        final Kill kill = killModel.getKillAt(killTable.getSelectedRow());
         if (null != kill) {
-            AddOrEditKillEntryDialog dialog = new AddOrEditKillEntryDialog(parent, true, kill);
+            AddOrEditKillEntryDialog dialog = new AddOrEditKillEntryDialog(parent, kill);
             dialog.setVisible(true);
             refreshTable();
         }

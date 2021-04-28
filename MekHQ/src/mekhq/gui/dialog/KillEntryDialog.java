@@ -1,7 +1,7 @@
 /*
- * NewKillDialog.java
+ * KillEntryDialog.java
  *
- * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,11 +20,74 @@
  */
 package mekhq.gui.dialog;
 
+import mekhq.campaign.Kill;
+import mekhq.campaign.mission.Scenario;
 import mekhq.gui.baseComponents.AbstractMHQButtonDialog;
 
-/**
- * @author Taharqa Original Author
- * @author Windchild Abstraction
- */
+import javax.swing.*;
+import java.awt.*;
+
 public class KillEntryDialog extends AbstractMHQButtonDialog {
+    //region Getters/Setters
+    private final Kill kill;
+    private Scenario scenario;
+
+    private JTextField txtKilledUnitName;
+    private JTextField txtKillingUnitName;
+    //endregion Getters/Setters
+
+    //region Constructors
+    protected KillEntryDialog(final JFrame frame, final Kill kill) {
+        super(frame, "KillEntryDialog", "KillEntryDialog.title");
+        this.kill = kill;
+        setScenario(kill.getScenario());
+        initialize();
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public Kill getKill() {
+        return kill;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(final Scenario scenario) {
+        this.scenario = scenario;
+    }
+
+    public JTextField getTxtKilledUnitName() {
+        return txtKilledUnitName;
+    }
+
+    public void setTxtKilledUnitName(final JTextField txtKilledUnitName) {
+        this.txtKilledUnitName = txtKilledUnitName;
+    }
+
+    public JTextField getTxtKillingUnitName() {
+        return txtKillingUnitName;
+    }
+
+    public void setTxtKillingUnitName(final JTextField txtKillingUnitName) {
+        this.txtKillingUnitName = txtKillingUnitName;
+    }
+    //endregion Getters/Setters
+
+    //region Initialization
+    @Override
+    protected Container createCenterPane() {
+        return null;
+    }
+    //endregion Initialization
+
+    //region Button Actions
+    @Override
+    protected void okAction() {
+        getKill().setScenario(getScenario());
+        getKill().setKilledUnitName(getTxtKilledUnitName().getText());
+        getKill().setKillingUnitName(getTxtKillingUnitName().getText());
+    }
+    //endregion Button Actions
 }

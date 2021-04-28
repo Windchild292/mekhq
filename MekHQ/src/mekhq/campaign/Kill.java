@@ -48,18 +48,35 @@ public class Kill implements Serializable {
     //endregion Variable Declarations
 
     //region Constructors
+    /**
+     * This is used in legacy parsing
+     */
     public Kill() {
 
     }
 
+    /**
+     * @param slayer the person who killed the unit in question
+     */
     public Kill(final Person slayer) {
         setSlayer(slayer);
     }
 
+    /**
+     * Creates a clone of the input kill assigned to a separate person
+     * @param kill the kill to clone
+     * @param slayer the person who killed the specified unit
+     */
     public Kill(final Kill kill, final Person slayer) {
         this(slayer, kill.getScenario(), kill.getKilledUnitName(), kill.getKillingUnitName());
     }
 
+    /**
+     * @param slayer the person who killed the unit in question
+     * @param scenario the scenario the kill occurred during
+     * @param killedUnitName the name of the killed unit
+     * @param killingUnitName the name of the killing unit
+     */
     public Kill(final Person slayer, final Scenario scenario, final String killedUnitName,
                 final String killingUnitName) {
         setSlayer(slayer);
@@ -147,4 +164,9 @@ public class Kill implements Serializable {
         return kill;
     }
     //endregion File I/O
+
+    @Override
+    public boolean equals() {
+
+    }
 }

@@ -908,7 +908,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 }
                 final Unit unit = selectedPerson.getUnit();
                 final AddOrEditKillEntryDialog nkd = new AddOrEditKillEntryDialog(gui.getFrame(),
-                        true, selectedPerson, (unit != null) ? unit.getName() : resourceMap.getString("bareHands.text"),
+                        selectedPerson, (unit != null) ? unit.getName() : resourceMap.getString("bareHands.text"),
                         gui.getCampaign().getLocalDate());
                 nkd.setVisible(true);
                 if (nkd.getKill().isPresent()) {

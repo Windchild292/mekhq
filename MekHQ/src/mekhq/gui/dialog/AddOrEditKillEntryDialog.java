@@ -1,7 +1,5 @@
 package mekhq.gui.dialog;
 
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Kill;
@@ -16,20 +14,15 @@ import java.util.ResourceBundle;
 
 @Deprecated
 public class AddOrEditKillEntryDialog extends JDialog {
-    public AddOrEditKillEntryDialog(JFrame parent, boolean modal, Person slayer, String killerUnit, LocalDate entryDate) {
-        this(parent, modal, ADD_OPERATION, new Kill(slayer, "?", killerUnit, entryDate));
+    public AddOrEditKillEntryDialog(JFrame parent, Person slayer, String killerUnit, LocalDate entryDate) {
+        this(parent, ADD_OPERATION, new Kill(slayer, "?", killerUnit, entryDate));
     }
 
-    public AddOrEditKillEntryDialog(JFrame parent, boolean modal, Kill kill) {
-        this(parent, modal, EDIT_OPERATION, kill);
+    public AddOrEditKillEntryDialog(JFrame parent, Kill kill) {
+        this(parent, EDIT_OPERATION, kill);
     }
 
-    private AddOrEditKillEntryDialog(JFrame parent, boolean modal, int operationType, Kill kill) {
-        super(parent, modal);
-
-        assert kill != null;
-
-        this.frame = parent;
+    private AddOrEditKillEntryDialog(JFrame parent, int operationType, Kill kill) {
         this.kill = kill;
         this.date = kill.getDate();
         this.operationType = operationType;
@@ -135,19 +128,5 @@ public class AddOrEditKillEntryDialog extends JDialog {
         kill.setWhatKilled(txtKill.getText());
         kill.setKilledByWhat(txtKiller.getText());
         kill.setDate(date);
-        this.setVisible(false);
-    }
-
-    private void btnCloseActionPerformed(ActionEvent evt) {
-        kill = null;
-        this.setVisible(false);
-    }
-
-    private void changeDate() {
-        DateChooser dc = new DateChooser(frame, date);
-        if (dc.showDateChooser() == DateChooser.OK_OPTION) {
-            date = dc.getDate();
-            btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(date));
-        }
     }
 }
