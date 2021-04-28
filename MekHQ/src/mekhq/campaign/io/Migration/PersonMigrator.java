@@ -131,10 +131,10 @@ public class PersonMigrator {
     }
 
     public static void migrateKills(final Campaign campaign, final Node wn) {
-        ???
+
     }
 
     public static Kill migrateKill(final Campaign campaign, final Person person, final String text) {
-        ???
+
     }
 }

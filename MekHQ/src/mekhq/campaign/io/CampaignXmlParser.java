@@ -333,12 +333,11 @@ public class CampaignXmlParser {
             }
         }
 
-        // Fix any Person Id References
-        PersonIdReference.fixPersonIdReferences(retVal);
-
-        // Okay, after we've gone through all the nodes and constructed the
-        // Campaign object...
+        // Okay, after we've gone through all the nodes and constructed the Campaign object...
         // We need to do a post-process pass to restore a number of references.
+
+        // Fix any Id Reference Class References
+        PersonIdReference.fixPersonIdReferences(retVal);
         ScenarioIdReference.fixScenarioIdReferences(retVal);
 
         long timestamp = System.currentTimeMillis();
@@ -1691,13 +1690,10 @@ public class CampaignXmlParser {
             }
 
             final Kill kill = new Kill();
-            // TODO : Windchild : Parse kill from XML
-
-            final Person person = new Person();
-
-            if ((kill != null) {
+            final Person person;
+            if (kill != null) {
                 person.addKillDirect(kill);
-            })
+            }
         }
 
         MekHQ.getLogger().info("Load Kill Nodes Complete!");

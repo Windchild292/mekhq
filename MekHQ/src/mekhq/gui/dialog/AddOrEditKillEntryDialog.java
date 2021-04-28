@@ -1,64 +1,23 @@
-/*
- * NewKillDialog.java
- *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
- *
- * This file is part of MekHQ.
- *
- * MekHQ is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * MekHQ is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
- */
 package mekhq.gui.dialog;
 
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
+import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
+import mekhq.campaign.Kill;
+import mekhq.campaign.personnel.Person;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.UUID;
 
-import megamek.common.util.EncodeControl;
-import mekhq.MekHQ;
-import mekhq.campaign.Kill;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
-
-import javax.swing.*;
-
-/**
- * @author  Taharqa
- */
-public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
-    private static final long serialVersionUID = -8038099101234445018L;
-    private static final int ADD_OPERATION = 1;
-    private static final int EDIT_OPERATION = 2;
-
-    private JFrame frame;
-    private int operationType;
-    private Kill kill;
-    private LocalDate date;
-
-    private JButton btnClose;
-    private JButton btnOK;
-    private JLabel lblKill;
-    private JTextField txtKill;
-    private JLabel lblKiller;
-    private JTextField txtKiller;
-    private JButton btnDate;
-
-    public AddOrEditKillEntryDialog(JFrame parent, boolean modal, UUID killerPerson, String killerUnit, LocalDate entryDate) {
-        this(parent, modal, ADD_OPERATION, new Kill(killerPerson, "?", killerUnit, entryDate));
+@Deprecated
+public class AddOrEditKillEntryDialog extends JDialog {
+    public AddOrEditKillEntryDialog(JFrame parent, boolean modal, Person slayer, String killerUnit, LocalDate entryDate) {
+        this(parent, modal, ADD_OPERATION, new Kill(slayer, "?", killerUnit, entryDate));
     }
 
     public AddOrEditKillEntryDialog(JFrame parent, boolean modal, Kill kill) {
@@ -72,7 +31,7 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
 
         this.frame = parent;
         this.kill = kill;
-        this.date = this.kill.getDate();
+        this.date = kill.getDate();
         this.operationType = operationType;
         initComponents();
         setLocationRelativeTo(parent);
@@ -84,16 +43,6 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
     }
 
     private void initComponents() {
-         GridBagConstraints gridBagConstraints;
-
-        txtKill = new JTextField();
-        lblKill = new JLabel();
-        txtKiller = new JTextField();
-        lblKiller = new JLabel();
-        btnOK = new JButton();
-        btnClose = new JButton();
-        btnDate = new JButton();
-
         ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.AddOrEditKillEntryDialog", new EncodeControl());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -180,13 +129,6 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
         getContentPane().add(btnClose, gridBagConstraints);
 
         pack();
-    }
-
-    private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(AddOrEditKillEntryDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
     }
 
     private void btnOKActionPerformed(ActionEvent evt) {
