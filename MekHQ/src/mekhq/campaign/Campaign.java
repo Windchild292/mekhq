@@ -139,10 +139,10 @@ import mekhq.campaign.unit.TestUnit;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.unit.UnitOrder;
 import mekhq.campaign.unit.UnitTechProgression;
-import mekhq.campaign.universe.AbstractFactionSelector;
-import mekhq.campaign.universe.AbstractPlanetSelector;
-import mekhq.campaign.universe.DefaultFactionSelector;
-import mekhq.campaign.universe.DefaultPlanetSelector;
+import mekhq.campaign.universe.selectors.factionSelectors.AbstractFactionSelector;
+import mekhq.campaign.universe.selectors.planetSelectors.AbstractPlanetSelector;
+import mekhq.campaign.universe.selectors.factionSelectors.DefaultFactionSelector;
+import mekhq.campaign.universe.selectors.planetSelectors.DefaultPlanetSelector;
 import mekhq.campaign.universe.Era;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
@@ -154,8 +154,8 @@ import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.RATGeneratorConnector;
 import mekhq.campaign.universe.RATManager;
 import mekhq.campaign.universe.RandomFactionGenerator;
-import mekhq.campaign.universe.RangedFactionSelector;
-import mekhq.campaign.universe.RangedPlanetSelector;
+import mekhq.campaign.universe.selectors.factionSelectors.RangedFactionSelector;
+import mekhq.campaign.universe.selectors.planetSelectors.RangedPlanetSelector;
 import mekhq.campaign.universe.Systems;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
@@ -542,7 +542,7 @@ public class Campaign implements Serializable, ITechManager {
         }
         return atbConfig;
     }
-    
+
     //region Ship Search
     /**
      * Sets the date a ship search was started, or null if no search is in progress.
@@ -879,7 +879,7 @@ public class Campaign implements Serializable, ITechManager {
         }
 
         addMissionWithoutId(m);
-        
+
         StratconContractInitializer.restoreTransientStratconInformation(m, this);
     }
 
@@ -1221,7 +1221,7 @@ public class Campaign implements Serializable, ITechManager {
     public Person newDependent(boolean baby) {
         Person person;
 
-        if (!baby && campaignOptions.getRandomizeDependentOrigin()) {
+        if (!baby && getCampaignOptions().getRandomOriginOptions().isRandomizeDependentOrigin()) {
             person = newPerson(PersonnelRole.DEPENDENT);
         } else {
             person = newPerson(PersonnelRole.DEPENDENT, PersonnelRole.NONE, new DefaultFactionSelector(),
@@ -1251,8 +1251,9 @@ public class Campaign implements Serializable, ITechManager {
      * @param secondaryRole A secondary role
      * @return A new {@link Person}.
      */
-    public Person newPerson(PersonnelRole primaryRole, PersonnelRole secondaryRole) {
-        return newPerson(primaryRole, secondaryRole, getFactionSelector(), getPlanetSelector(), Gender.RANDOMIZE);
+    public Person newPerson(final PersonnelRole primaryRole, final PersonnelRole secondaryRole) {
+        return newPerson(primaryRole, secondaryRole, getFactionSelector(getCampaignOptions().getRandomOriginOptions()),
+                getPlanetSelector(getCampaignOptions().getRandomOriginOptions()), Gender.RANDOMIZE);
     }
 
     /**
@@ -1265,7 +1266,8 @@ public class Campaign implements Serializable, ITechManager {
      * @return A new {@link Person}.
      */
     public Person newPerson(final PersonnelRole primaryRole, final String factionCode, final Gender gender) {
-        return newPerson(primaryRole, PersonnelRole.NONE, new DefaultFactionSelector(factionCode), getPlanetSelector(), gender);
+        return newPerson(primaryRole, PersonnelRole.NONE, new DefaultFactionSelector(factionCode),
+                getPlanetSelector(getCampaignOptions().getRandomOriginOptions()), gender);
     }
 
     /**
@@ -1587,32 +1589,25 @@ public class Campaign implements Serializable, ITechManager {
     //region Personnel Selectors and Generators
     /**
      * Gets the {@link AbstractFactionSelector} to use with this campaign.
+     * @param options the random origin options to use
      * @return An {@link AbstractFactionSelector} to use when selecting a {@link Faction}.
      */
-    public AbstractFactionSelector getFactionSelector() {
-        if (getCampaignOptions().randomizeOrigin()) {
-            RangedFactionSelector selector = new RangedFactionSelector(getCampaignOptions().getOriginSearchRadius());
-            selector.setDistanceScale(getCampaignOptions().getOriginDistanceScale());
-            return selector;
-        } else {
-            return new DefaultFactionSelector();
-        }
+    public AbstractFactionSelector getFactionSelector(final RandomOriginOptions options) {
+        return options.isRandomizeOrigin()
+                ? new RangedFactionSelector(options.getOriginSearchRadius(), options.getOriginDistanceScale())
+                : new DefaultFactionSelector();
     }
 
     /**
      * Gets the {@link AbstractPlanetSelector} to use with this campaign.
+     * @param options the random origin options to use
      * @return An {@link AbstractPlanetSelector} to use when selecting a {@link Planet}.
      */
-    public AbstractPlanetSelector getPlanetSelector() {
-        if (getCampaignOptions().randomizeOrigin()) {
-            RangedPlanetSelector selector =
-                    new RangedPlanetSelector(getCampaignOptions().getOriginSearchRadius(),
-                            getCampaignOptions().extraRandomOrigin());
-            selector.setDistanceScale(getCampaignOptions().getOriginDistanceScale());
-            return selector;
-        } else {
-            return new DefaultPlanetSelector();
-        }
+    public AbstractPlanetSelector getPlanetSelector(final RandomOriginOptions options) {
+        return options.isRandomizeOrigin()
+                ? new RangedPlanetSelector(options.getOriginSearchRadius(),
+                        options.isExtraRandomOrigin(), options.getOriginDistanceScale())
+                : new DefaultPlanetSelector();
     }
 
     /**
@@ -3028,7 +3023,7 @@ public class Campaign implements Serializable, ITechManager {
                             (s instanceof AtBDynamicScenario)) {
                         var stub = StratconRulesManager.processIgnoredScenario(
                                 (AtBDynamicScenario) s, contract.getStratconCampaignState());
-                        
+
                         if (stub) {
                             s.convertToStub(this, Scenario.S_DEFEAT);
                             addReport("Failure to deploy for " + s.getName() + " resulted in defeat.");
@@ -3038,7 +3033,7 @@ public class Campaign implements Serializable, ITechManager {
                     } else {
                         s.convertToStub(this, Scenario.S_DEFEAT);
                         contract.addPlayerMinorBreach();
-                        
+
                         addReport("Failure to deploy for " + s.getName()
                             + " resulted in defeat and a minor contract breach.");
                     }
@@ -3650,7 +3645,7 @@ public class Campaign implements Serializable, ITechManager {
         Mission mission = getMission(scenario.getMissionId());
         if (null != mission) {
             mission.removeScenario(scenario.getId());
-            
+
             // if we GM-remove the scenario and it's attached to a StratCon scenario
             // then pretend like we let the StratCon scenario expire
             if ((mission instanceof AtBContract) &&
@@ -5616,8 +5611,8 @@ public class Campaign implements Serializable, ITechManager {
      * @param p The {@link Person} who should receive a randomized origin.
      */
     public void assignRandomOriginFor(Person p) {
-        AbstractFactionSelector factionSelector = getFactionSelector();
-        AbstractPlanetSelector planetSelector = getPlanetSelector();
+        AbstractFactionSelector factionSelector = getFactionSelector(getCampaignOptions().getRandomOriginOptions());
+        AbstractPlanetSelector planetSelector = getPlanetSelector(getCampaignOptions().getRandomOriginOptions());
 
         Faction faction = factionSelector.selectFaction(this);
         Planet planet = planetSelector.selectPlanet(this, faction);
