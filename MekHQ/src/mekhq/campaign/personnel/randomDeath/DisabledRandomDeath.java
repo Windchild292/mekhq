@@ -20,18 +20,18 @@ package mekhq.campaign.personnel.randomDeath;
 
 import megamek.common.enums.Gender;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.enums.AgeRange;
+import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
 public class DisabledRandomDeath extends AbstractRandomDeathMethod {
     //region Constructors
     public DisabledRandomDeath() {
-        super(RandomDeathMethod.NONE);
+        super(RandomDeathMethod.NONE, new double[0], new double[0]);
     }
     //endregion Constructors
 
     @Override
-    public boolean randomDeath(Campaign campaign, AgeRange ageRange, int age, Gender gender) {
+    public boolean randomDeath(Campaign campaign, AgeGroup ageGroup, int age, Gender gender) {
         return false;
     }
 }

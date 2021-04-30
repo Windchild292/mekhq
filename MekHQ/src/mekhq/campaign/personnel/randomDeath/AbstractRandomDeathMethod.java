@@ -22,14 +22,16 @@ import megamek.common.enums.Gender;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Injury;
 import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.enums.AgeRange;
+import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.InjuryLevel;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
+import java.time.LocalDate;
+
 public abstract class AbstractRandomDeathMethod {
     //region Variable Declarations
-    protected final RandomDeathMethod method;
+    private final RandomDeathMethod method;
     //endregion Variable Declarations
 
     //region Constructors
@@ -46,21 +48,21 @@ public abstract class AbstractRandomDeathMethod {
 
     /**
      * @param campaign the campaign the person is in
-     * @param ageRange the person's age range
+     * @param ageGroup the person's age grouping
      * @param age the person's age
      * @param gender the person's gender
      * @return true if the person is selected to randomly die, otherwise false
      */
-    public abstract boolean randomDeath(final Campaign campaign, final AgeRange ageRange,
+    public abstract boolean randomDeath(final Campaign campaign, final AgeGroup ageGroup,
                                         final int age, final Gender gender);
 
     /**
      * @param campaign the campaign the person is in
-     * @param ageRange the person's age range
+     * @param ageGroup the person's age grouping
      * @return true if the random death is enabled for the age
      */
-    public boolean validateAgeEnabled(final Campaign campaign, final AgeRange ageRange) {
-        switch (ageRange) {
+    public boolean validateAgeEnabled(final Campaign campaign, final AgeGroup ageGroup) {
+        switch (ageGroup) {
             case ELDER:
             case ADULT:
                 return true;
@@ -81,12 +83,12 @@ public abstract class AbstractRandomDeathMethod {
 
     //region Cause
     /**
+     * @param today the current day
      * @param person the person who has died
-     * @param ageRange the person's age range
-     * @param campaign the campaign the person is a part of
+     * @param ageGroup the person's age grouping
      * @return the cause of the Person's random death
      */
-    public PersonnelStatus getCause(final Person person, final AgeRange ageRange, final Campaign campaign) {
+    public PersonnelStatus getCause(final LocalDate today, final Person person, final AgeGroup ageGroup) {
         if (person.getStatus().isMIA()) {
             return PersonnelStatus.KIA;
         } else if (person.hasInjuries(false)) {
@@ -96,9 +98,9 @@ public abstract class AbstractRandomDeathMethod {
             }
         }
 
-        if (person.isPregnant() && (person.getPregnancyWeek(campaign.getLocalDate()) > 22)) {
+        if (person.isPregnant() && (person.getPregnancyWeek(today) > 22)) {
             return PersonnelStatus.PREGNANCY_COMPLICATIONS;
-        } else if (ageRange.isElder()) {
+        } else if (ageGroup.isElder()) {
             return PersonnelStatus.OLD_AGE;
         }
 

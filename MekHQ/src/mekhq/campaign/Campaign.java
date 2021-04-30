@@ -46,7 +46,7 @@ import mekhq.campaign.log.*;
 import mekhq.campaign.mission.enums.MissionStatus;
 import mekhq.campaign.mission.enums.ScenarioStatus;
 import mekhq.campaign.personnel.*;
-import mekhq.campaign.personnel.enums.AgeRange;
+import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.Phenotype;
@@ -3201,16 +3201,16 @@ public class Campaign implements Serializable, ITechManager {
 
     public void processNewDayPersonnel() {
         final AbstractRandomDeathMethod randomDeathMethod = getCampaignOptions()
-                .getRandomDeathMethod().getMethod(this);
+                .getRandomDeathMethod().getMethod(getCampaignOptions());
 
         // This MUST use getActivePersonnel as we only want to process active personnel, and
         // furthermore this allows us to add and remove personnel without issue
         for (Person p : getActivePersonnel()) {
             // Random Death
             if (!randomDeathMethod.getMethod().isNone()) {
-                final AgeRange ageRange = AgeRange.determineAgeRange(p.getAge(getLocalDate()));
-                if (randomDeathMethod.randomDeath(this, ageRange, p.getAge(getLocalDate()), p.getGender())) {
-                    p.changeStatus(this, randomDeathMethod.getCause(p, ageRange, this));
+                final AgeGroup ageGroup = AgeGroup.determineAgeGroup(p.getAge(getLocalDate()));
+                if (randomDeathMethod.randomDeath(this, ageGroup, p.getAge(getLocalDate()), p.getGender())) {
+                    p.changeStatus(this, randomDeathMethod.getCause(getLocalDate(), p, ageGroup));
                     continue;
                 }
             }

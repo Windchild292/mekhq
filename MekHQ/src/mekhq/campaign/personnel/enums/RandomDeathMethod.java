@@ -19,24 +19,19 @@
 package mekhq.campaign.personnel.enums;
 
 import megamek.common.util.EncodeControl;
-import mekhq.campaign.Campaign;
+import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.randomDeath.AbstractRandomDeathMethod;
+import mekhq.campaign.personnel.randomDeath.AgeRangeRandomDeath;
 import mekhq.campaign.personnel.randomDeath.DisabledRandomDeath;
-import mekhq.campaign.personnel.randomDeath.SixthOrderPolynomialRandomDeath;
+import mekhq.campaign.personnel.randomDeath.ExponentialRandomDeath;
 
 import java.util.ResourceBundle;
 
 public enum RandomDeathMethod {
     //region Enum Declarations
-    /**
-     * This disables Random Deaths
-     */
     NONE("RandomDeathMethod.NONE.text", "RandomDeathMethod.NONE.toolTipText"),
-    /**
-     * This is the standard type for Random Deaths, which uses a sixth order polynomial equation
-     * to determine the chance of random deaths
-     */
-    STANDARD("RandomDeathMethod.STANDARD.text", "RandomDeathMethod.STANDARD.toolTipText");
+    EXPONENTIAL("RandomDeathMethod.EXPONENTIAL.text", "RandomDeathMethod.EXPONENTIAL.toolTipText"),
+    AGE_RANGE("RandomDeathMethod.AGE_RANGE.text", "RandomDeathMethod.AGE_RANGE.toolTipText");
     //endregion Enum Declarations
 
     //region Variable Declarations
@@ -63,15 +58,21 @@ public enum RandomDeathMethod {
         return this == NONE;
     }
 
-    public boolean isStandard() {
-        return this == STANDARD;
+    public boolean isExponential() {
+        return this == EXPONENTIAL;
+    }
+
+    public boolean isAgeRange() {
+        return this == AGE_RANGE;
     }
     //endregion Boolean Comparison Methods
 
-    public AbstractRandomDeathMethod getMethod(final Campaign campaign) {
+    public AbstractRandomDeathMethod getMethod(final CampaignOptions campaignOptions) {
         switch (this) {
-            case STANDARD:
-                return new SixthOrderPolynomialRandomDeath(campaign);
+            case EXPONENTIAL:
+                return new ExponentialRandomDeath(campaignOptions);
+            case AGE_RANGE:
+                return new AgeRangeRandomDeath(campaignOptions);
             case NONE:
             default:
                 return new DisabledRandomDeath();

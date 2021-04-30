@@ -23,33 +23,33 @@ import mekhq.MekHQ;
 
 import java.util.ResourceBundle;
 
-public enum AgeRange {
+public enum AgeGroup {
     //region Enum Declarations
-    ELDER("AgeRange.ELDER.text", 65),
-    ADULT("AgeRange.ADULT.text", 20),
-    TEENAGER("AgeRange.TEENAGER.text", 13),
-    PRETEEN("AgeRange.PRETEEN.text", 10),
-    CHILD("AgeRange.CHILD.text", 3),
-    TODDLER("AgeRange.TODDLER.text", 1),
-    BABY("AgeRange.BABY.text", -1);
+    ELDER("AgeGroup.ELDER.text", 65),
+    ADULT("AgeGroup.ADULT.text", 20),
+    TEENAGER("AgeGroup.TEENAGER.text", 13),
+    PRETEEN("AgeGroup.PRETEEN.text", 10),
+    CHILD("AgeGroup.CHILD.text", 3),
+    TODDLER("AgeGroup.TODDLER.text", 1),
+    BABY("AgeGroup.BABY.text", -1);
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
-    private final int rangeLowerBound; // the lower bound, inclusive
+    private final int groupLowerBound; // the lower bound of the age range for this age group, inclusive
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    AgeRange(final String name, final int rangeLowerBound) {
+    AgeGroup(final String name, final int groupLowerBound) {
         this.name = resources.getString(name);
-        this.rangeLowerBound = rangeLowerBound;
+        this.groupLowerBound = groupLowerBound;
     }
     //endregion Constructors
 
     //region Getters
-    public int getRangeLowerBound() {
-        return rangeLowerBound;
+    public int getGroupLowerBound() {
+        return groupLowerBound;
     }
     //endregion Getters
 
@@ -83,16 +83,14 @@ public enum AgeRange {
     }
     //endregion Boolean Comparison Methods
 
-    public static AgeRange determineAgeRange(final int age) {
-        if (age > -1) {
-            for (final AgeRange range : AgeRange.values()) {
-                if (age >= range.getRangeLowerBound()) {
-                    return range;
-                }
+    public static AgeGroup determineAgeGroup(final int age) {
+        for (final AgeGroup ageGroup : AgeGroup.values()) {
+            if (age >= ageGroup.getGroupLowerBound()) {
+                return ageGroup;
             }
-        } else {
-            MekHQ.getLogger().error("Illegal age of " + age + " entered for a person");
         }
+
+        MekHQ.getLogger().error("Illegal age of " + age + " entered for a person. Returning Adult");
 
         // This is a default return, which will only happen on error cases
         return ADULT;
