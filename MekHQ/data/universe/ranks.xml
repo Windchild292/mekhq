@@ -5,7 +5,7 @@ Code: The unique String code for the system.
 Name: The display name for the system.
 Description: The display description for the system.
 Rank:
-	Rank Names: An array of names or alternatives for the rank based on the individual professions.
+	Rank Names: An array of names or alternatives for the rank based  on the individual professions.
 	Officer: Whether the rank is considered to be an officer.
 	Pay Multiplier: The pay bonus paid to those of this rank.
 -->
