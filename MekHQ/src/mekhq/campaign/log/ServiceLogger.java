@@ -76,17 +76,21 @@ public class ServiceLogger {
                 MessageFormat.format(message, name) + rankEntry));
     }
 
-    public static void passedAway(final Person person, final LocalDate date,
-                                  final PersonnelStatus status) {
-        person.addLogEntry(new ServiceLogEntry(date, status.toString()));
-    }
-
-    public static void retired(Person person, LocalDate date) {
-        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("retired.text")));
+    public static void changedStatus(final Person person, final LocalDate date,
+                                     final PersonnelStatus status) {
+        person.addLogEntry(new ServiceLogEntry(date, status.getLogText()));
     }
 
     public static void recoveredMia(Person person, LocalDate date) {
         person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("recoveredMia.text")));
+    }
+
+    public static void returnedFromLeave(Person person, LocalDate date) {
+        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("returnedFromLeave.text")));
+    }
+
+    public static void returnedFromAWOL(Person person, LocalDate date) {
+        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("returnedFromAWOL.text")));
     }
 
     public static void resurrected(Person person, LocalDate date) {
@@ -95,6 +99,10 @@ public class ServiceLogger {
 
     public static void rehired(Person person, LocalDate date) {
         person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("rehired.text")));
+    }
+
+    public static void retired(Person person, LocalDate date) {
+        person.addLogEntry(new ServiceLogEntry(date, logEntriesResourceMap.getString("retired.text")));
     }
 
     public static void promotedTo(Person person, LocalDate date) {

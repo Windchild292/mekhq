@@ -902,17 +902,22 @@ public class Person implements Serializable {
      * @param campaign the campaign the person is part of
      * @param status the person's new PersonnelStatus
      */
-    public void changeStatus(Campaign campaign, PersonnelStatus status) {
+    public void changeStatus(final Campaign campaign, final PersonnelStatus status) {
         if (status == getStatus()) { // no change means we don't need to process anything
             return;
-        } else if (getStatus().isKIA()) {
+        } else if ((status.isActive() || status.isOnLeave() || status.isAWOL())
+                && getStatus().isDead()) {
             // remove date of death for resurrection
             setDateOfDeath(null);
         }
 
         switch (status) {
             case ACTIVE:
-                if (getStatus().isMIA()) {
+                if (getStatus().isOnLeave()) {
+                    ServiceLogger.returnedFromLeave(this, campaign.getLocalDate());
+                } else if (getStatus().isAWOL()) {
+                    ServiceLogger.returnedFromAWOL(this, campaign.getLocalDate());
+                } else if (getStatus().isMIA()) {
                     ServiceLogger.recoveredMia(this, campaign.getLocalDate());
                 } else if (getStatus().isDead()) {
                     ServiceLogger.resurrected(this, campaign.getLocalDate());
@@ -927,22 +932,14 @@ public class Person implements Serializable {
                     setRetirement(campaign.getLocalDate());
                 }
                 break;
-            case MIA:
-            case KIA:
-            case NATURAL_CAUSES:
-            case WOUNDS:
-            case DISEASE:
-            case OLD_AGE:
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status);
-                break;
             case PREGNANCY_COMPLICATIONS:
                 // The child might be able to be born, albeit into a world without their mother.
                 // This can be manually set by males and for those who are not pregnant. This is
                 // purposeful, to allow for player customization, and thus we first check if someone
                 // is pregnant before having the birth
                 if (isPregnant()) {
-                    int pregnancyWeek = getPregnancyWeek(campaign.getLocalDate());
-                    double babyBornChance;
+                    final int pregnancyWeek = getPregnancyWeek(campaign.getLocalDate());
+                    final double babyBornChance;
                     if (pregnancyWeek > 35) {
                         babyBornChance = 0.99;
                     } else if (pregnancyWeek > 29) {
@@ -963,7 +960,9 @@ public class Person implements Serializable {
                         birth(campaign);
                     }
                 }
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status);
+                // purposeful fall through
+            default:
+                ServiceLogger.changedStatus(this, campaign.getLocalDate(), status);
                 break;
         }
 
@@ -990,6 +989,7 @@ public class Person implements Serializable {
             for (Unit unitWeTech : new ArrayList<>(getTechUnits())) {
                 unitWeTech.remove(this, true);
             }
+
             // If we're assigned to any repairs or refits, remove that assignment
             for (Part part : campaign.getParts()) {
                 if (this == part.getTech()) {
