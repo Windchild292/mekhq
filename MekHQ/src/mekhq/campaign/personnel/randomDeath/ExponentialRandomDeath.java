@@ -33,8 +33,8 @@ public class ExponentialRandomDeath extends AbstractRandomDeathMethod {
 
     //region Constructors
     public ExponentialRandomDeath(final CampaignOptions campaignOptions) {
-        this(campaignOptions.getRandomDeathExponentialMaleValues(),
-                campaignOptions.getRandomDeathExponentialFemaleValues());
+        this(campaignOptions.getExponentialRandomDeathMaleValues(),
+                campaignOptions.getExponentialRandomDeathFemaleValues());
     }
 
     public ExponentialRandomDeath(final double[] male, final double[] female) {

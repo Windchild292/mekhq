@@ -33,8 +33,8 @@ public class AgeRangeRandomDeath extends AbstractRandomDeathMethod {
 
     //region Constructors
     public AgeRangeRandomDeath(final CampaignOptions campaignOptions) {
-        this(campaignOptions.getRandomDeathAgeRangeMaleValues(),
-                campaignOptions.getRandomDeathAgeRangeFemaleValues());
+        this(campaignOptions.getAgeRangeRandomDeathMaleValues(),
+                campaignOptions.getAgeRangeRandomDeathFemaleValues());
     }
 
     public AgeRangeRandomDeath(final double[] male, final double[] female) {

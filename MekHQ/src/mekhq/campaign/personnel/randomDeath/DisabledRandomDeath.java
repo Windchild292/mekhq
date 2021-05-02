@@ -26,7 +26,7 @@ import mekhq.campaign.personnel.enums.RandomDeathMethod;
 public class DisabledRandomDeath extends AbstractRandomDeathMethod {
     //region Constructors
     public DisabledRandomDeath() {
-        super(RandomDeathMethod.NONE, new double[0], new double[0]);
+        super(RandomDeathMethod.NONE);
     }
     //endregion Constructors
 
