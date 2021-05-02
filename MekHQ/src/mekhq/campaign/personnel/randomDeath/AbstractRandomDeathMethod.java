@@ -108,22 +108,16 @@ public abstract class AbstractRandomDeathMethod {
     }
 
     /**
-     * @param person the person from whom may have died of injuries
+     * @param person the person from whom may have died of injuries (which may be diseases, once
+     *               that is implemented)
      * @return the personnel status applicable to the form of injury that caused the death, or
      * ACTIVE if it wasn't determined that injuries caused the death
      */
     private PersonnelStatus determineIfInjuriesCausedTheDeath(final Person person) {
-        for (final Injury injury : person.getInjuries()) {
-            final InjuryLevel level = injury.getLevel();
-
-            // We care about injuries that are major or deadly. We do not want any chronic
-            // conditions nor scratches
-            if ((level == InjuryLevel.DEADLY) || (level == InjuryLevel.MAJOR)) {
-                return PersonnelStatus.WOUNDS;
-            }
-        }
-
-        return PersonnelStatus.ACTIVE;
+        // We care about injuries that are major or deadly. We do not want any chronic conditions
+        // nor scratches
+        return person.getInjuries().stream().anyMatch(injury -> injury.getLevel().isMajorOrDeadly())
+                ? PersonnelStatus.WOUNDS : PersonnelStatus.ACTIVE;
     }
     //endregion Cause
 }
