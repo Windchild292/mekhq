@@ -20,10 +20,8 @@ package mekhq.campaign.personnel.randomDeath;
 
 import megamek.common.enums.Gender;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.Injury;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.AgeGroup;
-import mekhq.campaign.personnel.enums.InjuryLevel;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
