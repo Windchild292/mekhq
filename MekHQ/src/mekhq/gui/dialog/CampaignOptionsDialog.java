@@ -4716,6 +4716,7 @@ public class CampaignOptionsDialog extends JDialog {
     private JPanel createRandomDeathPanel() {
         // Initialize Components Used in ActionListeners
         final JPanel exponentialRandomDeathPanel = new JDisableablePanel("exponentialRandomDeathPanel");
+
         final JPanel ageRangeRandomDeathPanel = new JDisableablePanel("ageRangeRandomDeathPanel");
 
         // Create Panel Components
