@@ -46,7 +46,6 @@ public enum PersonnelStatus {
     private final String name;
     private final String toolTipText;
     private final String logText;
-
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
@@ -183,5 +182,4 @@ public enum PersonnelStatus {
     public String toString() {
         return name;
     }
-
 }

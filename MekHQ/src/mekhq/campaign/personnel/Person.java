@@ -905,10 +905,10 @@ public class Person implements Serializable {
     public void changeStatus(final Campaign campaign, final PersonnelStatus status) {
         if (status == getStatus()) { // no change means we don't need to process anything
             return;
-        } else if ((status.isActive() || status.isOnLeave() || status.isAWOL())
-                && getStatus().isDead()) {
+        } else if (getStatus().isDead() && !status.isDead()) {
             // remove date of death for resurrection
             setDateOfDeath(null);
+            ServiceLogger.resurrected(this, campaign.getLocalDate());
         }
 
         switch (status) {
@@ -919,8 +919,6 @@ public class Person implements Serializable {
                     ServiceLogger.returnedFromAWOL(this, campaign.getLocalDate());
                 } else if (getStatus().isMIA()) {
                     ServiceLogger.recoveredMia(this, campaign.getLocalDate());
-                } else if (getStatus().isDead()) {
-                    ServiceLogger.resurrected(this, campaign.getLocalDate());
                 } else {
                     ServiceLogger.rehired(this, campaign.getLocalDate());
                 }

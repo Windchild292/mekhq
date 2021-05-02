@@ -663,16 +663,14 @@ public class CampaignOptions implements Serializable {
         // Death
         setKeepMarriedNameUponSpouseDeath(true);
         setRandomDeathMethod(RandomDeathMethod.NONE);
-        setEnableTeenRandomDeaths(false);
+        setEnableTeenRandomDeaths(true);
         setEnablePreteenRandomDeaths(false);
         setEnableChildRandomDeaths(false);
         setEnableToddlerRandomDeaths(false);
         setEnableInfantMortality(false);
         // The following four are all based on the 2018 US death rate: https://www.statista.com/statistics/241572/death-rate-by-age-and-sex-in-the-us/
         setExponentialRandomDeathMaleValues(5.4757, -7.0, 0.0709); // base equation of 2 * 10^-4 * e^(0.0709 * age) per year, divided by 365.25
-        //setExponentialRandomDeathMaleValues(5.4757, -8.0, 0.0644); // base equation of 2 * 10^-5 * e^(0.0644 * age) per year, divided by 365.25
         setExponentialRandomDeathFemaleValues(2.4641, -7.0, 0.0752); // base equation of 9 * 10^-5 * e^(0.0752 * age) per year, divided by 365.25
-        //setExponentialRandomDeathFemaleValues(2.7379, -8.0, 0.0686); // base equation of 1 * 10^-5 * e^(0.0686 * age) per year, divided by 365.25
         setAgeRangeRandomDeathMaleValues(613.1, 27.5, 14.7, 100.1, 176.1, 249.5, 491.8, 1119, 2196.5, 5155, 14504);
         setAgeRangeRandomDeathFemaleValues(500, 20.4, 11.8, 38.8, 80, 140.2, 302.5, 670, 1421, 3788, 12870);
         //endregion Personnel Tab

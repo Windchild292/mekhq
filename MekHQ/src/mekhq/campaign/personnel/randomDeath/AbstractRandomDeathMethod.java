@@ -59,9 +59,9 @@ public abstract class AbstractRandomDeathMethod {
     /**
      * @param campaign the campaign the person is in
      * @param ageGroup the person's age grouping
-     * @return true if the random death is enabled for the age
+     * @return true if the random death is enabled for the age group
      */
-    public boolean validateAgeEnabled(final Campaign campaign, final AgeGroup ageGroup) {
+    public boolean validateAgeGroupEnabled(final Campaign campaign, final AgeGroup ageGroup) {
         switch (ageGroup) {
             case ELDER:
             case ADULT:

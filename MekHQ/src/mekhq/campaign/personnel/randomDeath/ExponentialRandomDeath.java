@@ -66,7 +66,7 @@ public class ExponentialRandomDeath extends AbstractRandomDeathMethod {
     @Override
     public boolean randomDeath(final Campaign campaign, final AgeGroup ageGroup, final int age,
                                final Gender gender) {
-        if (!validateAgeEnabled(campaign, ageGroup)) {
+        if (!validateAgeGroupEnabled(campaign, ageGroup)) {
             return false;
         }
 
