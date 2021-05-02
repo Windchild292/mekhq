@@ -42,20 +42,13 @@ public class AgeRangeRandomDeath extends AbstractRandomDeathMethod {
 
         // Odds are over an entire year per 100,000 people, so we need to adjust the numbers to be
         // the individual odds for a day. We do this now so it only occurs once
-        final double baseAdjustment = 365.25 * 100000.0;
-        final double decadeAdjustment = 10.0 * baseAdjustment;
+        final double adjustment = 365.25 * 100000.0;
         final double[] adjustedMale = new double[male.length];
         final double[] adjustedFemale = new double[female.length];
-        adjustedMale[0] = male[0] / baseAdjustment;
-        adjustedFemale[0] = female[0] / baseAdjustment;
-        adjustedMale[1] = male[1] / (4.0 * baseAdjustment);
-        adjustedFemale[1] = female[1] / (4.0 * baseAdjustment);
-        for (int i = 2; i < 9; i++) {
-            adjustedMale[i] = male[i] / decadeAdjustment;
-            adjustedFemale[i] = female[i] / decadeAdjustment;
+        for (int i = 0; i < male.length; i++) {
+            adjustedMale[i] = male[i] / adjustment;
+            adjustedFemale[i] = female[i] / adjustment;
         }
-        adjustedMale[10] = male[10] / (15.0 * baseAdjustment);
-        adjustedFemale[10] = female[10] / (15.0 * baseAdjustment);
         this.male = adjustedMale;
         this.female = adjustedFemale;
     }
