@@ -1,7 +1,7 @@
 /*
  * AtBScenario.java
  *
- * Copyright (C) 2014-2016 - The MegaMek Team. All Rights Reserved.
+ * Copyright (C) 2014-2021 - The MegaMek Team. All Rights Reserved.
  * Copyright (c) 2014 Carl Spain. All rights reserved.
  *
  * This file is part of MekHQ.
@@ -21,6 +21,43 @@
  */
 package mekhq.campaign.mission;
 
+import megamek.common.Board;
+import megamek.common.Compute;
+import megamek.common.Crew;
+import megamek.common.Entity;
+import megamek.common.EntityWeightClass;
+import megamek.common.IStartingPositions;
+import megamek.common.Mech;
+import megamek.common.PlanetaryConditions;
+import megamek.common.TargetRoll;
+import megamek.common.UnitType;
+import megamek.common.annotations.Nullable;
+import megamek.common.icons.Camouflage;
+import megamek.common.util.EncodeControl;
+import megamek.common.util.StringUtil;
+import mekhq.MekHQ;
+import mekhq.MekHqConstants;
+import mekhq.MekHqXmlUtil;
+import mekhq.Utilities;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.againstTheBot.AtBConfiguration;
+import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
+import mekhq.campaign.force.Force;
+import mekhq.campaign.force.Lance;
+import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
+import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
+import mekhq.campaign.mission.atb.IAtBScenario;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.unit.Unit;
+import mekhq.campaign.universe.Factions;
+import mekhq.campaign.universe.Planet;
+import mekhq.campaign.universe.PlanetarySystem;
+import mekhq.campaign.universe.generators.lightConditionsGenerator.DisabledLightConditionsGenerator;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -34,34 +71,6 @@ import java.util.ResourceBundle;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.Vector;
-
-import megamek.common.*;
-import megamek.common.annotations.Nullable;
-import megamek.common.icons.Camouflage;
-import megamek.common.util.StringUtil;
-import mekhq.MekHqConstants;
-import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import megamek.common.util.EncodeControl;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.Utilities;
-import mekhq.campaign.againstTheBot.AtBConfiguration;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.force.Force;
-import mekhq.campaign.force.Lance;
-import mekhq.campaign.market.UnitMarket;
-import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
-import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
-import mekhq.campaign.mission.atb.IAtBScenario;
-import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.rating.IUnitRating;
-import mekhq.campaign.unit.Unit;
-import mekhq.campaign.universe.Factions;
-import mekhq.campaign.universe.Planet;
-import mekhq.campaign.universe.PlanetarySystem;
 
 /**
  * @author Neoancient
@@ -313,7 +322,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
     }
 
     /**
-     * Determines battle conditions: terrain, weather, map.
+     * Determines battle conditions: terrain, map.
      *
      * @param campaign
      */
@@ -343,17 +352,29 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         terrainType = terrainChart[Compute.d6(2) - 2];
     }
 
+    public boolean isLightConditionsEnabled() {
+        return true;
+    }
+
     public void setLightConditions(final Campaign campaign) {
-        setLight(campaign.getCampaignOptions().getLightConditionsGenerationMethod().getGenerator().generate());
+        if (isLightConditionsEnabled()) {
+            setLight(campaign.getCampaignOptions().getLightConditionsGenerationMethod().getGenerator().generate());
+        } else {
+            setLight(new DisabledLightConditionsGenerator().generate());
+        }
+    }
+
+    public boolean isWeatherEnabled() {
+        // Weather is irrelevant in these situations.
+        return (getTerrainType() != TER_SPACE) && (getTerrainType() != TER_LOW_ATMO);
     }
 
     public void setWeather(final Campaign campaign) {
-        // Weather is irrelevant in these situations.
-        if ((getTerrainType() == TER_SPACE) || (getTerrainType() == TER_LOW_ATMO)) {
-            return;
+        if (isWeatherEnabled()) {
+            campaign.getCampaignOptions().getWeatherGenerationMethod().getGenerator().generate(getContract(campaign), this);
+        } else {
+            new DisabledLightConditionsGenerator().generate();
         }
-
-        campaign.getCampaignOptions().getWeatherGenerationMethod().getGenerator().generate(getContract(campaign), this);
     }
 
     public void setPlanetaryConditions(final Campaign campaign, final @Nullable Mission mission) {

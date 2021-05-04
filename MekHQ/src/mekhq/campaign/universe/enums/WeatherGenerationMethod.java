@@ -22,21 +22,18 @@ import megamek.common.util.EncodeControl;
 import mekhq.campaign.universe.generators.weatherGenerator.AbstractWeatherGenerator;
 import mekhq.campaign.universe.generators.weatherGenerator.AtBWeatherGenerator;
 import mekhq.campaign.universe.generators.weatherGenerator.DisabledWeatherGenerator;
-import mekhq.campaign.universe.generators.weatherGenerator.LimiterDriveWeatherGenerator;
 
 import java.util.ResourceBundle;
 
 public enum WeatherGenerationMethod {
     //region Enum Declarations
     NONE("WeatherGenerationMethod.NONE.text", "WeatherGenerationMethod.NONE.toolTipText"),
-    LIMITER_DRIVE("WeatherGenerationMethod.LIMITER_DRIVE.text", "WeatherGenerationMethod.LIMITER_DRIVE.toolTipText"),
     ATB("WeatherGenerationMethod.ATB.text", "WeatherGenerationMethod.ATB.toolTipText");
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
     private final String toolTipText;
-
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Universe", new EncodeControl());
     //endregion Variable Declarations
 
@@ -58,10 +55,6 @@ public enum WeatherGenerationMethod {
         return this == NONE;
     }
 
-    public boolean isLimiterDrive() {
-        return this == LIMITER_DRIVE;
-    }
-
     public boolean isAtB() {
         return this == ATB;
     }
@@ -69,8 +62,6 @@ public enum WeatherGenerationMethod {
 
     public AbstractWeatherGenerator getGenerator() {
         switch (this) {
-            case LIMITER_DRIVE:
-                return new LimiterDriveWeatherGenerator();
             case ATB:
                 return new AtBWeatherGenerator();
             case NONE:

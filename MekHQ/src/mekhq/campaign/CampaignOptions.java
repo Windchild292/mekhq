@@ -814,7 +814,7 @@ public class CampaignOptions implements Serializable {
         playerControlsAttachedUnits = false;
         useDropShips = false;
         setLightConditionsGenerationMethod(LightConditionsGenerationMethod.ATB);
-        setWeatherGenerationMethod(WeatherGenerationMethod.LIMITER_DRIVE);
+        setWeatherGenerationMethod(WeatherGenerationMethod.ATB);
         usePlanetaryConditions = false;
         //endregion Against the Bot Tab
     }
@@ -3992,7 +3992,7 @@ public class CampaignOptions implements Serializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("useLightConditions")) { // Legacy - 0.49.1 removal
                 retVal.setLightConditionsGenerationMethod(Boolean.parseBoolean(wn2.getTextContent().trim()) ? LightConditionsGenerationMethod.ATB : LightConditionsGenerationMethod.NONE);
             } else if (wn2.getNodeName().equalsIgnoreCase("useWeatherConditions")) { // Legacy - 0.49.1 removal
-                retVal.setWeatherGenerationMethod(Boolean.parseBoolean(wn2.getTextContent().trim()) ? WeatherGenerationMethod.LIMITER_DRIVE : WeatherGenerationMethod.NONE);
+                retVal.setWeatherGenerationMethod(Boolean.parseBoolean(wn2.getTextContent().trim()) ? WeatherGenerationMethod.ATB : WeatherGenerationMethod.NONE);
 
             // Removed in 0.47.*
             } else if (wn2.getNodeName().equalsIgnoreCase("useAtBCapture")) { // Legacy

@@ -34,7 +34,6 @@ public enum LightConditionsGenerationMethod {
     //region Variable Declarations
     private final String name;
     private final String toolTipText;
-
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Universe", new EncodeControl());
     //endregion Variable Declarations
 
