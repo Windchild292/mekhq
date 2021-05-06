@@ -3218,9 +3218,10 @@ public class Campaign implements Serializable, ITechManager {
         for (Person p : getActivePersonnel()) {
             // Random Death
             if (!getRandomDeath().getMethod().isNone()) {
-                final AgeGroup ageGroup = AgeGroup.determineAgeGroup(p.getAge(getLocalDate()));
-                if (getRandomDeath().randomDeath(ageGroup, p.getAge(getLocalDate()), p.getGender())) {
-                    p.changeStatus(this, getRandomDeath().getCause(getLocalDate(), p, ageGroup));
+                final int age = p.getAge(getLocalDate());
+                final AgeGroup ageGroup = AgeGroup.determineAgeGroup(age);
+                if (getRandomDeath().randomDeath(ageGroup, age, p.getGender())) {
+                    p.changeStatus(this, getRandomDeath().getCause(getLocalDate(), p, ageGroup, age));
                     continue;
                 }
             }

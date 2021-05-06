@@ -19,13 +19,24 @@
 package mekhq.campaign.personnel.randomDeath;
 
 import megamek.common.enums.Gender;
+import megamek.common.util.fileUtils.MegaMekFile;
 import megamek.common.util.weightedMaps.WeightedDoubleMap;
+import mekhq.MekHQ;
+import mekhq.MekHqConstants;
+import mekhq.MekHqXmlUtil;
+import mekhq.Version;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 import mekhq.campaign.personnel.enums.TenYearAgeRange;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,11 +55,11 @@ public abstract class AbstractRandomDeath {
 
     protected AbstractRandomDeath(final RandomDeathMethod method,
                                   final Map<AgeGroup, Boolean> enabledAgeGroups,
-                                  final boolean enableSuicideClause) {
+                                  final boolean enableSuicideCause) {
         this.method = method;
         this.enabledAgeGroups = enabledAgeGroups;
         this.causes = new HashMap<>();
-        initializeCauses(enableSuicideClause);
+        initializeCauses(enableSuicideCause);
     }
     //endregion Constructors
 
@@ -78,10 +89,12 @@ public abstract class AbstractRandomDeath {
     /**
      * @param today the current day
      * @param person the person who has died
-     * @param ageGroup the person's age grouping
+     * @param ageGroup the person's age group
+     * @param age the person's age
      * @return the cause of the Person's random death
      */
-    public PersonnelStatus getCause(final LocalDate today, final Person person, final AgeGroup ageGroup) {
+    public PersonnelStatus getCause(final LocalDate today, final Person person,
+                                    final AgeGroup ageGroup, final int age) {
         if (person.getStatus().isMIA()) {
             return PersonnelStatus.KIA;
         } else if (person.hasInjuries(false)) {
@@ -93,11 +106,18 @@ public abstract class AbstractRandomDeath {
 
         if (person.isPregnant() && (person.getPregnancyWeek(today) > 22)) {
             return PersonnelStatus.PREGNANCY_COMPLICATIONS;
-        } else if (ageGroup.isElder()) {
-            return PersonnelStatus.OLD_AGE;
         }
 
-        return PersonnelStatus.NATURAL_CAUSES;
+        final Map<TenYearAgeRange, WeightedDoubleMap<PersonnelStatus>> genderedCauses = getCauses().get(person.getGender());
+        if (genderedCauses == null) {
+            return ageGroup.isElder() ? PersonnelStatus.OLD_AGE : PersonnelStatus.NATURAL_CAUSES;
+        }
+        final WeightedDoubleMap<PersonnelStatus> ageRangeCauses = genderedCauses.get(TenYearAgeRange.determineAgeRange(age));
+        if (ageRangeCauses == null) {
+            return ageGroup.isElder() ? PersonnelStatus.OLD_AGE : PersonnelStatus.NATURAL_CAUSES;
+        }
+        final PersonnelStatus cause = ageRangeCauses.randomItem();
+        return (cause == null) ? (ageGroup.isElder() ? PersonnelStatus.OLD_AGE : PersonnelStatus.NATURAL_CAUSES) : cause;
     }
 
     /**
@@ -116,8 +136,66 @@ public abstract class AbstractRandomDeath {
 
     //region File I/O
     public void initializeCauses(final boolean enableSuicideCause) {
-        //RANDOM_DEATH_CAUSES_FILE_PATH
-        //MegaMekFile
+        getCauses().clear();
+
+        final File file = new MegaMekFile(MekHqConstants.RANDOM_DEATH_CAUSES_FILE_PATH).getFile();
+        if (!file.exists()) {
+            return;
+        }
+
+        final Element element;
+
+        // Open up the file
+        try (InputStream is = new FileInputStream(file)) {
+            element = MekHqXmlUtil.newSafeDocumentBuilder().parse(is).getDocumentElement();
+        } catch (Exception e) {
+            MekHQ.getLogger().error("Failed to open file", e);
+            return;
+        }
+        element.normalize();
+        final Version version = new Version(element.getAttribute("version"));
+        final NodeList nl = element.getChildNodes();
+
+        MekHQ.getLogger().info("Parsing Random Death Causes from " + version + "-origin xml");
+        for (int i = 0; i < nl.getLength(); i++) {
+            final Node wn = nl.item(i);
+            if (!wn.hasChildNodes()) {
+                continue;
+            }
+            try {
+                final Map<TenYearAgeRange, WeightedDoubleMap<PersonnelStatus>> genderedCauses = new HashMap<>();
+                getCauses().put(Gender.valueOf(wn.getNodeName()), genderedCauses);
+                final NodeList nl2 = wn.getChildNodes();
+                for (int j = 0; j < nl.getLength(); j++) {
+                    final Node wn2 = nl2.item(j);
+                    if (!wn2.hasChildNodes()) {
+                        continue;
+                    }
+
+                    try {
+                        final WeightedDoubleMap<PersonnelStatus> ageRangeCauses = new WeightedDoubleMap<>();
+                        genderedCauses.put(TenYearAgeRange.valueOf(wn2.getNodeName()), ageRangeCauses);
+                        final NodeList nl3 = wn2.getChildNodes();
+                        for (int k = 0; k < nl3.getLength(); k++) {
+                            final Node wn3 = nl3.item(k);
+                            try {
+                                final PersonnelStatus status = PersonnelStatus.valueOf(wn3.getNodeName());
+                                if (status.isSuicide() && !enableSuicideCause) {
+                                    continue;
+                                }
+                                ageRangeCauses.add(Double.parseDouble(wn3.getTextContent().trim()), status);
+                            } catch (Exception ignored) {
+
+                            }
+                        }
+                    } catch (Exception ignored) {
+
+                    }
+                }
+            } catch (Exception ignored) {
+
+            }
+        }
     }
     //endregion File I/O
 }
