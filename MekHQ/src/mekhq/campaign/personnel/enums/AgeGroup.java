@@ -25,29 +25,35 @@ import java.util.ResourceBundle;
 
 public enum AgeGroup {
     //region Enum Declarations
-    ELDER("AgeGroup.ELDER.text", 65),
-    ADULT("AgeGroup.ADULT.text", 20),
-    TEENAGER("AgeGroup.TEENAGER.text", 13),
-    PRETEEN("AgeGroup.PRETEEN.text", 10),
-    CHILD("AgeGroup.CHILD.text", 3),
-    TODDLER("AgeGroup.TODDLER.text", 1),
-    BABY("AgeGroup.BABY.text", -1);
+    ELDER("AgeGroup.ELDER.text", "AgeGroup.ELDER.toolTipText", 65),
+    ADULT("AgeGroup.ADULT.text", "AgeGroup.ADULT.toolTipText", 20),
+    TEENAGER("AgeGroup.TEENAGER.text", "AgeGroup.TEENAGER.toolTipText", 13),
+    PRETEEN("AgeGroup.PRETEEN.text", "AgeGroup.PRETEEN.toolTipText", 10),
+    CHILD("AgeGroup.CHILD.text", "AgeGroup.CHILD.toolTipText", 3),
+    TODDLER("AgeGroup.TODDLER.text", "AgeGroup.TODDLER.toolTipText", 1),
+    BABY("AgeGroup.BABY.text", "AgeGroup.BABY.toolTipText", -1);
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
+    private final String toolTipText;
     private final int groupLowerBound; // the lower bound of the age range for this age group, inclusive
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    AgeGroup(final String name, final int groupLowerBound) {
+    AgeGroup(final String name, final String toolTipText, final int groupLowerBound) {
         this.name = resources.getString(name);
+        this.toolTipText = resources.getString(toolTipText);
         this.groupLowerBound = groupLowerBound;
     }
     //endregion Constructors
 
     //region Getters
+    public String getToolTipText() {
+        return toolTipText;
+    }
+
     public int getGroupLowerBound() {
         return groupLowerBound;
     }

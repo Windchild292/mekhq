@@ -26,8 +26,8 @@ public enum PersonnelStatus {
     //region Enum Declarations
     ACTIVE("PersonnelStatus.ACTIVE.text", "PersonnelStatus.ACTIVE.toolTipText", "PersonnelStatus.ACTIVE.logText"),
     MIA("PersonnelStatus.MIA.text", "PersonnelStatus.MIA.toolTipText", "PersonnelStatus.MIA.logText"),
-    ON_LEAVE("PersonnelStatus.ON_LEAVE.text", "PersonnelStatus.ON_LEAVE.toolTipText", "PersonnelStatus.ON_LEAVE.logText"),
-    AWOL("PersonnelStatus.AWOL.text", "PersonnelStatus.AWOL.toolTipText", "PersonnelStatus.AWOL.logText"),
+    //ON_LEAVE("PersonnelStatus.ON_LEAVE.text", "PersonnelStatus.ON_LEAVE.toolTipText", "PersonnelStatus.ON_LEAVE.logText"),
+    //AWOL("PersonnelStatus.AWOL.text", "PersonnelStatus.AWOL.toolTipText", "PersonnelStatus.AWOL.logText"),
     RETIRED("PersonnelStatus.RETIRED.text", "PersonnelStatus.RETIRED.toolTipText", "PersonnelStatus.RETIRED.logText"),
     DESERTED("PersonnelStatus.DESERTED.text", "PersonnelStatus.DESERTED.toolTipText", "PersonnelStatus.DESERTED.logText"),
     KIA("PersonnelStatus.KIA.text", "PersonnelStatus.KIA.toolTipText", "PersonnelStatus.KIA.logText"),
@@ -37,6 +37,7 @@ public enum PersonnelStatus {
     ACCIDENTAL("PersonnelStatus.ACCIDENTAL.text", "PersonnelStatus.ACCIDENTAL.toolTipText", "PersonnelStatus.ACCIDENTAL.logText"),
     NATURAL_CAUSES("PersonnelStatus.NATURAL_CAUSES.text", "PersonnelStatus.NATURAL_CAUSES.toolTipText", "PersonnelStatus.NATURAL_CAUSES.logText"),
     OLD_AGE("PersonnelStatus.OLD_AGE.text", "PersonnelStatus.OLD_AGE.toolTipText", "PersonnelStatus.OLD_AGE.logText"),
+    MEDICAL_COMPLICATIONS("PersonnelStatus.MEDICAL_COMPLICATIONS.text", "PersonnelStatus.MEDICAL_COMPLICATIONS.toolTipText", "PersonnelStatus.MEDICAL_COMPLICATIONS.logText"),
     PREGNANCY_COMPLICATIONS("PersonnelStatus.PREGNANCY_COMPLICATIONS.text", "PersonnelStatus.PREGNANCY_COMPLICATIONS.toolTipText", "PersonnelStatus.PREGNANCY_COMPLICATIONS.logText"),
     UNDETERMINED("PersonnelStatus.UNDETERMINED.text", "PersonnelStatus.UNDETERMINED.toolTipText", "PersonnelStatus.UNDETERMINED.logText"),
     SUICIDE("PersonnelStatus.SUICIDE.text", "PersonnelStatus.SUICIDE.toolTipText", "PersonnelStatus.SUICIDE.logText");
@@ -76,14 +77,6 @@ public enum PersonnelStatus {
         return this == MIA;
     }
 
-    public boolean isOnLeave() {
-        return this == ON_LEAVE;
-    }
-
-    public boolean isAWOL() {
-        return this == AWOL;
-    }
-
     public boolean isRetired() {
         return this == RETIRED;
     }
@@ -120,6 +113,10 @@ public enum PersonnelStatus {
         return this == OLD_AGE;
     }
 
+    public boolean isMedicalComplications() {
+        return this == MEDICAL_COMPLICATIONS;
+    }
+
     public boolean isPregnancyComplications() {
         return this == PREGNANCY_COMPLICATIONS;
     }
@@ -137,8 +134,8 @@ public enum PersonnelStatus {
      */
     public boolean isDead() {
         return isKIA() || isHomicide() || isWounds() || isDisease() || isAccidental()
-                || isNaturalCauses() || isOldAge() || isPregnancyComplications()
-                || isUndetermined() || isSuicide();
+                || isNaturalCauses() || isOldAge() || isMedicalComplications()
+                || isPregnancyComplications() || isUndetermined() || isSuicide();
     }
 
     /**

@@ -23,7 +23,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
-public class DisabledRandomDeath extends AbstractRandomDeathMethod {
+public class DisabledRandomDeath extends AbstractRandomDeath {
     //region Constructors
     public DisabledRandomDeath() {
         super(RandomDeathMethod.NONE);
@@ -31,7 +31,7 @@ public class DisabledRandomDeath extends AbstractRandomDeathMethod {
     //endregion Constructors
 
     @Override
-    public boolean randomDeath(Campaign campaign, AgeGroup ageGroup, int age, Gender gender) {
+    public boolean randomDeath(final AgeGroup ageGroup, final int age, final Gender gender) {
         return false;
     }
 }

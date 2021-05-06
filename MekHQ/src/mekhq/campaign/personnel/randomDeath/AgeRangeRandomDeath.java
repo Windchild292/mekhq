@@ -20,15 +20,18 @@ package mekhq.campaign.personnel.randomDeath;
 
 import megamek.common.Compute;
 import megamek.common.enums.Gender;
-import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
+import mekhq.campaign.personnel.enums.TenYearAgeRange;
 
-public class AgeRangeRandomDeath extends AbstractRandomDeathMethod {
+import java.util.HashMap;
+import java.util.Map;
+
+public class AgeRangeRandomDeath extends AbstractRandomDeath {
     //region Variable Declarations
-    private final double[] male;
-    private final double[] female;
+    private final Map<TenYearAgeRange, Double> male;
+    private final Map<TenYearAgeRange, Double> female;
     //endregion Variable Declarations
 
     //region Constructors
@@ -37,17 +40,18 @@ public class AgeRangeRandomDeath extends AbstractRandomDeathMethod {
                 campaignOptions.getAgeRangeRandomDeathFemaleValues());
     }
 
-    public AgeRangeRandomDeath(final double[] male, final double[] female) {
+    public AgeRangeRandomDeath(final Map<TenYearAgeRange, Double> male,
+                               final Map<TenYearAgeRange, Double> female) {
         super(RandomDeathMethod.AGE_RANGE);
 
         // Odds are over an entire year per 100,000 people, so we need to adjust the numbers to be
         // the individual odds for a day. We do this now so it only occurs once
         final double adjustment = 365.25 * 100000.0;
-        final double[] adjustedMale = new double[male.length];
-        final double[] adjustedFemale = new double[female.length];
-        for (int i = 0; i < male.length; i++) {
-            adjustedMale[i] = male[i] / adjustment;
-            adjustedFemale[i] = female[i] / adjustment;
+        final Map<TenYearAgeRange, Double> adjustedMale = new HashMap<>();
+        final Map<TenYearAgeRange, Double> adjustedFemale = new HashMap<>();
+        for (final TenYearAgeRange ageRange : TenYearAgeRange.values()) {
+            adjustedMale.put(ageRange, male.get(ageRange) / adjustment);
+            adjustedFemale.put(ageRange, female.get(ageRange) / adjustment);
         }
         this.male = adjustedMale;
         this.female = adjustedFemale;
@@ -55,54 +59,28 @@ public class AgeRangeRandomDeath extends AbstractRandomDeathMethod {
     //endregion Constructors
 
     //region Getters
-    public double[] getMale() {
+    public Map<TenYearAgeRange, Double> getMale() {
         return male;
     }
 
-    public double[] getFemale() {
+    public Map<TenYearAgeRange, Double> getFemale() {
         return female;
     }
     //endregion Getters
 
     /**
-     * @param campaign the campaign the person is in
      * @param ageGroup the person's age grouping
      * @param age the person's age
      * @param gender the person's gender
      * @return true if the person is selected to randomly die, otherwise false
      */
     @Override
-    public boolean randomDeath(final Campaign campaign, final AgeGroup ageGroup, final int age,
-                               final Gender gender) {
-        if (!validateAgeGroupEnabled(campaign, ageGroup)) {
+    public boolean randomDeath(final AgeGroup ageGroup, final int age, final Gender gender) {
+        if (!getEnabledAgeGroups().get(ageGroup)) {
             return false;
         }
 
-        final int index;
-        if (age < 1) {
-            index = 0;
-        } else if (age < 5) {
-            index = 1;
-        } else if (age < 15) {
-            index = 2;
-        } else if (age < 25) {
-            index = 3;
-        } else if (age < 35) {
-            index = 4;
-        } else if (age < 45) {
-            index = 5;
-        } else if (age < 55) {
-            index = 6;
-        } else if (age < 65) {
-            index = 7;
-        } else if (age < 75) {
-            index = 8;
-        } else if (age < 85) {
-            index = 9;
-        } else {
-            index = 10;
-        }
-
-        return Compute.randomFloat() < (gender.isMale() ? getMale()[index] : getFemale()[index]);
+        final TenYearAgeRange ageRange = TenYearAgeRange.determineAgeRange(age);
+        return Compute.randomFloat() < ((gender.isMale() ? getMale() : getFemale()).get(ageRange));
     }
 }

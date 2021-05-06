@@ -20,12 +20,11 @@ package mekhq.campaign.personnel.randomDeath;
 
 import megamek.common.Compute;
 import megamek.common.enums.Gender;
-import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 
-public class ExponentialRandomDeath extends AbstractRandomDeathMethod {
+public class ExponentialRandomDeath extends AbstractRandomDeath {
     //region Variable Declarations
     private final double[] male;
     private final double[] female;
@@ -57,16 +56,14 @@ public class ExponentialRandomDeath extends AbstractRandomDeathMethod {
     /**
      * Determines if a person dies a random death based on gender-dependent exponential equations in
      * the format c * 10^n * e^(k * age).
-     * @param campaign the campaign the person is in
      * @param ageGroup the person's age grouping
      * @param age the person's age
      * @param gender the person's gender
      * @return true if the person is selected to randomly die, otherwise false
      */
     @Override
-    public boolean randomDeath(final Campaign campaign, final AgeGroup ageGroup, final int age,
-                               final Gender gender) {
-        if (!validateAgeGroupEnabled(campaign, ageGroup)) {
+    public boolean randomDeath(final AgeGroup ageGroup, final int age, final Gender gender) {
+        if (!getEnabledAgeGroups().get(ageGroup)) {
             return false;
         }
 

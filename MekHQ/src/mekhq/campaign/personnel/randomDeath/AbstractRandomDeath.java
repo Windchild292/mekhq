@@ -19,22 +19,36 @@
 package mekhq.campaign.personnel.randomDeath;
 
 import megamek.common.enums.Gender;
-import mekhq.campaign.Campaign;
+import megamek.common.util.weightedMaps.WeightedDoubleMap;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
+import mekhq.campaign.personnel.enums.TenYearAgeRange;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
-public abstract class AbstractRandomDeathMethod {
+public abstract class AbstractRandomDeath {
     //region Variable Declarations
     private final RandomDeathMethod method;
+    private final Map<AgeGroup, Boolean> enabledAgeGroups;
+    private final Map<Gender, Map<TenYearAgeRange, WeightedDoubleMap<PersonnelStatus>>> causes;
     //endregion Variable Declarations
 
     //region Constructors
-    protected AbstractRandomDeathMethod(final RandomDeathMethod method) {
+    protected AbstractRandomDeath(final RandomDeathMethod method) {
+        this(method, new HashMap<>(), false);
+    }
+
+    protected AbstractRandomDeath(final RandomDeathMethod method,
+                                  final Map<AgeGroup, Boolean> enabledAgeGroups,
+                                  final boolean enableSuicideClause) {
         this.method = method;
+        this.enabledAgeGroups = enabledAgeGroups;
+        this.causes = new HashMap<>();
+        initializeCauses(enableSuicideClause);
     }
     //endregion Constructors
 
@@ -42,42 +56,23 @@ public abstract class AbstractRandomDeathMethod {
     public RandomDeathMethod getMethod() {
         return method;
     }
+
+    public Map<AgeGroup, Boolean> getEnabledAgeGroups() {
+        return enabledAgeGroups;
+    }
+
+    public Map<Gender, Map<TenYearAgeRange, WeightedDoubleMap<PersonnelStatus>>> getCauses() {
+        return causes;
+    }
     //endregion Getters
 
     /**
-     * @param campaign the campaign the person is in
      * @param ageGroup the person's age grouping
      * @param age the person's age
      * @param gender the person's gender
      * @return true if the person is selected to randomly die, otherwise false
      */
-    public abstract boolean randomDeath(final Campaign campaign, final AgeGroup ageGroup,
-                                        final int age, final Gender gender);
-
-    /**
-     * @param campaign the campaign the person is in
-     * @param ageGroup the person's age grouping
-     * @return true if the random death is enabled for the age group
-     */
-    public boolean validateAgeGroupEnabled(final Campaign campaign, final AgeGroup ageGroup) {
-        switch (ageGroup) {
-            case ELDER:
-            case ADULT:
-                return true;
-            case TEENAGER:
-                return campaign.getCampaignOptions().isEnableTeenRandomDeaths();
-            case PRETEEN:
-                return campaign.getCampaignOptions().isEnablePreteenRandomDeaths();
-            case CHILD:
-                return campaign.getCampaignOptions().isEnableChildRandomDeaths();
-            case TODDLER:
-                return campaign.getCampaignOptions().isEnableToddlerRandomDeaths();
-            case BABY:
-                return campaign.getCampaignOptions().isEnableInfantMortality();
-            default:
-                return false;
-        }
-    }
+    public abstract boolean randomDeath(final AgeGroup ageGroup, final int age, final Gender gender);
 
     //region Cause
     /**
@@ -118,4 +113,11 @@ public abstract class AbstractRandomDeathMethod {
                 ? PersonnelStatus.WOUNDS : PersonnelStatus.ACTIVE;
     }
     //endregion Cause
+
+    //region File I/O
+    public void initializeCauses(final boolean enableSuicideCause) {
+        //RANDOM_DEATH_CAUSES_FILE_PATH
+        //MegaMekFile
+    }
+    //endregion File I/O
 }

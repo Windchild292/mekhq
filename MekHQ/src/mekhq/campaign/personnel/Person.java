@@ -913,11 +913,14 @@ public class Person implements Serializable {
 
         switch (status) {
             case ACTIVE:
+                /*
                 if (getStatus().isOnLeave()) {
                     ServiceLogger.returnedFromLeave(this, campaign.getLocalDate());
                 } else if (getStatus().isAWOL()) {
                     ServiceLogger.returnedFromAWOL(this, campaign.getLocalDate());
-                } else if (getStatus().isMIA()) {
+                } else
+                */
+                if (getStatus().isMIA()) {
                     ServiceLogger.recoveredMia(this, campaign.getLocalDate());
                 } else {
                     ServiceLogger.rehired(this, campaign.getLocalDate());

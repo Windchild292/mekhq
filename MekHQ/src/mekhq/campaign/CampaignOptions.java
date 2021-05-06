@@ -23,15 +23,19 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mekhq.Version;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.parts.enums.PartRepairType;
+import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
+import mekhq.campaign.personnel.enums.TenYearAgeRange;
 import mekhq.campaign.personnel.enums.RandomDeathMethod;
 import mekhq.service.MassRepairOption;
 import org.apache.commons.lang3.StringUtils;
@@ -260,15 +264,12 @@ public class CampaignOptions implements Serializable {
     // Death
     private boolean keepMarriedNameUponSpouseDeath;
     private RandomDeathMethod randomDeathMethod;
-    private boolean enableTeenRandomDeaths;
-    private boolean enablePreteenRandomDeaths;
-    private boolean enableChildRandomDeaths;
-    private boolean enableToddlerRandomDeaths;
-    private boolean enableInfantMortality;
+    private Map<AgeGroup, Boolean> enabledRandomDeathAgeGroups;
+    private boolean enableRandomDeathSuicideCause;
     private double[] exponentialRandomDeathMaleValues;
     private double[] exponentialRandomDeathFemaleValues;
-    private double[] ageRangeRandomDeathMaleValues;
-    private double[] ageRangeRandomDeathFemaleValues;
+    private Map<TenYearAgeRange, Double> ageRangeRandomDeathMaleValues;
+    private Map<TenYearAgeRange, Double> ageRangeRandomDeathFemaleValues;
     //endregion Personnel Tab
 
     //region Finance tab
@@ -663,16 +664,42 @@ public class CampaignOptions implements Serializable {
         // Death
         setKeepMarriedNameUponSpouseDeath(true);
         setRandomDeathMethod(RandomDeathMethod.NONE);
-        setEnableTeenRandomDeaths(true);
-        setEnablePreteenRandomDeaths(false);
-        setEnableChildRandomDeaths(false);
-        setEnableToddlerRandomDeaths(false);
-        setEnableInfantMortality(false);
+        setEnabledRandomDeathAgeGroups(new HashMap<>());
+        getEnabledRandomDeathAgeGroups().put(AgeGroup.ELDER, true);
+        getEnabledRandomDeathAgeGroups().put(AgeGroup.ADULT, true);
+        getEnabledRandomDeathAgeGroups().put(AgeGroup.TEENAGER, true);
+        getEnabledRandomDeathAgeGroups().put(AgeGroup.PRETEEN, false);
+        getEnabledRandomDeathAgeGroups().put(AgeGroup.CHILD, false);
+        getEnabledRandomDeathAgeGroups().put(AgeGroup.TODDLER, false);
+        getEnabledRandomDeathAgeGroups().put(AgeGroup.BABY, false);
+        setEnableRandomDeathSuicideCause(false);
         // The following four are all based on the 2018 US death rate: https://www.statista.com/statistics/241572/death-rate-by-age-and-sex-in-the-us/
         setExponentialRandomDeathMaleValues(5.4757, -7.0, 0.0709); // base equation of 2 * 10^-4 * e^(0.0709 * age) per year, divided by 365.25
         setExponentialRandomDeathFemaleValues(2.4641, -7.0, 0.0752); // base equation of 9 * 10^-5 * e^(0.0752 * age) per year, divided by 365.25
-        setAgeRangeRandomDeathMaleValues(613.1, 27.5, 14.7, 100.1, 176.1, 249.5, 491.8, 1119, 2196.5, 5155, 14504);
-        setAgeRangeRandomDeathFemaleValues(500, 20.4, 11.8, 38.8, 80, 140.2, 302.5, 670, 1421, 3788, 12870);
+        setAgeRangeRandomDeathMaleValues(new HashMap<>());
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.UNDER_ONE, 613.1);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.ONE_FOUR, 27.5);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.FIVE_FOURTEEN, 14.7);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.FIFTEEN_TWENTY_FOUR, 100.1);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.TWENTY_FIVE_THIRTY_FOUR, 176.1);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.THIRTY_FIVE_FORTY_FOUR, 249.5);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.FORTY_FIVE_FIFTY_FOUR, 491.8);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.FIFTY_FIVE_SIXTY_FOUR, 1119.0);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.SIXTY_FIVE_SEVENTY_FOUR, 2196.5);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.SEVENTY_FIVE_EIGHTY_FOUR, 5155.0);
+        getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.EIGHTY_FIVE_OR_OLDER, 14504.0);
+        setAgeRangeRandomDeathFemaleValues(new HashMap<>());
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.UNDER_ONE, 500.0);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.ONE_FOUR, 20.4);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.FIVE_FOURTEEN, 11.8);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.FIFTEEN_TWENTY_FOUR, 38.8);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.TWENTY_FIVE_THIRTY_FOUR, 80.0);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.THIRTY_FIVE_FORTY_FOUR, 140.2);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.FORTY_FIVE_FIFTY_FOUR, 302.5);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.FIFTY_FIVE_SIXTY_FOUR, 670.0);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.SIXTY_FIVE_SEVENTY_FOUR, 1421.0);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.SEVENTY_FIVE_EIGHTY_FOUR, 3788.0);
+        getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.EIGHTY_FIVE_OR_OLDER, 12870.0);
         //endregion Personnel Tab
 
         //region Finances Tab
@@ -1690,44 +1717,20 @@ public class CampaignOptions implements Serializable {
         this.randomDeathMethod = randomDeathMethod;
     }
 
-    public boolean isEnableTeenRandomDeaths() {
-        return enableTeenRandomDeaths;
+    public Map<AgeGroup, Boolean> getEnabledRandomDeathAgeGroups() {
+        return enabledRandomDeathAgeGroups;
     }
 
-    public void setEnableTeenRandomDeaths(final boolean enableTeenRandomDeaths) {
-        this.enableTeenRandomDeaths = enableTeenRandomDeaths;
+    public void setEnabledRandomDeathAgeGroups(final Map<AgeGroup, Boolean> enabledRandomDeathAgeGroups) {
+        this.enabledRandomDeathAgeGroups = enabledRandomDeathAgeGroups;
     }
 
-    public boolean isEnablePreteenRandomDeaths() {
-        return enablePreteenRandomDeaths;
+    public boolean isEnableRandomDeathSuicideCause() {
+        return enableRandomDeathSuicideCause;
     }
 
-    public void setEnablePreteenRandomDeaths(final boolean enablePreteenRandomDeaths) {
-        this.enablePreteenRandomDeaths = enablePreteenRandomDeaths;
-    }
-
-    public boolean isEnableChildRandomDeaths() {
-        return enableChildRandomDeaths;
-    }
-
-    public void setEnableChildRandomDeaths(final boolean enableChildRandomDeaths) {
-        this.enableChildRandomDeaths = enableChildRandomDeaths;
-    }
-
-    public boolean isEnableToddlerRandomDeaths() {
-        return enableToddlerRandomDeaths;
-    }
-
-    public void setEnableToddlerRandomDeaths(final boolean enableToddlerRandomDeaths) {
-        this.enableToddlerRandomDeaths = enableToddlerRandomDeaths;
-    }
-
-    public boolean isEnableInfantMortality() {
-        return enableInfantMortality;
-    }
-
-    public void setEnableInfantMortality(final boolean enableInfantMortality) {
-        this.enableInfantMortality = enableInfantMortality;
+    public void setEnableRandomDeathSuicideCause(final boolean enableRandomDeathSuicideCause) {
+        this.enableRandomDeathSuicideCause = enableRandomDeathSuicideCause;
     }
 
     public double[] getExponentialRandomDeathMaleValues() {
@@ -1746,19 +1749,19 @@ public class CampaignOptions implements Serializable {
         this.exponentialRandomDeathFemaleValues = exponentialRandomDeathFemaleValues;
     }
 
-    public double[] getAgeRangeRandomDeathMaleValues() {
+    public Map<TenYearAgeRange, Double> getAgeRangeRandomDeathMaleValues() {
         return ageRangeRandomDeathMaleValues;
     }
 
-    public void setAgeRangeRandomDeathMaleValues(final double... ageRangeRandomDeathMaleValues) {
+    public void setAgeRangeRandomDeathMaleValues(final Map<TenYearAgeRange, Double> ageRangeRandomDeathMaleValues) {
         this.ageRangeRandomDeathMaleValues = ageRangeRandomDeathMaleValues;
     }
 
-    public double[] getAgeRangeRandomDeathFemaleValues() {
+    public Map<TenYearAgeRange, Double> getAgeRangeRandomDeathFemaleValues() {
         return ageRangeRandomDeathFemaleValues;
     }
 
-    public void setAgeRangeRandomDeathFemaleValues(final double... ageRangeRandomDeathFemaleValues) {
+    public void setAgeRangeRandomDeathFemaleValues(final Map<TenYearAgeRange, Double> ageRangeRandomDeathFemaleValues) {
         this.ageRangeRandomDeathFemaleValues = ageRangeRandomDeathFemaleValues;
     }
     //endregion Death
@@ -3354,20 +3357,29 @@ public class CampaignOptions implements Serializable {
         //region Death
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "keepMarriedNameUponSpouseDeath", getKeepMarriedNameUponSpouseDeath());
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "randomDeathMethod", getRandomDeathMethod().name());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableTeenRandomDeaths", isEnableTeenRandomDeaths());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enablePreteenRandomDeaths", isEnablePreteenRandomDeaths());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableChildRandomDeaths", isEnableChildRandomDeaths());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableToddlerRandomDeaths", isEnableToddlerRandomDeaths());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableInfantMortality", isEnableInfantMortality());
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "enabledRandomDeathAgeGroups");
+        for (final Map.Entry<AgeGroup, Boolean> entry : getEnabledRandomDeathAgeGroups().entrySet()) {
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, entry.getKey().name(), entry.getValue());
+        }
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent--, "enabledRandomDeathAgeGroups");
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "enableRandomDeathSuicideCause", isEnableRandomDeathSuicideCause());
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "exponentialRandomDeathMaleValues", getExponentialRandomDeathMaleValues());
         MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "exponentialRandomDeathFemaleValues", getExponentialRandomDeathFemaleValues());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, "ageRangeRandomDeathMaleValues", getAgeRangeRandomDeathMaleValues());
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent--, "ageRangeRandomDeathFemaleValues", getAgeRangeRandomDeathFemaleValues());
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "ageRangeRandomDeathMaleValues");
+        for (final Map.Entry<TenYearAgeRange, Double> entry : getAgeRangeRandomDeathMaleValues().entrySet()) {
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, entry.getKey().name(), entry.getValue());
+        }
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent--, "ageRangeRandomDeathMaleValues");
+        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "ageRangeRandomDeathFemaleValues");
+        for (final Map.Entry<TenYearAgeRange, Double> entry : getAgeRangeRandomDeathFemaleValues().entrySet()) {
+            MekHqXmlUtil.writeSimpleXMLTag(pw1, indent, entry.getKey().name(), entry.getValue());
+        }
+        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent--, "ageRangeRandomDeathFemaleValues");
         //endregion Death
         //endregion Personnel Tab
 
         //region Finances Tab
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "payForParts", payForParts);
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent--, "payForParts", payForParts);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "payForRepairs", payForRepairs);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "payForUnits", payForUnits);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "payForSalaries", payForSalaries);
@@ -3900,16 +3912,22 @@ public class CampaignOptions implements Serializable {
                 retVal.setKeepMarriedNameUponSpouseDeath(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("randomDeathMethod")) {
                 retVal.setRandomDeathMethod(RandomDeathMethod.valueOf(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("enableTeenRandomDeaths")) {
-                retVal.setEnableTeenRandomDeaths(Boolean.parseBoolean(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("enablePreteenRandomDeaths")) {
-                retVal.setEnablePreteenRandomDeaths(Boolean.parseBoolean(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("enableChildRandomDeaths")) {
-                retVal.setEnableChildRandomDeaths(Boolean.parseBoolean(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("enableToddlerRandomDeaths")) {
-                retVal.setEnableToddlerRandomDeaths(Boolean.parseBoolean(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("enableInfantMortality")) {
-                retVal.setEnableInfantMortality(Boolean.parseBoolean(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("enabledRandomDeathAgeGroups")) {
+                if (!wn2.hasChildNodes()) {
+                    continue;
+                }
+                final NodeList nl2 = wn2.getChildNodes();
+                for (int i = 0; i < nl2.getLength(); i++) {
+                    final Node wn3 = nl2.item(i);
+                    try {
+                        retVal.getEnabledRandomDeathAgeGroups().put(AgeGroup.valueOf(wn3.getNodeName()),
+                                Boolean.parseBoolean(wn3.getTextContent().trim()));
+                    } catch (Exception ignored) {
+
+                    }
+                }
+            } else if (wn2.getNodeName().equalsIgnoreCase("enableRandomDeathSuicideCause")) {
+                retVal.setEnableRandomDeathSuicideCause(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("exponentialRandomDeathMaleValues")) {
                 final String[] values = wn2.getTextContent().trim().split(",");
                 final double[] parsedValues = new double[values.length];
@@ -3925,19 +3943,33 @@ public class CampaignOptions implements Serializable {
                 }
                 retVal.setExponentialRandomDeathFemaleValues(parsedValues);
             } else if (wn2.getNodeName().equalsIgnoreCase("ageRangeRandomDeathMaleValues")) {
-                final String[] values = wn2.getTextContent().trim().split(",");
-                final double[] parsedValues = new double[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    parsedValues[i] = Double.parseDouble(values[i]);
+                if (!wn2.hasChildNodes()) {
+                    continue;
                 }
-                retVal.setAgeRangeRandomDeathMaleValues(parsedValues);
+                final NodeList nl2 = wn2.getChildNodes();
+                for (int i = 0; i < nl2.getLength(); i++) {
+                    final Node wn3 = nl2.item(i);
+                    try {
+                        retVal.getAgeRangeRandomDeathMaleValues().put(TenYearAgeRange.valueOf(wn3.getNodeName()),
+                                Double.parseDouble(wn3.getTextContent().trim()));
+                    } catch (Exception ignored) {
+
+                    }
+                }
             } else if (wn2.getNodeName().equalsIgnoreCase("ageRangeRandomDeathFemaleValues")) {
-                final String[] values = wn2.getTextContent().trim().split(",");
-                final double[] parsedValues = new double[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    parsedValues[i] = Double.parseDouble(values[i]);
+                if (!wn2.hasChildNodes()) {
+                    continue;
                 }
-                retVal.setAgeRangeRandomDeathFemaleValues(parsedValues);
+                final NodeList nl2 = wn2.getChildNodes();
+                for (int i = 0; i < nl2.getLength(); i++) {
+                    final Node wn3 = nl2.item(i);
+                    try {
+                        retVal.getAgeRangeRandomDeathFemaleValues().put(TenYearAgeRange.valueOf(wn3.getNodeName()),
+                                Double.parseDouble(wn3.getTextContent().trim()));
+                    } catch (Exception ignored) {
+
+                    }
+                }
             //endregion Death
             //endregion Personnel Tab
 

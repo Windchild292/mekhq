@@ -20,7 +20,7 @@ package mekhq.campaign.personnel.enums;
 
 import megamek.common.util.EncodeControl;
 import mekhq.campaign.CampaignOptions;
-import mekhq.campaign.personnel.randomDeath.AbstractRandomDeathMethod;
+import mekhq.campaign.personnel.randomDeath.AbstractRandomDeath;
 import mekhq.campaign.personnel.randomDeath.AgeRangeRandomDeath;
 import mekhq.campaign.personnel.randomDeath.DisabledRandomDeath;
 import mekhq.campaign.personnel.randomDeath.ExponentialRandomDeath;
@@ -67,7 +67,7 @@ public enum RandomDeathMethod {
     }
     //endregion Boolean Comparison Methods
 
-    public AbstractRandomDeathMethod getMethod(final CampaignOptions campaignOptions) {
+    public AbstractRandomDeath getMethod(final CampaignOptions campaignOptions) {
         switch (this) {
             case EXPONENTIAL:
                 return new ExponentialRandomDeath(campaignOptions);
