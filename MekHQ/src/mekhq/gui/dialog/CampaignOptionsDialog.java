@@ -5481,7 +5481,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setUseManualMarriages(chkUseManualMarriages.isSelected());
         options.setMinimumMarriageAge((Integer) spnMinimumMarriageAge.getValue());
         options.setCheckMutualAncestorsDepth((Integer) spnCheckMutualAncestorsDepth.getValue());
-        options.setLogMarriageNameChange(chkLogMarriageNameChange.isSelected());
+        options.setLogMarriageNameChanges(chkLogMarriageNameChange.isSelected());
         options.setUseRandomMarriages(chkUseRandomMarriages.isSelected());
         options.setChanceRandomMarriages((Double) spnChanceRandomMarriages.getValue() / 100.0);
         options.setMarriageAgeRange((Integer) spnMarriageAgeRange.getValue());

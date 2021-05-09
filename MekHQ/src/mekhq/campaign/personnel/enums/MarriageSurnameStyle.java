@@ -83,27 +83,21 @@ public enum MarriageSurnameStyle {
     }
     //endregion Boolean Comparison Methods
 
-    public void apply(final Campaign campaign, final LocalDate today, final Person origin,
-                      final Person spouse) {
-        apply(today, origin, spouse, campaign.getCampaignOptions().getMarriageSurnameWeights(),
-                campaign.getCampaignOptions().logMarriageNameChange());
-    }
     /**
      * This applies the surname changes that occur during a marriage
+     * @param campaign the campaign to use in processing
      * @param today the current day
      * @param origin the origin person
      * @param spouse the origin person's new spouse
-     * @param weights the current weighted marriage weights
-     * @param logNameChanges whether to log the name change in personnel logs
      */
-    public void apply(final LocalDate today, final Person origin, final Person spouse,
-                      final Map<MarriageSurnameStyle, Double> weights, final boolean logNameChanges) {
+    public void apply(final Campaign campaign, final LocalDate today, final Person origin,
+                      final Person spouse) {
         final String surname = origin.getSurname();
         final String spouseSurname = spouse.getSurname();
         MarriageSurnameStyle surnameStyle = this;
 
         if (surnameStyle.isWeighted()) {
-            surnameStyle = createWeightedSurnameMap(weights).randomItem();
+            surnameStyle = createWeightedSurnameMap(campaign.getCampaignOptions().getMarriageSurnameWeights()).randomItem();
         }
 
         switch (surnameStyle) {
@@ -204,7 +198,7 @@ public enum MarriageSurnameStyle {
                 break;
         }
 
-        if (logNameChanges) {
+        if (campaign.getCampaignOptions().isLogMarriageNameChanges()) {
             if (!spouse.getSurname().equals(spouseSurname)) {
                 PersonalLogger.marriageNameChange(spouse, origin, today);
             }

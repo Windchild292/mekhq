@@ -31,66 +31,24 @@ import mekhq.campaign.personnel.enums.RandomMarriageMethod;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 public abstract class AbstractMarriage {
     //region Variable Declarations
     private final RandomMarriageMethod method;
-    private int minimumAge;
-    private int checkMutualAncestorsDepth;
-    private boolean logNameChanges;
-    private Map<MarriageSurnameStyle, Double> surnameWeights;
-    private int ageRange;
-    private boolean useSameSexRandomMarriages;
-
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    protected AbstractMarriage(final RandomMarriageMethod method,
-                               final boolean useSameSexRandomMarriages) {
+    protected AbstractMarriage(final RandomMarriageMethod method) {
         this.method = method;
-        this.useSameSexRandomMarriages = useSameSexRandomMarriages;
     }
     //endregion Constructors
 
     //region Getters
     public RandomMarriageMethod getMethod() {
         return method;
-    }
-
-    public int getMinimumAge() {
-        return minimumAge;
-    }
-
-    public void setMinimumAge(final int minimumAge) {
-        this.minimumAge = minimumAge;
-    }
-
-    public int getCheckMutualAncestorsDepth() {
-        return checkMutualAncestorsDepth;
-    }
-
-    public void setCheckMutualAncestorsDepth(final int checkMutualAncestorsDepth) {
-        this.checkMutualAncestorsDepth = checkMutualAncestorsDepth;
-    }
-
-    public int getAgeRange() {
-        return ageRange;
-    }
-
-    public void setAgeRange(final int ageRange) {
-        this.ageRange = ageRange;
-    }
-
-    public boolean isUseSameSexRandomMarriages() {
-        return useSameSexRandomMarriages;
-    }
-
-    public void setUseSameSexRandomMarriages(final boolean useSameSexRandomMarriages) {
-        this.useSameSexRandomMarriages = useSameSexRandomMarriages;
     }
     //endregion Getters
 
@@ -100,18 +58,19 @@ public abstract class AbstractMarriage {
      * @param person the person to determine if they are old enough
      * @return true if they are, otherwise false
      */
-    public boolean oldEnoughToMarry(final LocalDate today, final Person person) {
-        return person.getAge(today) >= getMinimumAge();
+    public boolean oldEnoughToMarry(final Campaign campaign, final LocalDate today, final Person person) {
+        return person.getAge(today) >= campaign.getCampaignOptions().getMinimumMarriageAge();
     }
 
     /**
      * Determines if the potential spouse is a safe spouse for a person
+     * @param campaign the campaign to check using
      * @param today the current day
      * @param person the person trying to marry
      * @param potentialSpouse the person to determine if they are a safe spouse
      * @return true if the potential spouse is a safe spouse for the provided person
      */
-    public boolean safeSpouse(final LocalDate today, final Person person,
+    public boolean safeSpouse(final Campaign campaign, LocalDate today, final Person person,
                               final Person potentialSpouse) {
         // Huge convoluted return statement, with the following restrictions
         // can't marry yourself
@@ -126,11 +85,11 @@ public abstract class AbstractMarriage {
                 !person.equals(potentialSpouse)
                         && !potentialSpouse.getGenealogy().hasSpouse()
                         && potentialSpouse.isMarriageable()
-                        && oldEnoughToMarry(today, potentialSpouse)
+                        && oldEnoughToMarry(campaign, today, potentialSpouse)
                         && (!potentialSpouse.getPrisonerStatus().isPrisoner() || person.getPrisonerStatus().isPrisoner())
                         && !potentialSpouse.getStatus().isDeadOrMIA()
                         && potentialSpouse.getStatus().isActive()
-                        && !person.getGenealogy().checkMutualAncestors(potentialSpouse, getCheckMutualAncestorsDepth())
+                        && !person.getGenealogy().checkMutualAncestors(potentialSpouse, campaign.getCampaignOptions().getCheckMutualAncestorsDepth())
         );
     }
 
@@ -148,7 +107,7 @@ public abstract class AbstractMarriage {
         PersonalLogger.marriage(origin, spouse, today);
         PersonalLogger.marriage(spouse, origin, today);
 
-        campaign.addReport(String.format("%s has married %s!", origin.getHyperlinkedName(),
+        campaign.addReport(String.format(resources.getString("marriage.report"), origin.getHyperlinkedName(),
                 spouse.getHyperlinkedName()));
 
         // Apply the surname style changes
@@ -160,30 +119,40 @@ public abstract class AbstractMarriage {
     }
 
     //region New Day
+    /**
+     * Process new day random marriage for an individual
+     * @param campaign the campaign to process
+     * @param today the current day
+     * @param person the person to process
+     */
     public void processNewDay(final Campaign campaign, final LocalDate today, final Person person) {
         // Don't attempt to generate is someone isn't marriageable, has a spouse, isn't old enough
         // to marry, or is actively deployed
         if (!person.isMarriageable() || person.getGenealogy().hasSpouse()
-                || !oldEnoughToMarry(today, person) || person.isDeployed()) {
+                || !oldEnoughToMarry(campaign, today, person) || person.isDeployed()) {
             return;
         }
 
         // setting is the fractional chance that this attempt at finding a marriage will result in one
-        if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomMarriages())) {
+        if (randomMarriage(person)) {
             addRandomSpouse(campaign, today, person, false);
         } else if (campaign.getCampaignOptions().useRandomSameSexMarriages()) {
-            if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomSameSexMarriages())) {
+            if (randomSameSexMarriage(person)) {
                 addRandomSpouse(campaign, today, person, true);
             }
         }
     }
 
     //region Random Marriage
+    protected abstract boolean randomMarriage(final Person person);
+
+    protected abstract boolean randomSameSexMarriage(final Person person);
+
     private void addRandomSpouse(final Campaign campaign, final LocalDate today,
                                  final Person person, final boolean sameSex) {
         final Gender gender = sameSex ? person.getGender() : (person.getGender().isMale() ? Gender.FEMALE : Gender.MALE);
         final List<Person> potentials = campaign.getActivePersonnel().stream()
-                .filter(potentialSpouse -> isPotentialRandomSpouse(today, person, potentialSpouse, gender))
+                .filter(potentialSpouse -> isPotentialRandomSpouse(campaign, today, person, potentialSpouse, gender))
                 .collect(Collectors.toList());
         if (!potentials.isEmpty()) {
             marry(campaign, today, person, potentials.get(Compute.randomInt(potentials.size())),
@@ -191,16 +160,18 @@ public abstract class AbstractMarriage {
         }
     }
 
-    private boolean isPotentialRandomSpouse(final LocalDate today, final Person person,
-                                            final Person potentialSpouse, final Gender gender) {
-        if ((potentialSpouse.getGender() != gender) || !safeSpouse(today, person, potentialSpouse)
+    private boolean isPotentialRandomSpouse(final Campaign campaign, final LocalDate today,
+                                            final Person person, final Person potentialSpouse,
+                                            final Gender gender) {
+        if ((potentialSpouse.getGender() != gender)
+                || !safeSpouse(campaign, today, person, potentialSpouse)
                 || !(person.getPrisonerStatus().isFree()
                 || (person. getPrisonerStatus().isPrisoner() && potentialSpouse.getPrisonerStatus().isPrisoner()))) {
             return false;
         }
 
         final int ageDifference = Math.abs(potentialSpouse.getAge(today) - person.getAge(today));
-        return ageDifference <= getAgeRange();
+        return ageDifference <= campaign.getCampaignOptions().getMarriageAgeRange();
     }
     //endregion Random Marriage
     //endregion New Day

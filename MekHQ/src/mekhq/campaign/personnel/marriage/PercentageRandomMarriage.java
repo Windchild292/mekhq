@@ -18,5 +18,18 @@
  */
 package mekhq.campaign.personnel.marriage;
 
+import megamek.common.Compute;
+import mekhq.campaign.personnel.Person;
+
 public class PercentageRandomMarriage extends AbstractMarriage {
+
+    @Override
+    protected boolean randomMarriage(Person person) {
+        return Compute.randomFloat() < campaign.getCampaignOptions().getChanceRandomMarriages();
+    }
+
+    @Override
+    protected boolean randomSameSexMarriage(Person person) {
+        return Compute.randomFloat() < campaign.getCampaignOptions().getChanceRandomSameSexMarriages();
+    }
 }
