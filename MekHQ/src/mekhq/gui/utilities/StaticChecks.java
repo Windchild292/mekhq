@@ -653,9 +653,9 @@ public class StaticChecks {
      */
     public static boolean areEitherAllTryingToMarryOrNot(Person[] people) {
         if (people.length > 0) {
-            boolean tryingToMarry = people[0].isTryingToMarry();
+            boolean tryingToMarry = people[0].isMarriageable();
             for (Person person : people) {
-                if (tryingToMarry != person.isTryingToMarry()) {
+                if (tryingToMarry != person.isMarriageable()) {
                     return false;
                 }
             }

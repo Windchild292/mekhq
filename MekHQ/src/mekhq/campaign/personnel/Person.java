@@ -166,7 +166,7 @@ public class Person implements Serializable {
     //region Marriage
     // this is a flag used in determine whether or not a person is a potential marriage candidate
     // provided that they are not married, are old enough, etc.
-    private boolean tryingToMarry;
+    private boolean marriageable;
     //endregion Marriage
     //endregion Family Variables
 
@@ -299,7 +299,6 @@ public class Person implements Serializable {
         OTHER_RANSOM_VALUES.put(SkillType.EXP_VETERAN, Money.of(25000));
         OTHER_RANSOM_VALUES.put(SkillType.EXP_ELITE, Money.of(50000));
     }
-
     //endregion Variable Declarations
 
     //region Constructors
@@ -358,7 +357,7 @@ public class Person implements Serializable {
         bloodname = "";
         biography = "";
         setGenealogy(new Genealogy(this));
-        tryingToMarry = true;
+        marriageable = true;
         tryingToConceive = true;
         dueDate = null;
         expectedDueDate = null;
@@ -1347,12 +1346,12 @@ public class Person implements Serializable {
     //endregion Pregnancy
 
     //region Marriage
-    public boolean isTryingToMarry() {
-        return tryingToMarry;
+    public boolean isMarriageable() {
+        return marriageable;
     }
 
-    public void setTryingToMarry(boolean tryingToMarry) {
-        this.tryingToMarry = tryingToMarry;
+    public void setMarriageable(final boolean marriageable) {
+        this.marriageable = marriageable;
     }
 
     /**
@@ -1373,7 +1372,7 @@ public class Person implements Serializable {
         return (
                 !this.equals(person)
                 && !person.getGenealogy().hasSpouse()
-                && person.isTryingToMarry()
+                && person.isMarriageable()
                 && person.oldEnoughToMarry(campaign)
                 && (!person.getPrisonerStatus().isPrisoner() || getPrisonerStatus().isPrisoner())
                 && !person.getStatus().isDeadOrMIA()
@@ -1389,7 +1388,7 @@ public class Person implements Serializable {
     public void randomMarriage(Campaign campaign) {
         // Don't attempt to generate is someone isn't trying to marry, has a spouse,
         // isn't old enough to marry, or is actively deployed
-        if (!isTryingToMarry() || getGenealogy().hasSpouse() || !oldEnoughToMarry(campaign) || isDeployed()) {
+        if (!isMarriageable() || getGenealogy().hasSpouse() || !oldEnoughToMarry(campaign) || isDeployed()) {
             return;
         }
 
@@ -1557,7 +1556,7 @@ public class Person implements Serializable {
             if (!genealogy.isEmpty()) {
                 genealogy.writeToXML(pw1, indent + 1);
             }
-            if (!isTryingToMarry()) {
+            if (!isMarriageable()) {
                 MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "tryingToMarry", false);
             }
             if (!isTryingToConceive()) {
@@ -1798,7 +1797,7 @@ public class Person implements Serializable {
                 } else if (wn2.getNodeName().equalsIgnoreCase("genealogy")) {
                     retVal.getGenealogy().fillFromXML(wn2.getChildNodes());
                 } else if (wn2.getNodeName().equalsIgnoreCase("tryingToMarry")) {
-                    retVal.tryingToMarry = Boolean.parseBoolean(wn2.getTextContent().trim());
+                    retVal.marriageable = Boolean.parseBoolean(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("tryingToConceive")) {
                     retVal.tryingToConceive = Boolean.parseBoolean(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("dueDate")) {
