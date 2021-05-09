@@ -23,7 +23,9 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mekhq.Version;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
@@ -32,6 +34,7 @@ import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
+import mekhq.campaign.personnel.enums.RandomMarriageMethod;
 import mekhq.service.MassRepairOption;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -47,7 +50,7 @@ import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.enums.BabySurnameStyle;
 import mekhq.campaign.personnel.enums.TimeInDisplayFormat;
-import mekhq.campaign.personnel.enums.Marriage;
+import mekhq.campaign.personnel.enums.MarriageSurnameStyle;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.enums.FinancialYearDuration;
@@ -239,11 +242,11 @@ public class CampaignOptions implements Serializable {
     private int minimumMarriageAge;
     private int checkMutualAncestorsDepth;
     private boolean logMarriageNameChange;
-    private int[] marriageSurnameWeights;
-    private boolean useRandomMarriages;
-    private double chanceRandomMarriages;
+    private Map<MarriageSurnameStyle, Double> marriageSurnameWeights;
+    private RandomMarriageMethod randomMarriageMethod;
     private int marriageAgeRange;
     private boolean useRandomSameSexMarriages;
+    private double chanceRandomMarriages;
     private double chanceRandomSameSexMarriages;
 
     // Procreation
@@ -619,20 +622,20 @@ public class CampaignOptions implements Serializable {
         setMinimumMarriageAge(16);
         setCheckMutualAncestorsDepth(4);
         setLogMarriageNameChange(false);
-        setMarriageSurnameWeights(new int[Marriage.values().length - 1]);
-        setMarriageSurnameWeight(Marriage.NO_CHANGE.ordinal(), 100);
-        setMarriageSurnameWeight(Marriage.YOURS.ordinal(), 55);
-        setMarriageSurnameWeight(Marriage.SPOUSE.ordinal(), 55);
-        setMarriageSurnameWeight(Marriage.SPACE_YOURS.ordinal(), 10);
-        setMarriageSurnameWeight(Marriage.BOTH_SPACE_YOURS.ordinal(), 5);
-        setMarriageSurnameWeight(Marriage.HYP_YOURS.ordinal(), 30);
-        setMarriageSurnameWeight(Marriage.BOTH_HYP_YOURS.ordinal(), 20);
-        setMarriageSurnameWeight(Marriage.SPACE_SPOUSE.ordinal(), 10);
-        setMarriageSurnameWeight(Marriage.BOTH_SPACE_SPOUSE.ordinal(), 5);
-        setMarriageSurnameWeight(Marriage.HYP_SPOUSE.ordinal(), 30);
-        setMarriageSurnameWeight(Marriage.BOTH_HYP_SPOUSE.ordinal(), 20);
-        setMarriageSurnameWeight(Marriage.MALE.ordinal(), 500);
-        setMarriageSurnameWeight(Marriage.FEMALE.ordinal(), 160);
+        setMarriageSurnameWeights(new HashMap<>());
+        setMarriageSurnameWeight(MarriageSurnameStyle.NO_CHANGE.ordinal(), 100);
+        setMarriageSurnameWeight(MarriageSurnameStyle.YOURS.ordinal(), 55);
+        setMarriageSurnameWeight(MarriageSurnameStyle.SPOUSE.ordinal(), 55);
+        setMarriageSurnameWeight(MarriageSurnameStyle.SPACE_YOURS.ordinal(), 10);
+        setMarriageSurnameWeight(MarriageSurnameStyle.BOTH_SPACE_YOURS.ordinal(), 5);
+        setMarriageSurnameWeight(MarriageSurnameStyle.HYP_YOURS.ordinal(), 30);
+        setMarriageSurnameWeight(MarriageSurnameStyle.BOTH_HYP_YOURS.ordinal(), 20);
+        setMarriageSurnameWeight(MarriageSurnameStyle.SPACE_SPOUSE.ordinal(), 10);
+        setMarriageSurnameWeight(MarriageSurnameStyle.BOTH_SPACE_SPOUSE.ordinal(), 5);
+        setMarriageSurnameWeight(MarriageSurnameStyle.HYP_SPOUSE.ordinal(), 30);
+        setMarriageSurnameWeight(MarriageSurnameStyle.BOTH_HYP_SPOUSE.ordinal(), 20);
+        setMarriageSurnameWeight(MarriageSurnameStyle.MALE.ordinal(), 500);
+        setMarriageSurnameWeight(MarriageSurnameStyle.FEMALE.ordinal(), 160);
         setUseRandomMarriages(false);
         setChanceRandomMarriages(0.00025);
         setMarriageAgeRange(10);
@@ -1415,47 +1418,15 @@ public class CampaignOptions implements Serializable {
     /**
      * @return the array of weights of potential surname changes for weighted marriage surname generation
      */
-    public int[] getMarriageSurnameWeights() {
+    public Map<MarriageSurnameStyle, Double> getMarriageSurnameWeights() {
         return marriageSurnameWeights;
-    }
-
-    /**
-     * This gets one of the values in the array of weights of potential surname changes for weighted marriage surname generation
-     * @param index the array index to get
-     * @return the weight at the index
-     */
-    public int getMarriageSurnameWeight(final int index) {
-        return getMarriageSurnameWeights()[index];
     }
 
     /**
      * @param marriageSurnameWeights the new marriage surname weight array
      */
-    public void setMarriageSurnameWeights(final int... marriageSurnameWeights) {
+    public void setMarriageSurnameWeights(final Map<MarriageSurnameStyle, Double> marriageSurnameWeights) {
         this.marriageSurnameWeights = marriageSurnameWeights;
-    }
-
-    /**
-     * This sets one of the values in the array of weights of potential surname changes for weighted marriage surname generation
-     * @param index the array index to set
-     * @param marriageSurnameWeight the weight to use
-     */
-    public void setMarriageSurnameWeight(final int index, final int marriageSurnameWeight) {
-        marriageSurnameWeights[index] = marriageSurnameWeight;
-    }
-
-    /**
-     * @return whether or not to use random marriages
-     */
-    public boolean useRandomMarriages() {
-        return useRandomMarriages;
-    }
-
-    /**
-     * @param useRandomMarriages whether or not to use random marriages
-     */
-    public void setUseRandomMarriages(final boolean useRandomMarriages) {
-        this.useRandomMarriages = useRandomMarriages;
     }
 
     /**
@@ -2552,8 +2523,8 @@ public class CampaignOptions implements Serializable {
     public void setUseStratCon(boolean useStratCon) {
         this.useStratCon = useStratCon;
     }
-    
-    
+
+
     public boolean getUseAtBUnitMarket() {
         return useAtBUnitMarket;
     }

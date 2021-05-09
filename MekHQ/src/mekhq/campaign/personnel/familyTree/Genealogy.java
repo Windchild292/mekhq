@@ -22,7 +22,6 @@ import megamek.common.annotations.Nullable;
 import megamek.common.enums.Gender;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.FamilialRelationshipType;
 import mekhq.io.idReferenceClasses.PersonIdReference;
@@ -210,17 +209,14 @@ public class Genealogy implements Serializable {
     /**
      * This is used to determine if two people have mutual ancestors based on their genealogies
      * @param person the person to check if they are related or not
-     * @param campaign the campaign the two people are a part of
+     * @param depth the depth to check mutual ancestry up to
      * @return true if they have mutual ancestors, otherwise false
      */
-    public boolean checkMutualAncestors(Person person, Campaign campaign) {
+    public boolean checkMutualAncestors(final Person person, final int depth) {
         if (getOrigin().equals(person)) {
             // Same person will always return true, to prevent any weirdness
             return true;
-        }
-
-        final int depth = campaign.getCampaignOptions().checkMutualAncestorsDepth();
-        if (depth == 0) {
+        } else if (depth == 0) {
             // Check is disabled, return false for no mutual ancestors
             return false;
         }

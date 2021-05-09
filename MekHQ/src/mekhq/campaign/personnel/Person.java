@@ -71,7 +71,6 @@ import mekhq.campaign.personnel.enums.FamilialRelationshipType;
 import mekhq.campaign.personnel.enums.GenderDescriptors;
 import mekhq.campaign.personnel.enums.ManeiDominiClass;
 import mekhq.campaign.personnel.enums.ManeiDominiRank;
-import mekhq.campaign.personnel.enums.Marriage;
 import mekhq.campaign.personnel.enums.ModifierValue;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
@@ -357,7 +356,7 @@ public class Person implements Serializable {
         bloodname = "";
         biography = "";
         setGenealogy(new Genealogy(this));
-        marriageable = true;
+        setMarriageable(true);
         tryingToConceive = true;
         dueDate = null;
         expectedDueDate = null;
@@ -1352,81 +1351,6 @@ public class Person implements Serializable {
 
     public void setMarriageable(final boolean marriageable) {
         this.marriageable = marriageable;
-    }
-
-    /**
-     * Determines if another person is a safe spouse for the current person
-     * @param person the person to determine if they are a safe spouse
-     * @param campaign the campaign to use to determine if they are a safe spouse
-     */
-    public boolean safeSpouse(Person person, Campaign campaign) {
-        // Huge convoluted return statement, with the following restrictions
-        // can't marry yourself
-        // can't marry someone who is already married
-        // can't marry someone who doesn't want to be married
-        // can't marry a prisoner, unless you are also a prisoner (this is purposely left open for prisoners to marry who they want)
-        // can't marry a person who is dead or MIA
-        // can't marry inactive personnel (this is to show how they aren't part of the force anymore)
-        // TODO : can't marry anyone who is not located at the same planet as the person - GitHub #1672: Implement current planet tracking for personnel
-        // can't marry a close relative
-        return (
-                !this.equals(person)
-                && !person.getGenealogy().hasSpouse()
-                && person.isMarriageable()
-                && person.oldEnoughToMarry(campaign)
-                && (!person.getPrisonerStatus().isPrisoner() || getPrisonerStatus().isPrisoner())
-                && !person.getStatus().isDeadOrMIA()
-                && person.getStatus().isActive()
-                && !getGenealogy().checkMutualAncestors(person, getCampaign())
-        );
-    }
-
-    public boolean oldEnoughToMarry(Campaign campaign) {
-        return (getAge(campaign.getLocalDate()) >= campaign.getCampaignOptions().getMinimumMarriageAge());
-    }
-
-    public void randomMarriage(Campaign campaign) {
-        // Don't attempt to generate is someone isn't trying to marry, has a spouse,
-        // isn't old enough to marry, or is actively deployed
-        if (!isMarriageable() || getGenealogy().hasSpouse() || !oldEnoughToMarry(campaign) || isDeployed()) {
-            return;
-        }
-
-        // setting is the fractional chance that this attempt at finding a marriage will result in one
-        if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomMarriages())) {
-            addRandomSpouse(false, campaign);
-        } else if (campaign.getCampaignOptions().useRandomSameSexMarriages()) {
-            if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomSameSexMarriages())) {
-                addRandomSpouse(true, campaign);
-            }
-        }
-    }
-
-    public void addRandomSpouse(boolean sameSex, Campaign campaign) {
-        List<Person> potentials = new ArrayList<>();
-        Gender gender = sameSex ? getGender() : (getGender().isMale() ? Gender.FEMALE : Gender.MALE);
-        for (Person p : campaign.getActivePersonnel()) {
-            if (isPotentialRandomSpouse(p, gender, campaign)) {
-                potentials.add(p);
-            }
-        }
-
-        int n = potentials.size();
-        if (n > 0) {
-            Marriage.WEIGHTED.marry(campaign, this, potentials.get(Compute.randomInt(n)));
-        }
-    }
-
-    public boolean isPotentialRandomSpouse(Person p, Gender gender, Campaign campaign) {
-        if ((p.getGender() != gender) || !safeSpouse(p, campaign)
-                || !(getPrisonerStatus().isFree()
-                || (getPrisonerStatus().isPrisoner() && p.getPrisonerStatus().isPrisoner()))) {
-            return false;
-        }
-
-        int ageDifference = Math.abs(p.getAge(campaign.getLocalDate()) - getAge(campaign.getLocalDate()));
-
-        return (ageDifference <= campaign.getCampaignOptions().getMarriageAgeRange());
     }
     //endregion Marriage
 
