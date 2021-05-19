@@ -22,6 +22,7 @@ package mekhq.campaign.universe;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
 import megamek.common.TargetRoll;
+import megamek.common.annotations.Nullable;
 import megamek.common.enums.AtmosphericPressure;
 import mekhq.MekHQ;
 import mekhq.Utilities;
@@ -669,7 +670,7 @@ public class Planet implements Serializable {
         return getEventData(when, temperature, e -> e.temperature);
     }
 
-    public AtmosphericPressure getPressure(LocalDate when) {
+    public @Nullable AtmosphericPressure getPressure(LocalDate when) {
         return getEventData(when, pressure, e -> e.pressure);
     }
 
@@ -678,7 +679,7 @@ public class Planet implements Serializable {
         return (currentPressure == null) ? "unknown" : currentPressure.toString();
     }
 
-    public Atmosphere getAtmosphere(LocalDate when) {
+    public @Nullable Atmosphere getAtmosphere(LocalDate when) {
         return getEventData(when, null != atmosphere ? atmosphere : Atmosphere.NONE, e -> e.atmosphere);
     }
 

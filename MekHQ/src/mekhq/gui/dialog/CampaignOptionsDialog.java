@@ -20,6 +20,7 @@ package mekhq.gui.dialog;
 
 import megamek.client.generator.RandomGenderGenerator;
 import megamek.client.generator.RandomNameGenerator;
+import megamek.client.ui.baseComponents.MMComboBox;
 import megamek.client.ui.preferences.JWindowPreference;
 import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
@@ -63,6 +64,8 @@ import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.RATManager;
+import mekhq.campaign.universe.enums.LightConditionsGenerationMethod;
+import mekhq.campaign.universe.enums.WeatherGenerationMethod;
 import mekhq.gui.FileDialogs;
 import mekhq.gui.SpecialAbilityPanel;
 import mekhq.gui.baseComponents.SortedComboBoxModel;
@@ -479,8 +482,8 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkAttachedPlayerCamouflage;
     private JCheckBox chkPlayerControlsAttachedUnits;
     private JCheckBox chkUseDropShips;
-    private JCheckBox chkUseWeatherConditions;
-    private JCheckBox chkUseLightConditions;
+    private JComboBox<LightConditionsGenerationMethod> comboLightConditionsGenerationMethod;
+    private JComboBox<WeatherGenerationMethod> comboWeatherGenerationMethod;
     private JCheckBox chkUsePlanetaryConditions;
     //endregion Against the Bot Tab
 
@@ -2888,7 +2891,6 @@ public class CampaignOptionsDialog extends JDialog {
         chkVariableContractLength = new JCheckBox();
         chkMercSizeLimited = new JCheckBox();
         chkRestrictPartsByMission = new JCheckBox();
-        chkUseLightConditions = new JCheckBox();
         chkUsePlanetaryConditions = new JCheckBox();
 
         chkAeroRecruitsHaveUnits = new JCheckBox();
@@ -3486,20 +3488,27 @@ public class CampaignOptionsDialog extends JDialog {
         gridBagConstraints.gridy = yTablePosition++;
         panSubAtBScenario.add(chkUseDropShips, gridBagConstraints);
 
-        chkUseWeatherConditions = new JCheckBox(resourceMap.getString("chkUseWeatherConditions.text"));
-        chkUseWeatherConditions.setToolTipText(resourceMap.getString("chkUseWeatherConditions.toolTipText"));
+        final JLabel lblLightConditionsGenerationMethod = new JLabel(resources.getString("lblLightConditionsGenerationMethod.text"));
+        lblLightConditionsGenerationMethod.setToolTipText(resources.getString("lblLightConditionsGenerationMethod.toolTipText"));
+        lblLightConditionsGenerationMethod.setName("lblLightConditionsGenerationMethod");
         gridBagConstraints.gridy = yTablePosition++;
-        panSubAtBScenario.add(chkUseWeatherConditions, gridBagConstraints);
+        panSubAtBScenario.add(chkUseDropShips, gridBagConstraints);
 
-        chkUseLightConditions.setText(resourceMap.getString("chkUseLightConditions.text"));
-        chkUseLightConditions.setToolTipText(resourceMap.getString("chkUseLightConditions.toolTipText"));
-        gridBagConstraints.gridx = 0;
+        comboLightConditionsGenerationMethod = new MMComboBox<>("comboLightConditionsGenerationMethod",
+                LightConditionsGenerationMethod.values());
         gridBagConstraints.gridy = yTablePosition++;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        panSubAtBScenario.add(chkUseLightConditions, gridBagConstraints);
+        panSubAtBScenario.add(chkUseDropShips, gridBagConstraints);
+
+        final JLabel lblWeatherGenerationMethod = new JLabel(resources.getString("lblWeatherGenerationMethod.text"));
+        lblWeatherGenerationMethod.setToolTipText(resources.getString("lblWeatherGenerationMethod.toolTipText"));
+        lblWeatherGenerationMethod.setName("lblWeatherGenerationMethod");
+        gridBagConstraints.gridy = yTablePosition++;
+        panSubAtBScenario.add(chkUseDropShips, gridBagConstraints);
+
+        comboWeatherGenerationMethod = new MMComboBox<>("comboWeatherGenerationMethod",
+                WeatherGenerationMethod.values());
+        gridBagConstraints.gridy = yTablePosition++;
+        panSubAtBScenario.add(chkUseDropShips, gridBagConstraints);
 
         chkUsePlanetaryConditions.setText(resourceMap.getString("chkUsePlanetaryConditions.text"));
         chkUsePlanetaryConditions.setToolTipText(resourceMap.getString("chkUsePlanetaryConditions.toolTipText"));
