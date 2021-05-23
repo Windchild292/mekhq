@@ -23,7 +23,9 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mekhq.Version;
 import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
@@ -33,6 +35,7 @@ import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
+import mekhq.campaign.personnel.enums.RandomMarriageMethod;
 import mekhq.service.MassRepairOption;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -48,7 +51,7 @@ import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.enums.BabySurnameStyle;
 import mekhq.campaign.personnel.enums.TimeInDisplayFormat;
-import mekhq.campaign.personnel.enums.Marriage;
+import mekhq.campaign.personnel.enums.MarriageSurnameStyle;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.enums.FinancialYearDuration;
@@ -234,12 +237,12 @@ public class CampaignOptions implements Serializable {
     private boolean useManualMarriages;
     private int minimumMarriageAge;
     private int checkMutualAncestorsDepth;
-    private boolean logMarriageNameChange;
-    private int[] marriageSurnameWeights;
-    private boolean useRandomMarriages;
-    private double chanceRandomMarriages;
+    private boolean logMarriageNameChanges;
+    private Map<MarriageSurnameStyle, Double> marriageSurnameWeights;
+    private RandomMarriageMethod randomMarriageMethod;
     private int marriageAgeRange;
     private boolean useRandomSameSexMarriages;
+    private double chanceRandomMarriages;
     private double chanceRandomSameSexMarriages;
 
     // Procreation
@@ -614,25 +617,25 @@ public class CampaignOptions implements Serializable {
         setUseManualMarriages(true);
         setMinimumMarriageAge(16);
         setCheckMutualAncestorsDepth(4);
-        setLogMarriageNameChange(false);
-        setMarriageSurnameWeights(new int[Marriage.values().length - 1]);
-        setMarriageSurnameWeight(Marriage.NO_CHANGE.ordinal(), 100);
-        setMarriageSurnameWeight(Marriage.YOURS.ordinal(), 55);
-        setMarriageSurnameWeight(Marriage.SPOUSE.ordinal(), 55);
-        setMarriageSurnameWeight(Marriage.SPACE_YOURS.ordinal(), 10);
-        setMarriageSurnameWeight(Marriage.BOTH_SPACE_YOURS.ordinal(), 5);
-        setMarriageSurnameWeight(Marriage.HYP_YOURS.ordinal(), 30);
-        setMarriageSurnameWeight(Marriage.BOTH_HYP_YOURS.ordinal(), 20);
-        setMarriageSurnameWeight(Marriage.SPACE_SPOUSE.ordinal(), 10);
-        setMarriageSurnameWeight(Marriage.BOTH_SPACE_SPOUSE.ordinal(), 5);
-        setMarriageSurnameWeight(Marriage.HYP_SPOUSE.ordinal(), 30);
-        setMarriageSurnameWeight(Marriage.BOTH_HYP_SPOUSE.ordinal(), 20);
-        setMarriageSurnameWeight(Marriage.MALE.ordinal(), 500);
-        setMarriageSurnameWeight(Marriage.FEMALE.ordinal(), 160);
-        setUseRandomMarriages(false);
-        setChanceRandomMarriages(0.00025);
+        setLogMarriageNameChanges(false);
+        setMarriageSurnameWeights(new HashMap<>());
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.NO_CHANGE, 100.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.YOURS, 55.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.SPOUSE, 55.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.SPACE_YOURS, 10.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.BOTH_SPACE_YOURS, 5.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.HYP_YOURS, 30.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.BOTH_HYP_YOURS, 20.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.SPACE_SPOUSE, 10.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.BOTH_SPACE_SPOUSE, 5.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.HYP_SPOUSE, 30.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.BOTH_HYP_SPOUSE, 20.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.MALE, 500.0);
+        getMarriageSurnameWeights().put(MarriageSurnameStyle.FEMALE, 160.0);
+        setRandomMarriageMethod(RandomMarriageMethod.NONE);
         setMarriageAgeRange(10);
         setUseRandomSameSexMarriages(false);
+        setChanceRandomMarriages(0.00025);
         setChanceRandomSameSexMarriages(0.00002);
 
         // Procreation
@@ -1382,7 +1385,7 @@ public class CampaignOptions implements Serializable {
      * This gets the number of recursions to use when checking mutual ancestors between two personnel
      * @return the number of recursions to use
      */
-    public int checkMutualAncestorsDepth() {
+    public int getCheckMutualAncestorsDepth() {
         return checkMutualAncestorsDepth;
     }
 
@@ -1397,61 +1400,29 @@ public class CampaignOptions implements Serializable {
     /**
      * @return whether or not to log a name change in a marriage
      */
-    public boolean logMarriageNameChange() {
-        return logMarriageNameChange;
+    public boolean isLogMarriageNameChanges() {
+        return logMarriageNameChanges;
     }
 
     /**
-     * @param logMarriageNameChange whether to log marriage name changes or not
+     * @param logMarriageNameChanges whether to log marriage name changes or not
      */
-    public void setLogMarriageNameChange(final boolean logMarriageNameChange) {
-        this.logMarriageNameChange = logMarriageNameChange;
+    public void setLogMarriageNameChanges(final boolean logMarriageNameChanges) {
+        this.logMarriageNameChanges = logMarriageNameChanges;
     }
 
     /**
      * @return the array of weights of potential surname changes for weighted marriage surname generation
      */
-    public int[] getMarriageSurnameWeights() {
+    public Map<MarriageSurnameStyle, Double> getMarriageSurnameWeights() {
         return marriageSurnameWeights;
-    }
-
-    /**
-     * This gets one of the values in the array of weights of potential surname changes for weighted marriage surname generation
-     * @param index the array index to get
-     * @return the weight at the index
-     */
-    public int getMarriageSurnameWeight(final int index) {
-        return getMarriageSurnameWeights()[index];
     }
 
     /**
      * @param marriageSurnameWeights the new marriage surname weight array
      */
-    public void setMarriageSurnameWeights(final int... marriageSurnameWeights) {
+    public void setMarriageSurnameWeights(final Map<MarriageSurnameStyle, Double> marriageSurnameWeights) {
         this.marriageSurnameWeights = marriageSurnameWeights;
-    }
-
-    /**
-     * This sets one of the values in the array of weights of potential surname changes for weighted marriage surname generation
-     * @param index the array index to set
-     * @param marriageSurnameWeight the weight to use
-     */
-    public void setMarriageSurnameWeight(final int index, final int marriageSurnameWeight) {
-        marriageSurnameWeights[index] = marriageSurnameWeight;
-    }
-
-    /**
-     * @return whether or not to use random marriages
-     */
-    public boolean useRandomMarriages() {
-        return useRandomMarriages;
-    }
-
-    /**
-     * @param useRandomMarriages whether or not to use random marriages
-     */
-    public void setUseRandomMarriages(final boolean useRandomMarriages) {
-        this.useRandomMarriages = useRandomMarriages;
     }
 
     /**
@@ -2533,8 +2504,8 @@ public class CampaignOptions implements Serializable {
     public void setUseStratCon(boolean useStratCon) {
         this.useStratCon = useStratCon;
     }
-    
-    
+
+
     public boolean getUseAtBUnitMarket() {
         return useAtBUnitMarket;
     }
@@ -3714,7 +3685,7 @@ public class CampaignOptions implements Serializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("checkMutualAncestorsDepth")) {
                 retVal.setCheckMutualAncestorsDepth(Integer.parseInt(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("logMarriageNameChange")) {
-                retVal.setLogMarriageNameChange(Boolean.parseBoolean(wn2.getTextContent().trim()));
+                retVal.setLogMarriageNameChanges(Boolean.parseBoolean(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("randomMarriageSurnameWeights")) {
                 String[] values = wn2.getTextContent().split(",");
                 if (values.length == 13) {

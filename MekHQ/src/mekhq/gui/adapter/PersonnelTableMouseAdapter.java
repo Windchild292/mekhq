@@ -515,7 +515,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             }
             case CMD_ADD_SPOUSE: {
                 Person spouse = gui.getCampaign().getPerson(UUID.fromString(data[1]));
-                Marriage.valueOf(data[2]).marry(gui.getCampaign(), selectedPerson, spouse);
+                MarriageSurnameStyle.valueOf(data[2]).marry(gui.getCampaign(), selectedPerson, spouse);
                 break;
             }
             case CMD_ADD_AWARD: {
@@ -988,13 +988,13 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             }
             case CMD_TRYING_TO_MARRY: {
                 if (people.length > 1) {
-                    boolean status = !people[0].isTryingToMarry();
+                    boolean status = !people[0].isMarriageable();
                     for (Person person : people) {
-                        person.setTryingToMarry(status);
+                        person.setMarriageable(status);
                         gui.getCampaign().personUpdated(person);
                     }
                 } else {
-                    selectedPerson.setTryingToMarry(!selectedPerson.isTryingToMarry());
+                    selectedPerson.setMarriageable(!selectedPerson.isMarriageable());
                     gui.getCampaign().personUpdated(selectedPerson);
                 }
                 break;
@@ -1725,7 +1725,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
 
                         spouseMenu = new JMenu(pStatus);
 
-                        for (Marriage style : Marriage.values()) {
+                        for (MarriageSurnameStyle style : MarriageSurnameStyle.values()) {
                             spouseMenu.add(newMenuItem(style.getDropDownText(),
                                     makeCommand(CMD_ADD_SPOUSE, ps.getId().toString(), style.name())));
                         }
@@ -2228,7 +2228,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
 
             cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("tryingToMarry.text"));
             cbMenuItem.setToolTipText(resourceMap.getString("tryingToMarry.toolTipText"));
-            cbMenuItem.setSelected(person.isTryingToMarry());
+            cbMenuItem.setSelected(person.isMarriageable());
             cbMenuItem.setActionCommand(CMD_TRYING_TO_MARRY);
             cbMenuItem.addActionListener(this);
             menu.add(cbMenuItem);
@@ -2418,7 +2418,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             if (StaticChecks.areEitherAllTryingToMarryOrNot(selected)) {
                 cbMenuItem = new JCheckBoxMenuItem(resourceMap.getString("tryingToMarry.text"));
                 cbMenuItem.setToolTipText(resourceMap.getString("tryingToMarry.toolTipText"));
-                cbMenuItem.setSelected(selected[0].isTryingToMarry());
+                cbMenuItem.setSelected(selected[0].isMarriageable());
                 cbMenuItem.setActionCommand(CMD_TRYING_TO_MARRY);
                 cbMenuItem.addActionListener(this);
                 menu.add(cbMenuItem);

@@ -53,7 +53,7 @@ import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.SpecialAbility;
 import mekhq.campaign.personnel.enums.BabySurnameStyle;
 import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
-import mekhq.campaign.personnel.enums.Marriage;
+import mekhq.campaign.personnel.enums.MarriageSurnameStyle;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
@@ -4391,7 +4391,7 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private JPanel createMarriageSurnameWeightsPanel() {
-        final Marriage[] marriageStyles = Marriage.values();
+        final MarriageSurnameStyle[] marriageStyles = MarriageSurnameStyle.values();
         final int surnameWeightLength = marriageStyles.length - 1;
 
         final JPanel panel = new JPanel(new GridLayout((int) Math.ceil(surnameWeightLength / 3.0), 6));
@@ -5477,7 +5477,7 @@ public class CampaignOptionsDialog extends JDialog {
         options.setUseManualMarriages(chkUseManualMarriages.isSelected());
         options.setMinimumMarriageAge((Integer) spnMinimumMarriageAge.getValue());
         options.setCheckMutualAncestorsDepth((Integer) spnCheckMutualAncestorsDepth.getValue());
-        options.setLogMarriageNameChange(chkLogMarriageNameChange.isSelected());
+        options.setLogMarriageNameChanges(chkLogMarriageNameChange.isSelected());
         options.setUseRandomMarriages(chkUseRandomMarriages.isSelected());
         options.setChanceRandomMarriages((Double) spnChanceRandomMarriages.getValue() / 100.0);
         options.setMarriageAgeRange((Integer) spnMarriageAgeRange.getValue());
