@@ -20,12 +20,14 @@ package mekhq.gui.dialog;
 
 import megamek.client.generator.RandomGenderGenerator;
 import megamek.client.generator.RandomNameGenerator;
+import megamek.client.ui.preferences.JTabbedPanePreference;
 import megamek.client.ui.preferences.JWindowPreference;
 import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.dialog.imageChooser.CamoChooserDialog;
 import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
+import megamek.common.enums.Gender;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import megamek.common.options.IOption;
@@ -51,6 +53,7 @@ import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.SpecialAbility;
+import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.BabySurnameStyle;
 import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.Marriage;
@@ -58,6 +61,8 @@ import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
+import mekhq.campaign.personnel.enums.RandomDeathMethod;
+import mekhq.campaign.personnel.enums.TenYearAgeRange;
 import mekhq.campaign.personnel.enums.TimeInDisplayFormat;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.universe.Faction;
@@ -65,6 +70,7 @@ import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.RATManager;
 import mekhq.gui.FileDialogs;
 import mekhq.gui.SpecialAbilityPanel;
+import mekhq.gui.baseComponents.JDisableablePanel;
 import mekhq.gui.baseComponents.SortedComboBoxModel;
 import mekhq.gui.panes.RankSystemsPane;
 import mekhq.module.PersonnelMarketServiceManager;
@@ -88,8 +94,11 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -284,6 +293,13 @@ public class CampaignOptionsDialog extends JDialog {
 
     // Death
     private JCheckBox chkKeepMarriedNameUponSpouseDeath;
+    private JComboBox<RandomDeathMethod> comboRandomDeathMethod;
+    private Map<AgeGroup, JCheckBox> chkEnabledRandomDeathAgeGroups;
+    private JCheckBox chkEnableRandomDeathSuicideCause;
+    private JSpinner[] spnExponentialRandomDeathMaleValues;
+    private JSpinner[] spnExponentialRandomDeathFemaleValues;
+    private Map<TenYearAgeRange, JSpinner> spnAgeRangeRandomDeathMaleValues;
+    private Map<TenYearAgeRange, JSpinner> spnAgeRangeRandomDeathFemaleValues;
     //endregion Personnel Tab
 
     //region Finances Tab
@@ -1395,7 +1411,6 @@ public class CampaignOptionsDialog extends JDialog {
         techLevelComboBoxModel.addElement(CampaignOptions.getTechLevelName(CampaignOptions.TECH_EXPERIMENTAL));
         techLevelComboBoxModel.addElement(CampaignOptions.getTechLevelName(CampaignOptions.TECH_UNOFFICIAL));
         choiceTechLevel.setModel(techLevelComboBoxModel);
-        //choiceTechLevel.setToolTipText(resourceMap.getString("choiceTechLevel.toolTipText")); // NOI18N
         choiceTechLevel.setName("choiceTechLevel"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -4292,17 +4307,17 @@ public class CampaignOptionsDialog extends JDialog {
         spnBaseSalary = new JSpinner[personnelRoles.length];
         for (final PersonnelRole personnelRole : personnelRoles) {
             // Create Reused Values
-            final String toolTipText = String.format(resources.getString("lblBaseSalary.toolTipText"), personnelRole.toString());
+            final String toolTipText = String.format(resources.getString("lblBaseSalary.toolTipText"), personnelRole);
 
             // Create Panel Components
             final JLabel label = new JLabel(personnelRole.toString());
             label.setToolTipText(toolTipText);
-            label.setName("lbl" + personnelRole.toString());
+            label.setName("lbl" + personnelRole);
             panel.add(label);
 
             final JSpinner salarySpinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, null, 10.0));
             salarySpinner.setToolTipText(toolTipText);
-            salarySpinner.setName("spn" + personnelRole.toString());
+            salarySpinner.setName("spn" + personnelRole);
             panel.add(salarySpinner);
 
             // Programmatically Assign Accessibility Labels
@@ -4403,12 +4418,12 @@ public class CampaignOptionsDialog extends JDialog {
         for (int i = 0; i < surnameWeightLength; i++) {
             final JLabel label = new JLabel(marriageStyles[i].toString());
             label.setToolTipText(marriageStyles[i].getToolTipText());
-            label.setName("lbl" + marriageStyles[i].toString());
+            label.setName("lbl" + marriageStyles[i]);
             panel.add(label);
 
             spnMarriageSurnameWeights[i] = new JSpinner(new SpinnerNumberModel(0, 0, 100, 0.1));
             spnMarriageSurnameWeights[i].setToolTipText(marriageStyles[i].getToolTipText());
-            spnMarriageSurnameWeights[i].setName("spn" + marriageStyles[i].toString());
+            spnMarriageSurnameWeights[i].setName("spn" + marriageStyles[i]);
             panel.add(spnMarriageSurnameWeights[i]);
 
             label.setLabelFor(spnMarriageSurnameWeights[i]);
@@ -4667,11 +4682,13 @@ public class CampaignOptionsDialog extends JDialog {
         chkKeepMarriedNameUponSpouseDeath.setToolTipText(resources.getString("chkKeepMarriedNameUponSpouseDeath.toolTipText"));
         chkKeepMarriedNameUponSpouseDeath.setName("chkKeepMarriedNameUponSpouseDeath");
 
+        final JPanel randomDeathPanel = createRandomDeathPanel();
+
         // Layout the Panel
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder(resources.getString("deathPanel.title")));
         panel.setName("deathPanel");
-        GroupLayout layout = new GroupLayout(panel);
+        final GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
 
         layout.setAutoCreateGaps(true);
@@ -4680,14 +4697,323 @@ public class CampaignOptionsDialog extends JDialog {
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
                         .addComponent(chkKeepMarriedNameUponSpouseDeath)
+                        .addComponent(randomDeathPanel)
         );
 
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(chkKeepMarriedNameUponSpouseDeath)
+                        .addComponent(randomDeathPanel)
         );
 
         return panel;
+    }
+
+    private JPanel createRandomDeathPanel() {
+        // Initialize Components Used in ActionListeners
+        final JPanel enabledRandomDeathAgeGroupsPanel = new JDisableablePanel("enabledRandomDeathAgeGroupsPanel");
+
+        final JPanel exponentialRandomDeathPanel = new JDisableablePanel("exponentialRandomDeathPanel");
+
+        final JPanel ageRangeRandomDeathPanel = new JDisableablePanel("ageRangeRandomDeathPanel");
+
+        // Create Panel Components
+        final JLabel lblRandomDeathMethod = new JLabel(resources.getString("lblRandomDeathMethod.text"));
+        lblRandomDeathMethod.setToolTipText(resources.getString("lblRandomDeathMethod.toolTipText"));
+        lblRandomDeathMethod.setName("lblRandomDeathMethod");
+
+        comboRandomDeathMethod = new JComboBox<>(RandomDeathMethod.values());
+        comboRandomDeathMethod.setToolTipText(resources.getString("lblRandomDeathMethod.toolTipText"));
+        comboRandomDeathMethod.setName("comboRandomDeathMethod");
+        comboRandomDeathMethod.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(final JList<?> list, final Object value,
+                                                          final int index, final boolean isSelected,
+                                                          final boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof RandomDeathMethod) {
+                    list.setToolTipText(((RandomDeathMethod) value).getToolTipText());
+                }
+                return this;
+            }
+        });
+        comboRandomDeathMethod.addActionListener(evt -> {
+            final RandomDeathMethod method = (RandomDeathMethod) Objects.requireNonNull(comboRandomDeathMethod.getSelectedItem());
+            final boolean enabled = !method.isNone();
+            enabledRandomDeathAgeGroupsPanel.setEnabled(enabled);
+            chkEnableRandomDeathSuicideCause.setEnabled(enabled);
+            exponentialRandomDeathPanel.setEnabled(method.isExponential());
+            ageRangeRandomDeathPanel.setEnabled(method.isAgeRange());
+        });
+
+        createEnabledRandomDeathAgeGroupsPanel(enabledRandomDeathAgeGroupsPanel);
+
+        chkEnableRandomDeathSuicideCause = new JCheckBox(resources.getString("chkEnableRandomDeathSuicideCause.text"));
+        chkEnableRandomDeathSuicideCause.setToolTipText(resources.getString("chkEnableRandomDeathSuicideCause.toolTipText"));
+        chkEnableRandomDeathSuicideCause.setName("chkEnableRandomDeathSuicideCause");
+
+        createExponentialRandomDeathPanel(exponentialRandomDeathPanel);
+
+        createAgeRangeRandomDeathPanel(ageRangeRandomDeathPanel);
+
+        // Layout the Panel
+        final JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("randomDeathPanel.title")));
+        panel.setName("randomDeathPanel");
+        final GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblRandomDeathMethod)
+                                .addComponent(comboRandomDeathMethod, GroupLayout.Alignment.LEADING))
+                        .addComponent(enabledRandomDeathAgeGroupsPanel)
+                        .addComponent(chkEnableRandomDeathSuicideCause)
+                        .addComponent(exponentialRandomDeathPanel)
+                        .addComponent(ageRangeRandomDeathPanel)
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblRandomDeathMethod)
+                                .addComponent(comboRandomDeathMethod))
+                        .addComponent(enabledRandomDeathAgeGroupsPanel)
+                        .addComponent(chkEnableRandomDeathSuicideCause)
+                        .addComponent(exponentialRandomDeathPanel)
+                        .addComponent(ageRangeRandomDeathPanel)
+        );
+
+        return panel;
+    }
+
+    private void createEnabledRandomDeathAgeGroupsPanel(final JPanel panel) {
+        // Initialize Variables Required
+        final AgeGroup[] ageGroups = AgeGroup.values();
+
+        chkEnabledRandomDeathAgeGroups = new HashMap<>();
+
+        // Create the Panel
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("enabledRandomDeathAgeGroupsPanel.title")));
+        panel.setToolTipText(resources.getString("enabledRandomDeathAgeGroupsPanel.toolTipText"));
+        panel.setLayout(new GridLayout(1, ageGroups.length));
+
+        // Create the primary panel
+        for (final AgeGroup ageGroup : ageGroups) {
+            // Create Panel Components
+            final JCheckBox checkBox = new JCheckBox(ageGroup.toString());
+            checkBox.setToolTipText(ageGroup.getToolTipText());
+            checkBox.setName("chk" + ageGroup);
+            panel.add(checkBox);
+            chkEnabledRandomDeathAgeGroups.put(ageGroup, checkBox);
+        }
+    }
+
+    private void createExponentialRandomDeathPanel(final JPanel panel) {
+        // Create Panel Components
+        final JPanel exponentialRandomDeathMalePanel = createExponentialRandomDeathMalePanel();
+
+        final JPanel exponentialRandomDeathFemalePanel = createExponentialRandomDeathFemalePanel();
+
+        // Layout the Panel
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("exponentialRandomDeathPanel.title")));
+        panel.setToolTipText(RandomDeathMethod.EXPONENTIAL.getToolTipText());
+        final GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(exponentialRandomDeathMalePanel)
+                                .addComponent(exponentialRandomDeathFemalePanel, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(exponentialRandomDeathMalePanel)
+                                .addComponent(exponentialRandomDeathFemalePanel))
+        );
+    }
+
+    private JPanel createExponentialRandomDeathMalePanel() {
+        // Create Panel Components
+        spnExponentialRandomDeathMaleValues = new JSpinner[3];
+
+        spnExponentialRandomDeathMaleValues[0] = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 10.0, 0.0001));
+        spnExponentialRandomDeathMaleValues[0].setToolTipText(RandomDeathMethod.EXPONENTIAL.getToolTipText());
+        spnExponentialRandomDeathMaleValues[0].setName("spnExponentialRandomDeathMaleC");
+        ((JSpinner.NumberEditor) spnExponentialRandomDeathMaleValues[0].getEditor()).getFormat().setMaximumFractionDigits(4);
+
+        final JLabel lblPowerOfTen = new JLabel(resources.getString("lblPowerOfTen.text"));
+        lblPowerOfTen.setName("lblPowerOfTen");
+
+        spnExponentialRandomDeathMaleValues[1] = new JSpinner(new SpinnerNumberModel(0.0, -100.0, 100.0, 1.0));
+        spnExponentialRandomDeathMaleValues[1].setToolTipText(RandomDeathMethod.EXPONENTIAL.getToolTipText());
+        spnExponentialRandomDeathMaleValues[1].setName("spnExponentialRandomDeathMaleN");
+
+        final JLabel lblExponential = new JLabel(resources.getString("lblExponential.text"));
+        lblExponential.setName("lblExponential");
+
+        spnExponentialRandomDeathMaleValues[2] = new JSpinner(new SpinnerNumberModel(0.0, -100.0, 100.0, 0.0001));
+        spnExponentialRandomDeathMaleValues[2].setToolTipText(RandomDeathMethod.EXPONENTIAL.getToolTipText());
+        spnExponentialRandomDeathMaleValues[2].setName("spnExponentialRandomDeathMaleK");
+        ((JSpinner.NumberEditor) spnExponentialRandomDeathMaleValues[2].getEditor()).getFormat().setMaximumFractionDigits(4);
+
+        final JLabel lblExponentialRandomDeathAge = new JLabel(resources.getString("lblExponentialRandomDeathAge.text"));
+        lblExponential.setName("lblExponentialRandomDeathAge");
+
+        // Layout the Panel
+        final JPanel panel = new JDisableablePanel("exponentialRandomDeathMalePanel");
+        panel.setBorder(BorderFactory.createTitledBorder(Gender.MALE.toString()));
+        final GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(spnExponentialRandomDeathMaleValues[0])
+                                .addComponent(lblPowerOfTen)
+                                .addComponent(spnExponentialRandomDeathMaleValues[1])
+                                .addComponent(lblExponential)
+                                .addComponent(spnExponentialRandomDeathMaleValues[2])
+                                .addComponent(lblExponentialRandomDeathAge, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(spnExponentialRandomDeathMaleValues[0])
+                                .addComponent(lblPowerOfTen)
+                                .addComponent(spnExponentialRandomDeathMaleValues[1])
+                                .addComponent(lblExponential)
+                                .addComponent(spnExponentialRandomDeathMaleValues[2])
+                                .addComponent(lblExponentialRandomDeathAge))
+        );
+
+        return panel;
+    }
+
+    private JPanel createExponentialRandomDeathFemalePanel() {
+        // Create Panel Components
+        spnExponentialRandomDeathFemaleValues = new JSpinner[3];
+
+        spnExponentialRandomDeathFemaleValues[0] = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 10.0, 0.0001));
+        spnExponentialRandomDeathFemaleValues[0].setToolTipText(RandomDeathMethod.EXPONENTIAL.getToolTipText());
+        spnExponentialRandomDeathFemaleValues[0].setName("spnExponentialRandomDeathFemaleC");
+        ((JSpinner.NumberEditor) spnExponentialRandomDeathFemaleValues[0].getEditor()).getFormat().setMaximumFractionDigits(4);
+
+        final JLabel lblPowerOfTen = new JLabel(resources.getString("lblPowerOfTen.text"));
+        lblPowerOfTen.setName("lblPowerOfTen");
+
+        spnExponentialRandomDeathFemaleValues[1] = new JSpinner(new SpinnerNumberModel(0.0, -100.0, 100.0, 1.0));
+        spnExponentialRandomDeathFemaleValues[1].setToolTipText(RandomDeathMethod.EXPONENTIAL.getToolTipText());
+        spnExponentialRandomDeathFemaleValues[1].setName("spnExponentialRandomDeathFemaleN");
+
+        final JLabel lblExponential = new JLabel(resources.getString("lblExponential.text"));
+        lblExponential.setName("lblExponential");
+
+        spnExponentialRandomDeathFemaleValues[2] = new JSpinner(new SpinnerNumberModel(0.0, -100.0, 100.0, 0.0001));
+        spnExponentialRandomDeathFemaleValues[2].setToolTipText(RandomDeathMethod.EXPONENTIAL.getToolTipText());
+        spnExponentialRandomDeathFemaleValues[2].setName("spnExponentialRandomDeathFemaleK");
+        ((JSpinner.NumberEditor) spnExponentialRandomDeathFemaleValues[2].getEditor()).getFormat().setMaximumFractionDigits(4);
+
+        final JLabel lblExponentialRandomDeathAge = new JLabel(resources.getString("lblExponentialRandomDeathAge.text"));
+        lblExponential.setName("lblExponentialRandomDeathAge");
+
+        // Layout the Panel
+        final JPanel panel = new JDisableablePanel("exponentialRandomDeathFemalePanel");
+        panel.setBorder(BorderFactory.createTitledBorder(Gender.FEMALE.toString()));
+        final GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(spnExponentialRandomDeathFemaleValues[0])
+                                .addComponent(lblPowerOfTen)
+                                .addComponent(spnExponentialRandomDeathFemaleValues[1])
+                                .addComponent(lblExponential)
+                                .addComponent(spnExponentialRandomDeathFemaleValues[2])
+                                .addComponent(lblExponentialRandomDeathAge, GroupLayout.Alignment.LEADING))
+        );
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(spnExponentialRandomDeathFemaleValues[0])
+                                .addComponent(lblPowerOfTen)
+                                .addComponent(spnExponentialRandomDeathFemaleValues[1])
+                                .addComponent(lblExponential)
+                                .addComponent(spnExponentialRandomDeathFemaleValues[2])
+                                .addComponent(lblExponentialRandomDeathAge))
+        );
+
+        return panel;
+    }
+
+    private void createAgeRangeRandomDeathPanel(final JPanel panel) {
+        // Initialize Variables Required
+        final TenYearAgeRange[] ageRanges = TenYearAgeRange.values();
+
+        spnAgeRangeRandomDeathMaleValues = new HashMap<>();
+
+        spnAgeRangeRandomDeathFemaleValues = new HashMap<>();
+
+        // Create the Panel
+        panel.setBorder(BorderFactory.createTitledBorder(resources.getString("ageRangeRandomDeathPanel.title")));
+        panel.setToolTipText(RandomDeathMethod.AGE_RANGE.getToolTipText());
+        panel.setLayout(new GridLayout(ageRanges.length + 1, 3));
+
+        // Create Title Row
+        final JLabel lblAgeRange = new JLabel(resources.getString("lblAgeRange.text"));
+        lblAgeRange.setName("lblAgeRange");
+        panel.add(lblAgeRange);
+
+        final JLabel lblMale = new JLabel(Gender.MALE.toString());
+        lblMale.setName("lblMale");
+        panel.add(lblMale);
+
+        final JLabel lblFemale = new JLabel(Gender.FEMALE.toString());
+        lblFemale.setName("lblFemale");
+        panel.add(lblFemale);
+
+        // Create the primary panel
+        for (final TenYearAgeRange ageRange : ageRanges) {
+            // Create Panel Components
+            final JLabel label = new JLabel(ageRange.toString());
+            label.setName("lbl" + ageRange);
+            panel.add(label);
+
+            JSpinner spinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 100000.0, 10.0));
+            spinner.setToolTipText(RandomDeathMethod.AGE_RANGE.getToolTipText());
+            spinner.setName("spnAgeRangeRandomDeathMale" + ageRange);
+            ((JSpinner.NumberEditor) spinner.getEditor()).getFormat().applyPattern("###,###.0");
+            ((JSpinner.NumberEditor) spinner.getEditor()).getFormat().setMaximumFractionDigits(1);
+            panel.add(spinner);
+            spnAgeRangeRandomDeathMaleValues.put(ageRange, spinner);
+
+            spinner = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 100000.0, 10.0));
+            spinner.setToolTipText(RandomDeathMethod.AGE_RANGE.getToolTipText());
+            spinner.setName("spnAgeRangeRandomDeathFemale" + ageRange);
+            ((JSpinner.NumberEditor) spinner.getEditor()).getFormat().applyPattern("###,###.0");
+            ((JSpinner.NumberEditor) spinner.getEditor()).getFormat().setMaximumFractionDigits(1);
+            panel.add(spinner);
+            spnAgeRangeRandomDeathFemaleValues.put(ageRange, spinner);
+        }
     }
     //endregion Personnel Tab
 
@@ -4700,6 +5026,7 @@ public class CampaignOptionsDialog extends JDialog {
 
     private void setUserPreferences() {
         PreferencesNode preferences = MekHQ.getPreferences().forClass(getClass());
+        preferences.manage(new JTabbedPanePreference(tabOptions));
         setName("CampaignOptionsDialog");
         preferences.manage(new JWindowPreference(this));
     }
@@ -4931,6 +5258,19 @@ public class CampaignOptionsDialog extends JDialog {
 
         // Death
         chkKeepMarriedNameUponSpouseDeath.setSelected(options.getKeepMarriedNameUponSpouseDeath());
+        comboRandomDeathMethod.setSelectedItem(options.getRandomDeathMethod());
+        for (final AgeGroup ageGroup : AgeGroup.values()) {
+            chkEnabledRandomDeathAgeGroups.get(ageGroup).setSelected(options.getEnabledRandomDeathAgeGroups().get(ageGroup));
+        }
+        chkEnableRandomDeathSuicideCause.setSelected(options.isEnableRandomDeathSuicideCause());
+        for (int i = 0; i < spnExponentialRandomDeathMaleValues.length; i++) {
+            spnExponentialRandomDeathMaleValues[i].setValue(options.getExponentialRandomDeathMaleValues()[i]);
+            spnExponentialRandomDeathFemaleValues[i].setValue(options.getExponentialRandomDeathFemaleValues()[i]);
+        }
+        for (final TenYearAgeRange ageRange : TenYearAgeRange.values()) {
+            spnAgeRangeRandomDeathMaleValues.get(ageRange).setValue(options.getAgeRangeRandomDeathMaleValues().get(ageRange));
+            spnAgeRangeRandomDeathFemaleValues.get(ageRange).setValue(options.getAgeRangeRandomDeathFemaleValues().get(ageRange));
+        }
         //endregion Personnel Tab
 
         //region Finances Tab
@@ -5500,6 +5840,19 @@ public class CampaignOptionsDialog extends JDialog {
 
         // Death
         options.setKeepMarriedNameUponSpouseDeath(chkKeepMarriedNameUponSpouseDeath.isSelected());
+        options.setRandomDeathMethod((RandomDeathMethod) comboRandomDeathMethod.getSelectedItem());
+        for (final AgeGroup ageGroup : AgeGroup.values()) {
+            options.getEnabledRandomDeathAgeGroups().put(ageGroup, chkEnabledRandomDeathAgeGroups.get(ageGroup).isSelected());
+        }
+        options.setEnableRandomDeathSuicideCause(chkEnableRandomDeathSuicideCause.isSelected());
+        for (int i = 0; i < spnExponentialRandomDeathMaleValues.length; i++) {
+            options.getExponentialRandomDeathMaleValues()[i] = (double) spnExponentialRandomDeathMaleValues[i].getValue();
+            options.getExponentialRandomDeathFemaleValues()[i] = (double) spnExponentialRandomDeathFemaleValues[i].getValue();
+        }
+        for (final TenYearAgeRange ageRange : TenYearAgeRange.values()) {
+            options.getAgeRangeRandomDeathMaleValues().put(ageRange, (double) spnAgeRangeRandomDeathMaleValues.get(ageRange).getValue());
+            options.getAgeRangeRandomDeathFemaleValues().put(ageRange, (double) spnAgeRangeRandomDeathFemaleValues.get(ageRange).getValue());
+        }
         //endregion Personnel Tab
 
         //start SPA

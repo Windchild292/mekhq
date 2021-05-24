@@ -43,6 +43,7 @@ import megamek.common.options.OptionsConstants;
 import mekhq.MekHqConstants;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.personnel.enums.PersonnelRole;
+import mekhq.campaign.personnel.enums.RandomDeathMethod;
 import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.gui.dialog.*;
@@ -1428,17 +1429,23 @@ public class CampaignGUI extends JPanel {
         getCampaign().setOvertime(btnOvertime.isSelected());
     }
 
-    private void menuOptionsActionPerformed(java.awt.event.ActionEvent evt) {
+    private void menuOptionsActionPerformed(ActionEvent evt) {
         boolean atb = getCampaign().getCampaignOptions().getUseAtB();
         boolean timeIn = getCampaign().getCampaignOptions().getUseTimeInService();
         boolean rankIn = getCampaign().getCampaignOptions().getUseTimeInRank();
         boolean retirementDateTracking = getCampaign().getCampaignOptions().useRetirementDateTracking();
         boolean staticRATs = getCampaign().getCampaignOptions().useStaticRATs();
         boolean factionIntroDate = getCampaign().getCampaignOptions().useFactionIntroDate();
+        final RandomDeathMethod randomDeathMethod = getCampaign().getCampaignOptions().getRandomDeathMethod();
+        final boolean enableRandomDeathSuicideCause = getCampaign().getCampaignOptions().isEnableRandomDeathSuicideCause();
+
         CampaignOptionsDialog cod = new CampaignOptionsDialog(getFrame(), true, getCampaign());
         cod.setVisible(true);
-        if (timeIn != getCampaign().getCampaignOptions().getUseTimeInService()) {
-            if (getCampaign().getCampaignOptions().getUseTimeInService()) {
+
+        final CampaignOptions options = getCampaign().getCampaignOptions();
+
+        if (timeIn != options.getUseTimeInService()) {
+            if (options.getUseTimeInService()) {
                 getCampaign().initTimeInService();
             } else {
                 for (Person person : getCampaign().getPersonnel()) {
@@ -1447,8 +1454,8 @@ public class CampaignGUI extends JPanel {
             }
         }
 
-        if (rankIn != getCampaign().getCampaignOptions().getUseTimeInRank()) {
-            if (getCampaign().getCampaignOptions().getUseTimeInRank()) {
+        if (rankIn != options.getUseTimeInRank()) {
+            if (options.getUseTimeInRank()) {
                 getCampaign().initTimeInRank();
             } else {
                 for (Person person : getCampaign().getPersonnel()) {
@@ -1457,8 +1464,8 @@ public class CampaignGUI extends JPanel {
             }
         }
 
-        if (retirementDateTracking != getCampaign().getCampaignOptions().useRetirementDateTracking()) {
-            if (getCampaign().getCampaignOptions().useRetirementDateTracking()) {
+        if (retirementDateTracking != options.useRetirementDateTracking()) {
+            if (options.useRetirementDateTracking()) {
                 getCampaign().initRetirementDateTracking();
             } else {
                 for (Person person : getCampaign().getPersonnel()) {
@@ -1467,17 +1474,28 @@ public class CampaignGUI extends JPanel {
             }
         }
 
-        if (atb != getCampaign().getCampaignOptions().getUseAtB()) {
-            if (getCampaign().getCampaignOptions().getUseAtB()) {
+        // Personnel Modules
+        if (randomDeathMethod != options.getRandomDeathMethod()) {
+            getCampaign().setRandomDeath(options.getRandomDeathMethod().getMethod(options));
+        } else {
+            // These would be handled automatically if the method was recreated
+            if (enableRandomDeathSuicideCause != options.isEnableRandomDeathSuicideCause()) {
+                getCampaign().getRandomDeath().initializeCauses(options.isEnableRandomDeathSuicideCause());
+            }
+        }
+
+        // Against the Bot
+        if (atb != options.getUseAtB()) {
+            if (options.getUseAtB()) {
                 getCampaign().initAtB(false);
                 //refresh lance assignment table
                 MekHQ.triggerEvent(new OrganizationChangedEvent(getCampaign().getForces()));
             }
-            miContractMarket.setVisible(getCampaign().getCampaignOptions().getUseAtB());
-            miUnitMarket.setVisible(getCampaign().getCampaignOptions().getUseAtB());
-            miShipSearch.setVisible(getCampaign().getCampaignOptions().getUseAtB());
-            miRetirementDefectionDialog.setVisible(getCampaign().getCampaignOptions().getUseAtB());
-            if (getCampaign().getCampaignOptions().getUseAtB()) {
+            miContractMarket.setVisible(options.getUseAtB());
+            miUnitMarket.setVisible(options.getUseAtB());
+            miShipSearch.setVisible(options.getUseAtB());
+            miRetirementDefectionDialog.setVisible(options.getUseAtB());
+            if (options.getUseAtB()) {
                 int loops = 0;
                 while (!RandomUnitGenerator.getInstance().isInitialized()) {
                     try {
@@ -1493,10 +1511,10 @@ public class CampaignGUI extends JPanel {
                 getCampaign().shutdownAtB();
             }
         }
-        if (staticRATs != getCampaign().getCampaignOptions().useStaticRATs()) {
+        if (staticRATs != options.useStaticRATs()) {
             getCampaign().initUnitGenerator();
         }
-        if (factionIntroDate != getCampaign().getCampaignOptions().useFactionIntroDate()) {
+        if (factionIntroDate != options.useFactionIntroDate()) {
             getCampaign().updateTechFactionCode();
         }
         refreshCalendar();

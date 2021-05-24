@@ -331,12 +331,17 @@ public class CampaignXmlParser {
 
         // Okay, after we've gone through all the nodes and constructed the
         // Campaign object...
+        final CampaignOptions options = retVal.getCampaignOptions();
+
         // We need to do a post-process pass to restore a number of references.
         // Fix any Person Id References
         PersonIdReference.fixPersonIdReferences(retVal);
 
         // Fixup any ghost kills
         cleanupGhostKills(retVal);
+
+        // Update the Personnel Methods
+        retVal.setRandomDeath(options.getRandomDeathMethod().getMethod(options));
 
         long timestamp = System.currentTimeMillis();
 
@@ -361,7 +366,7 @@ public class CampaignXmlParser {
         }
 
         // determine if we've missed any lances and add those back into the campaign
-        if (retVal.getCampaignOptions().getUseAtB()) {
+        if (options.getUseAtB()) {
             Hashtable<Integer, Lance> lances = retVal.getLances();
             for (Force f : retVal.getAllForces()) {
                 if ((f.getUnits().size() > 0) && (null == lances.get(f.getId()))) {
@@ -508,7 +513,7 @@ public class CampaignXmlParser {
         if (null == retVal.getRetirementDefectionTracker()) {
             retVal.setRetirementDefectionTracker(new RetirementDefectionTracker());
         }
-        if (retVal.getCampaignOptions().getUseAtB()) {
+        if (options.getUseAtB()) {
             retVal.setHasActiveContract();
             retVal.setAtBConfig(AtBConfiguration.loadFromXml());
             retVal.setAtBEventProcessor(new AtBEventProcessor(retVal));

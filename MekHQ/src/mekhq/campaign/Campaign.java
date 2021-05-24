@@ -46,6 +46,7 @@ import mekhq.campaign.log.*;
 import mekhq.campaign.mission.enums.MissionStatus;
 import mekhq.campaign.mission.enums.ScenarioStatus;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.Phenotype;
@@ -53,6 +54,8 @@ import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
 import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
 import mekhq.campaign.personnel.generator.RandomPortraitGenerator;
+import mekhq.campaign.personnel.randomDeath.AbstractRandomDeath;
+import mekhq.campaign.personnel.randomDeath.DisabledRandomDeath;
 import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.RankValidator;
 import mekhq.campaign.personnel.ranks.Ranks;
@@ -258,6 +261,9 @@ public class Campaign implements Serializable, ITechManager {
     private PersonnelMarket personnelMarket;
     private ContractMarket contractMarket; //AtB
     private UnitMarket unitMarket; //AtB
+
+    private transient AbstractRandomDeath randomDeath;
+
     private RetirementDefectionTracker retirementDefectionTracker; // AtB
     private int fatigueLevel; //AtB
     private AtBConfiguration atbConfig; //AtB
@@ -317,6 +323,7 @@ public class Campaign implements Serializable, ITechManager {
         personnelMarket = new PersonnelMarket();
         contractMarket = new ContractMarket();
         unitMarket = new UnitMarket();
+        setRandomDeath(new DisabledRandomDeath());
         retirementDefectionTracker = new RetirementDefectionTracker();
         fatigueLevel = 0;
         atbConfig = null;
@@ -476,6 +483,14 @@ public class Campaign implements Serializable, ITechManager {
 
     public void generateNewUnitMarket() {
         unitMarket.generateUnitOffers(this);
+    }
+
+    public AbstractRandomDeath getRandomDeath() {
+        return randomDeath;
+    }
+
+    public void setRandomDeath(final AbstractRandomDeath randomDeath) {
+        this.randomDeath = randomDeath;
     }
 
     public void setRetirementDefectionTracker(RetirementDefectionTracker rdt) {
@@ -3038,7 +3053,6 @@ public class Campaign implements Serializable, ITechManager {
                     } else {
                         scenario.convertToStub(this, ScenarioStatus.DEFEAT);
                         contract.addPlayerMinorBreach();
-
                         addReport("Failure to deploy for " + scenario.getName()
                             + " resulted in defeat and a minor contract breach.");
                     }
@@ -3209,6 +3223,14 @@ public class Campaign implements Serializable, ITechManager {
         // furthermore this allows us to add and remove personnel without issue
         for (Person p : getActivePersonnel()) {
             // Random Death
+            if (!getRandomDeath().getMethod().isNone()) {
+                final int age = p.getAge(getLocalDate());
+                final AgeGroup ageGroup = AgeGroup.determineAgeGroup(age);
+                if (getRandomDeath().randomDeath(ageGroup, age, p.getGender())) {
+                    p.changeStatus(this, getRandomDeath().getCause(getLocalDate(), p, ageGroup, age));
+                    continue;
+                }
+            }
 
             // Random Marriages
             if (getCampaignOptions().useRandomMarriages()) {
@@ -3233,6 +3255,7 @@ public class Campaign implements Serializable, ITechManager {
                     }
                 }
             }
+
             // TODO Advanced Medical needs to go away from here later on
             if (getCampaignOptions().useAdvancedMedical()) {
                 InjuryUtil.resolveDailyHealing(this, p);
