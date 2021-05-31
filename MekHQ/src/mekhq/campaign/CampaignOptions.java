@@ -33,6 +33,8 @@ import mekhq.campaign.personnel.enums.FamilialRelationshipDisplayLevel;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerCaptureStyle;
+import mekhq.campaign.universe.enums.LightConditionsGenerationMethod;
+import mekhq.campaign.universe.enums.WeatherGenerationMethod;
 import mekhq.service.MassRepairOption;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
@@ -394,8 +396,8 @@ public class CampaignOptions implements Serializable {
     private boolean attachedPlayerCamouflage;
     private boolean playerControlsAttachedUnits;
     private boolean useDropShips;
-    private boolean useWeatherConditions;
-    private boolean useLightConditions;
+    private LightConditionsGenerationMethod lightConditionsGenerationMethod;
+    private WeatherGenerationMethod weatherGenerationMethod;
     private boolean usePlanetaryConditions;
     //endregion Against the Bot Tab
     //endregion Variable Declarations
@@ -803,8 +805,8 @@ public class CampaignOptions implements Serializable {
         attachedPlayerCamouflage = true;
         playerControlsAttachedUnits = false;
         useDropShips = false;
-        useWeatherConditions = true;
-        useLightConditions = true;
+        setLightConditionsGenerationMethod(LightConditionsGenerationMethod.ATB);
+        setWeatherGenerationMethod(WeatherGenerationMethod.ATB);
         usePlanetaryConditions = false;
         //endregion Against the Bot Tab
     }
@@ -2808,20 +2810,20 @@ public class CampaignOptions implements Serializable {
         variableContractLength = variable;
     }
 
-    public boolean getUseWeatherConditions() {
-        return useWeatherConditions;
+    public LightConditionsGenerationMethod getLightConditionsGenerationMethod() {
+        return lightConditionsGenerationMethod;
     }
 
-    public void setUseWeatherConditions(boolean useWeatherConditions) {
-        this.useWeatherConditions = useWeatherConditions;
+    public void setLightConditionsGenerationMethod(final LightConditionsGenerationMethod lightConditionsGenerationMethod) {
+        this.lightConditionsGenerationMethod = lightConditionsGenerationMethod;
     }
 
-    public boolean getUseLightConditions() {
-        return useLightConditions;
+    public WeatherGenerationMethod getWeatherGenerationMethod() {
+        return weatherGenerationMethod;
     }
 
-    public void setUseLightConditions(boolean useLightConditions) {
-        this.useLightConditions = useLightConditions;
+    public void setWeatherGenerationMethod(final WeatherGenerationMethod weatherGenerationMethod) {
+        this.weatherGenerationMethod = weatherGenerationMethod;
     }
 
     public boolean getUsePlanetaryConditions() {
@@ -3290,8 +3292,8 @@ public class CampaignOptions implements Serializable {
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "generateChases", generateChases);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "variableContractLength", variableContractLength);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "instantUnitMarketDelivery", instantUnitMarketDelivery);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useWeatherConditions", useWeatherConditions);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useLightConditions", useLightConditions);
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "lightConditionsGenerationMethod", getLightConditionsGenerationMethod().name());
+        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "weatherGenerationMethod", getWeatherGenerationMethod().name());
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "usePlanetaryConditions", usePlanetaryConditions);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useLeadership", useLeadership);
         MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "useStrategy", useStrategy);
@@ -3897,10 +3899,10 @@ public class CampaignOptions implements Serializable {
                 retVal.variableContractLength = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("instantUnitMarketDelivery")) {
                 retVal.instantUnitMarketDelivery = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("useWeatherConditions")) {
-                retVal.useWeatherConditions = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("useLightConditions")) {
-                retVal.useLightConditions = Boolean.parseBoolean(wn2.getTextContent().trim());
+            } else if (wn2.getNodeName().equalsIgnoreCase("lightConditionsGenerationMethod")) {
+                retVal.setLightConditionsGenerationMethod(LightConditionsGenerationMethod.valueOf(wn2.getTextContent().trim()));
+            } else if (wn2.getNodeName().equalsIgnoreCase("weatherGenerationMethod")) {
+                retVal.setWeatherGenerationMethod(WeatherGenerationMethod.valueOf(wn2.getTextContent().trim()));
             } else if (wn2.getNodeName().equalsIgnoreCase("usePlanetaryConditions")) {
                 retVal.usePlanetaryConditions = Boolean.parseBoolean(wn2.getTextContent().trim());
             } else if (wn2.getNodeName().equalsIgnoreCase("useLeadership")) {
@@ -3959,6 +3961,12 @@ public class CampaignOptions implements Serializable {
                 retVal.setMassRepairOptions(MassRepairOption.parseListFromXML(wn2, version));
 
             //region Legacy
+            // Removed in 0.49.*
+            } else if (wn2.getNodeName().equalsIgnoreCase("useLightConditions")) { // Legacy - 0.49.1 removal
+                retVal.setLightConditionsGenerationMethod(Boolean.parseBoolean(wn2.getTextContent().trim()) ? LightConditionsGenerationMethod.ATB : LightConditionsGenerationMethod.NONE);
+            } else if (wn2.getNodeName().equalsIgnoreCase("useWeatherConditions")) { // Legacy - 0.49.1 removal
+                retVal.setWeatherGenerationMethod(Boolean.parseBoolean(wn2.getTextContent().trim()) ? WeatherGenerationMethod.ATB : WeatherGenerationMethod.NONE);
+
             // Removed in 0.47.*
             } else if (wn2.getNodeName().equalsIgnoreCase("useAtBCapture")) { // Legacy
                 if (Boolean.parseBoolean(wn2.getTextContent().trim())) {
@@ -3996,6 +4004,7 @@ public class CampaignOptions implements Serializable {
             } else if (wn2.getNodeName().equalsIgnoreCase("probPhenoVee")) { // Legacy
                 retVal.phenotypeProbabilities[Phenotype.VEHICLE.getIndex()] = Integer.parseInt(wn2.getTextContent().trim());
             }
+            //endregion Legacy
         }
 
         MekHQ.getLogger().debug("Load Campaign Options Complete!");
