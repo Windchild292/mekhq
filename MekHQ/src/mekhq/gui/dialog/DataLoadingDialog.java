@@ -19,42 +19,20 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.concurrent.ExecutionException;
-
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.SwingWorker;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.DOMException;
-import org.xml.sax.SAXException;
-
-import megamek.client.generator.RandomNameGenerator;
 import megamek.client.generator.RandomCallsignGenerator;
+import megamek.client.generator.RandomNameGenerator;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.MechSummaryCache;
 import megamek.common.QuirksHandler;
+import megamek.common.options.OptionsConstants;
 import megamek.common.util.EncodeControl;
 import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
 import mekhq.NullEntityException;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignFactory;
-import mekhq.campaign.GamePreset;
+import mekhq.campaign.CampaignPreset;
 import mekhq.campaign.event.OptionsChangedEvent;
 import mekhq.campaign.finances.CurrencyManager;
 import mekhq.campaign.io.CampaignXmlParseException;
@@ -63,9 +41,22 @@ import mekhq.campaign.personnel.Bloodname;
 import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.RATManager;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
 import mekhq.campaign.universe.Systems;
+import org.w3c.dom.DOMException;
+import org.xml.sax.SAXException;
+
+import javax.swing.*;
+import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
 
 public class DataLoadingDialog extends JDialog implements PropertyChangeListener {
     private static final long serialVersionUID = -3454307876761238915L;
@@ -166,6 +157,7 @@ public class DataLoadingDialog extends JDialog implements PropertyChangeListener
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException ignored) {
+
                 }
             }
             //endregion Progress 1
@@ -178,7 +170,7 @@ public class DataLoadingDialog extends JDialog implements PropertyChangeListener
 
             //region Progress 3
             setProgress(3);
-            
+
             Campaign campaign;
             boolean newCampaign = false;
             if (fileCampaign == null) {
@@ -204,42 +196,45 @@ public class DataLoadingDialog extends JDialog implements PropertyChangeListener
             //region Progress 4
             setProgress(4);
             if (newCampaign) {
+                // Campaign Presets
+                final CampaignPresetSelectionDialog presetSelectionDialog = new CampaignPresetSelectionDialog(frame);
+                if (presetSelectionDialog.showDialog().isCancelled()) {
+                    setVisible(false);
+                    cancelled = true;
+                    cancel(true);
+                    return campaign; // shouldn't be required, but this ensures no further code runs
+                }
+                final CampaignPreset preset = presetSelectionDialog.getSelectedPreset();
+
+                final LocalDate date = (preset.getDate() == null) ? campaign.getLocalDate() : preset.getDate();
+
                 // show the date chooser
-                DateChooser dc = new DateChooser(frame, campaign.getLocalDate());
+                DateChooser dc = new DateChooser(frame, date);
                 // user can either choose a date or cancel by closing
                 if (dc.showDateChooser() == DateChooser.OK_OPTION) {
                     campaign.setLocalDate(dc.getDate());
-                    campaign.getGameOptions().getOption("year").setValue(campaign.getGameYear());
+                    campaign.getGameOptions().getOption(OptionsConstants.ALLOWED_YEAR).setValue(campaign.getGameYear());
                 }
 
                 // This must be after the date chooser to enable correct functionality.
                 setVisible(false);
 
-                // Game Presets
-                GamePreset gamePreset = null;
-                List<GamePreset> presets = GamePreset.getGamePresetsIn();
-                if (!presets.isEmpty()) {
-                    ChooseGamePresetDialog cgpd = new ChooseGamePresetDialog(frame, true, presets);
-                    cgpd.setVisible(true);
-                    gamePreset = cgpd.getSelectedPreset();
-                }
                 CampaignOptionsDialog optionsDialog = new CampaignOptionsDialog(frame, true, campaign);
-                if (gamePreset != null) {
-                    optionsDialog.applyPreset(gamePreset);
-                }
+                optionsDialog.applyPreset(preset);
                 optionsDialog.setVisible(true);
                 if (optionsDialog.wasCancelled()) {
                     cancelled = true;
                     cancel(true);
-                } else {
-                    campaign.beginReport("<b>" + MekHQ.getMekHQOptions().getLongDisplayFormattedDate(campaign.getLocalDate()) + "</b>");
-                    campaign.setStartingSystem();
-                    campaign.generateNewPersonnelMarket();
-                    campaign.reloadNews();
-                    campaign.readNews();
-                    if (campaign.getCampaignOptions().getUseAtB()) {
-                        campaign.initAtB(true);
-                    }
+                    return campaign; // shouldn't be required, but this ensures no further code runs
+                }
+
+                campaign.beginReport("<b>" + MekHQ.getMekHQOptions().getLongDisplayFormattedDate(campaign.getLocalDate()) + "</b>");
+                campaign.setStartingSystem(preset.getPlanet());
+                campaign.generateNewPersonnelMarket();
+                campaign.reloadNews();
+                campaign.readNews();
+                if (campaign.getCampaignOptions().getUseAtB()) {
+                    campaign.initAtB(true);
                 }
             } else {
                 // Make sure campaign options event handlers get their data
