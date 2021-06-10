@@ -25,10 +25,11 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import mekhq.campaign.mission.enums.MissionStatus;
+import mekhq.campaign.mission.enums.AtBContractType;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,7 +37,6 @@ import org.junit.Test;
 import org.w3c.dom.DOMException;
 import org.xml.sax.SAXException;
 
-import megamek.common.Bay;
 import megamek.common.Compute;
 import megamek.common.Crew;
 import megamek.common.CrewType;
@@ -49,7 +49,10 @@ import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.Contract;
+import mekhq.campaign.mission.enums.ContractCommandRights;
+import mekhq.campaign.mission.enums.MissionStatus;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.rating.UnitRatingMethod;
@@ -157,6 +160,7 @@ public class ContractMarketIntegrationTest {
         AtBContract existing = mock(AtBContract.class);
         when(existing.getId()).thenReturn(1);
         when(existing.getScenarios()).thenReturn(new ArrayList<>());
+        when(existing.getContractType()).thenReturn(AtBContractType.GARRISON_DUTY);
         when(existing.getStatus()).thenReturn(MissionStatus.ACTIVE);
         when(existing.getEmployerCode()).thenReturn("FWL");
         when(existing.getEnemyCode()).thenReturn("CC");
@@ -164,6 +168,7 @@ public class ContractMarketIntegrationTest {
         when(existing.getStartDate()).thenReturn(campaign.getLocalDate().minusDays(3000));
         when(existing.getEndingDate()).thenReturn(campaign.getLocalDate().plusDays(3000));
         when(existing.isActiveOn(campaign.getLocalDate(), false)).thenCallRealMethod();
+        when(existing.getCommandRights()).thenReturn(ContractCommandRights.INDEPENDENT);
         campaign.importMission(existing);
 
         ContractMarket market = new ContractMarket();
@@ -216,7 +221,7 @@ public class ContractMarketIntegrationTest {
         ContractMarket market = new ContractMarket();
 
         // Simulate clicking GM Add on the contract market three times
-        for (int ii = 0; ii < 3; ++ii) {
+        for (int ii = 0; ii < 3; ii++) {
             market.addAtBContract(campaign);
         }
 
@@ -231,7 +236,7 @@ public class ContractMarketIntegrationTest {
 
         // Simulate three months of contract generation ...
         boolean foundContract = false;
-        for (int ii = 0; ii < REASONABLE_GENERATION_ATTEMPTS; ++ii) {
+        for (int ii = 0; ii < REASONABLE_GENERATION_ATTEMPTS; ii++) {
             market.generateContractOffers(campaign, true);
 
             // ... and one of these three should get us a contract!
@@ -244,7 +249,7 @@ public class ContractMarketIntegrationTest {
     private void fillHangar(Campaign campaign) {
         // Add 12 mechs in 3 forces
         for (int jj = 0; jj < 3; ++jj) {
-            Force force = new Force("Force " + String.valueOf(jj));
+            Force force = new Force("Force " + jj);
             for (int ii = 0; ii < 4; ++ii) {
                 Unit unit = createMech(campaign);
                 force.addUnit(unit.getId());
@@ -259,7 +264,7 @@ public class ContractMarketIntegrationTest {
     private Unit createMech(Campaign campaign) {
         Mech entity = mock(Mech.class);
         when(entity.getCrew()).thenReturn(new Crew(CrewType.SINGLE));
-        when(entity.getTransportBays()).thenReturn(new java.util.Vector<Bay>());
+        when(entity.getTransportBays()).thenReturn(new Vector<>());
         Unit unit = new Unit(entity, campaign);
         unit.setId(UUID.randomUUID());
         unit.addPilotOrSoldier(createPilot());
@@ -269,6 +274,8 @@ public class ContractMarketIntegrationTest {
 	private Person createPilot() {
         Person person = mock(Person.class);
         when(person.getId()).thenReturn(UUID.randomUUID());
+        when(person.getPrimaryRole()).thenReturn(PersonnelRole.MECHWARRIOR);
+        when(person.getSecondaryRole()).thenReturn(PersonnelRole.NONE);
         when(person.getStatus()).thenReturn(PersonnelStatus.ACTIVE);
         return person;
     }
