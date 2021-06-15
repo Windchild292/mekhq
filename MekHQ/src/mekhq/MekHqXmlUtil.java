@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2013-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,6 +18,7 @@
  */
 package mekhq;
 
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +34,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import megamek.common.annotations.Nullable;
 import megamek.utils.MegaMekXmlUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -56,7 +59,7 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
     /**
      * USE WITH CARE. Creates a DocumentBuilder safe from XML external entities attacks, but unsafe from
      * XML entity expansion attacks.
-     * 
+     *
      * @return A DocumentBuilder less safe to use to read untrusted XML.
      */
     public static DocumentBuilder newUnsafeDocumentBuilder() throws ParserConfigurationException {
@@ -110,7 +113,7 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
 
     /**
      * TODO: This is dumb and we should just use EntityListFile.writeEntityList.
-     * 
+     *
      * Contents copied from megamek.common.EntityListFile.saveTo(...) Modified to support saving to/from
      * XML for our purposes in MekHQ TODO: Some of this may want to be back-ported into entity itself in
      * MM and then re-factored out of EntityListFile.
@@ -437,7 +440,6 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
      * @return The generated string.
      */
     private static String getTankCritString(Tank e, int indentLvl) {
-
         String retVal = MekHqXmlUtil.indentStr(indentLvl) + "<tcriticals";
         String critVal = "";
 
@@ -456,7 +458,7 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
         /*
          * crew are handled as a Person object in MekHq... if (e.isDriverHit()) { critVal =
          * critVal.concat(" driver=\""); critVal = critVal.concat("hit"); critVal = critVal.concat("\""); }
-         * 
+         *
          * if (e.isCommanderHit()) { critVal = critVal.concat(" commander=\""); critVal =
          * critVal.concat("hit"); critVal = critVal.concat("\""); }
          */
@@ -494,23 +496,21 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
      * @throws IllegalArgumentException if the given element parses to multiple entities
      */
     public static Entity parseSingleEntityMul(Element element) {
-        MekHQ.getLogger().trace(MekHqXmlUtil.class, "Executing getEntityFromXmlString(Node)...");
+        MekHQ.getLogger().trace("Executing getEntityFromXmlString(Node)...");
 
         MULParser prs = new MULParser();
         prs.parse(element);
         List<Entity> entities = prs.getEntities();
 
         switch (entities.size()) {
-        case 0:
-            return null;
-        case 1:
-            Entity entity = entities.get(0);
-            MekHQ.getLogger().trace(MekHqXmlUtil.class,
-                    "Returning " + entity + " from getEntityFromXmlString(String)...");
-            return entity;
-        default:
-            throw new IllegalArgumentException(
-                    "More than one entity contained in XML string!  Expecting a single entity.");
+            case 0:
+                return null;
+            case 1:
+                Entity entity = entities.get(0);
+                MekHQ.getLogger().trace("Returning " + entity + " from getEntityFromXmlString(String)...");
+                return entity;
+            default:
+                throw new IllegalArgumentException("More than one entity contained in XML string!  Expecting a single entity.");
         }
     }
 
@@ -519,5 +519,30 @@ public class MekHqXmlUtil extends MegaMekXmlUtil {
         String chassis = attrs.getNamedItem("chassis").getTextContent();
         String model = attrs.getNamedItem("model").getTextContent();
         return chassis + " " + model;
+    }
+
+    /**
+     * This writes a String or an array of Strings to file, with an the possible addition of an
+     * attribute and its value
+     * @param pw the PrintWriter to use
+     * @param indent the indent to write at
+     * @param name the name of the XML tag
+     * @param attributeName the attribute to write as part of the XML tag
+     * @param attributeValue the value of the attribute
+     * @param values the String or String[] to write to XML
+     */
+    public static void writeSimpleXMLAttributedTag(final PrintWriter pw, final int indent,
+                                                   final String name,
+                                                   final @Nullable String attributeName,
+                                                   final @Nullable String attributeValue,
+                                                   final String... values) {
+        if (values.length > 0) {
+            final boolean hasAttribute = attributeValue != null;
+            pw.print(indentStr(indent) + "<" + name);
+            if (hasAttribute) {
+                pw.print(" " + attributeName + "=\"" + attributeValue + "\"");
+            }
+            pw.print(">" + escape(StringUtils.join(values, ',')) + "</" + name + ">\n");
+        }
     }
 }

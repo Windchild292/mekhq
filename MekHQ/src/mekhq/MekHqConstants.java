@@ -32,6 +32,8 @@ public final class MekHqConstants {
     public static final String LONG_DISPLAY_DATE_FORMAT = "longDisplayDateFormat";
     public static final String HISTORICAL_DAILY_LOG = "historicalDailyLog";
     public static final int MAX_HISTORICAL_LOG_DAYS = 120; // max number of days that will be stored in the history, also used as a limit in the UI
+    public static final String COMPANY_GENERATOR_STARTUP = "companyGeneratorStartup";
+    public static final String SHOW_COMPANY_GENERATOR = "showCompanyGenerator";
 
     //region Command Center
     public static final String COMMAND_CENTER_USE_UNIT_MARKET = "commandCenterUseUnitMarket";
@@ -101,10 +103,12 @@ public final class MekHqConstants {
     public static final String PREFER_GZIPPED_CAMPAIGN_FILE = "preferGzippedCampaignFile";
     public static final String WRITE_CUSTOMS_TO_XML = "writeCustomsToXML";
     public static final String SAVE_MOTHBALL_STATE = "saveMothballState";
+    public static final String SAVE_COMPANY_GENERATION_OPTIONS = "saveCompanyGenerationOptions";
     //endregion Campaign XML Save Options
 
     //region File Paths
     public static final String FILE_PATH_NODE = "mekhq/prefs/filepaths";
+    public static final String COMPANY_GENERATION_DIRECTORY_PATH = "companyGenerationDirectoryPath";
     public static final String RANK_SYSTEMS_DIRECTORY_PATH = "rankSystemsDirectoryPath";
     public static final String INDIVIDUAL_RANK_SYSTEM_DIRECTORY_PATH = "individualRankSystemDirectoryPath";
     //endregion File Paths
@@ -123,6 +127,7 @@ public final class MekHqConstants {
     //region Miscellaneous Options
     public static final String MISCELLANEOUS_NODE = "mekhq/prefs/miscellaneous";
     public static final String START_GAME_DELAY = "startGameDelay";
+    public static final String DEFAULT_COMPANY_GENERATION_METHOD = "defaultCompanyGenerationMethod";
     //endregion Miscellaneous Options
     //endregion MekHQ Options
 

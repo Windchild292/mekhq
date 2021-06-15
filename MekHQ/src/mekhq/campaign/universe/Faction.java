@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import megamek.common.annotations.Nullable;
+import mekhq.campaign.Campaign;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -112,8 +113,12 @@ public class Faction {
         return nameGenerator;
     }
 
-    public String getStartingPlanet(final LocalDate year) {
-        final Map.Entry<LocalDate, String> change = planetChanges.floorEntry(year);
+    public @Nullable PlanetarySystem getStartingPlanet(final Campaign campaign, final LocalDate date) {
+        return campaign.getSystemById(getStartingPlanet(date));
+    }
+
+    public String getStartingPlanet(final LocalDate date) {
+        final Map.Entry<LocalDate, String> change = planetChanges.floorEntry(date);
         return (change == null) ? startingPlanet : change.getValue();
     }
 

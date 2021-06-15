@@ -1002,8 +1002,9 @@ public class Person implements Serializable {
      * This is used to change the person's PersonnelStatus
      * @param campaign the campaign the person is part of
      * @param status the person's new PersonnelStatus
+     * @param today the current date
      */
-    public void changeStatus(Campaign campaign, PersonnelStatus status) {
+    public void changeStatus(final Campaign campaign, final PersonnelStatus status, final LocalDate today) {
         if (status == getStatus()) { // no change means we don't need to process anything
             return;
         } else if (getStatus().isKIA()) {
@@ -1014,41 +1015,41 @@ public class Person implements Serializable {
         switch (status) {
             case ACTIVE:
                 if (getStatus().isMIA()) {
-                    ServiceLogger.recoveredMia(this, campaign.getLocalDate());
+                    ServiceLogger.recoveredMia(this, today);
                 } else if (getStatus().isDead()) {
-                    ServiceLogger.resurrected(this, campaign.getLocalDate());
+                    ServiceLogger.resurrected(this, today);
                 } else {
-                    ServiceLogger.rehired(this, campaign.getLocalDate());
+                    ServiceLogger.rehired(this, today);
                 }
                 setRetirement(null);
                 break;
             case RETIRED:
-                ServiceLogger.retired(this, campaign.getLocalDate());
+                ServiceLogger.retired(this, today);
                 if (campaign.getCampaignOptions().useRetirementDateTracking()) {
-                    setRetirement(campaign.getLocalDate());
+                    setRetirement(today);
                 }
                 break;
             case MIA:
-                ServiceLogger.mia(this, campaign.getLocalDate());
+                ServiceLogger.mia(this, today);
                 break;
             case KIA:
-                ServiceLogger.kia(this, campaign.getLocalDate());
+                ServiceLogger.kia(this, today);
                 break;
             case NATURAL_CAUSES:
-                MedicalLogger.diedOfNaturalCauses(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
+                MedicalLogger.diedOfNaturalCauses(this, today);
+                ServiceLogger.passedAway(this, today, status.toString());
                 break;
             case WOUNDS:
-                MedicalLogger.diedFromWounds(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
+                MedicalLogger.diedFromWounds(this, today);
+                ServiceLogger.passedAway(this, today, status.toString());
                 break;
             case DISEASE:
-                MedicalLogger.diedFromDisease(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
+                MedicalLogger.diedFromDisease(this, today);
+                ServiceLogger.passedAway(this, today, status.toString());
                 break;
             case OLD_AGE:
-                MedicalLogger.diedOfOldAge(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
+                MedicalLogger.diedOfOldAge(this, today);
+                ServiceLogger.passedAway(this, today, status.toString());
                 break;
             case PREGNANCY_COMPLICATIONS:
                 // The child might be able to be born, albeit into a world without their mother.
@@ -1056,7 +1057,7 @@ public class Person implements Serializable {
                 // purposeful, to allow for player customization, and thus we first check if someone
                 // is pregnant before having the birth
                 if (isPregnant()) {
-                    int pregnancyWeek = getPregnancyWeek(campaign.getLocalDate());
+                    int pregnancyWeek = getPregnancyWeek(today);
                     double babyBornChance;
                     if (pregnancyWeek > 35) {
                         babyBornChance = 0.99;
@@ -1075,18 +1076,18 @@ public class Person implements Serializable {
                     }
 
                     if (Compute.randomFloat() < babyBornChance) {
-                        birth(campaign);
+                        birth(campaign, today);
                     }
                 }
-                MedicalLogger.diedFromPregnancyComplications(this, campaign.getLocalDate());
-                ServiceLogger.passedAway(this, campaign.getLocalDate(), status.toString());
+                MedicalLogger.diedFromPregnancyComplications(this, today);
+                ServiceLogger.passedAway(this, today, status.toString());
                 break;
         }
 
         setStatus(status);
 
         if (status.isDead()) {
-            setDateOfDeath(campaign.getLocalDate());
+            setDateOfDeath(today);
             // Don't forget to tell the spouse
             if (getGenealogy().hasSpouse() && !getGenealogy().getSpouse().getStatus().isDeadOrMIA()) {
                 Divorce divorceType = campaign.getCampaignOptions().getKeepMarriedNameUponSpouseDeath()
@@ -1317,16 +1318,16 @@ public class Person implements Serializable {
 
     /**
      * This is used to determine if a person can procreate
-     * @param campaign the campaign the person was in
+     * @param today the current date
      * @return true if they can, otherwise false
      */
-    public boolean canProcreate(Campaign campaign) {
+    public boolean canProcreate(final LocalDate today) {
         return getGender().isFemale() && isTryingToConceive() && !isPregnant() && !isDeployed()
-                && !isChild() && (getAge(campaign.getLocalDate()) < 51);
+                && !isChild() && (getAge(today) < 51);
     }
 
-    public void procreate(Campaign campaign) {
-        if (canProcreate(campaign)) {
+    public void procreate(final Campaign campaign, final LocalDate today) {
+        if (canProcreate(today)) {
             boolean conceived = false;
             if (getGenealogy().hasSpouse()) {
                 Person spouse = getGenealogy().getSpouse();
@@ -1341,14 +1342,13 @@ public class Person implements Serializable {
             }
 
             if (conceived) {
-                addPregnancy(campaign);
+                addPregnancy(campaign, today);
             }
         }
     }
 
-    public void addPregnancy(Campaign campaign) {
-        LocalDate dueDate = campaign.getLocalDate();
-        dueDate = dueDate.plus(PREGNANCY_STANDARD_DURATION, ChronoUnit.DAYS);
+    public void addPregnancy(final Campaign campaign, final LocalDate today) {
+        LocalDate dueDate = today.plus(PREGNANCY_STANDARD_DURATION, ChronoUnit.DAYS);
         setExpectedDueDate(dueDate);
         dueDate = dueDate.plus(PREGNANCY_MODIFY_DURATION.getAsInt(), ChronoUnit.DAYS);
         setDueDate(dueDate);
@@ -1362,10 +1362,9 @@ public class Person implements Serializable {
 
         campaign.addReport(getHyperlinkedName() + " has conceived" + (sizeString == null ? "" : (" " + sizeString)));
         if (campaign.getCampaignOptions().logConception()) {
-            MedicalLogger.hasConceived(this, campaign.getLocalDate(), sizeString);
+            MedicalLogger.hasConceived(this, today, sizeString);
             if (getGenealogy().hasSpouse()) {
-                PersonalLogger.spouseConceived(getGenealogy().getSpouse(),
-                        getFullName(), getCampaign().getLocalDate(), sizeString);
+                PersonalLogger.spouseConceived(getGenealogy().getSpouse(), getFullName(), today, sizeString);
             }
         }
     }
@@ -1383,8 +1382,9 @@ public class Person implements Serializable {
     /**
      * This method is how a person gives birth to a number of babies and have them added to the campaign
      * @param campaign the campaign to add the baby in question to
+     * @param today the current date
      */
-    public void birth(Campaign campaign) {
+    public void birth(final Campaign campaign, final LocalDate today) {
         // Determine the number of children
         int size = extraData.get(PREGNANCY_CHILDREN_DATA, 1);
 
@@ -1411,7 +1411,7 @@ public class Person implements Serializable {
             String surname = campaign.getCampaignOptions().getBabySurnameStyle()
                     .generateBabySurname(this, father, baby.getGender());
             baby.setSurname(surname);
-            baby.setBirthday(campaign.getLocalDate());
+            baby.setBirthday(today);
 
             // Recruit the baby
             campaign.recruitPerson(baby, prisonerStatus, true, true);
@@ -1428,9 +1428,9 @@ public class Person implements Serializable {
             campaign.addReport(String.format("%s has given birth to %s, a baby %s!", getHyperlinkedName(),
                     baby.getHyperlinkedName(), GenderDescriptors.BOY_GIRL.getDescriptor(baby.getGender())));
             if (campaign.getCampaignOptions().logConception()) {
-                MedicalLogger.deliveredBaby(this, baby, campaign.getLocalDate());
+                MedicalLogger.deliveredBaby(this, baby, today);
                 if (father != null) {
-                    PersonalLogger.ourChildBorn(father, baby, getFullName(), campaign.getLocalDate());
+                    PersonalLogger.ourChildBorn(father, baby, getFullName(), today);
                 }
             }
         }
@@ -1451,10 +1451,11 @@ public class Person implements Serializable {
 
     /**
      * Determines if another person is a safe spouse for the current person
+     * @param campaign the campaign to use to determine if the person is a safe spouse
      * @param person the person to determine if they are a safe spouse
-     * @param campaign the campaign to use to determine if they are a safe spouse
+     * @param today the current date
      */
-    public boolean safeSpouse(Person person, Campaign campaign) {
+    public boolean safeSpouse(final Campaign campaign, final Person person, final LocalDate today) {
         // Huge convoluted return statement, with the following restrictions
         // can't marry yourself
         // can't marry someone who is already married
@@ -1468,7 +1469,7 @@ public class Person implements Serializable {
                 !this.equals(person)
                 && !person.getGenealogy().hasSpouse()
                 && person.isTryingToMarry()
-                && person.oldEnoughToMarry(campaign)
+                && person.oldEnoughToMarry(campaign, today)
                 && (!person.getPrisonerStatus().isPrisoner() || getPrisonerStatus().isPrisoner())
                 && !person.getStatus().isDeadOrMIA()
                 && person.getStatus().isActive()
@@ -1476,52 +1477,51 @@ public class Person implements Serializable {
         );
     }
 
-    public boolean oldEnoughToMarry(Campaign campaign) {
-        return (getAge(campaign.getLocalDate()) >= campaign.getCampaignOptions().getMinimumMarriageAge());
+    public boolean oldEnoughToMarry(final Campaign campaign, final LocalDate today) {
+        return getAge(today) >= campaign.getCampaignOptions().getMinimumMarriageAge();
     }
 
-    public void randomMarriage(Campaign campaign) {
+    public void randomMarriage(final Campaign campaign, final LocalDate today) {
         // Don't attempt to generate is someone isn't trying to marry, has a spouse,
         // isn't old enough to marry, or is actively deployed
-        if (!isTryingToMarry() || getGenealogy().hasSpouse() || !oldEnoughToMarry(campaign) || isDeployed()) {
+        if (!isTryingToMarry() || getGenealogy().hasSpouse() || !oldEnoughToMarry(campaign, today) || isDeployed()) {
             return;
         }
 
         // setting is the fractional chance that this attempt at finding a marriage will result in one
         if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomMarriages())) {
-            addRandomSpouse(false, campaign);
+            addRandomSpouse(campaign, false, today);
         } else if (campaign.getCampaignOptions().useRandomSameSexMarriages()) {
             if (Compute.randomFloat() < (campaign.getCampaignOptions().getChanceRandomSameSexMarriages())) {
-                addRandomSpouse(true, campaign);
+                addRandomSpouse(campaign, true, today);
             }
         }
     }
 
-    public void addRandomSpouse(boolean sameSex, Campaign campaign) {
+    public void addRandomSpouse(final Campaign campaign, final boolean sameSex, final LocalDate today) {
         List<Person> potentials = new ArrayList<>();
         Gender gender = sameSex ? getGender() : (getGender().isMale() ? Gender.FEMALE : Gender.MALE);
-        for (Person p : campaign.getActivePersonnel()) {
-            if (isPotentialRandomSpouse(p, gender, campaign)) {
-                potentials.add(p);
+        for (final Person person : campaign.getActivePersonnel()) {
+            if (isPotentialRandomSpouse(campaign, person, gender, today)) {
+                potentials.add(person);
             }
         }
 
         int n = potentials.size();
         if (n > 0) {
-            Marriage.WEIGHTED.marry(campaign, this, potentials.get(Compute.randomInt(n)));
+            Marriage.WEIGHTED.marry(campaign, this, potentials.get(Compute.randomInt(n)), today);
         }
     }
 
-    public boolean isPotentialRandomSpouse(Person p, Gender gender, Campaign campaign) {
-        if ((p.getGender() != gender) || !safeSpouse(p, campaign)
+    public boolean isPotentialRandomSpouse(final Campaign campaign, final Person person,
+                                           final Gender gender, final LocalDate today) {
+        if ((person.getGender() != gender) || !safeSpouse(campaign, person, today)
                 || !(getPrisonerStatus().isFree()
-                || (getPrisonerStatus().isPrisoner() && p.getPrisonerStatus().isPrisoner()))) {
+                || (getPrisonerStatus().isPrisoner() && person.getPrisonerStatus().isPrisoner()))) {
             return false;
         }
 
-        int ageDifference = Math.abs(p.getAge(campaign.getLocalDate()) - getAge(campaign.getLocalDate()));
-
-        return (ageDifference <= campaign.getCampaignOptions().getMarriageAgeRange());
+        return Math.abs(person.getAge(today) - getAge(today)) <= campaign.getCampaignOptions().getMarriageAgeRange();
     }
     //endregion Marriage
 
@@ -2658,9 +2658,13 @@ public class Person implements Serializable {
         return skills;
     }
 
-    @Nullable
-    public Skill getSkill(String skillName) {
+    public @Nullable Skill getSkill(String skillName) {
         return skills.getSkill(skillName);
+    }
+
+    public int getSkillLevel(String skillName) {
+        final Skill skill = getSkill(skillName);
+        return (skill == null) ? 0 : skill.getExperienceLevel();
     }
 
     public void addSkill(String skillName, Skill skill) {

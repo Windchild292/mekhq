@@ -26,6 +26,7 @@ import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
+import megamek.common.annotations.Nullable;
 import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
 import megamek.common.options.IOption;
@@ -66,6 +67,8 @@ import mekhq.campaign.universe.RATManager;
 import mekhq.gui.FileDialogs;
 import mekhq.gui.SpecialAbilityPanel;
 import mekhq.gui.baseComponents.SortedComboBoxModel;
+import mekhq.gui.model.RankTableModel;
+import mekhq.gui.panels.CompanyGenerationOptionsPanel;
 import mekhq.gui.panes.RankSystemsPane;
 import mekhq.module.PersonnelMarketServiceManager;
 import mekhq.module.api.PersonnelMarketMethod;
@@ -483,6 +486,10 @@ public class CampaignOptionsDialog extends JDialog {
     private JCheckBox chkUseLightConditions;
     private JCheckBox chkUsePlanetaryConditions;
     //endregion Against the Bot Tab
+
+    //region Company Generation Options
+    private CompanyGenerationOptionsPanel companyGenerationOptionsPanel;
+    //endregion Company Generation Options
 
     private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.CampaignOptionsDialog", new EncodeControl());
     //endregion Variable Declarations
@@ -3517,11 +3524,18 @@ public class CampaignOptionsDialog extends JDialog {
         enableAtBComponents(panAtB, chkUseAtB.isSelected());
         enableAtBComponents(panSubAtBRat, chkUseAtB.isSelected() && btnStaticRATs.isSelected());
 
-        javax.swing.SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             scrSPA.getVerticalScrollBar().setValue(0);
             scrAtB.getVerticalScrollBar().setValue(0);
         });
         //endregion Against the Bot Tab
+
+        //region Company Generation Options
+        if (MekHQ.getMekHQOptions().getSaveCompanyGenerationOptions()) {
+            companyGenerationOptionsPanel = new CompanyGenerationOptionsPanel(frame, campaign);
+            tabOptions.addTab(resourceMap.getString("companyGenerationOptionsPanel.title"), new JScrollPane(companyGenerationOptionsPanel));
+        }
+        //endregion Company Generation Options
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -3555,7 +3569,11 @@ public class CampaignOptionsDialog extends JDialog {
 
         btnLoad.setText(resourceMap.getString("btnLoad.text"));
         btnLoad.setName("btnLoad");
-        btnLoad.addActionListener(evt -> btnLoadActionPerformed());
+        btnLoad.addActionListener(evt -> {
+            final CampaignPresetSelectionDialog presetSelectionDialog = new CampaignPresetSelectionDialog(frame);
+            presetSelectionDialog.setVisible(true);
+            applyPreset(presetSelectionDialog.getSelectedPreset());
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -4703,7 +4721,11 @@ public class CampaignOptionsDialog extends JDialog {
         preferences.manage(new JWindowPreference(this));
     }
 
-    public void applyPreset(GamePreset gamePreset) {
+    public void applyPreset(final @Nullable GamePreset gamePreset) {
+        if (gamePreset == null) {
+            return;
+        }
+
         // Handle CampaignOptions and RandomSkillPreferences
         setOptions(gamePreset.getOptions(), gamePreset.getRandomSkillPreferences());
 
@@ -5149,6 +5171,13 @@ public class CampaignOptionsDialog extends JDialog {
         chkUseLightConditions.setSelected(options.getUseLightConditions());
         chkUsePlanetaryConditions.setSelected(options.getUsePlanetaryConditions());
         //endregion Against the Bot Tab
+
+        //region Company Generation Options
+        // Only trigger this if there are saved options and the panel has been initialized
+        if ((companyGenerationOptionsPanel != null) && (options.getCompanyGenerationOptions() != null)) {
+            companyGenerationOptionsPanel.setOptions(options.getCompanyGenerationOptions());
+        }
+        //endregion Company Generation Options
     }
 
     public static String[][] getSkillCostsArray(Hashtable<String, SkillType> skillHash) {
@@ -5164,18 +5193,6 @@ public class CampaignOptionsDialog extends JDialog {
         return array;
     }
     //endregion Initialization
-
-    private void btnLoadActionPerformed() {
-        List<GamePreset> presets = GamePreset.getGamePresetsIn();
-
-        if (!presets.isEmpty()) {
-            ChooseGamePresetDialog cgpd = new ChooseGamePresetDialog(null, true, presets);
-            cgpd.setVisible(true);
-            if (!cgpd.wasCancelled() && (cgpd.getSelectedPreset() != null)) {
-                applyPreset(cgpd.getSelectedPreset());
-            }
-        }
-    }
 
     private void btnSaveActionPerformed() {
         if (txtName.getText().length() == 0) {
@@ -5583,6 +5600,12 @@ public class CampaignOptionsDialog extends JDialog {
         options.setUnitMarketReportRefresh(chkUnitMarketReportRefresh.isSelected());
         // End Against the Bot
 
+        //region Company Generation Options
+        if (companyGenerationOptionsPanel != null) {
+            options.setCompanyGenerationOptions(companyGenerationOptionsPanel.createOptionsFromPanel());
+        }
+        //endregion Company Generation Options
+
         campaign.setCampaignOptions(options);
 
         MekHQ.triggerEvent(new OptionsChangedEvent(campaign, options));
@@ -5640,11 +5663,11 @@ public class CampaignOptionsDialog extends JDialog {
     }
 
     private void btnDateActionPerformed(ActionEvent evt) {
-        // show the date chooser
-        DateChooser dc = new DateChooser(frame, date);
-        // user can either choose a date or cancel by closing
-        if (dc.showDateChooser() == DateChooser.OK_OPTION) {
-            date = dc.getDate();
+        final DateSelectionDialog dateSelectionDialog = new DateSelectionDialog(frame, date);
+        // Only overwrite here when it is confirmed with a different date
+        if (dateSelectionDialog.showDialog().isConfirmed()
+                && !date.equals(dateSelectionDialog.getDate())) {
+            date = dateSelectionDialog.getDate();
             btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(date));
             factionModel = new SortedComboBoxModel<>();
             for (final Faction faction : Factions.getInstance().getChoosableFactions()) {

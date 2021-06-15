@@ -544,7 +544,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             }
             case CMD_ADD_PREGNANCY: {
                 if (selectedPerson.getGender().isFemale()) {
-                    selectedPerson.addPregnancy(gui.getCampaign());
+                    selectedPerson.addPregnancy(gui.getCampaign(), gui.getCampaign().getLocalDate());
                     MekHQ.triggerEvent(new PersonChangedEvent(selectedPerson));
                 }
                 break;
@@ -565,8 +565,9 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 break;
             }
             case CMD_ADD_SPOUSE: {
-                Person spouse = gui.getCampaign().getPerson(UUID.fromString(data[1]));
-                Marriage.valueOf(data[2]).marry(gui.getCampaign(), selectedPerson, spouse);
+                final Person spouse = gui.getCampaign().getPerson(UUID.fromString(data[1]));
+                Marriage.valueOf(data[2]).marry(gui.getCampaign(), selectedPerson, spouse,
+                        gui.getCampaign().getLocalDate());
                 break;
             }
             case CMD_ADD_AWARD: {
@@ -689,7 +690,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                     if (status.isActive() || (JOptionPane.showConfirmDialog(null,
                             String.format(resourceMap.getString("confirmRetireQ.format"), person.getFullTitle()),
                             status.toString(), JOptionPane.YES_NO_OPTION) == 0)) {
-                        person.changeStatus(gui.getCampaign(), status);
+                        person.changeStatus(gui.getCampaign(), status, gui.getCampaign().getLocalDate());
                     }
                 }
                 break;
@@ -1790,7 +1791,8 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
 
         if (oneSelected && person.getStatus().isActive()) {
             if (gui.getCampaign().getCampaignOptions().useManualMarriages()
-                    && person.oldEnoughToMarry(gui.getCampaign()) && !person.getGenealogy().hasSpouse()) {
+                    && person.oldEnoughToMarry(gui.getCampaign(), gui.getCampaign().getLocalDate())
+                    && !person.getGenealogy().hasSpouse()) {
                 menu = new JMenu(resourceMap.getString("chooseSpouse.text"));
                 JMenu maleMenu = new JMenu(resourceMap.getString("spouseMenuMale.text"));
                 JMenu femaleMenu = new JMenu(resourceMap.getString("spouseMenuFemale.text"));
@@ -1802,7 +1804,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 personnel.sort(Comparator.comparing((Person p) -> p.getAge(today)).thenComparing(Person::getSurname));
 
                 for (Person ps : personnel) {
-                    if (person.safeSpouse(ps, gui.getCampaign())) {
+                    if (person.safeSpouse(gui.getCampaign(), ps, gui.getCampaign().getLocalDate())) {
                         String pStatus;
 
                         if (ps.getPrisonerStatus().isBondsman()) {
@@ -2769,7 +2771,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             }
 
             if (oneSelected) {
-                if (person.canProcreate(gui.getCampaign())) {
+                if (person.canProcreate(gui.getCampaign().getLocalDate())) {
                     menuItem = new JMenuItem(resourceMap.getString("addPregnancy.text"));
                     menuItem.setActionCommand(CMD_ADD_PREGNANCY);
                     menuItem.addActionListener(this);

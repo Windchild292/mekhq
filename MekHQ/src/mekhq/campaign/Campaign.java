@@ -693,7 +693,7 @@ public class Campaign implements Serializable, ITechManager {
             if (getFinances().debit(totalPayout, Transaction.C_SALARY, "Final Payout", getLocalDate())) {
                 for (UUID pid : getRetirementDefectionTracker().getRetirees()) {
                     if (getPerson(pid).getStatus().isActive()) {
-                        getPerson(pid).changeStatus(this, PersonnelStatus.RETIRED);
+                        getPerson(pid).changeStatus(this, PersonnelStatus.RETIRED, getLocalDate());
                         addReport(getPerson(pid).getFullName() + " has retired.");
                     }
                     if (!getRetirementDefectionTracker().getPayout(pid).getRecruitRole().isNone()) {
@@ -801,13 +801,20 @@ public class Campaign implements Serializable, ITechManager {
         scenarios.put(scenario.getId(), scenario);
     }
 
+    public void addUnitToForce(final @Nullable Unit unit, final Force force) {
+        addUnitToForce(unit, force.getId());
+    }
+
     /**
      * Add unit to an existing force. This method will also assign that force's id to the unit.
      *
      * @param u
      * @param id
      */
-    public void addUnitToForce(Unit u, int id) {
+    public void addUnitToForce(@Nullable Unit u, int id) {
+        if (u == null) {
+            return;
+        }
         Force prevForce = forceIds.get(u.getForceId());
         if (null != prevForce) {
             prevForce.removeUnit(u.getId());
@@ -1293,6 +1300,16 @@ public class Campaign implements Serializable, ITechManager {
                             final AbstractPlanetSelector planetSelector, Gender gender) {
         AbstractPersonnelGenerator personnelGenerator = getPersonnelGenerator(factionSelector, planetSelector);
         return newPerson(primaryRole, secondaryRole, personnelGenerator, gender);
+    }
+
+    /**
+     * Generate a new {@link Person} of the given role, using the supplied {@link AbstractPersonnelGenerator}
+     * @param primaryRole The primary role of the {@link Person}.
+     * @param personnelGenerator The {@link AbstractPersonnelGenerator} to use when creating the {@link Person}.
+     * @return A new {@link Person} configured using {@code personnelGenerator}.
+     */
+    public Person newPerson(final PersonnelRole primaryRole, final AbstractPersonnelGenerator personnelGenerator) {
+        return newPerson(primaryRole, PersonnelRole.NONE, personnelGenerator, Gender.RANDOMIZE);
     }
 
     /**
@@ -3198,7 +3215,7 @@ public class Campaign implements Serializable, ITechManager {
 
             // Random Marriages
             if (getCampaignOptions().useRandomMarriages()) {
-                p.randomMarriage(this);
+                p.randomMarriage(this, getLocalDate());
             }
 
             p.resetMinutesLeft();
@@ -3255,13 +3272,13 @@ public class Campaign implements Serializable, ITechManager {
                 if (p.isPregnant()) {
                     if (getCampaignOptions().useProcreation()) {
                         if (getLocalDate().compareTo((p.getDueDate())) == 0) {
-                            p.birth(this);
+                            p.birth(this, getLocalDate());
                         }
                     } else {
                         p.removePregnancy();
                     }
                 } else if (getCampaignOptions().useProcreation()) {
-                    p.procreate(this);
+                    p.procreate(this, getLocalDate());
                 }
             }
         }
@@ -5187,10 +5204,10 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     public void resetAstechMinutes() {
-        astechPoolMinutes = 480 * getNumberPrimaryAstechs() + 240
-                * getNumberSecondaryAstechs();
-        astechPoolOvertime = 240 * getNumberPrimaryAstechs() + 120
-                * getNumberSecondaryAstechs();
+        astechPoolMinutes = Person.PRIMARY_ROLE_SUPPORT_TIME * getNumberPrimaryAstechs()
+                + Person.PRIMARY_ROLE_OVERTIME_SUPPORT_TIME * getNumberSecondaryAstechs();
+        astechPoolOvertime = Person.SECONDARY_ROLE_SUPPORT_TIME * getNumberPrimaryAstechs()
+                + Person.SECONDARY_ROLE_OVERTIME_SUPPORT_TIME * getNumberSecondaryAstechs();
     }
 
     public void setAstechPoolMinutes(int minutes) {

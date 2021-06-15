@@ -18,6 +18,7 @@
  */
 package mekhq;
 
+import mekhq.campaign.universe.enums.CompanyGenerationMethod;
 import mekhq.gui.enums.PersonnelFilterStyle;
 
 import javax.swing.*;
@@ -68,6 +69,22 @@ public final class MekHQOptions {
         userPreferences.node(MekHqConstants.DISPLAY_NODE).putBoolean(MekHqConstants.HISTORICAL_DAILY_LOG, value);
     }
 
+    public boolean getCompanyGeneratorStartup() {
+        return userPreferences.node(MekHqConstants.DISPLAY_NODE).getBoolean(MekHqConstants.COMPANY_GENERATOR_STARTUP, false);
+    }
+
+    public void setCompanyGeneratorStartup(final boolean value) {
+        userPreferences.node(MekHqConstants.DISPLAY_NODE).putBoolean(MekHqConstants.COMPANY_GENERATOR_STARTUP, value);
+    }
+
+    public boolean getShowCompanyGenerator() {
+        return userPreferences.node(MekHqConstants.DISPLAY_NODE).getBoolean(MekHqConstants.SHOW_COMPANY_GENERATOR, false);
+    }
+
+    public void setShowCompanyGenerator(final boolean value) {
+        userPreferences.node(MekHqConstants.DISPLAY_NODE).putBoolean(MekHqConstants.SHOW_COMPANY_GENERATOR, value);
+    }
+
     //region Expanded MekHQ Display Options
     //region Command Center Display
     public boolean getCommandCenterUseUnitMarket() {
@@ -90,7 +107,7 @@ public final class MekHQOptions {
     //region Personnel Tab Display Options
     public PersonnelFilterStyle getPersonnelFilterStyle() {
         return PersonnelFilterStyle.valueOf(userPreferences.node(MekHqConstants.DISPLAY_NODE)
-                .get(MekHqConstants.PERSONNEL_FILTER_STYLE, "STANDARD"));
+                .get(MekHqConstants.PERSONNEL_FILTER_STYLE, PersonnelFilterStyle.STANDARD.name()));
     }
 
     public void setPersonnelFilterStyle(PersonnelFilterStyle value) {
@@ -475,6 +492,14 @@ public final class MekHQOptions {
     public void setSaveMothballState(boolean value) {
         userPreferences.node(MekHqConstants.XML_SAVES_NODE).putBoolean(MekHqConstants.SAVE_MOTHBALL_STATE, value);
     }
+
+    public boolean getSaveCompanyGenerationOptions() {
+        return userPreferences.node(MekHqConstants.XML_SAVES_NODE).getBoolean(MekHqConstants.SAVE_COMPANY_GENERATION_OPTIONS, false);
+    }
+
+    public void setSaveCompanyGenerationOptions(final boolean value) {
+        userPreferences.node(MekHqConstants.XML_SAVES_NODE).putBoolean(MekHqConstants.SAVE_COMPANY_GENERATION_OPTIONS, value);
+    }
     //endregion Campaign XML Save Options
 
     //region File Paths
@@ -511,6 +536,14 @@ public final class MekHQOptions {
     public void setIndividualRankSystemPath(final String value) {
         userPreferences.node(MekHqConstants.FILE_PATH_NODE).put(MekHqConstants.INDIVIDUAL_RANK_SYSTEM_DIRECTORY_PATH, value);
     }
+
+    public String getCompanyGenerationDirectoryPath() {
+        return userPreferences.node(MekHqConstants.FILE_PATH_NODE).get(MekHqConstants.COMPANY_GENERATION_DIRECTORY_PATH, "mmconf/mhqCompanyGenerationPresets/");
+    }
+
+    public void setCompanyGenerationDirectoryPath(final String value) {
+        userPreferences.node(MekHqConstants.FILE_PATH_NODE).put(MekHqConstants.COMPANY_GENERATION_DIRECTORY_PATH, value);
+    }
     //endregion File Paths
 
     //region Nag Tab
@@ -528,8 +561,17 @@ public final class MekHQOptions {
         return userPreferences.node(MekHqConstants.MISCELLANEOUS_NODE).getInt(MekHqConstants.START_GAME_DELAY, 500);
     }
 
-    public void setStartGameDelay(int startGameDelay) {
+    public void setStartGameDelay(final int startGameDelay) {
         userPreferences.node(MekHqConstants.MISCELLANEOUS_NODE).putInt(MekHqConstants.START_GAME_DELAY, startGameDelay);
+    }
+
+    public CompanyGenerationMethod getDefaultCompanyGenerationMethod() {
+        return CompanyGenerationMethod.valueOf(userPreferences.node(MekHqConstants.MISCELLANEOUS_NODE)
+                .get(MekHqConstants.DEFAULT_COMPANY_GENERATION_METHOD, CompanyGenerationMethod.AGAINST_THE_BOT.name()));
+    }
+
+    public void setDefaultCompanyGenerationMethod(final CompanyGenerationMethod value) {
+        userPreferences.node(MekHqConstants.MISCELLANEOUS_NODE).put(MekHqConstants.DEFAULT_COMPANY_GENERATION_METHOD, value.name());
     }
     //endregion Miscellaneous Options
 }

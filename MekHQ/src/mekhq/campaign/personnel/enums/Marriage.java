@@ -27,6 +27,7 @@ import mekhq.campaign.event.PersonChangedEvent;
 import mekhq.campaign.log.PersonalLogger;
 import mekhq.campaign.personnel.Person;
 
+import java.time.LocalDate;
 import java.util.ResourceBundle;
 
 public enum Marriage {
@@ -76,7 +77,8 @@ public enum Marriage {
     }
     //endregion Getters
 
-    public void marry(final Campaign campaign, final Person origin, final Person spouse) {
+    public void marry(final Campaign campaign, final Person origin, final Person spouse,
+                      final LocalDate today) {
         final String surname = origin.getSurname();
         final String spouseSurname = spouse.getSurname();
         Marriage surnameStyle = this;
@@ -192,15 +194,15 @@ public enum Marriage {
         spouse.getGenealogy().setSpouse(origin);
 
         // Then we do the logging
-        PersonalLogger.marriage(origin, spouse, campaign.getLocalDate());
-        PersonalLogger.marriage(spouse, origin, campaign.getLocalDate());
+        PersonalLogger.marriage(origin, spouse, today);
+        PersonalLogger.marriage(spouse, origin, today);
 
         if (campaign.getCampaignOptions().logMarriageNameChange()) {
             if (!spouse.getSurname().equals(spouseSurname)) {
-                PersonalLogger.marriageNameChange(spouse, origin, campaign.getLocalDate());
+                PersonalLogger.marriageNameChange(spouse, origin, today);
             }
             if (!origin.getSurname().equals(surname)) {
-                PersonalLogger.marriageNameChange(origin, spouse, campaign.getLocalDate());
+                PersonalLogger.marriageNameChange(origin, spouse, today);
             }
         }
 
