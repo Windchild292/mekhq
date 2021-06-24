@@ -18,6 +18,8 @@
  */
 package mekhq.gui.adapter;
 
+import mekhq.MekHqConstants;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -35,21 +37,21 @@ import javax.swing.event.MouseInputAdapter;
  * Provides a popup menu adapter for a component which also ensures that
  * the accessibility chord SHIFT+F10 opens the popup as well.
  */
+@Deprecated
 public abstract class JPopupMenuAdapter extends MouseInputAdapter implements ActionListener {
-    public static final String COMMAND_OPEN_POPUP = "SHIFT_F10";
-
     /**
      * Connect the popup menu adapter to the component. Implementations should call this
      * to connect the popup menu to both right click and the SHIFT+F10 accessibility chord.
      * @param component The component to trap context menu actions.
      */
+    @Deprecated
     protected void connect(JComponent component) {
         component.addMouseListener(this);
 
         // Setup SHIFT+F10 for context menu support
         KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK);
-        component.getInputMap(JComponent.WHEN_FOCUSED).put(keystroke, COMMAND_OPEN_POPUP);
-        component.getActionMap().put(COMMAND_OPEN_POPUP, new AbstractAction() {
+        component.getInputMap(JComponent.WHEN_FOCUSED).put(keystroke, MekHqConstants.COMMAND_OPEN_POPUP);
+        component.getActionMap().put(MekHqConstants.COMMAND_OPEN_POPUP, new AbstractAction() {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -92,5 +94,6 @@ public abstract class JPopupMenuAdapter extends MouseInputAdapter implements Act
      * A {@link JPopupMenu} to show, if applicable.
      * @return An optional {@link JPopupMenu} to show.
      */
+    @Deprecated
     protected abstract Optional<JPopupMenu> createPopupMenu();
 }
