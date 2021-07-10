@@ -21,23 +21,17 @@ package mekhq;
 import megamek.MegaMek;
 import megamek.client.ui.swing.tileset.MMStaticDirectoryManager;
 import megamek.common.annotations.Nullable;
-import megamek.common.icons.AbstractIcon;
+import megamek.common.util.fileUtils.AbstractDirectory;
 import megamek.common.util.fileUtils.DirectoryItems;
 import megamek.common.util.fileUtils.ImageFileFactory;
-import mekhq.campaign.force.Force;
-import mekhq.gui.enums.LayeredForceIcon;
 import mekhq.io.AwardFileFactory;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.Vector;
 
 public class MHQStaticDirectoryManager extends MMStaticDirectoryManager {
     //region Variable Declarations
-    private static DirectoryItems forceIconDirectory;
-    private static DirectoryItems awardIconDirectory;
+    private static AbstractDirectory forceIconDirectory;
+    private static AbstractDirectory awardIconDirectory;
 
     // Re-parsing Prevention Variables: The are True at startup and when the specified directory
     // should be re-parsed, and are used to avoid re-parsing the directory repeatedly when there's an error.
@@ -102,23 +96,23 @@ public class MHQStaticDirectoryManager extends MMStaticDirectoryManager {
 
     //region Getters
     /**
-     * Returns a DirectoryItems object containing all force icon filenames
+     * Returns an AbstractDirectory object containing all force icon filenames
      * found in MekHQ's force icon folder.
-     * @return a DirectoryItems object with the force icon folders and filenames.
+     * @return an AbstractDirectory object with the force icon folders and filenames.
      * May be null if the directory cannot be parsed.
      */
-    public static @Nullable DirectoryItems getForceIcons() {
+    public static @Nullable AbstractDirectory getForceIcons() {
         initializeForceIcons();
         return forceIconDirectory;
     }
 
     /**
-     * Returns a DirectoryItems object containing all award icon filenames
+     * Returns an AbstractDirectory object containing all award icon filenames
      * found in MekHQ's award icon folder.
-     * @return a DirectoryItems object with the award icon folders and filenames.
+     * @return an AbstractDirectory object with the award icon folders and filenames.
      * May be null if the directory cannot be parsed.
      */
-    public static @Nullable DirectoryItems getAwardIcons() {
+    public static @Nullable AbstractDirectory getAwardIcons() {
         initializeAwardIcons();
         return awardIconDirectory;
     }
@@ -128,113 +122,28 @@ public class MHQStaticDirectoryManager extends MMStaticDirectoryManager {
     //region Refreshers
     /**
      * Re-reads MekHQ's force icon folder and returns the updated
-     * DirectoryItems object. This will update the DirectoryItems object
+     * AbstractDirectory object. This will update the AbstractDirectory object
      * with changes to the force icons (like added image files and folders)
      * while MekHQ is running.
      *
      * @see #getForceIcons()
      */
-    public static DirectoryItems refreshForceIcons() {
+    public static AbstractDirectory refreshForceIcons() {
         parseForceIconDirectory = true;
         return getForceIcons();
     }
 
     /**
      * Re-reads MekHQ's award icon folder and returns the updated
-     * DirectoryItems object. This will update the DirectoryItems object
+     * AbstractDirectory object. This will update the AbstractDirectory object
      * with changes to the award icons (like added image files and folders)
      * while MekHQ is running.
      *
      * @see #getAwardIcons()
      */
-    public static DirectoryItems refreshAwardIcons() {
+    public static AbstractDirectory refreshAwardIcons() {
         parseAwardIconDirectory = true;
         return getAwardIcons();
     }
     //endregion Refreshers
-
-    //region Force Icon
-    public static Image buildForceIcon(String category, String filename,
-                                       LinkedHashMap<String, Vector<String>> iconMap) {
-        Image retVal = null;
-
-        if (AbstractIcon.ROOT_CATEGORY.equals(category)) {
-            category = "";
-        }
-
-        // Return a null if the player has selected no force icon file.
-        if ((null == category) || (null == filename)
-                || (AbstractIcon.DEFAULT_ICON_FILENAME.equals(filename) && !Force.ROOT_LAYERED.equals(category))) {
-            filename = "empty.png";
-        }
-
-        // Layered force icon
-        if (Force.ROOT_LAYERED.equals(category)) {
-            GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                    .getDefaultScreenDevice().getDefaultConfiguration();
-            BufferedImage base = null;
-            Graphics2D g2d = null;
-            try {
-                int width = 0;
-                int height = 0;
-                // Gather height/width
-                for (LayeredForceIcon layeredForceIcon : LayeredForceIcon.getInDrawOrder()) {
-                    String layer = layeredForceIcon.getLayerPath();
-                    if (iconMap.containsKey(layer)) {
-                        for (String value : iconMap.get(layer)) {
-                            // Load up the image piece
-                            BufferedImage image = (BufferedImage) getForceIcons().getItem(layer, value);
-                            if (image != null) {
-                                width = Math.max(image.getWidth(), width);
-                                height = Math.max(image.getHeight(), height);
-                            }
-                        }
-                    }
-                }
-                base = config.createCompatibleImage(width, height, Transparency.TRANSLUCENT);
-                g2d = base.createGraphics();
-                for (LayeredForceIcon layeredForceIcon : LayeredForceIcon.getInDrawOrder()) {
-                    String layer = layeredForceIcon.getLayerPath();
-                    if (iconMap.containsKey(layer)) {
-                        for (String value : iconMap.get(layer)) {
-                            BufferedImage image = (BufferedImage) getForceIcons().getItem(layer, value);
-                            if (image != null) {
-                                // Draw the current buffered image onto the base, aligning bottom and right side
-                                g2d.drawImage(image, width - image.getWidth() + 1, height - image.getHeight() + 1, null);
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
-            } finally {
-                if (null != g2d) {
-                    g2d.dispose();
-                }
-                if (null == base) {
-                    try {
-                        base = (BufferedImage) getForceIcons().getItem("", "empty.png");
-                    } catch (Exception e) {
-                        MekHQ.getLogger().error(e);
-                    }
-                }
-                retVal = base;
-            }
-        } else { // Standard force icon
-            // Try to get the player's force icon file.
-            Image scaledImage;
-            try {
-                scaledImage = (Image) getForceIcons().getItem(category, filename);
-                if (null == scaledImage) {
-                    scaledImage = (Image) getForceIcons().getItem("", "empty.png");
-                }
-                retVal = scaledImage;
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
-            }
-        }
-
-        return retVal;
-    }
-    //endregion Force Icon
 }

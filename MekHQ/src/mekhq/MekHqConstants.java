@@ -107,6 +107,7 @@ public final class MekHqConstants {
     public static final String FILE_PATH_NODE = "mekhq/prefs/filepaths";
     public static final String RANK_SYSTEMS_DIRECTORY_PATH = "rankSystemsDirectoryPath";
     public static final String INDIVIDUAL_RANK_SYSTEM_DIRECTORY_PATH = "individualRankSystemDirectoryPath";
+    public static final String LAYERED_FORCE_ICON_DIRECTORY_PATH = "layeredForceIconDirectoryPath";
     //endregion File Paths
 
     //region Nag Tab
@@ -133,13 +134,14 @@ public final class MekHqConstants {
     public static final String USER_RANKS_FILE_PATH = "userdata/data/universe/ranks.xml";
     public static final String FACTION_HINTS_FILE = "data/universe/factionhints.xml";
     public static final String RATINFO_DIR = "data/universe/ratdata";
-    public static final String LAYERED_FORCE_ICON_TYPE_PATH = "Pieces/Type/";
+    public static final String LAYERED_FORCE_ICON_TYPE_PATH = "Pieces/Types/";
     public static final String LAYERED_FORCE_ICON_FORMATION_PATH = "Pieces/Formations/";
     public static final String LAYERED_FORCE_ICON_ADJUSTMENT_PATH = "Pieces/Adjustments/";
     public static final String LAYERED_FORCE_ICON_ALPHANUMERIC_PATH = "Pieces/Alphanumerics/";
     public static final String LAYERED_FORCE_ICON_SPECIAL_MODIFIER_PATH = "Pieces/Special Modifiers/";
     public static final String LAYERED_FORCE_ICON_BACKGROUND_PATH = "Pieces/Backgrounds/";
     public static final String LAYERED_FORCE_ICON_FRAME_PATH = "Pieces/Frames/";
+    public static final String LAYERED_FORCE_ICON_DEFAULT_FRAME_FILENAME = "Frame.png";
     public static final String LAYERED_FORCE_ICON_LOGO_PATH = "Pieces/Logos/";
 
     //region StratCon
