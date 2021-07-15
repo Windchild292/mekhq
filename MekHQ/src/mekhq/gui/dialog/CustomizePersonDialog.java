@@ -320,7 +320,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         }
         choiceGender = new JComboBox<>(genderModel);
         choiceGender.setName("choiceGender"); // NOI18N
-        choiceGender.setSelectedItem(person.getGender().isExternal() ? person.getGender()
+        choiceGender.setSelectedItem(!person.getGender().isInternal() ? person.getGender()
                 : person.getGender().getExternalVariant());
         choiceGender.addActionListener(evt -> randomName());
         gridBagConstraints = new java.awt.GridBagConstraints();

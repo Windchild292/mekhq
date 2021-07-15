@@ -19,6 +19,33 @@
  */
 package mekhq.campaign.universe;
 
+import megamek.common.EquipmentType;
+import megamek.common.ITechnology;
+import megamek.common.TargetRoll;
+import megamek.common.annotations.Nullable;
+import megamek.common.enums.AtmosphericPressure;
+import mekhq.MekHQ;
+import mekhq.Utilities;
+import mekhq.adapter.AtmosphereAdapter;
+import mekhq.adapter.BooleanValueAdapter;
+import mekhq.adapter.ClimateAdapter;
+import mekhq.adapter.DateAdapter;
+import mekhq.adapter.HPGRatingAdapter;
+import mekhq.adapter.LifeFormAdapter;
+import mekhq.adapter.PressureAdapter;
+import mekhq.adapter.SocioIndustrialDataAdapter;
+import mekhq.adapter.StringListAdapter;
+import mekhq.campaign.CampaignOptions;
+import mekhq.campaign.universe.Faction.Tag;
+
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,41 +61,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import megamek.common.EquipmentType;
-import megamek.common.ITechnology;
-import megamek.common.PlanetaryConditions;
-import megamek.common.TargetRoll;
-import mekhq.MekHQ;
-import mekhq.Utilities;
-import mekhq.adapter.AtmosphereAdapter;
-import mekhq.adapter.BooleanValueAdapter;
-import mekhq.adapter.ClimateAdapter;
-import mekhq.adapter.DateAdapter;
-import mekhq.adapter.HPGRatingAdapter;
-import mekhq.adapter.LifeFormAdapter;
-import mekhq.adapter.PressureAdapter;
-import mekhq.adapter.SocioIndustrialDataAdapter;
-import mekhq.adapter.StringListAdapter;
-import mekhq.campaign.CampaignOptions;
-import mekhq.campaign.universe.Faction.Tag;
-
 /**
  * This is the start of a planet object that will keep lots of information about
  * planets that can be displayed on the interstellar map.
  *
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
-@XmlRootElement(name="planet")
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "planet")
+@XmlAccessorType(value = XmlAccessType.FIELD)
 public class Planet implements Serializable {
     private static final long serialVersionUID = -8699502165157515100L;
 
@@ -78,7 +78,7 @@ public class Planet implements Serializable {
     private Double y;
 
     // Base data
-    @SuppressWarnings("unused")
+    @SuppressWarnings(value = "unused")
     private UUID uniqueIdentifier;
     private String id;
     private String name;
@@ -120,31 +120,31 @@ public class Planet implements Serializable {
     private Integer volcanicActivity;
     @XmlElement(name = "tectonics")
     private Integer tectonicActivity;
-    @XmlElement(name="landMass")
+    @XmlElement(name = "landMass")
     private List<String> landMasses;
 
     // Atmospheric description
     /** Pressure classification */
-    @XmlJavaTypeAdapter(PressureAdapter.class)
-    private Integer pressure;
-    @XmlJavaTypeAdapter(AtmosphereAdapter.class)
+    @XmlJavaTypeAdapter(value = PressureAdapter.class)
+    private AtmosphericPressure pressure;
+    @XmlJavaTypeAdapter(value = AtmosphereAdapter.class)
     private Atmosphere atmosphere;
     private String composition;
-    private Integer temperature;
+    private Double temperature;
 
     // Ecosphere
     @XmlElement(name="lifeForm")
-    @XmlJavaTypeAdapter(LifeFormAdapter.class)
+    @XmlJavaTypeAdapter(value = LifeFormAdapter.class)
     private LifeForm life;
 
     // Human influence
     private Long population;
-    @XmlJavaTypeAdapter(SocioIndustrialDataAdapter.class)
+    @XmlJavaTypeAdapter(value = SocioIndustrialDataAdapter.class)
     private SocioIndustrialData socioIndustrial;
-    @XmlJavaTypeAdapter(HPGRatingAdapter.class)
+    @XmlJavaTypeAdapter(value = HPGRatingAdapter.class)
     private Integer hpg;
     @XmlElement(name = "faction")
-    @XmlJavaTypeAdapter(StringListAdapter.class)
+    @XmlJavaTypeAdapter(value = StringListAdapter.class)
     private List<String> factions;
 
     //private List<String> garrisonUnits;
@@ -186,7 +186,7 @@ public class Planet implements Serializable {
     private List<Planet.PlanetaryEvent> eventList;
 
     /** Marker for "please delete this planet" */
-    @XmlJavaTypeAdapter(BooleanValueAdapter.class)
+    @XmlJavaTypeAdapter(value = BooleanValueAdapter.class)
     public Boolean delete;
 
     public Planet() {
@@ -666,20 +666,20 @@ public class Planet implements Serializable {
         return getEventData(when, percentWater, e -> e.percentWater);
     }
 
-    public Integer getTemperature(LocalDate when) {
+    public Double getTemperature(LocalDate when) {
         return getEventData(when, temperature, e -> e.temperature);
     }
 
-    public Integer getPressure(LocalDate when) {
+    public @Nullable AtmosphericPressure getPressure(LocalDate when) {
         return getEventData(when, pressure, e -> e.pressure);
     }
 
     public String getPressureName(LocalDate when) {
-        Integer currentPressure = getPressure(when);
-        return null != currentPressure ? PlanetaryConditions.getAtmosphereDisplayableName(currentPressure) : "unknown";
+        final AtmosphericPressure currentPressure = getPressure(when);
+        return (currentPressure == null) ? "unknown" : currentPressure.toString();
     }
 
-    public Atmosphere getAtmosphere(LocalDate when) {
+    public @Nullable Atmosphere getAtmosphere(LocalDate when) {
         return getEventData(when, null != atmosphere ? atmosphere : Atmosphere.NONE, e -> e.atmosphere);
     }
 
@@ -1083,29 +1083,29 @@ public class Planet implements Serializable {
     /** A class representing some event, possibly changing planetary information */
     @XmlRootElement(name="event")
     public static final class PlanetaryEvent {
-        @XmlJavaTypeAdapter(DateAdapter.class)
+        @XmlJavaTypeAdapter(value = DateAdapter.class)
         public LocalDate date;
         public String message;
         public String name;
         public String shortName;
-        @XmlJavaTypeAdapter(StringListAdapter.class)
+        @XmlJavaTypeAdapter(value = StringListAdapter.class)
         public List<String> faction;
         @XmlTransient
         public Set<Faction> factions;
-        @XmlJavaTypeAdapter(LifeFormAdapter.class)
+        @XmlJavaTypeAdapter(value = LifeFormAdapter.class)
         public LifeForm lifeForm;
-        @XmlJavaTypeAdapter(ClimateAdapter.class)
+        @XmlJavaTypeAdapter(value = ClimateAdapter.class)
         public Climate climate;
         @XmlElement(name = "water")
         public Integer percentWater;
-        public Integer temperature;
-        @XmlJavaTypeAdapter(SocioIndustrialDataAdapter.class)
+        public Double temperature;
+        @XmlJavaTypeAdapter(value = SocioIndustrialDataAdapter.class)
         public SocioIndustrialData socioIndustrial;
-        @XmlJavaTypeAdapter(HPGRatingAdapter.class)
+        @XmlJavaTypeAdapter(value = HPGRatingAdapter.class)
         public Integer hpg;
-        @XmlJavaTypeAdapter(PressureAdapter.class)
-        private Integer pressure;
-        @XmlJavaTypeAdapter(AtmosphereAdapter.class)
+        @XmlJavaTypeAdapter(value = PressureAdapter.class)
+        private AtmosphericPressure pressure;
+        @XmlJavaTypeAdapter(value = AtmosphereAdapter.class)
         private Atmosphere atmosphere;
         public String composition;
         public Long population;

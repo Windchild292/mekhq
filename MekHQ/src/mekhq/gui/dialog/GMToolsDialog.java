@@ -1111,8 +1111,8 @@ public class GMToolsDialog extends AbstractMHQDialog {
         getLblCurrentName().setText(getPerson().getFullName());
 
         // Gender is set based on the person's gender
-        getComboGender().setSelectedItem(getPerson().getGender().isExternal() ? getPerson().getGender()
-                : getPerson().getGender().getExternalVariant());
+        getComboGender().setSelectedItem(getPerson().getGender().isInternal()
+                ? getPerson().getGender().getExternalVariant() : getPerson().getGender());
 
         // Current Callsign is set if applicable
         if (!StringUtil.isNullOrEmpty(getPerson().getCallsign())) {

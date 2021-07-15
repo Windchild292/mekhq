@@ -141,15 +141,15 @@ public class AtBDynamicScenarioFactory {
         boolean planetsideScenario = template.mapParameters.getMapLocation() == MapLocation.AllGroundTerrain ||
                 template.mapParameters.getMapLocation() == MapLocation.SpecificGroundTerrain;
 
-        // set lighting conditions if the user wants to play with them and is on a ground map
+        // set lighting conditions if the user is on a ground map
         // theoretically some lighting conditions apply to space maps as well, but requires additional work to implement properly
-        if (campaign.getCampaignOptions().getUseLightConditions() && planetsideScenario) {
-            setLightConditions(scenario);
+        if (planetsideScenario) {
+            scenario.setLightConditions(campaign);
         }
 
-        // set weather conditions if the user wants to play with them and is on a ground map
-        if (campaign.getCampaignOptions().getUseWeatherConditions() && planetsideScenario) {
-            setWeather(scenario);
+        // set weather conditions if the user is on a ground map
+        if (planetsideScenario) {
+            scenario.setWeather(campaign);
         }
 
         if (campaign.getCampaignOptions().getUsePlanetaryConditions() && planetsideScenario) {
@@ -665,85 +665,6 @@ public class AtBDynamicScenarioFactory {
                 objective.setTimeLimit(primaryUnitCount * objective.getTimeLimitScaleFactor());
             }
         }
-    }
-
-    /**
-     * Handles random determination of light conditions for the given scenario, as per AtB rules
-     *
-     * @param scenario The scenario for which to set lighting conditions.
-     */
-    private static void setLightConditions(AtBDynamicScenario scenario) {
-        int roll = Compute.randomInt(10) + 1;
-        int light;
-
-        if (roll < 6) {
-            light = PlanetaryConditions.L_DAY;
-        } else if (roll < 8) {
-            light = PlanetaryConditions.L_DUSK;
-        } else if (roll == 8) {
-            light = PlanetaryConditions.L_FULL_MOON;
-        } else if (roll == 9) {
-            light = PlanetaryConditions.L_MOONLESS;
-        } else {
-            light = PlanetaryConditions.L_PITCH_BLACK;
-        }
-
-        scenario.setLight(light);
-    }
-
-    /**
-     * Handles random determination of weather/wind/fog conditions for the given scenario, as per AtB rules
-     *
-     * @param scenario The scenario for which to set weather conditions.
-     */
-    private static void setWeather(AtBDynamicScenario scenario) {
-        int weather = PlanetaryConditions.WE_NONE;
-        int wind = PlanetaryConditions.WI_NONE;
-        int fog = PlanetaryConditions.FOG_NONE;
-
-        // weather is irrelevant in these situations.
-        if (scenario.getTerrainType() == AtBScenario.TER_SPACE ||
-                scenario.getTerrainType() == AtBScenario.TER_LOW_ATMO) {
-            return;
-        }
-
-        int roll = Compute.randomInt(10) + 1;
-        int r2 = Compute.d6();
-        if (roll < 6) return;
-        else if (roll == 6) {
-            if (r2 < 4) weather = PlanetaryConditions.WE_LIGHT_RAIN;
-            else if (r2 < 6) weather = PlanetaryConditions.WE_MOD_RAIN;
-            else weather = PlanetaryConditions.WE_HEAVY_RAIN;
-        } else if (roll == 7) {
-            if (r2 < 4) weather = PlanetaryConditions.WE_LIGHT_SNOW;
-            else if (r2 < 6) weather = PlanetaryConditions.WE_MOD_SNOW;
-            else weather = PlanetaryConditions.WE_HEAVY_SNOW;
-        } else if (roll == 8) {
-            if (r2 < 4) wind = PlanetaryConditions.WI_LIGHT_GALE;
-            else if (r2 < 6) wind = PlanetaryConditions.WI_MOD_GALE;
-            else wind = PlanetaryConditions.WI_STRONG_GALE;
-        } else if (roll == 9) {
-            if (r2 == 1) {
-                wind = PlanetaryConditions.WI_STORM;
-            } else if (r2 == 2) {
-                weather = PlanetaryConditions.WE_DOWNPOUR;
-            } else if (r2 == 3) {
-                weather = PlanetaryConditions.WE_SLEET;
-            } else if (r2 == 4) {
-                weather = PlanetaryConditions.WE_ICE_STORM;
-            } else if (r2 == 5) {
-                wind = PlanetaryConditions.WI_TORNADO_F13; // tornadoes are classified as wind rather than weather.
-            } else if (r2 == 6) {
-                wind = PlanetaryConditions.WI_TORNADO_F4;
-            }
-        } else {
-            if (r2 < 5) fog = PlanetaryConditions.FOG_LIGHT;
-            else fog = PlanetaryConditions.FOG_HEAVY;
-        }
-
-        scenario.setWeather(weather);
-        scenario.setWind(wind);
-        scenario.setFog(fog);
     }
 
     /**
