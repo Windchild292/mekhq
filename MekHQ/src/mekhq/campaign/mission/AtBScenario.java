@@ -21,33 +21,21 @@
  */
 package mekhq.campaign.mission;
 
-import megamek.common.Board;
-import megamek.common.Compute;
-import megamek.common.Crew;
-import megamek.common.Entity;
-import megamek.common.EntityWeightClass;
-import megamek.common.IStartingPositions;
-import megamek.common.Mech;
-import megamek.common.PlanetaryConditions;
-import megamek.common.TargetRoll;
-import megamek.common.UnitType;
+import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.icons.Camouflage;
 import megamek.common.util.EncodeControl;
 import megamek.common.util.StringUtil;
-import mekhq.MekHQ;
-import mekhq.MekHqConstants;
-import mekhq.MekHqXmlUtil;
-import mekhq.Utilities;
+import mekhq.*;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.againstTheBot.AtBConfiguration;
-import mekhq.campaign.againstTheBot.enums.AtBLanceRole;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
 import mekhq.campaign.market.UnitMarket;
 import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
 import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
 import mekhq.campaign.mission.atb.IAtBScenario;
+import mekhq.campaign.mission.enums.AtBLanceRole;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.rating.IUnitRating;
 import mekhq.campaign.unit.Unit;
@@ -61,18 +49,7 @@ import org.w3c.dom.NodeList;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author Neoancient
@@ -659,28 +636,34 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
     private void setStandardMissionForces(Campaign campaign) {
         /* Find the number of attached units required by the command rights clause */
         int attachedUnitWeight = EntityWeightClass.WEIGHT_MEDIUM;
-        if (lanceRole == AtBLanceRole.SCOUTING || lanceRole == AtBLanceRole.TRAINING) {
+        if (lanceRole.isScouting() || lanceRole.isTraining()) {
             attachedUnitWeight = EntityWeightClass.WEIGHT_LIGHT;
         }
         int numAttachedPlayer = 0;
         int numAttachedBot = 0;
-        if (getContract(campaign).getMissionType() == AtBContract.MT_CADREDUTY) {
+        if (getContract(campaign).getContractType().isCadreDuty()) {
             numAttachedPlayer = 3;
         } else if (campaign.getFactionCode().equals("MERC")) {
-            if (getContract(campaign).getCommandRights() == Contract.COM_INTEGRATED) {
-                if (campaign.getCampaignOptions().getPlayerControlsAttachedUnits()) {
-                    numAttachedPlayer = 2;
-                } else {
-                    numAttachedBot = 2;
-                }
-            } else if (getContract(campaign).getCommandRights() == Contract.COM_HOUSE) {
-                if (campaign.getCampaignOptions().getPlayerControlsAttachedUnits()) {
+            switch (getContract(campaign).getCommandRights()) {
+                case INTEGRATED:
+                    if (campaign.getCampaignOptions().getPlayerControlsAttachedUnits()) {
+                        numAttachedPlayer = 2;
+                    } else {
+                        numAttachedBot = 2;
+                    }
+                    break;
+                case HOUSE:
+                    if (campaign.getCampaignOptions().getPlayerControlsAttachedUnits()) {
+                        numAttachedPlayer = 1;
+                    } else {
+                        numAttachedBot = 1;
+                    }
+                    break;
+                case LIAISON:
                     numAttachedPlayer = 1;
-                } else {
-                    numAttachedBot = 1;
-                }
-            } else if (getContract(campaign).getCommandRights() == Contract.COM_LIAISON) {
-                numAttachedPlayer = 1;
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -780,7 +763,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                                 campaign.getCampaignOptions().getRegionalMechVariations()),
                             EntityWeightClass.WEIGHT_ASSAULT, campaign);
                 }
-            } else if (getLanceRole() == AtBLanceRole.SCOUTING) {
+            } else if (getLanceRole().isScouting()) {
                 /* Set allied forces to deploy in (6 - speed) turns just as player's units,
                  * but only if not deploying by dropship.
                  */
@@ -1697,8 +1680,8 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
     }
 
     @Override
-    protected void loadFieldsFromXmlNode(Node wn) throws ParseException {
-        super.loadFieldsFromXmlNode(wn);
+    protected void loadFieldsFromXmlNode(final Node wn, final Version version) throws ParseException {
+        super.loadFieldsFromXmlNode(wn, version);
         NodeList nl = wn.getChildNodes();
 
         for (int x = 0; x < nl.getLength(); x++) {
@@ -1793,7 +1776,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                                 try {
                                     en = MekHqXmlUtil.getEntityFromXmlString(wn4);
                                 } catch (Exception e) {
-                                    MekHQ.getLogger().error("Error loading allied unit in scenario", e);
+                                    MekHQ.getLogger().error("Error loading enemy unit in scenario", e);
                                 }
                                 if (null != en) {
                                     specMissionEnemies.get(weightClass).add(en);
@@ -1807,12 +1790,13 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
             } else if (wn2.getNodeName().equalsIgnoreCase("botForce")) {
                 BotForce bf = new BotForce();
                 try {
-                    bf.setFieldsFromXmlNode(wn2);
+                    bf.setFieldsFromXmlNode(wn2, version);
                 } catch (Exception e) {
-                    MekHQ.getLogger().error("Error loading allied unit in scenario", e);
+                    MekHQ.getLogger().error("Error loading bot force in scenario", e);
                     bf = null;
                 }
-                if (null != bf) {
+
+                if (bf != null) {
                     addBotForce(bf);
                 }
             } else if (wn2.getNodeName().equalsIgnoreCase("alliesPlayerStub")) {
