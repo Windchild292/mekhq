@@ -23,6 +23,7 @@ package mekhq.campaign.mission;
 
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.AtmosphericPressure;
 import megamek.common.icons.Camouflage;
 import megamek.common.util.EncodeControl;
 import megamek.common.util.StringUtil;
@@ -42,7 +43,6 @@ import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.PlanetarySystem;
-import mekhq.campaign.universe.generators.lightConditionsGenerator.DisabledLightConditionsGenerator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -158,12 +158,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                             specifically affects scenarios generated for scout lances, in which the deployment may be delayed
                             for slower units */
     private int terrainType;
-    private int light;
-    private int weather;
-    private int wind;
-    private int fog;
-    private int atmosphere;
-    private float gravity;
+    private PlanetaryConditions planetaryConditions;
     private int start;
     private int deploymentDelay;
     private int mapSizeX;
@@ -207,7 +202,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
 
     private Map<Integer, Integer> numPlayerMinefields;
 
-    protected static ResourceBundle defaultResourceBundle = ResourceBundle.getBundle("mekhq.resources.AtBScenarioBuiltIn", new EncodeControl()); //$NON-NLS-1$
+    protected static ResourceBundle defaultResourceBundle = ResourceBundle.getBundle("mekhq.resources.AtBScenarioBuiltIn", new EncodeControl());
     //endregion Variable Declarations
 
     public AtBScenario () {
@@ -224,13 +219,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         transportLinkages = new HashMap<>();
         externalIDLookup = new HashMap<>();
         numPlayerMinefields = new HashMap<>();
-
-        light = PlanetaryConditions.L_DAY;
-        weather = PlanetaryConditions.WE_NONE;
-        wind = PlanetaryConditions.WI_NONE;
-        fog = PlanetaryConditions.FOG_NONE;
-        atmosphere = PlanetaryConditions.ATMO_STANDARD;
-        gravity = (float) 1.0;
+        setPlanetaryConditions(new PlanetaryConditions());
         deploymentDelay = 0;
         lanceCount = 0;
         rerollsRemaining = 0;
@@ -335,33 +324,20 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         terrainType = terrainChart[Compute.d6(2) - 2];
     }
 
-    public boolean isLightConditionsEnabled() {
-        return true;
+    public PlanetaryConditions getPlanetaryConditions() {
+        return planetaryConditions;
     }
 
-    public void setLightConditions(final Campaign campaign) {
-        if (isLightConditionsEnabled()) {
-            setLight(campaign.getCampaignOptions().getLightConditionsGenerationMethod().getGenerator().generate());
-        } else {
-            setLight(new DisabledLightConditionsGenerator().generate());
-        }
+    public void setPlanetaryConditions(final PlanetaryConditions planetaryConditions) {
+        this.planetaryConditions = planetaryConditions;
     }
 
-    public boolean isWeatherEnabled() {
-        // Weather is irrelevant in these situations.
-        return (getTerrainType() != TER_SPACE) && (getTerrainType() != TER_LOW_ATMO);
-    }
-
-    public void setWeather(final Campaign campaign) {
-        if (isWeatherEnabled()) {
-            campaign.getCampaignOptions().getWeatherGenerationMethod().getGenerator().generate(getContract(campaign), this);
-        } else {
-            new DisabledLightConditionsGenerator().generate();
-        }
-    }
-
-    public void setPlanetaryConditions(final Campaign campaign, final @Nullable Mission mission) {
-        if (mission != null) {
+    public void initializePlanetaryConditions(final Campaign campaign, final @Nullable Mission mission) {
+        if (getTerrainType() == TER_SPACE) {
+            getPlanetaryConditions().setAtmosphericPressure(AtmosphericPressure.VACUUM);
+        } else if (getTerrainType() == TER_LOW_ATMO) {
+            getPlanetaryConditions().setAtmosphericPressure(AtmosphericPressure.TRACE);
+        } else if (mission != null) {
             final PlanetarySystem system = mission.getSystem();
             // TODO : Contracts specify planets, or (preferably) individual scenarios on different
             // TODO : planets within a system

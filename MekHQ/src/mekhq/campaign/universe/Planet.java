@@ -23,6 +23,7 @@ import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
 import megamek.common.TargetRoll;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.Atmosphere;
 import megamek.common.enums.AtmosphericPressure;
 import mekhq.MekHQ;
 import mekhq.Utilities;
@@ -684,7 +685,7 @@ public class Planet implements Serializable {
     }
 
     public String getAtmosphereName(LocalDate when) {
-        return getAtmosphere(when).name;
+        return getAtmosphere(when).toString();
     }
 
     public String getComposition(LocalDate when) {
