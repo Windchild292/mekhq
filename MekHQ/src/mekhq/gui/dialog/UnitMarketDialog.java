@@ -115,6 +115,12 @@ public class UnitMarketDialog extends AbstractMHQButtonDialog {
                 resources.getString("Cancel.toolTipText"), this::cancelActionPerformed));
         return panel;
     }
+
+    @Override
+    protected void finalizeInitialization() {
+        super.finalizeInitialization();
+        refreshView();
+    }
     //endregion Initialization
 
     @Override
