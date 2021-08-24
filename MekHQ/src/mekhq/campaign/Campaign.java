@@ -40,6 +40,8 @@ import megamek.utils.MegaMekXmlUtil;
 import mekhq.*;
 import mekhq.campaign.againstTheBot.AtBConfiguration;
 import mekhq.campaign.finances.enums.TransactionType;
+import mekhq.campaign.market.contractMarket.AbstractContractMarket;
+import mekhq.campaign.market.contractMarket.EmptyContractMarket;
 import mekhq.campaign.mission.enums.AtBLanceRole;
 import mekhq.campaign.event.MissionRemovedEvent;
 import mekhq.campaign.event.ScenarioRemovedEvent;
@@ -103,7 +105,6 @@ import mekhq.campaign.event.UnitNewEvent;
 import mekhq.campaign.event.UnitRemovedEvent;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
-import mekhq.campaign.market.ContractMarket;
 import mekhq.campaign.market.PartsStore;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.market.ShoppingList;
@@ -261,8 +262,9 @@ public class Campaign implements Serializable, ITechManager {
     private ShoppingList shoppingList;
 
     private PersonnelMarket personnelMarket;
-    private ContractMarket contractMarket; //AtB
+    private AbstractContractMarket contractMarket;
     private AbstractUnitMarket unitMarket;
+
     private RetirementDefectionTracker retirementDefectionTracker; // AtB
     private int fatigueLevel; //AtB
     private AtBConfiguration atbConfig; //AtB
@@ -320,7 +322,7 @@ public class Campaign implements Serializable, ITechManager {
         shoppingList = new ShoppingList();
         news = new News(getGameYear(), id.getLeastSignificantBits());
         setPersonnelMarket(new PersonnelMarket());
-        setContractMarket(new ContractMarket());
+        setContractMarket(new EmptyContractMarket());
         setUnitMarket(new EmptyUnitMarket());
         retirementDefectionTracker = new RetirementDefectionTracker();
         fatigueLevel = 0;
@@ -456,13 +458,11 @@ public class Campaign implements Serializable, ITechManager {
         this.personnelMarket = personnelMarket;
     }
 
-    // TODO : AbstractContractMarket : Swap to AbstractContractMarket
-    public ContractMarket getContractMarket() {
+    public AbstractContractMarket getContractMarket() {
         return contractMarket;
     }
 
-    // TODO : AbstractContractMarket : Swap to AbstractContractMarket
-    public void setContractMarket(final ContractMarket contractMarket) {
+    public void setContractMarket(final AbstractContractMarket contractMarket) {
         this.contractMarket = contractMarket;
     }
 
@@ -3115,8 +3115,6 @@ public class Campaign implements Serializable, ITechManager {
     }
 
     private void processNewDayATB() {
-        contractMarket.generateContractOffers(this); // TODO : AbstractContractMarket : Remove
-
         if ((getShipSearchExpiration() != null) && !getShipSearchExpiration().isAfter(getLocalDate())) {
             setShipSearchExpiration(null);
             if (getShipSearchResult() != null) {
@@ -3442,9 +3440,7 @@ public class Campaign implements Serializable, ITechManager {
 
         // Manage the Markets
         getPersonnelMarket().generatePersonnelForDay(this);
-
-        // TODO : AbstractContractMarket : Uncomment
-        //getContractMarket().processNewDay(this);
+        getContractMarket().processNewDay(this);
         getUnitMarket().processNewDay(this);
 
         // Process New Day for AtB
@@ -4140,19 +4136,14 @@ public class Campaign implements Serializable, ITechManager {
         // Markets
         getPersonnelMarket().writeToXML(this, pw1, indent);
 
-        // TODO : AbstractContractMarket : Uncomment
         // CAW: implicit DEPENDS-ON to the <missions> and <campaignOptions> node, do not move this above it
-        //getContractMarket().writeToXML(pw1, indent);
+        getContractMarket().writeToXML(pw1, indent);
 
         // Windchild: implicit DEPENDS-ON to the <campaignOptions> node, do not move this above it
         getUnitMarket().writeToXML(pw1, indent);
 
         // Against the Bot
         if (getCampaignOptions().getUseAtB()) {
-            // TODO : AbstractContractMarket : Remove next two lines
-            // CAW: implicit DEPENDS-ON to the <missions> node, do not move this above it
-            contractMarket.writeToXml(pw1, indent);
-
             if (lances.size() > 0)   {
                 MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "lances");
                 for (Lance l : lances.values()) {
@@ -6655,7 +6646,6 @@ public class Campaign implements Serializable, ITechManager {
 
         setAtBConfig(AtBConfiguration.loadFromXml());
         RandomFactionGenerator.getInstance().startup(this);
-        getContractMarket().generateContractOffers(this, newCampaign); // TODO : AbstractContractMarket : Remove
         setAtBEventProcessor(new AtBEventProcessor(this));
     }
 

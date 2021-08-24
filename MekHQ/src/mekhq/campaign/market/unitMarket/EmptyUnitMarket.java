@@ -41,7 +41,6 @@ public class EmptyUnitMarket extends AbstractUnitMarket {
     //region Constructors
     public EmptyUnitMarket() {
         super(UnitMarketMethod.NONE);
-        super.setOffers(new ArrayList<>());
     }
     //endregion Constructors
 
@@ -99,7 +98,7 @@ public class EmptyUnitMarket extends AbstractUnitMarket {
     }
 
     @Override
-    public void fillFromXML(Node wn, Campaign campaign, Version version) {
+    public void fillFromXML(final Node wn, final Campaign campaign, final Version version) {
 
     }
     //endregion File I/O

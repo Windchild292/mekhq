@@ -33,6 +33,7 @@ import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.IUnitGenerator;
 import mekhq.campaign.universe.RandomFactionGenerator;
@@ -40,6 +41,7 @@ import mekhq.campaign.universe.RandomFactionGenerator;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Main engine of the Against the Bot campaign system.
@@ -261,26 +263,26 @@ public class AtBEventProcessor {
         }
     }
 
-    public static String getRecruitFaction(Campaign c) {
+    public static Faction getRecruitFaction(Campaign c) {
         if (c.getFactionCode().equals("MERC")) {
             if ((c.getGameYear() > 3055) && (Compute.randomInt(20) == 0)) {
-                ArrayList<String> clans = new ArrayList<>();
-                for (String f : RandomFactionGenerator.getInstance().getCurrentFactions()) {
-                    if (Factions.getInstance().getFaction(f).isClan()) {
+                final List<Faction> clans = new ArrayList<>();
+                for (Faction f : RandomFactionGenerator.getInstance().getCurrentFactions()) {
+                    if (f.isClan()) {
                         clans.add(f);
                     }
                 }
-                String clan = Utilities.getRandomItem(clans);
+                final Faction clan = Utilities.getRandomItem(clans);
                 if (clan != null) {
                     return clan;
                 }
             } else {
-                String faction = RandomFactionGenerator.getInstance().getEmployer();
+                Faction faction = RandomFactionGenerator.getInstance().getEmployerFaction();
                 if (faction != null) {
                     return faction;
                 }
             }
         }
-        return c.getFactionCode();
+        return c.getFaction();
     }
 }
