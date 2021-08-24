@@ -408,8 +408,8 @@ public class BattleArmorSuit extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
         if (null != unit) {
             unit.getEntity().setInternal(unit.getEntity().getOInternal(trooper), trooper);
         }

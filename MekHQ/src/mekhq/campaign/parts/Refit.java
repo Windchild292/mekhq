@@ -1722,7 +1722,7 @@ public class Refit extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public String succeed() {
+    public @Nullable String succeed(final boolean gm) {
         complete();
         if (isRefurbishing) {
             return "Refurbishment of " + oldUnit.getEntity().getShortName() + " is complete.";
@@ -1861,7 +1861,7 @@ public class Refit extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         //do nothing
     }
 

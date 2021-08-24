@@ -212,7 +212,7 @@ public class LargeCraftAmmoBin extends AmmoBin {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         // We can only work on one ton at a time
         if (shotsNeeded < 0) {
             unloadSingleTon();

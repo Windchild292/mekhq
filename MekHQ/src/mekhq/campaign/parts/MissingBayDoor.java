@@ -65,9 +65,9 @@ public class MissingBayDoor extends MissingPart {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part replacement = findReplacement(false);
-        if(null != replacement) {
+        if (null != replacement) {
             Part actualReplacement = replacement.clone();
             unit.addPart(actualReplacement);
             campaign.getQuartermaster().addPart(actualReplacement, 0);

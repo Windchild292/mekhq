@@ -124,14 +124,14 @@ public class MissingProtomekArmActuator extends MissingPart {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part replacement = findReplacement(false);
         if (null != replacement) {
             Part actualReplacement = replacement.clone();
             unit.addPart(actualReplacement);
             campaign.getQuartermaster().addPart(actualReplacement, 0);
             replacement.decrementQuantity();
-            ((ProtomekArmActuator)actualReplacement).setLocation(location);
+            ((ProtomekArmActuator) actualReplacement).setLocation(location);
             remove(false);
             //assign the replacement part to the unit
             actualReplacement.updateConditionFromPart();

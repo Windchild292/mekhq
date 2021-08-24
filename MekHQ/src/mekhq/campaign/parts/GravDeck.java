@@ -129,9 +129,9 @@ public class GravDeck extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
-        if (null != unit && unit.getEntity() instanceof Jumpship) {
+    public void fix(final boolean gm) {
+        super.fix(gm);
+        if ((unit != null) && (unit.getEntity() instanceof Jumpship)) {
             ((Jumpship) unit.getEntity()).setGravDeckDamageFlag(deckNumber, 0);
         }
     }

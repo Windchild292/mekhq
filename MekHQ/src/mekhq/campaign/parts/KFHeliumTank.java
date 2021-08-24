@@ -133,10 +133,10 @@ public class KFHeliumTank extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
-        if (null != unit && unit.getEntity() instanceof Jumpship) {
-            Jumpship js = ((Jumpship)unit.getEntity());
+    public void fix(final boolean gm) {
+        super.fix(gm);
+        if ((unit != null) && (unit.getEntity() instanceof Jumpship)) {
+            Jumpship js = ((Jumpship) unit.getEntity());
             js.setKFHeliumTankHit(false);
             //Also repair your KF Drive integrity - up to 2/3 of the total if you have other components to fix
             //Otherwise, fix it all.

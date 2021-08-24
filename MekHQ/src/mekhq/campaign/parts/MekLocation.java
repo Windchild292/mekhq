@@ -311,8 +311,8 @@ public class MekLocation extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
 
         final Unit unit = getUnit();
         if ((unit != null) && isBlownOff()) {

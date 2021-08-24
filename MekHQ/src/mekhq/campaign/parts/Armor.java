@@ -339,7 +339,7 @@ public class Armor extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         if (unit.getEntity().isCapitalScale()) {
             amountNeeded *= 10;
         }

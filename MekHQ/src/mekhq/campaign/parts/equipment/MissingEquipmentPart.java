@@ -166,7 +166,7 @@ public class MissingEquipmentPart extends MissingPart {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part replacement = findReplacement(false);
         if (replacement != null) {
             Part actualReplacement = replacement.clone();
@@ -175,7 +175,7 @@ public class MissingEquipmentPart extends MissingPart {
             campaign.getQuartermaster().addPart(actualReplacement, 0);
             replacement.decrementQuantity();
 
-            ((EquipmentPart)actualReplacement).setEquipmentNum(equipmentNum);
+            ((EquipmentPart) actualReplacement).setEquipmentNum(equipmentNum);
 
             remove(false);
 

@@ -126,10 +126,10 @@ public class DropshipDockingCollar extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
-        if(null != unit && unit.getEntity() instanceof Dropship) {
-            ((Dropship)unit.getEntity()).setDamageDockCollar(false);
+    public void fix(final boolean gm) {
+        super.fix(gm);
+        if ((unit != null) && (unit.getEntity() instanceof Dropship)) {
+            ((Dropship) unit.getEntity()).setDamageDockCollar(false);
         }
     }
 

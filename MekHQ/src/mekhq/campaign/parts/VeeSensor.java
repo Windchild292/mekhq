@@ -72,8 +72,8 @@ public class VeeSensor extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
         if ((null != unit) && (unit.getEntity() instanceof Tank)) {
             ((Tank) unit.getEntity()).setSensorHits(0);
         }

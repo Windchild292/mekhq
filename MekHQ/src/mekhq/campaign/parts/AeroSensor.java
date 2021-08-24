@@ -150,10 +150,10 @@ public class AeroSensor extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
-        if(null != unit && unit.getEntity() instanceof Aero) {
-            ((Aero)unit.getEntity()).setSensorHits(0);
+    public void fix(final boolean gm) {
+        super.fix(gm);
+        if ((unit != null) && (unit.getEntity() instanceof Aero)) {
+            ((Aero) unit.getEntity()).setSensorHits(0);
         }
     }
 

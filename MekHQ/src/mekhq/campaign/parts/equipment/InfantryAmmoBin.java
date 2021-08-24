@@ -230,7 +230,7 @@ public class InfantryAmmoBin extends AmmoBin {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         // If we have reconfigured the distribution between standard and inferno ammo,
         // there may be extra that needs to be removed from the partner bin to make room.
         // We'll do that automatically to make it simpler.

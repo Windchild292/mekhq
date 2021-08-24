@@ -70,8 +70,8 @@ public class Rotor extends TankLocation {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
         if (damage > 0) {
             damage--;
         }

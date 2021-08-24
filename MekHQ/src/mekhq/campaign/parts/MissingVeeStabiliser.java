@@ -107,9 +107,9 @@ public class MissingVeeStabiliser extends MissingPart {
 	}
 
 	@Override
-	public void fix() {
-		VeeStabiliser replacement = (VeeStabiliser)findReplacement(false);
-		if(null != replacement) {
+	public void fix(final boolean gm) {
+		VeeStabiliser replacement = (VeeStabiliser) findReplacement(false);
+		if (null != replacement) {
 			VeeStabiliser actualReplacement = replacement.clone();
 			unit.addPart(actualReplacement);
 			campaign.getQuartermaster().addPart(actualReplacement, 0);

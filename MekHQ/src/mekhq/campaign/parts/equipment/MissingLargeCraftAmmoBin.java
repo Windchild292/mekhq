@@ -141,7 +141,7 @@ public class MissingLargeCraftAmmoBin extends MissingAmmoBin {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         LargeCraftAmmoBin replacement = getNewPart();
         unit.addPart(replacement);
         campaign.getQuartermaster().addPart(replacement, 0);

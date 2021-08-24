@@ -221,45 +221,47 @@ public class MissingBattleArmorSuit extends MissingPart {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part replacement = findReplacement(false);
-        if(null != replacement) {
-            BattleArmorSuit newSuit = (BattleArmorSuit)replacement.clone();
-            //lets also clone the subparts
+        if (null != replacement) {
+            BattleArmorSuit newSuit = (BattleArmorSuit) replacement.clone();
+            // lets also clone the subparts
             unit.addPart(newSuit);
             newSuit.isReplacement(true);
             campaign.getQuartermaster().addPart(newSuit, 0);
             newSuit.isReplacement(false);
             newSuit.setTrooper(trooper);
             newSuit.updateConditionFromPart();
-            //cycle through MissingBattleArmorEquipmentPart for trooper and replace
+            // cycle through MissingBattleArmorEquipmentPart for trooper and replace
             ArrayList<MissingBattleArmorEquipmentPart> missingStuff = new ArrayList<MissingBattleArmorEquipmentPart>();
             BaArmor origArmor = null;
-            for(Part p : unit.getParts()) {
-                if(p instanceof BaArmor && ((BaArmor)p).getLocation()== trooper) {
+            for (Part p : unit.getParts()) {
+                if (p instanceof BaArmor && ((BaArmor) p).getLocation() == trooper) {
                     origArmor = (BaArmor)p;
                 }
-                if(!(p instanceof MissingBattleArmorEquipmentPart)) {
+
+                if (!(p instanceof MissingBattleArmorEquipmentPart)) {
                     continue;
                 }
-                MissingBattleArmorEquipmentPart missingBaEquip = (MissingBattleArmorEquipmentPart)p;
-                if(missingBaEquip.getTrooper() != trooper) {
+                MissingBattleArmorEquipmentPart missingBaEquip = (MissingBattleArmorEquipmentPart) p;
+                if (missingBaEquip.getTrooper() != trooper) {
                     continue;
                 }
                 missingStuff.add(missingBaEquip);
             }
+
             for (Part childPart : replacement.getChildParts()) {
                 if (childPart instanceof BaArmor && null != origArmor) {
-                    unit.getEntity().setArmor(((BaArmor)childPart).getAmount(), trooper);
+                    unit.getEntity().setArmor(((BaArmor) childPart).getAmount(), trooper);
                     origArmor.updateConditionFromEntity(false);
                 } else if (childPart instanceof BattleArmorEquipmentPart) {
                     for (MissingBattleArmorEquipmentPart p : missingStuff) {
                         if (null != p.getUnit() && p.isAcceptableReplacement(childPart, false)) {
-                            //then add child part and remove current part from unit and campaign
+                            // then add child part and remove current part from unit and campaign
                             Part newPart = childPart.clone();
                             unit.addPart(newPart);
-                            ((EquipmentPart)newPart).setEquipmentNum(p.getEquipmentNum());
-                            ((BattleArmorEquipmentPart)newPart).setTrooper(trooper);
+                            ((EquipmentPart) newPart).setEquipmentNum(p.getEquipmentNum());
+                            ((BattleArmorEquipmentPart) newPart).setTrooper(trooper);
                             p.remove(false);
                             newPart.updateConditionFromPart();
                             break;
@@ -272,7 +274,6 @@ public class MissingBattleArmorSuit extends MissingPart {
             remove(false);
         }
     }
-
 
     @Override
     public String getLocationName() {

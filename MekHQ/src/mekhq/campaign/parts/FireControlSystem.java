@@ -142,10 +142,10 @@ public class FireControlSystem extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
-        if(null != unit && unit.getEntity() instanceof Aero) {
-            ((Aero)unit.getEntity()).setFCSHits(0);
+    public void fix(final boolean gm) {
+        super.fix(gm);
+        if ((unit != null) && (unit.getEntity() instanceof Aero)) {
+            ((Aero) unit.getEntity()).setFCSHits(0);
         }
     }
 

@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 
 import megamek.common.ITechnology;
 import megamek.common.TargetRoll;
+import megamek.common.annotations.Nullable;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.personnel.SkillType;
@@ -121,13 +122,13 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public String succeed() {
-        fix();
+    public @Nullable String succeed(final boolean gm) {
+        fix(gm);
         return " <font color='green'><b> replaced.</b></font>";
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part replacement = findReplacement(false);
         if (replacement != null) {
             Part actualReplacement = replacement.clone();

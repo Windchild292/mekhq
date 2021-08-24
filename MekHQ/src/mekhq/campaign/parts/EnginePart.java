@@ -200,8 +200,8 @@ public class EnginePart extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
         if (null != unit) {
             if (unit.getEntity() instanceof Mech) {
                 unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Mech.SYSTEM_ENGINE);

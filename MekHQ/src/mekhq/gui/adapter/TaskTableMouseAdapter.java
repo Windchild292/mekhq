@@ -134,7 +134,7 @@ public class TaskTableMouseAdapter extends JPopupMenuAdapter {
              */
             if (partWork.checkFixable() == null) {
                 for (IPartWork p : parts) {
-                    gui.getCampaign().addReport(String.format("GM Repair, %s %s", p.getPartName(), p.succeed()));
+                    gui.getCampaign().addReport(String.format("GM Repair, %s %s", p.getPartName(), p.succeed(true)));
                     if (p.getUnit() != null) {
                         p.getUnit().refreshPodSpace();
                     }

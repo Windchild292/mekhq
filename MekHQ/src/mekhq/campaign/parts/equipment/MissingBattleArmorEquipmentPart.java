@@ -148,15 +148,15 @@ public class MissingBattleArmorEquipmentPart extends MissingEquipmentPart {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part replacement = findReplacement(false);
-        if(null != replacement) {
+        if (null != replacement) {
             Part actualReplacement = replacement.clone();
             unit.addPart(actualReplacement);
             campaign.getQuartermaster().addPart(actualReplacement, 0);
             replacement.decrementQuantity();
-            ((EquipmentPart)actualReplacement).setEquipmentNum(equipmentNum);
-            ((BattleArmorEquipmentPart)actualReplacement).setTrooper(trooper);
+            ((EquipmentPart) actualReplacement).setEquipmentNum(equipmentNum);
+            ((BattleArmorEquipmentPart) actualReplacement).setTrooper(trooper);
             remove(false);
             //assign the replacement part to the unit
             actualReplacement.updateConditionFromPart();

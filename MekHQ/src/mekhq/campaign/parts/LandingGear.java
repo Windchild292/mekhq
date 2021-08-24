@@ -129,12 +129,14 @@ public class LandingGear extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
-        if (null != unit && unit.getEntity() instanceof Aero) {
-            ((Aero)unit.getEntity()).setGearHit(false);
-        } else if (null != unit && unit.getEntity() instanceof LandAirMech) {
-            unit.repairSystem(CriticalSlot.TYPE_SYSTEM, LandAirMech.LAM_LANDING_GEAR);
+    public void fix(final boolean gm) {
+        super.fix(gm);
+        if (unit != null) {
+            if (unit.getEntity() instanceof Aero) {
+                ((Aero) unit.getEntity()).setGearHit(false);
+            } else if (unit.getEntity() instanceof LandAirMech) {
+                unit.repairSystem(CriticalSlot.TYPE_SYSTEM, LandAirMech.LAM_LANDING_GEAR);
+            }
         }
     }
 

@@ -1120,7 +1120,7 @@ public abstract class Part implements Serializable, MekHqXmlSerializable, IPartW
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         setHits(0);
         resetRepairSettings();
     }
@@ -1143,12 +1143,12 @@ public abstract class Part implements Serializable, MekHqXmlSerializable, IPartW
     }
 
     @Override
-    public String succeed() {
+    public @Nullable String succeed(final boolean gm) {
         if (isSalvaging()) {
             remove(true);
             return " <font color='green'><b> salvaged.</b></font>";
         } else {
-            fix();
+            fix(gm);
             return " <font color='green'><b> fixed.</b></font>";
         }
     }

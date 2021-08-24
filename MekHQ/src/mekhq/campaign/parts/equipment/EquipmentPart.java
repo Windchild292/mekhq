@@ -197,8 +197,8 @@ public class EquipmentPart extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
 
         final Mounted mounted = getMounted();
         if (mounted != null) {

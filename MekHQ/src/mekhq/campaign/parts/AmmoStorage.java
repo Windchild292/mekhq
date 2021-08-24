@@ -184,7 +184,7 @@ public class AmmoStorage extends EquipmentPart implements IAcquisitionWork {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         //nothing to fix
     }
 

@@ -236,8 +236,8 @@ public class ProtomekLocation extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
         if (isBlownOff()) {
             blownOff = false;
             if (null != unit) {

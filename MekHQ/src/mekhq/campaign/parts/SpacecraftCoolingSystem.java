@@ -23,6 +23,7 @@ package mekhq.campaign.parts;
 
 import java.io.PrintWriter;
 
+import megamek.common.annotations.Nullable;
 import mekhq.campaign.finances.Money;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -131,17 +132,17 @@ public class SpacecraftCoolingSystem extends Part {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         replaceHeatSinks();
     }
 
     @Override
-    public String succeed() {
-        if(isSalvaging()) {
+    public @Nullable String succeed(final boolean gm) {
+        if (isSalvaging()) {
             remove(true);
             return " <font color='green'><b> salvaged.</b></font>";
         } else {
-            fix();
+            fix(gm);
             return " <font color='green'><b> replaced.</b></font>";
         }
     }

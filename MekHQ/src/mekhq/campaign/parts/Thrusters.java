@@ -153,13 +153,13 @@ public class Thrusters extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
-        if(null != unit && unit.getEntity() instanceof Aero) {
+    public void fix(final boolean gm) {
+        super.fix(gm);
+        if ((unit != null) && (unit.getEntity() instanceof Aero)) {
             if (isLeftThrusters) {
-                ((Aero)unit.getEntity()).setLeftThrustHits(0);
+                ((Aero) unit.getEntity()).setLeftThrustHits(0);
             } else {
-                ((Aero)unit.getEntity()).setRightThrustHits(0);
+                ((Aero) unit.getEntity()).setRightThrustHits(0);
             }
         }
     }

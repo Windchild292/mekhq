@@ -29,6 +29,7 @@ import megamek.common.Entity;
 import megamek.common.Mech;
 import megamek.common.Tank;
 import megamek.common.TargetRoll;
+import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.event.PartChangedEvent;
@@ -117,7 +118,7 @@ public class PodSpace implements Serializable, IPartWork {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         shorthandedMod = 0;
         for (int pid : childPartIds) {
             final Part part = campaign.getPart(pid);
@@ -133,7 +134,7 @@ public class PodSpace implements Serializable, IPartWork {
         for (int pid : childPartIds) {
             final Part part = campaign.getPart(pid);
             if (part instanceof MissingPart) {
-                part.fix();
+                part.fix(gm);
                 MekHQ.triggerEvent(new PartChangedEvent(part));
             }
         }
@@ -236,12 +237,12 @@ public class PodSpace implements Serializable, IPartWork {
     }
 
     @Override
-    public String succeed() {
+    public @Nullable String succeed(final boolean gm) {
         if (isSalvaging()) {
             remove(true);
             return " <font color='green'><b> removed.</b></font>";
         } else {
-            fix();
+            fix(gm);
             return " <font color='green'><b> fixed.</b></font>";
         }
     }

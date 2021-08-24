@@ -152,11 +152,11 @@ public class Avionics extends Part {
 	}
 
 	@Override
-	public void fix() {
-		super.fix();
-		if(null != unit) {
+	public void fix(final boolean gm) {
+		super.fix(gm);
+		if (null != unit) {
 		    if (unit.getEntity() instanceof Aero) {
-		        ((Aero)unit.getEntity()).setAvionicsHits(0);
+		        ((Aero) unit.getEntity()).setAvionicsHits(0);
 		    } else if (unit.getEntity() instanceof LandAirMech) {
                 unit.repairSystem(CriticalSlot.TYPE_SYSTEM, LandAirMech.LAM_AVIONICS);
 		    }

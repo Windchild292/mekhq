@@ -76,8 +76,8 @@ public class BayDoor extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
         if (parentPart instanceof TransportBayPart) {
             Bay bay = ((TransportBayPart) parentPart).getBay();
             if (null != bay) {

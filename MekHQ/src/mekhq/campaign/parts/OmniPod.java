@@ -224,7 +224,7 @@ public class OmniPod extends Part {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part newPart = partType.clone();
         Part oldPart = campaign.getWarehouse().checkForExistingSparePart(newPart.clone());
         if (null != oldPart) {

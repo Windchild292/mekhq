@@ -257,7 +257,7 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         loadBin();
     }
 

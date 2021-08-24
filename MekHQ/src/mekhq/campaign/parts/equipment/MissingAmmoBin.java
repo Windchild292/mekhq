@@ -109,7 +109,7 @@ public class MissingAmmoBin extends MissingEquipmentPart {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         AmmoBin replacement = getNewPart();
         unit.addPart(replacement);
         campaign.getQuartermaster().addPart(replacement, 0);

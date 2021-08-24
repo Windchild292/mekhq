@@ -184,8 +184,8 @@ public class SVEnginePart extends Part {
     }
 
     @Override
-    public void fix() {
-        super.fix();
+    public void fix(final boolean gm) {
+        super.fix(gm);
         if (null != unit) {
             if (unit.getEntity() instanceof Tank) {
                 ((Tank) unit.getEntity()).engineFix();

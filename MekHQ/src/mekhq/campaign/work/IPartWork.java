@@ -1,8 +1,8 @@
 /*
  * IPartWork.java
  *
- * Copyright (C) 2016 - The MegaMek Team. All Rights Reserved.
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All Rights Reserved.
+ * Copyright (C) 2016-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -61,8 +61,15 @@ public interface IPartWork extends IWork {
 
     void updateConditionFromEntity(boolean checkForDestruction);
     void updateConditionFromPart();
-    void fix();
+
+    default void fix() {
+        fix(false);
+    }
+
+    void fix(final boolean gm);
+
     void remove(boolean salvage);
+
     MissingPart getMissingPart();
 
     String getDesc();

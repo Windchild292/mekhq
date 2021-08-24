@@ -339,7 +339,7 @@ public class MissingMekLocation extends MissingPart {
     }
 
     @Override
-    public void fix() {
+    public void fix(final boolean gm) {
         Part replacement = findReplacement(false);
         if (null != replacement) {
             Part actualReplacement = replacement.clone();

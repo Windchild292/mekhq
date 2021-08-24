@@ -134,12 +134,12 @@ public class MotiveSystem extends Part {
 	}
 
 	@Override
-	public void fix() {
-		super.fix();
+	public void fix(final boolean gm) {
+		super.fix(gm);
 		damage = 0;
 		penalty = 0;
-		if(null != unit && unit.getEntity() instanceof Tank) {
-			((Tank)unit.getEntity()).resetMovementDamage();
+		if ((unit != null) && (unit.getEntity() instanceof Tank)) {
+			((Tank) unit.getEntity()).resetMovementDamage();
 		}
 	}
 
