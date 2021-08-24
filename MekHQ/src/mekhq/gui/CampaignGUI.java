@@ -66,6 +66,7 @@ import mekhq.campaign.event.PersonEvent;
 import mekhq.campaign.event.TransactionEvent;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.force.Force;
+import mekhq.campaign.market.contractMarket.AbstractContractMarket;
 import mekhq.campaign.market.unitMarket.AbstractUnitMarket;
 import mekhq.campaign.mission.Scenario;
 import mekhq.campaign.parts.Part;
@@ -854,7 +855,7 @@ public class CampaignGUI extends JPanel {
         miContractMarket = new JMenuItem(resourceMap.getString("miContractMarket.text"));
         miContractMarket.setMnemonic(KeyEvent.VK_C);
         miContractMarket.addActionListener(evt -> showContractMarket());
-        miContractMarket.setVisible(getCampaign().getCampaignOptions().getUseAtB());
+        miContractMarket.setVisible(!getCampaign().getContractMarket().getMethod().isNone());
         menuMarket.add(miContractMarket);
 
         miUnitMarket = new JMenuItem(resourceMap.getString("miUnitMarket.text"));
@@ -1315,8 +1316,11 @@ public class CampaignGUI extends JPanel {
     }
 
     public void showContractMarket() {
-        ContractMarketDialog cmd = new ContractMarketDialog(getFrame(), getCampaign());
-        cmd.setVisible(true);
+        if (getCampaign().getContractMarket().getMethod().isNone()) {
+            MekHQ.getLogger().error("Attempted to show the contract market while it is disabled");
+        } else {
+            new ContractMarketDialog(getFrame(), getCampaign()).showDialog();
+        }
     }
 
     public void showUnitMarket() {
@@ -1481,6 +1485,13 @@ public class CampaignGUI extends JPanel {
                     person.setRetirement(null);
                 }
             }
+        }
+
+        // TODO : Windchild Contract Market
+        final AbstractContractMarket contractMarket = getCampaign().getContractMarket();
+        if (getCampaign().getCampaignOptions().getContractMarketMethod() != contractMarket.getMethod()) {
+            getCampaign().setUnitMarket(getCampaign().getCampaignOptions().getUnitMarketMethod().getUnitMarket());
+            miUnitMarket.setVisible(!getCampaign().getUnitMarket().getMethod().isNone());
         }
 
         final AbstractUnitMarket unitMarket = getCampaign().getUnitMarket();
@@ -2651,6 +2662,7 @@ public class CampaignGUI extends JPanel {
         refreshAllTabs();
         fundsScheduler.schedule();
         refreshPartsAvailability();
+        miContractMarket.setVisible(!evt.getOptions().getContractMarketMethod().isNone());
         miUnitMarket.setVisible(!evt.getOptions().getUnitMarketMethod().isNone());
     }
 

@@ -75,7 +75,7 @@ public enum UnitMarketType {
 
         }
 
-        MekHQ.getLogger().error("Failed to parse " + text + " into a UnitMarketType");
+        MekHQ.getLogger().error("Failed to parse " + text + " into a UnitMarketType. Returning OPEN.");
 
         return OPEN;
     }

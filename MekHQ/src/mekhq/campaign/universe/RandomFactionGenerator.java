@@ -351,11 +351,11 @@ public class RandomFactionGenerator {
     /**
      * @return A set of keys for all current factions in the space that are potential employers.
      */
-    public Set<String> getEmployerSet() {
-        Set<String> set = new HashSet<>();
+    public Set<Faction> getEmployerSet() {
+        Set<Faction> set = new HashSet<>();
         for (Faction f : borderTracker.getFactionsInRegion()) {
             if (!f.isClan() && !FactionHints.isEmptyFaction(f)) {
-                set.add(f.getShortName());
+                set.add(f);
             }
             if (f.getShortName().equals("ROS") && getCurrentDate().isAfter(FORTRESS_REPUBLIC)) {
                 continue;
@@ -363,7 +363,7 @@ public class RandomFactionGenerator {
             /* Add factions which do not control any planets to the employer list */
             for (Faction cfaction : factionHints.getContainedFactions(f, getCurrentDate())) {
                 if (!cfaction.isClan()) {
-                    set.add(cfaction.getShortName());
+                    set.add(cfaction);
                 }
             }
         }

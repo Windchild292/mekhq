@@ -68,7 +68,7 @@ public class CampaignExportWizard extends JDialog {
     private JButton btnUpdatePartCount = new JButton();
 
     private JCheckBox chkExportState = new JCheckBox();
-    private JCheckBox chkExportContractOffers = new JCheckBox();
+    private JCheckBox chkExportContractOffers;
     private JCheckBox chkExportCompletedContracts = new JCheckBox();
     private JCheckBox chkDestructiveExport = new JCheckBox();
     private JTextField txtExportMoney = new JTextField();
@@ -94,17 +94,18 @@ public class CampaignExportWizard extends JDialog {
         resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignExportWizard", new EncodeControl());
         chkExportState.setText(resourceMap.getString("chkExportSettings.text"));
         chkExportState.setToolTipText(resourceMap.getString("chkExportSettings.tooltip"));
-        chkExportContractOffers.setText(resourceMap.getString("chkExportContractOffers.text"));
+        chkExportContractOffers = c.getContractMarket().isNone() ? null
+                : new JCheckBox(resourceMap.getString("chkExportContractOffers.text"));
         chkExportCompletedContracts.setText(resourceMap.getString("chkExportCompletedContracts.text"));
         lblMoney.setText(resourceMap.getString("lblMoney.text"));
         chkDestructiveExport.setText(resourceMap.getString("chkDestructiveExport.text"));
+        chkDestructiveExport.setToolTipText(resourceMap.getString("chkDestructiveExport.tooltip"));
 
         sourceCampaign = c;
         setupForceList();
         setupPersonList();
         setupUnitList();
         setupPartList();
-        chkDestructiveExport.setToolTipText(resourceMap.getString("chkDestructiveExport.tooltip"));
         btnUpdatePartCount.setText(resourceMap.getString("btnUpdatePartCount.text"));
     }
 
@@ -172,7 +173,9 @@ public class CampaignExportWizard extends JDialog {
                 gbc.anchor = GridBagConstraints.WEST;
                 getContentPane().add(chkExportState, gbc);
                 gbc.gridy++;
-                getContentPane().add(chkExportContractOffers, gbc);
+                if (chkExportContractOffers != null) {
+                    getContentPane().add(chkExportContractOffers, gbc);
+                }
                 gbc.gridy++;
                 getContentPane().add(chkExportCompletedContracts, gbc);
                 gbc.gridy++;
@@ -462,7 +465,7 @@ public class CampaignExportWizard extends JDialog {
             destinationCampaign.setLocation(sourceCampaign.getLocation());
         }
 
-        if (chkExportContractOffers.isSelected()) {
+        if ((chkExportContractOffers != null) && chkExportContractOffers.isSelected()) {
             for (Contract contract : sourceCampaign.getContractMarket().getContracts()) {
                 destinationCampaign.getContractMarket().getContracts().add(contract);
             }

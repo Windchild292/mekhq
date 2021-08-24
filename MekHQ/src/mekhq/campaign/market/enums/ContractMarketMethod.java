@@ -19,6 +19,9 @@
 package mekhq.campaign.market.enums;
 
 import megamek.common.util.EncodeControl;
+import mekhq.campaign.market.contractMarket.AbstractContractMarket;
+import mekhq.campaign.market.contractMarket.AtBMonthlyContractMarket;
+import mekhq.campaign.market.contractMarket.EmptyContractMarket;
 
 import java.util.ResourceBundle;
 
@@ -31,11 +34,11 @@ public enum ContractMarketMethod {
     //region Variable Declarations
     private final String name;
     private final String toolTipText;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
     ContractMarketMethod(final String name, final String toolTipText) {
+        final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market", new EncodeControl());
         this.name = resources.getString(name);
         this.toolTipText = resources.getString(toolTipText);
     }
@@ -51,18 +54,21 @@ public enum ContractMarketMethod {
     public boolean isNone() {
         return this == NONE;
     }
+
+    public boolean isAtBMonthly() {
+        return this == ATB_MONTHLY;
+    }
     //endregion Boolean Comparison Methods
 
-    // TODO : AbstractContractMarket : Uncomment
-    //public AbstractContractMarket getContractMarket() {
-    //    switch (this) {
-    //        case ATB_MONTHLY:
-    //            return new AtBMonthlyContractMarket();
-    //        case NONE:
-    //        default:
-    //            return new EmptyContractMarket();
-    //    }
-    //}
+    public AbstractContractMarket getContractMarket() {
+        switch (this) {
+            case ATB_MONTHLY:
+                return new AtBMonthlyContractMarket();
+            case NONE:
+            default:
+                return new EmptyContractMarket();
+        }
+    }
 
     @Override
     public String toString() {
