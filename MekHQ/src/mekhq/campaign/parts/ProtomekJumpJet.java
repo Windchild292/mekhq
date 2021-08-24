@@ -12,13 +12,12 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
 import java.io.PrintWriter;
@@ -35,7 +34,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.SkillType;
 
 /**
- * Legacy part that represents standard Protomech jump jets.
+ * Legacy part that represents standard ProtoMech jump jets.
  *
  * @author Jay Lawson <jaylawson39 at yahoo.com>
  */
@@ -52,21 +51,21 @@ public class ProtomekJumpJet extends Part {
         this(0, null);
     }
 
+    @Override
     public ProtomekJumpJet clone() {
         ProtomekJumpJet clone = new ProtomekJumpJet(getUnitTonnage(), campaign);
         clone.copyBaseData(this);
         return clone;
     }
 
-
     public ProtomekJumpJet(int tonnage, Campaign c) {
         super(tonnage, c);
-        this.name = "Protomech Jump Jet";
+        this.name = "ProtoMech Jump Jet";
     }
 
     @Override
     public double getTonnage() {
-        if(getUnitTonnage() <=5) {
+        if (getUnitTonnage() <=5) {
             return 0.05;
         } else if (getUnitTonnage() <= 9){
             return 0.1;
@@ -83,7 +82,7 @@ public class ProtomekJumpJet extends Part {
     @Override
     public boolean isSamePartType (Part part) {
         return part instanceof ProtomekJumpJet
-                && getUnitTonnage() == ((ProtomekJumpJet)part).getUnitTonnage();
+                && getUnitTonnage() == part.getUnitTonnage();
     }
 
     @Override
@@ -98,10 +97,9 @@ public class ProtomekJumpJet extends Part {
         if (null != unit) {
             //repair depending upon how many others are still damaged
             int damageJJ = getOtherDamagedJumpJets();
-            if(damageJJ == 0) {
+            if (damageJJ == 0) {
                 unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO);
-            }
-            else if(damageJJ < (int)Math.ceil(unit.getEntity().getOriginalJumpMP() / 2.0)) {
+            } else if (damageJJ < (int)Math.ceil(unit.getEntity().getOriginalJumpMP() / 2.0)) {
                 unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO);
                 unit.damageSystem(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO, 1);
             } else {
@@ -128,7 +126,7 @@ public class ProtomekJumpJet extends Part {
 
     @Override
     public void remove(boolean salvage) {
-        if(null != unit) {
+        if (null != unit) {
             int h = 1;
             int damageJJ = getOtherDamagedJumpJets() + 1;
             if(damageJJ >= (int)Math.ceil(unit.getEntity().getOriginalJumpMP() / 2.0)) {
@@ -136,9 +134,9 @@ public class ProtomekJumpJet extends Part {
             }
             unit.destroySystem(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO, h);
             Part spare = campaign.getWarehouse().checkForExistingSparePart(this);
-            if(!salvage) {
+            if (!salvage) {
                 campaign.getWarehouse().removePart(this);
-            } else if(null != spare) {
+            } else if (null != spare) {
                 spare.incrementQuantity();
                 campaign.getWarehouse().removePart(this);
             }
@@ -153,22 +151,22 @@ public class ProtomekJumpJet extends Part {
 
     @Override
     public void updateConditionFromEntity(boolean checkForDestruction) {
-    	//FIXME: implement check for destruction
-        if(null != unit) {
+        //FIXME: implement check for destruction
+        if (null != unit) {
             hits = unit.getEntity().getDamagedCriticals(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO);
-            if(hits > 2) {
+            if (hits > 2) {
                 remove(false);
                 return;
             }
             //only ever damage the first jump jet on the unit
             int damageJJ = 0;
-            if(hits == 2) {
+            if (hits == 2) {
                 damageJJ = (int)Math.ceil(unit.getEntity().getOriginalJumpMP() / 2.0);
-            } else if(hits==1) {
+            } else if (hits==1) {
                 damageJJ = 1;
             }
             damageJJ -= getOtherDamagedJumpJets();
-            if(damageJJ > 0) {
+            if (damageJJ > 0) {
                 hits = 1;
             } else {
                 hits = 0;
@@ -177,17 +175,17 @@ public class ProtomekJumpJet extends Part {
     }
 
     @Override
-	public int getBaseTime() {
-		if(isSalvaging()) {
-			return 60;
-		}
-		return 90;
-	}
+    public int getBaseTime() {
+        if (isSalvaging()) {
+            return 60;
+        }
+        return 90;
+    }
 
-	@Override
-	public int getDifficulty() {
-		return 0;
-	}
+    @Override
+    public int getDifficulty() {
+        return 0;
+    }
 
     @Override
     public boolean needsFixing() {
@@ -201,7 +199,7 @@ public class ProtomekJumpJet extends Part {
 
     @Override
     public String getDetails(boolean includeRepairDetails) {
-        if(null != unit) {
+        if (null != unit) {
             return unit.getEntity().getLocationName(Protomech.LOC_TORSO);
         }
         return getUnitTonnage() + " tons";
@@ -209,12 +207,11 @@ public class ProtomekJumpJet extends Part {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit) {
+        if (null != unit) {
             int damageJJ = getOtherDamagedJumpJets() + hits;
-            if(damageJJ == 0) {
+            if (damageJJ == 0) {
                 unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO);
-            }
-            else if(damageJJ < (int)Math.ceil(unit.getEntity().getOriginalJumpMP() / 2.0)) {
+            } else if (damageJJ < (int)Math.ceil(unit.getEntity().getOriginalJumpMP() / 2.0)) {
                 unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO);
                 unit.damageSystem(CriticalSlot.TYPE_SYSTEM, Protomech.SYSTEM_TORSOCRIT, Protomech.LOC_TORSO, 1);
             } else {
@@ -226,16 +223,16 @@ public class ProtomekJumpJet extends Part {
 
     @Override
     public String checkFixable() {
-    	if(null == unit) {
-    		return null;
-    	}
-        if(isSalvaging()) {
+        if (null == unit) {
             return null;
         }
-        if(unit.isLocationBreached(Protomech.LOC_TORSO)) {
+        if (isSalvaging()) {
+            return null;
+        }
+        if (unit.isLocationBreached(Protomech.LOC_TORSO)) {
             return unit.getEntity().getLocationName(Protomech.LOC_TORSO) + " is breached.";
         }
-        if(isMountedOnDestroyedLocation()) {
+        if (isMountedOnDestroyedLocation()) {
             return unit.getEntity().getLocationName(Protomech.LOC_TORSO) + " is destroyed.";
         }
         return null;
@@ -274,13 +271,13 @@ public class ProtomekJumpJet extends Part {
 
     private int getOtherDamagedJumpJets() {
         int damagedJJ = 0;
-        if(null != unit) {
-            for(Part p : unit.getParts()) {
-                if(p.getId() == this.getId()) {
+        if (null != unit) {
+            for (Part p : unit.getParts()) {
+                if (p.getId() == this.getId()) {
                     continue;
                 }
-                if(p instanceof MissingProtomekJumpJet
-                        || (p instanceof ProtomekJumpJet && ((ProtomekJumpJet)p).needsFixing())) {
+                if (p instanceof MissingProtomekJumpJet
+                        || (p instanceof ProtomekJumpJet && p.needsFixing())) {
                     damagedJJ++;
                 }
             }
@@ -289,18 +286,18 @@ public class ProtomekJumpJet extends Part {
     }
 
     @Override
-   	public String getLocationName() {
-   		return unit != null ? unit.getEntity().getLocationName(getLocation()) : null;
-   	}
+    public String getLocationName() {
+        return unit != null ? unit.getEntity().getLocationName(getLocation()) : null;
+    }
 
-	@Override
-	public int getLocation() {
-		return Protomech.LOC_TORSO;
-	}
+    @Override
+    public int getLocation() {
+        return Protomech.LOC_TORSO;
+    }
 
-	@Override
-	public TechAdvancement getTechAdvancement() {
-	    return TECH_ADVANCEMENT;
-	}
+    @Override
+    public TechAdvancement getTechAdvancement() {
+        return TECH_ADVANCEMENT;
+    }
 
 }
