@@ -4966,6 +4966,7 @@ public class CampaignOptionsDialog extends JDialog {
         comboContractMarketMethod.setToolTipText(resources.getString("lblContractMarketMethod.toolTipText"));
         comboContractMarketMethod.setName("comboContractMarketMethod");
         /*
+        TODO : Windchild Contract Market
         comboContractMarketMethod.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(final JList<?> list, final Object value,

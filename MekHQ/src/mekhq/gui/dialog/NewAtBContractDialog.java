@@ -29,9 +29,9 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.enums.AtBContractType;
-import mekhq.campaign.rating.IUnitRating;
 import mekhq.campaign.stratcon.StratconContractDefinition;
 import mekhq.campaign.stratcon.StratconContractInitializer;
+import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.RandomFactionGenerator;
 import mekhq.campaign.universe.Systems;
@@ -67,10 +67,8 @@ public class NewAtBContractDialog extends NewContractDialog {
     protected JSpinner spnShares;
     protected JLabel lblRequiredLances;
 
-    Set<String> currentFactions;
-    Set<String> employerSet;
-
-    int dragoonRating;
+    private Set<Faction> currentFactions;
+    private Set<Faction> employerSet;
 
     public NewAtBContractDialog(JFrame parent, boolean modal, Campaign c) {
         super(parent, modal, c);
@@ -90,19 +88,17 @@ public class NewAtBContractDialog extends NewContractDialog {
         contract = new AtBContract("New Contract");
         contract.calculateContract(campaign);
         ((AtBContract) contract).initContractDetails(campaign);
-        IUnitRating rating = campaign.getUnitRating();
-        dragoonRating = rating.getUnitRatingAsInteger();
         super.initComponents();
 
         updateEnemies();
         updatePlanets();
 
         if (getCurrentEmployerCode() != null) {
-            ((AtBContract)contract).setEmployerCode(getCurrentEmployerCode(), campaign.getGameYear());
+            ((AtBContract) contract).setEmployerCode(getCurrentEmployerCode(), campaign.getGameYear());
         }
 
         if (getCurrentEnemyCode() != null) {
-            ((AtBContract)contract).setEnemyCode(getCurrentEnemyCode());
+            ((AtBContract) contract).setEnemyCode(getCurrentEnemyCode());
         }
 
 
@@ -229,12 +225,7 @@ public class NewAtBContractDialog extends NewContractDialog {
         gbc.anchor = java.awt.GridBagConstraints.WEST;
         gbc.insets = new java.awt.Insets(5, 5, 5, 5);
         descPanel.add(chkShowAllFactions, gbc);
-        chkShowAllFactions.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                showAllFactions(chkShowAllFactions.isSelected());
-            }
-        });
+        chkShowAllFactions.addActionListener(arg0 -> showAllFactions(chkShowAllFactions.isSelected()));
 
         lblPlanetName.setText(resourceMap.getString("lblPlanetName.text")); // NOI18N
         lblPlanetName.setName("lblPlanetName"); // NOI18N
@@ -267,12 +258,7 @@ public class NewAtBContractDialog extends NewContractDialog {
         gbc.anchor = java.awt.GridBagConstraints.WEST;
         gbc.insets = new java.awt.Insets(5, 5, 5, 5);
         descPanel.add(chkShowAllPlanets, gbc);
-        chkShowAllPlanets.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                showAllPlanets(chkShowAllPlanets.isSelected());
-            }
-        });
+        chkShowAllPlanets.addActionListener(arg0 -> showAllPlanets(chkShowAllPlanets.isSelected()));
 
         lblType.setText(resourceMap.getString("lblType.text")); // NOI18N
         lblType.setName("lblType"); // NOI18N
@@ -506,9 +492,9 @@ public class NewAtBContractDialog extends NewContractDialog {
     }
 
     protected void updatePaymentMultiplier() {
-        if (((AtBContract)contract).getEmployerCode() != null &&
-                ((AtBContract)contract).getEnemyCode() != null) {
-            ((AtBContract)contract).calculatePaymentMultiplier(campaign);
+        if (((AtBContract) contract).getEmployerCode() != null &&
+                ((AtBContract) contract).getEnemyCode() != null) {
+            ((AtBContract) contract).calculatePaymentMultiplier(campaign);
             spnMultiplier.setValue(contract.getMultiplier());
         }
     }

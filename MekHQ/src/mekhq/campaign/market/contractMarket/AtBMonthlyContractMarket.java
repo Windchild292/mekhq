@@ -845,6 +845,7 @@ public class AtBMonthlyContractMarket extends AbstractContractMarket {
     /**
      * Keep track of how many rerolls remain for each contract clause based on the administrator's
      * negotiation skill. Also tracks bonuses, as the random clause bonuses should be persistent.
+     *         TODO : Windchild Contract Market
      */
     public static class ClauseModifiers {
         //region Variable Declarations

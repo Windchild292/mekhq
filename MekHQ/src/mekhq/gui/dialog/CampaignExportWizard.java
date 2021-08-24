@@ -94,7 +94,7 @@ public class CampaignExportWizard extends JDialog {
         resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignExportWizard", new EncodeControl());
         chkExportState.setText(resourceMap.getString("chkExportSettings.text"));
         chkExportState.setToolTipText(resourceMap.getString("chkExportSettings.tooltip"));
-        chkExportContractOffers = c.getContractMarket().isNone() ? null
+        chkExportContractOffers = c.getContractMarket().getMethod().isNone() ? null
                 : new JCheckBox(resourceMap.getString("chkExportContractOffers.text"));
         chkExportCompletedContracts.setText(resourceMap.getString("chkExportCompletedContracts.text"));
         lblMoney.setText(resourceMap.getString("lblMoney.text"));
