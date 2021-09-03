@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (C) 2013-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -104,7 +104,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
     private JComboBox<Planet> choicePlanet;
     private JCheckBox chkClan;
     private JComboBox<Phenotype> choicePhenotype;
-    private Phenotype phenotype;
+    private Phenotype selectedPhenotype;
 
     /* Against the Bot */
     private JComboBox<String> choiceUnitWeight;
@@ -143,7 +143,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             retirement = person.getRetirement();
         }
 
-        phenotype = person.getPhenotype();
+        selectedPhenotype = person.getPhenotype();
         options = person.getOptions();
         initComponents();
     }
@@ -319,10 +319,9 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             genderModel.addElement(gender);
         }
         choiceGender = new JComboBox<>(genderModel);
-        choiceGender.setName("choiceGender"); // NOI18N
+        choiceGender.setName("choiceGender");
         choiceGender.setSelectedItem(person.getGender().isExternal() ? person.getGender()
                 : person.getGender().getExternalVariant());
-        choiceGender.addActionListener(evt -> randomName());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = y;
@@ -504,7 +503,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             phenotypeModel.addElement(phenotype);
         }
         choicePhenotype = new JComboBox<>(phenotypeModel);
-        choicePhenotype.setSelectedItem(phenotype);
+        choicePhenotype.setSelectedItem(selectedPhenotype);
         choicePhenotype.addActionListener(evt -> backgroundChanged());
         choicePhenotype.setEnabled(person.isClanner());
         gridBagConstraints = new GridBagConstraints();
@@ -995,7 +994,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         Faction faction = campaign.getFaction().isClan() ? campaign.getFaction()
                 : (Faction) choiceFaction.getSelectedItem();
         faction = ((faction != null) && faction.isClan()) ? faction : person.getOriginFaction();
-        Bloodname bloodname = Bloodname.randomBloodname(faction.getShortName(), phenotype, campaign.getGameYear());
+        Bloodname bloodname = Bloodname.randomBloodname(faction.getShortName(), selectedPhenotype, campaign.getGameYear());
         textBloodname.setText((bloodname != null) ? bloodname.getName() : resourceMap.getString("textBloodname.error"));
     }
 
@@ -1145,9 +1144,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             addGroup(group, gridBag, c);
 
             for (Enumeration<IOption> j = group.getOptions(); j.hasMoreElements();) {
-                IOption option = j.nextElement();
-
-                addOption(option, gridBag, c, true);
+                addOption(j.nextElement(), gridBag, c);
             }
         }
     }
@@ -1159,8 +1156,8 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         panOptions.add(groupLabel);
     }
 
-    private void addOption(IOption option, GridBagLayout gridBag, GridBagConstraints c, boolean editable) {
-        DialogOptionComponent optionComp = new DialogOptionComponent(this, option, editable);
+    private void addOption(IOption option, GridBagLayout gridBag, GridBagConstraints c) {
+        DialogOptionComponent optionComp = new DialogOptionComponent(this, option, true);
 
         if (OptionsConstants.GUNNERY_WEAPON_SPECIALIST.equals(option.getName())) {
             optionComp.addValue(Crew.SPECIAL_NONE);
@@ -1301,8 +1298,8 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
     private void backgroundChanged() {
         final Phenotype newPhenotype = (Phenotype) choicePhenotype.getSelectedItem();
         if (chkClan.isSelected() || (newPhenotype == Phenotype.NONE)) {
-            if ((newPhenotype != null) && (newPhenotype != phenotype)) {
-                switch (phenotype) {
+            if ((newPhenotype != null) && (newPhenotype != selectedPhenotype)) {
+                switch (selectedPhenotype) {
                     case MECHWARRIOR:
                         decreasePhenotypeBonus(SkillType.S_GUN_MECH);
                         decreasePhenotypeBonus(SkillType.S_PILOT_MECH);
@@ -1370,14 +1367,13 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
                         break;
                 }
 
-                phenotype = newPhenotype;
+                selectedPhenotype = newPhenotype;
             }
-
-            choicePhenotype.setEnabled(true);
         } else {
             choicePhenotype.setSelectedItem(Phenotype.NONE);
-            choicePhenotype.setEnabled(false);
         }
+
+        choicePhenotype.setEnabled(chkClan.isSelected());
     }
 
     private void increasePhenotypeBonus(String skillType) {
