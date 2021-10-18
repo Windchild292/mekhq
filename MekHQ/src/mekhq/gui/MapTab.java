@@ -42,7 +42,7 @@ import mekhq.campaign.event.OptionsChangedEvent;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.gui.utilities.JSuggestField;
-import mekhq.gui.view.JumpPathViewPanel;
+import mekhq.gui.panes.JumpPathPane;
 import mekhq.gui.view.PlanetViewPanel;
 
 /**
@@ -198,7 +198,7 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
     protected void refreshSystemView() {
         JumpPath path = panMap.getJumpPath();
         if (null != path && !path.isEmpty()) {
-            scrollPlanetView.setViewportView(new JumpPathViewPanel(path, getCampaign()));
+            scrollPlanetView.setViewportView(new JumpPathPane(getFrame(), getCampaign(), path));
             javax.swing.SwingUtilities.invokeLater(() -> {
                 scrollPlanetView.getVerticalScrollBar().setValue(0);
             });
@@ -216,7 +216,7 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
     protected void refreshPlanetView() {
         JumpPath path = panMap.getJumpPath();
         if (null != path && !path.isEmpty()) {
-            scrollPlanetView.setViewportView(new JumpPathViewPanel(path, getCampaign()));
+            scrollPlanetView.setViewportView(new JumpPathPane(getFrame(), getCampaign(), path));
             javax.swing.SwingUtilities.invokeLater(() -> {
                 scrollPlanetView.getVerticalScrollBar().setValue(0);
             });

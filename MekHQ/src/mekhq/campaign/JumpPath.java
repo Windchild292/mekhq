@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import megamek.common.annotations.Nullable;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -62,7 +63,7 @@ public class JumpPath implements Serializable {
         return path.isEmpty();
     }
 
-    public PlanetarySystem getFirstSystem() {
+    public @Nullable PlanetarySystem getFirstSystem() {
         if (path.isEmpty()) {
             return null;
         } else {
@@ -70,7 +71,7 @@ public class JumpPath implements Serializable {
         }
     }
 
-    public PlanetarySystem getLastSystem() {
+    public @Nullable PlanetarySystem getLastSystem() {
         if (path.isEmpty()) {
             return null;
         } else {
@@ -134,7 +135,7 @@ public class JumpPath implements Serializable {
         return path.size();
     }
 
-    public PlanetarySystem get(int i) {
+    public @Nullable PlanetarySystem get(int i) {
         if (i >= size()) {
             return null;
         } else {
