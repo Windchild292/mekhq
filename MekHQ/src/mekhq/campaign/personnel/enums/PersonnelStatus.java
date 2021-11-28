@@ -22,6 +22,9 @@ import megamek.common.util.EncodeControl;
 
 import java.util.ResourceBundle;
 
+/**
+ * TODO : Add On Leave and AWOL implementations
+ */
 public enum PersonnelStatus {
     //region Enum Declarations
     ACTIVE("PersonnelStatus.ACTIVE.text", "PersonnelStatus.ACTIVE.toolTipText", "PersonnelStatus.ACTIVE.logText"),
@@ -47,11 +50,11 @@ public enum PersonnelStatus {
     private final String name;
     private final String toolTipText;
     private final String logText;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
     PersonnelStatus(final String name, final String toolTipText, final String logText) {
+        final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
         this.name = resources.getString(name);
         this.toolTipText = resources.getString(toolTipText);
         this.logText = resources.getString(logText);
@@ -75,6 +78,14 @@ public enum PersonnelStatus {
 
     public boolean isMIA() {
         return this == MIA;
+    }
+
+    public boolean isOnLeave() {
+        return false; //this == ON_LEAVE;
+    }
+
+    public boolean isAWOL() {
+        return false; //this == AWOL;
     }
 
     public boolean isRetired() {

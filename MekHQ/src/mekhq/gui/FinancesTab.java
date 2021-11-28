@@ -246,7 +246,7 @@ public final class FinancesTab extends CampaignGuiTab {
     }
 
     private CategoryDataset setupMonthlyDataset() {
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("MMM-yyy");
+        final DateTimeFormatter df = DateTimeFormatter.ofPattern("MMM-yyyy");
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         List<Transaction> transactions = getCampaign().getFinances().getAllTransactions();
 
@@ -372,11 +372,8 @@ public final class FinancesTab extends CampaignGuiTab {
         AddFundsDialog addFundsDialog = new AddFundsDialog(getFrame(), true);
         addFundsDialog.setVisible(true);
         if (addFundsDialog.getClosedType() == JOptionPane.OK_OPTION) {
-            Money funds = addFundsDialog.getFundsQuantityField();
-            String description = addFundsDialog.getFundsDescription();
-            int category = addFundsDialog.getCategory();
-            addFundsDialog.dispose();
-            getCampaign().addFunds(funds, description, category);
+            getCampaign().addFunds(addFundsDialog.getTransactionType(),
+                    addFundsDialog.getFundsQuantityField(), addFundsDialog.getFundsDescription());
         }
     }
 

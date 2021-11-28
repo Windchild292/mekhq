@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import megamek.common.annotations.Nullable;
 import mekhq.campaign.mission.enums.ScenarioStatus;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -39,7 +40,7 @@ import org.w3c.dom.NodeList;
 import megamek.common.Entity;
 import mekhq.MekHQ;
 import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import megamek.Version;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.event.DeploymentChangedEvent;
 import mekhq.campaign.force.Force;
@@ -67,6 +68,7 @@ public class Scenario implements Serializable {
     private int id = S_DEFAULT_ID;
     private int missionId;
     private ForceStub stub;
+    private boolean cloaked;
 
     //allow multiple loot objects for meeting different mission objectives
     private List<Loot> loots;
@@ -126,12 +128,12 @@ public class Scenario implements Serializable {
         this.status = status;
     }
 
-    public void setDate(LocalDate d) {
-        this.date = d;
+    public @Nullable LocalDate getDate() {
+        return date;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public void setDate(final @Nullable LocalDate date) {
+        this.date = date;
     }
 
     public boolean hasObjectives() {
@@ -145,6 +147,17 @@ public class Scenario implements Serializable {
 
     public void setScenarioObjectives(List<ScenarioObjective> scenarioObjectives) {
         this.scenarioObjectives = scenarioObjectives;
+    }
+
+    /**
+     * This indicates that the scenario should not be displayed in the briefing tab.
+     */
+    public boolean isCloaked() {
+        return cloaked;
+    }
+
+    public void setCloaked(boolean cloaked) {
+        this.cloaked = cloaked;
     }
 
     public Map<UUID, List<UUID>> getPlayerTransportLinkages() {
@@ -329,13 +342,15 @@ public class Scenario implements Serializable {
         if (null != date) {
             MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "date", MekHqXmlUtil.saveFormattedDate(date));
         }
+
+        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "cloaked", isCloaked());
     }
 
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
         pw1.println(MekHqXmlUtil.indentStr(indent) + "</scenario>");
     }
 
-    protected void loadFieldsFromXmlNode(Node wn) throws ParseException {
+    protected void loadFieldsFromXmlNode(final Node wn, final Version version) throws ParseException {
         //do nothing
     }
 
@@ -380,7 +395,7 @@ public class Scenario implements Serializable {
                 retVal = (Scenario) Class.forName(className).newInstance();
             }
 
-            retVal.loadFieldsFromXmlNode(wn);
+            retVal.loadFieldsFromXmlNode(wn, version);
             retVal.scenarioObjectives = new ArrayList<>();
 
             // Okay, now load Part-specific fields!
@@ -403,6 +418,8 @@ public class Scenario implements Serializable {
                     retVal.stub = ForceStub.generateInstanceFromXML(wn2);
                 } else if (wn2.getNodeName().equalsIgnoreCase("date")) {
                     retVal.date = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("cloaked")) {
+                    retVal.cloaked = Boolean.parseBoolean(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("loots")) {
                     NodeList nl2 = wn2.getChildNodes();
                     for (int y = 0; y < nl2.getLength(); y++) {

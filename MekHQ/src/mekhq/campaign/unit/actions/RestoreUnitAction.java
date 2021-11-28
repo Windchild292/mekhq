@@ -87,6 +87,8 @@ public class RestoreUnitAction implements IUnitAction {
         newEntity.setExternalIdAsString(unit.getId().toString());
         campaign.getGame().addEntity(newEntity.getId(), newEntity);
 
+        copyC3Networks(oldEntity, newEntity);
+
         unit.setEntity(newEntity);
 
         unit.removeParts();
@@ -97,6 +99,38 @@ public class RestoreUnitAction implements IUnitAction {
         unit.runDiagnostic(false);
         unit.setSalvage(false);
         unit.resetPilotAndEntity();
+    }
+
+    /**
+     * Copies the C3 network setup from the source to the target.
+     * @param source The source {@link Entity}.
+     * @param target The target {@link Entity}.
+     */
+    private static void copyC3Networks(Entity source, Entity target) {
+        target.setC3UUIDAsString(source.getC3UUIDAsString());
+        target.setC3Master(source.getC3Master(), false);
+        target.setC3MasterIsUUIDAsString(source.getC3MasterIsUUIDAsString());
+
+        // Reassign the C3NetId
+        // TODO: Add Entity::setC3NetId(String)
+        String c3NetId = source.getC3NetId();
+        if (c3NetId != null) {
+            for (Entity entity : target.getGame().getEntitiesVector()) {
+                if (target.getId() == entity.getId()) {
+                    continue;
+                }
+
+                if (c3NetId.equals(entity.getC3NetId())) {
+                    target.setC3NetId(entity);
+                    break;
+                }
+            }
+        }
+
+        for (int pos = 0; pos < Entity.MAX_C3i_NODES; ++pos) {
+            target.setC3iNextUUIDAsString(pos, source.getC3iNextUUIDAsString(pos));
+            target.setNC3NextUUIDAsString(pos, source.getNC3NextUUIDAsString(pos));
+        }
     }
 
     /**
@@ -187,8 +221,7 @@ public class RestoreUnitAction implements IUnitAction {
          * @param entity The entity to copy.
          * @return A copy of the entity, or {@code null} if a copy could not be made.
          */
-        @Nullable
-        public Entity copy(Entity entity);
+        @Nullable Entity copy(Entity entity);
     }
 
     /**
@@ -201,8 +234,8 @@ public class RestoreUnitAction implements IUnitAction {
          * @param entity The entity to copy.
          * @return A copy of the entity, or {@code null} if a copy could not be made.
          */
-        @Nullable
-        public Entity copy(Entity entity) {
+        @Override
+        public @Nullable Entity copy(Entity entity) {
             final MechSummary ms = MechSummaryCache.getInstance().getMech(entity.getShortNameRaw());
             try {
                 if (ms != null) {

@@ -18,13 +18,13 @@
  */
 package mekhq.campaign.personnel.randomDeath;
 
+import megamek.Version;
 import megamek.common.enums.Gender;
 import megamek.common.util.fileUtils.MegaMekFile;
 import megamek.common.util.weightedMaps.WeightedDoubleMap;
 import mekhq.MekHQ;
 import mekhq.MekHqConstants;
 import mekhq.MekHqXmlUtil;
-import mekhq.Version;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.AgeGroup;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
@@ -104,7 +104,7 @@ public abstract class AbstractRandomDeath {
             }
         }
 
-        if (person.isPregnant() && (person.getPregnancyWeek(today) > 22)) {
+        if (person.isPregnant()) {
             return PersonnelStatus.PREGNANCY_COMPLICATIONS;
         }
 

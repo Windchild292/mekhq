@@ -270,7 +270,9 @@ public class CustomizeScenarioDialog extends JDialog {
             JButton btnLoad = new JButton("Generate From Template");
             btnLoad.addActionListener(this::btnLoadActionPerformed);
             panBtn.add(btnLoad);
-        } else if ((mission instanceof AtBContract) && (scenario instanceof AtBDynamicScenario)) {
+        } else if ((mission instanceof AtBContract) && 
+                (scenario instanceof AtBDynamicScenario) &&
+                (scenario.getStatus().isCurrent())) {
             JButton btnFinalize = new JButton();
 
             if (((AtBDynamicScenario) scenario).getNumBots() > 0) {
@@ -318,7 +320,11 @@ public class CustomizeScenarioDialog extends JDialog {
             if (txtReport != null) {
                 scenario.setReport(txtReport.getText());
             }
-            scenario.setStatus((ScenarioStatus) choiceStatus.getSelectedItem());
+            
+            if (choiceStatus.getSelectedItem() != null) {
+                scenario.setStatus((ScenarioStatus) choiceStatus.getSelectedItem());
+            }
+            
             scenario.setDate(date);
         }
         scenario.resetLoot();

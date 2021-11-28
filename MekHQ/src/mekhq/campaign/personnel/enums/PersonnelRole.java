@@ -22,9 +22,10 @@ import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum PersonnelRole {
     //region Enum Declarations
@@ -261,9 +262,28 @@ public enum PersonnelRole {
         return isMechWarrior() || isLAMPilot();
     }
 
+    public boolean isAerospaceGrouping() {
+        return isLAMPilot() || isAerospacePilot();
+    }
+
+    public boolean isConventionalAirGrouping() {
+        return isAerospaceGrouping() || isConventionalAircraftPilot();
+    }
+
+    public boolean isGroundVehicleCrew() {
+        return isGroundVehicleDriver() || isVehicleGunner() || isVehicleCrew();
+    }
+
+    public boolean isNavalVehicleCrew() {
+        return isNavalVehicleDriver() || isVehicleGunner() || isVehicleCrew();
+    }
+
+    public boolean isVTOLCrew() {
+        return isVTOLPilot() || isVehicleGunner() || isVehicleCrew();
+    }
+
     public boolean isVehicleCrewmember() {
-        return isGroundVehicleDriver() || isNavalVehicleDriver() || isVTOLPilot()
-                || isVehicleGunner() || isVehicleCrew();
+        return isGroundVehicleCrew() || isNavalVehicleDriver() || isVTOLPilot();
     }
 
     public boolean isSoldierOrBattleArmour() {
@@ -309,65 +329,42 @@ public enum PersonnelRole {
      * @return a list of roles that can be included in the personnel market
      */
     public static List<PersonnelRole> getMarketableRoles() {
-        final List<PersonnelRole> marketableRoles = new ArrayList<>();
-        for (final PersonnelRole role : values()) {
-            if (role.isMarketable()) {
-                marketableRoles.add(role);
-            }
-        }
-        return marketableRoles;
+        return Stream.of(values()).filter(PersonnelRole::isMarketable).collect(Collectors.toList());
+    }
+
+    /**
+     * @return a list of roles that are potential primary roles. Currently this is all bar NONE
+     */
+    public static List<PersonnelRole> getPrimaryRoles() {
+        return Stream.of(values()).filter(role -> !role.isNone()).collect(Collectors.toList());
     }
 
     /**
      * @return a list of roles that are considered to be vessel (as in spacecraft) crewmembers
      */
     public static List<PersonnelRole> getVesselRoles() {
-        final List<PersonnelRole> vesselRoles = new ArrayList<>();
-        for (final PersonnelRole role : values()) {
-            if (role.isVesselCrewmember()) {
-                vesselRoles.add(role);
-            }
-        }
-        return vesselRoles;
+        return Stream.of(values()).filter(PersonnelRole::isVesselCrewmember).collect(Collectors.toList());
     }
 
     /**
      * @return a list of roles that are considered to be techs
      */
     public static List<PersonnelRole> getTechRoles() {
-        final List<PersonnelRole> techRoles = new ArrayList<>();
-        for (final PersonnelRole role : values()) {
-            if (role.isTech()) {
-                techRoles.add(role);
-            }
-        }
-        return techRoles;
+        return Stream.of(values()).filter(PersonnelRole::isTech).collect(Collectors.toList());
     }
 
     /**
      * @return a list of all roles that are considered to be administrators
      */
     public static List<PersonnelRole> getAdministratorRoles() {
-        final List<PersonnelRole> administratorRoles = new ArrayList<>();
-        for (final PersonnelRole role : values()) {
-            if (role.isAdministrator()) {
-                administratorRoles.add(role);
-            }
-        }
-        return administratorRoles;
+        return Stream.of(values()).filter(PersonnelRole::isAdministrator).collect(Collectors.toList());
     }
 
     /**
      * @return the number of roles that are not tagged as marketable
      */
     public static int getUnmarketableCount() {
-        int unmarketable = 0;
-        for (final PersonnelRole role : values()) {
-            if (!role.isMarketable()) {
-                unmarketable++;
-            }
-        }
-        return unmarketable;
+        return Math.toIntExact(Stream.of(values()).filter(role -> !role.isMarketable()).count());
     }
     //endregion Static Methods
 

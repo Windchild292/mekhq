@@ -20,8 +20,9 @@ package mekhq.campaign.personnel.ranks;
 
 import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
+import mekhq.MekHqConstants;
 import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import megamek.Version;
 import mekhq.campaign.io.Migration.PersonMigrator;
 import mekhq.campaign.personnel.enums.RankSystemType;
 import org.w3c.dom.Element;
@@ -48,9 +49,11 @@ public class RankSystem implements Serializable {
     private static final long serialVersionUID = -6037712487121208137L;
 
     private String code; // Primary Key, must be unique
+    private transient RankSystemType type; // no need to serialize
     private String name;
     private String description;
-    private transient RankSystemType type; // no need to serialize
+    private boolean useROMDesignation;
+    private boolean useManeiDomini;
     private List<Rank> ranks;
     //endregion Variable Declarations
 
@@ -61,18 +64,22 @@ public class RankSystem implements Serializable {
 
     public RankSystem(final RankSystem rankSystem) {
         setCode(rankSystem.getCode());
+        setType(rankSystem.getType());
         setName(rankSystem.toString());
         setDescription(rankSystem.getDescription());
-        setType(rankSystem.getType());
+        setUseROMDesignation(rankSystem.isUseROMDesignation());
+        setUseManeiDomini(rankSystem.isUseManeiDomini());
         setRanks(new ArrayList<>(rankSystem.getRanks()));
     }
 
     public RankSystem(final String code, final String name,
                       final String description, final RankSystemType type) {
         setCode(code);
+        setType(type);
         setName(name);
         setDescription(description);
-        setType(type);
+        setUseROMDesignation(false);
+        setUseManeiDomini(false);
         final RankSystem system = Ranks.getRankSystemFromCode(code);
         setRanks((system == null) ? new ArrayList<>() : new ArrayList<>(system.getRanks()));
     }
@@ -87,6 +94,14 @@ public class RankSystem implements Serializable {
         this.code = code;
     }
 
+    public RankSystemType getType() {
+        return type;
+    }
+
+    public void setType(final RankSystemType type) {
+        this.type = type;
+    }
+
     public void setName(final String name) {
         this.name = name;
     }
@@ -99,12 +114,20 @@ public class RankSystem implements Serializable {
         this.description = description;
     }
 
-    public RankSystemType getType() {
-        return type;
+    public boolean isUseROMDesignation() {
+        return useROMDesignation;
     }
 
-    public void setType(final RankSystemType type) {
-        this.type = type;
+    public void setUseROMDesignation(final boolean useROMDesignation) {
+        this.useROMDesignation = useROMDesignation;
+    }
+
+    public boolean isUseManeiDomini() {
+        return useManeiDomini;
+    }
+
+    public void setUseManeiDomini(final boolean useManeiDomini) {
+        this.useManeiDomini = useManeiDomini;
     }
 
     public List<Rank> getRanks() {
@@ -115,24 +138,6 @@ public class RankSystem implements Serializable {
         this.ranks = ranks;
     }
     //endregion Getters/Setters
-
-    //region Boolean Comparison Methods
-    public boolean isWoBMilitia() {
-        return "WOBM".equals(getCode());
-    }
-
-    public boolean isComGuard() {
-        return "CG".equals(getCode());
-    }
-
-    /**
-     * @return if the Rank System is either Com Guard or Word of Blake Militia, which is used to
-     * determine if a person can have a ROM Designation
-     */
-    public boolean isCGOrWoBM() {
-        return isComGuard() || isWoBMilitia();
-    }
-    //endregion Boolean Comparison Methods
 
     public Rank getRank(int index) {
         if (index >= getRanks().size()) {
@@ -170,7 +175,7 @@ public class RankSystem implements Serializable {
              PrintWriter pw = new PrintWriter(osw)) {
             // Then save it out to that file.
             pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            pw.println("<individualRankSystem version=\"" + ResourceBundle.getBundle("mekhq.resources.MekHQ").getString("Application.version") + "\">");
+            pw.println("<individualRankSystem version=\"" + MekHqConstants.VERSION + "\">");
             writeToXML(pw, 1, true);
             MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, 0, "individualRankSystem");
         } catch (Exception e) {
@@ -187,6 +192,15 @@ public class RankSystem implements Serializable {
         if (export || getType().isCampaign()) {
             MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "name", toString());
             MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "description", getDescription());
+
+            if (isUseROMDesignation()) {
+                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "useROMDesignation", isUseROMDesignation());
+            }
+
+            if (isUseManeiDomini()) {
+                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "useManeiDomini", isUseManeiDomini());
+            }
+
             for (int i = 0; i < getRanks().size(); i++) {
                 getRanks().get(i).writeToXML(pw, indent, i);
             }
@@ -283,6 +297,10 @@ public class RankSystem implements Serializable {
                     rankSystem.setName(MekHqXmlUtil.unEscape(wn.getTextContent().trim()));
                 } else if (wn.getNodeName().equalsIgnoreCase("description")) {
                     rankSystem.setDescription(MekHqXmlUtil.unEscape(wn.getTextContent().trim()));
+                } else if (wn.getNodeName().equalsIgnoreCase("useROMDesignation")) {
+                    rankSystem.setUseROMDesignation(Boolean.parseBoolean(wn.getTextContent().trim()));
+                } else if (wn.getNodeName().equalsIgnoreCase("useManeiDomini")) {
+                    rankSystem.setUseManeiDomini(Boolean.parseBoolean(wn.getTextContent().trim()));
                 } else if (wn.getNodeName().equalsIgnoreCase("rank")) {
                     rankSystem.getRanks().add(Rank.generateInstanceFromXML(wn, version, e0));
                     e0 = false;
