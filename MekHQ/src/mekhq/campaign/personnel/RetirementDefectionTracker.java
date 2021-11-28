@@ -129,7 +129,7 @@ public class RetirementDefectionTracker implements Serializable, MekHqXmlSeriali
             int proto = 0;
             int support = 0;
             for (Person p : campaign.getActivePersonnel()) {
-                if (p.getPrimaryRole().isDependentOrNone() || !p.getPrisonerStatus().isFree()) {
+                if (p.getPrimaryRole().isCivilian() || !p.getPrisonerStatus().isFree()) {
                     continue;
                 }
                 if (p.getPrimaryRole().isSupport()) {

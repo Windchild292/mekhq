@@ -46,7 +46,7 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
 
         generateDefaultSkills(person, primaryRole, expLvl, bonus, mod);
 
-        if (!secondaryRole.isDependentOrNone()) {
+        if (!secondaryRole.isCivilian()) {
             generateDefaultSkills(person, secondaryRole, expLvl, bonus, mod);
         }
 

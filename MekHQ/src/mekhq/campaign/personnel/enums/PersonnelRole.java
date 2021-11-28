@@ -275,6 +275,14 @@ public enum PersonnelRole {
         return isVesselPilot() || isVesselGunner() || isVesselCrew() || isVesselNavigator();
     }
 
+    public boolean isAerospaceGrouping() {
+        return isAerospacePilot() || isLAMPilot();
+    }
+
+    public boolean isConventionalAirGrouping() {
+        return isAerospaceGrouping() || isConventionalAircraftPilot();
+    }
+
     public boolean isSupport() {
         return isSupport(false);
     }
@@ -300,7 +308,7 @@ public enum PersonnelRole {
                 || isAdministratorTransport() || isAdministratorHR();
     }
 
-    public boolean isDependentOrNone() {
+    public boolean isCivilian() {
         return isDependent() || isNone();
     }
     //endregion Boolean Comparisons
