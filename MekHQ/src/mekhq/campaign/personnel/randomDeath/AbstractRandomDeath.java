@@ -19,6 +19,7 @@
 package mekhq.campaign.personnel.randomDeath;
 
 import megamek.Version;
+import megamek.common.annotations.Nullable;
 import megamek.common.enums.Gender;
 import megamek.common.util.fileUtils.MegaMekFile;
 import megamek.common.util.weightedMaps.WeightedDoubleMap;
@@ -110,14 +111,20 @@ public abstract class AbstractRandomDeath {
 
         final Map<TenYearAgeRange, WeightedDoubleMap<PersonnelStatus>> genderedCauses = getCauses().get(person.getGender());
         if (genderedCauses == null) {
-            return ageGroup.isElder() ? PersonnelStatus.OLD_AGE : PersonnelStatus.NATURAL_CAUSES;
+            return getDefaultCause(ageGroup);
         }
+
         final WeightedDoubleMap<PersonnelStatus> ageRangeCauses = genderedCauses.get(TenYearAgeRange.determineAgeRange(age));
         if (ageRangeCauses == null) {
-            return ageGroup.isElder() ? PersonnelStatus.OLD_AGE : PersonnelStatus.NATURAL_CAUSES;
+            return getDefaultCause(ageGroup);
         }
+
         final PersonnelStatus cause = ageRangeCauses.randomItem();
-        return (cause == null) ? (ageGroup.isElder() ? PersonnelStatus.OLD_AGE : PersonnelStatus.NATURAL_CAUSES) : cause;
+        return (cause == null) ? getDefaultCause(ageGroup) : cause;
+    }
+
+    private PersonnelStatus getDefaultCause(final AgeGroup ageGroup) {
+        return (ageGroup.isElder() ? PersonnelStatus.OLD_AGE : PersonnelStatus.NATURAL_CAUSES);
     }
 
     /**
