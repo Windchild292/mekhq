@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 MegaMek team
+ * Copyright (c) 2016 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel.enums;
 
@@ -24,6 +24,7 @@ package mekhq.campaign.personnel.enums;
  * and have preference over "earlier" ones.
  */
 public enum InjuryLevel {
+    //region Enum Declarations
     /** Not actually a real injury */
     NONE,
     /**
@@ -44,4 +45,19 @@ public enum InjuryLevel {
      * Life-threatening injuries, professional medical attention required on a daily base.
      */
     DEADLY;
+    //endregion Enum Declarations
+
+    //region Boolean Comparison Methods
+    public boolean isMajor() {
+        return this == MAJOR;
+    }
+
+    public boolean isDeadly() {
+        return this == DEADLY;
+    }
+
+    public boolean isMajorOrDeadly() {
+        return isMajor() || isDeadly();
+    }
+    //endregion Boolean Comparison Methods
 }

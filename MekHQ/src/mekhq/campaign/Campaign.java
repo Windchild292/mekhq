@@ -49,6 +49,8 @@ import mekhq.campaign.market.unitMarket.EmptyUnitMarket;
 import mekhq.campaign.mission.enums.MissionStatus;
 import mekhq.campaign.mission.enums.ScenarioStatus;
 import mekhq.campaign.personnel.*;
+import mekhq.campaign.personnel.death.AbstractDeath;
+import mekhq.campaign.personnel.death.DisabledRandomDeath;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.personnel.enums.Phenotype;
@@ -243,6 +245,7 @@ public class Campaign implements Serializable, ITechManager {
     private ContractMarket contractMarket; //AtB
     private AbstractUnitMarket unitMarket;
 
+    private transient AbstractDeath death;
     private transient AbstractProcreation procreation;
 
     private RetirementDefectionTracker retirementDefectionTracker; // AtB
@@ -303,6 +306,7 @@ public class Campaign implements Serializable, ITechManager {
         setPersonnelMarket(new PersonnelMarket());
         setContractMarket(new ContractMarket());
         setUnitMarket(new EmptyUnitMarket());
+        setDeath(new DisabledRandomDeath());
         setProcreation(new DisabledRandomProcreation(getCampaignOptions()));
         retirementDefectionTracker = new RetirementDefectionTracker();
         fatigueLevel = 0;
@@ -456,6 +460,14 @@ public class Campaign implements Serializable, ITechManager {
         this.unitMarket = unitMarket;
     }
     //endregion Markets
+
+    public AbstractDeath getDeath() {
+        return death;
+    }
+
+    public void setDeath(final AbstractDeath death) {
+        this.death = death;
+    }
 
     public AbstractProcreation getProcreation() {
         return procreation;
@@ -3189,6 +3201,7 @@ public class Campaign implements Serializable, ITechManager {
         // furthermore this allows us to add and remove personnel without issue
         for (Person p : getActivePersonnel()) {
             // Random Death
+            getDeath().processNewDay(this, getLocalDate(), p);
 
             // Random Marriages
             if (getCampaignOptions().useRandomMarriages()) {
