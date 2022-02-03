@@ -21,6 +21,7 @@ package mekhq.gui.dialog;
 import megamek.client.ui.preferences.JWindowPreference;
 import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
+import mekhq.MHQConstants;
 import mekhq.MekHQ;
 import mekhq.Utilities;
 import mekhq.campaign.Campaign;
@@ -100,14 +101,15 @@ public class MedicalViewDialog extends JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(parent);
 
-        labelFont = UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.PLAIN, 16); //$NON-NLS-1$
-        try (InputStream fis = new FileInputStream("data/fonts/angelina.TTF")) { //$NON-NLS-1$
-            handwritingFont = Font.createFont(Font.TRUETYPE_FONT, fis).deriveFont(Font.PLAIN, 22);
-        } catch (FontFormatException | IOException e) {
+        labelFont = UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.PLAIN, 16);
+        try {
+            handwritingFont = Font.getFont("Angelina").deriveFont(Font.PLAIN, 22);
+        } catch (Exception ignored) {
             handwritingFont = null;
         }
         labelColor = new Color(170, 170, 170);
-        healImageIcon = new ImageIcon(new ImageIcon("data/images/misc/medical.png").getImage().getScaledInstance(16, 16, Image.SCALE_DEFAULT)); // TODO : Remove inline file path
+        healImageIcon = new ImageIcon(new ImageIcon(MHQConstants.MEDICAL_ICON_FILE_PATH).getImage()
+                .getScaledInstance(16, 16, Image.SCALE_DEFAULT));
 
         dollActionListener = ae -> {
             final BodyLocation loc = BodyLocation.of(ae.getActionCommand());

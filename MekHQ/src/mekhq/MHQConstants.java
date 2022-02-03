@@ -160,6 +160,7 @@ public final class MHQConstants extends SuiteConstants {
     public static final String LAYERED_FORCE_ICON_FRAME_PATH = "Pieces/Frames/";
     public static final String LAYERED_FORCE_ICON_DEFAULT_FRAME_FILENAME = "Frame.png";
     public static final String LAYERED_FORCE_ICON_LOGO_PATH = "Pieces/Logos/";
+    public static final String MEDICAL_ICON_FILE_PATH = "data/images/misc/medical.png";
     public static final String CUSTOM_MECHFILES_DIRECTORY_PATH = "data/mechfiles/customs/";
     public static final String AWARDS_DIRECTORY_PATH = "data/universe/awards/";
     public static final String RATINFO_DIR = "data/universe/ratdata/";
