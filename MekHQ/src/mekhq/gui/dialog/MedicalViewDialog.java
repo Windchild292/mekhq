@@ -103,7 +103,7 @@ public class MedicalViewDialog extends JDialog {
 
         labelFont = UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.PLAIN, 16);
         try {
-            handwritingFont = Font.getFont("Angelina").deriveFont(Font.PLAIN, 22);
+            handwritingFont = Font.decode("Angelina").deriveFont(Font.PLAIN, 22);
         } catch (Exception ignored) {
             handwritingFont = null;
         }
