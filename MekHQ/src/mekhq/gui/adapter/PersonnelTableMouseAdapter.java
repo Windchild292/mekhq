@@ -1163,6 +1163,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
         for (final PersonnelRole role : roles) {
             if (person.canPerformRole(role, true)) {
                 cbMenuItem = new JCheckBoxMenuItem(role.getName(person.isClanner()));
+                cbMenuItem.setToolTipText(role.getToolTipText());
                 cbMenuItem.setActionCommand(makeCommand(CMD_PRIMARY_ROLE, role.name()));
                 cbMenuItem.setSelected(person.getPrimaryRole() == role);
                 cbMenuItem.addActionListener(this);

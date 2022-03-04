@@ -862,11 +862,12 @@ public class CampaignGUI extends JPanel {
         menuHire.setMnemonic(KeyEvent.VK_H);
         for (PersonnelRole role : PersonnelRole.getPrimaryRoles()) {
             JMenuItem miHire = new JMenuItem(role.getName(getCampaign().getFaction().isClan()));
+            miHire.setToolTipText(role.getToolTipText());
             if (role.getMnemonic() != KeyEvent.VK_UNDEFINED) {
                 miHire.setMnemonic(role.getMnemonic());
             }
-            miHire.setActionCommand(role.name());
-            miHire.addActionListener(this::hirePerson);
+            miHire.addActionListener(evt -> new NewRecruitDialog(this, true,
+                    getCampaign().newPerson(role)).setVisible(true));
             menuHire.add(miHire);
         }
         menuMarket.add(menuHire);
@@ -1257,12 +1258,6 @@ public class CampaignGUI extends JPanel {
             NewsReportDialog nrd = new NewsReportDialog(frame, news);
             nrd.setVisible(true);
         }
-    }
-
-    private void hirePerson(final ActionEvent evt) {
-        final NewRecruitDialog npd = new NewRecruitDialog(this, true,
-                getCampaign().newPerson(PersonnelRole.valueOf(evt.getActionCommand())));
-        npd.setVisible(true);
     }
 
     public void hirePersonMarket() {

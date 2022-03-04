@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,6 +18,7 @@
  */
 package mekhq.campaign.personnel.enums;
 
+import megamek.common.annotations.Nullable;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import org.apache.logging.log4j.LogManager;
@@ -30,62 +31,67 @@ import java.util.stream.Stream;
 
 public enum PersonnelRole {
     //region Enum Declarations
-    MECHWARRIOR("PersonnelRole.MECHWARRIOR.text", KeyEvent.VK_M),
-    LAM_PILOT("PersonnelRole.LAM_PILOT.text", KeyEvent.VK_UNDEFINED),
-    GROUND_VEHICLE_DRIVER("PersonnelRole.GROUND_VEHICLE_DRIVER.text", KeyEvent.VK_V),
-    NAVAL_VEHICLE_DRIVER("PersonnelRole.NAVAL_VEHICLE_DRIVER.text", KeyEvent.VK_N),
-    VTOL_PILOT("PersonnelRole.VTOL_PILOT.text", KeyEvent.VK_UNDEFINED),
-    VEHICLE_GUNNER("PersonnelRole.VEHICLE_GUNNER.text", KeyEvent.VK_G),
-    VEHICLE_CREW("PersonnelRole.VEHICLE_CREW.text", KeyEvent.VK_UNDEFINED),
-    AEROSPACE_PILOT("PersonnelRole.AEROSPACE_PILOT.text", KeyEvent.VK_A),
-    CONVENTIONAL_AIRCRAFT_PILOT("PersonnelRole.CONVENTIONAL_AIRCRAFT_PILOT.text", KeyEvent.VK_C),
-    PROTOMECH_PILOT("PersonnelRole.PROTOMECH_PILOT.text", KeyEvent.VK_P),
-    BATTLE_ARMOUR("PersonnelRole.BATTLE_ARMOUR.text", "PersonnelRole.BATTLE_ARMOUR.clan.text", KeyEvent.VK_B),
-    SOLDIER("PersonnelRole.SOLDIER.text", KeyEvent.VK_S),
-    VESSEL_PILOT("PersonnelRole.VESSEL_PILOT.text", KeyEvent.VK_I),
-    VESSEL_GUNNER("PersonnelRole.VESSEL_GUNNER.text", KeyEvent.VK_U),
-    VESSEL_CREW("PersonnelRole.VESSEL_CREW.text", KeyEvent.VK_W),
-    VESSEL_NAVIGATOR("PersonnelRole.VESSEL_NAVIGATOR.text", KeyEvent.VK_Y),
-    MECH_TECH("PersonnelRole.MECH_TECH.text", KeyEvent.VK_T),
-    MECHANIC("PersonnelRole.MECHANIC.text", KeyEvent.VK_E),
-    AERO_TECH("PersonnelRole.AERO_TECH.text", KeyEvent.VK_O),
-    BA_TECH("PersonnelRole.BA_TECH.text", KeyEvent.VK_UNDEFINED),
-    ASTECH("PersonnelRole.ASTECH.text", KeyEvent.VK_UNDEFINED),
-    DOCTOR("PersonnelRole.DOCTOR.text", KeyEvent.VK_D),
-    MEDIC("PersonnelRole.MEDIC.text", KeyEvent.VK_UNDEFINED),
-    ADMINISTRATOR_COMMAND("PersonnelRole.ADMINISTRATOR_COMMAND.text", KeyEvent.VK_C),
-    ADMINISTRATOR_LOGISTICS("PersonnelRole.ADMINISTRATOR_LOGISTICS.text", KeyEvent.VK_L),
-    ADMINISTRATOR_TRANSPORT("PersonnelRole.ADMINISTRATOR_TRANSPORT.text", KeyEvent.VK_R),
-    ADMINISTRATOR_HR("PersonnelRole.ADMINISTRATOR_HR.text", KeyEvent.VK_H),
-    DEPENDENT("PersonnelRole.DEPENDENT.text", KeyEvent.VK_UNDEFINED, false),
-    NONE("PersonnelRole.NONE.text", KeyEvent.VK_UNDEFINED, false);
+    MECHWARRIOR("PersonnelRole.MECHWARRIOR.text", "PersonnelRole.MECHWARRIOR.toolTipText", KeyEvent.VK_M),
+    LAM_PILOT("PersonnelRole.LAM_PILOT.text", "PersonnelRole.LAM_PILOT.toolTipText", KeyEvent.VK_UNDEFINED),
+    GROUND_VEHICLE_DRIVER("PersonnelRole.GROUND_VEHICLE_DRIVER.text", "PersonnelRole.GROUND_VEHICLE_DRIVER.toolTipText", KeyEvent.VK_V),
+    NAVAL_VEHICLE_DRIVER("PersonnelRole.NAVAL_VEHICLE_DRIVER.text", "PersonnelRole.NAVAL_VEHICLE_DRIVER.toolTipText", KeyEvent.VK_N),
+    VTOL_PILOT("PersonnelRole.VTOL_PILOT.text", "PersonnelRole.VTOL_PILOT.toolTipText", KeyEvent.VK_UNDEFINED),
+    VEHICLE_GUNNER("PersonnelRole.VEHICLE_GUNNER.text", "PersonnelRole.VEHICLE_GUNNER.toolTipText", KeyEvent.VK_G),
+    VEHICLE_CREW("PersonnelRole.VEHICLE_CREW.text", "PersonnelRole.VEHICLE_CREW.toolTipText", KeyEvent.VK_UNDEFINED),
+    AEROSPACE_PILOT("PersonnelRole.AEROSPACE_PILOT.text", "PersonnelRole.AEROSPACE_PILOT.toolTipText", KeyEvent.VK_A),
+    CONVENTIONAL_AIRCRAFT_PILOT("PersonnelRole.CONVENTIONAL_AIRCRAFT_PILOT.text", "PersonnelRole.CONVENTIONAL_AIRCRAFT_PILOT.toolTipText", KeyEvent.VK_C),
+    PROTOMECH_PILOT("PersonnelRole.PROTOMECH_PILOT.text", "PersonnelRole.PROTOMECH_PILOT.toolTipText", KeyEvent.VK_P),
+    BATTLE_ARMOUR("PersonnelRole.BATTLE_ARMOUR.text", "PersonnelRole.BATTLE_ARMOUR.clan.text", "PersonnelRole.BATTLE_ARMOUR.toolTipText", KeyEvent.VK_B),
+    SOLDIER("PersonnelRole.SOLDIER.text", "PersonnelRole.SOLDIER.toolTipText", KeyEvent.VK_S),
+    VESSEL_PILOT("PersonnelRole.VESSEL_PILOT.text", "PersonnelRole.VESSEL_PILOT.toolTipText", KeyEvent.VK_I),
+    VESSEL_GUNNER("PersonnelRole.VESSEL_GUNNER.text", "PersonnelRole.VESSEL_GUNNER.toolTipText", KeyEvent.VK_U),
+    VESSEL_CREW("PersonnelRole.VESSEL_CREW.text", "PersonnelRole.VESSEL_CREW.toolTipText", KeyEvent.VK_W),
+    VESSEL_NAVIGATOR("PersonnelRole.VESSEL_NAVIGATOR.text", "PersonnelRole.VESSEL_NAVIGATOR.toolTipText", KeyEvent.VK_Y),
+    MECH_TECH("PersonnelRole.MECH_TECH.text", "PersonnelRole.MECH_TECH.toolTipText", KeyEvent.VK_T),
+    MECHANIC("PersonnelRole.MECHANIC.text", "PersonnelRole.MECHANIC.toolTipText", KeyEvent.VK_E),
+    AERO_TECH("PersonnelRole.AERO_TECH.text", "PersonnelRole.AERO_TECH.toolTipText", KeyEvent.VK_O),
+    BA_TECH("PersonnelRole.BA_TECH.text", "PersonnelRole.BA_TECH.toolTipText", KeyEvent.VK_UNDEFINED),
+    ASTECH("PersonnelRole.ASTECH.text", "PersonnelRole.ASTECH.toolTipText", KeyEvent.VK_UNDEFINED),
+    DOCTOR("PersonnelRole.DOCTOR.text", "PersonnelRole.DOCTOR.toolTipText", KeyEvent.VK_D),
+    MEDIC("PersonnelRole.MEDIC.text", "PersonnelRole.MEDIC.toolTipText", KeyEvent.VK_UNDEFINED),
+    ADMINISTRATOR_COMMAND("PersonnelRole.ADMINISTRATOR_COMMAND.text", "PersonnelRole.ADMINISTRATOR_COMMAND.toolTipText", KeyEvent.VK_C),
+    ADMINISTRATOR_LOGISTICS("PersonnelRole.ADMINISTRATOR_LOGISTICS.text", "PersonnelRole.ADMINISTRATOR_LOGISTICS.toolTipText", KeyEvent.VK_L),
+    ADMINISTRATOR_TRANSPORT("PersonnelRole.ADMINISTRATOR_TRANSPORT.text", "PersonnelRole.ADMINISTRATOR_TRANSPORT.toolTipText", KeyEvent.VK_R),
+    ADMINISTRATOR_HR("PersonnelRole.ADMINISTRATOR_HR.text", "PersonnelRole.ADMINISTRATOR_HR.toolTipText", KeyEvent.VK_H),
+    DEPENDENT("PersonnelRole.DEPENDENT.text", "PersonnelRole.DEPENDENT.toolTipText", KeyEvent.VK_UNDEFINED, false),
+    NONE("PersonnelRole.NONE.text", "PersonnelRole.NONE.toolTipText", KeyEvent.VK_UNDEFINED, false);
     //endregion Enum Declarations
 
     //region Variable Declarations
     private final String name;
     private final String clanName;
+    private final String toolTipText;
     private final int mnemonic; // Unused: J, K, Q, X, Z
     private final boolean marketable;
     //endregion Variable Declarations
 
     //region Constructors
-    PersonnelRole(final String name, final int mnemonic) {
-        this(name, null, mnemonic);
+    PersonnelRole(final String name, final String toolTipText, final int mnemonic) {
+        this(name, null, toolTipText, mnemonic);
     }
 
-    PersonnelRole(final String name, final int mnemonic, final boolean marketable) {
-        this(name, null, mnemonic, marketable);
+    PersonnelRole(final String name, final String toolTipText, final int mnemonic,
+                  final boolean marketable) {
+        this(name, null, toolTipText, mnemonic, marketable);
     }
 
-    PersonnelRole(final String name, final String clanName, final int mnemonic) {
-        this(name, clanName, mnemonic, true);
+    PersonnelRole(final String name, final String clanName, final String toolTipText,
+                  final int mnemonic) {
+        this(name, clanName, toolTipText, mnemonic, true);
     }
 
-    PersonnelRole(final String name, final String clanName, final int mnemonic, final boolean marketable) {
+    PersonnelRole(final String name, final @Nullable String clanName, final String toolTipText,
+                  final int mnemonic, final boolean marketable) {
         final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
                 MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         this.name = resources.getString(name);
         this.clanName = (clanName != null) ? resources.getString(clanName) : this.name;
+        this.toolTipText = resources.getString(toolTipText);
         this.mnemonic = mnemonic;
         this.marketable = marketable;
     }
@@ -93,7 +99,11 @@ public enum PersonnelRole {
 
     //region Getters
     public String getName(final boolean isClan) {
-        return isClan ? clanName : name;
+        return isClan ? clanName : toString();
+    }
+
+    public String getToolTipText() {
+        return toolTipText;
     }
 
     public int getMnemonic() {
@@ -436,6 +446,8 @@ public enum PersonnelRole {
                     return LAM_PILOT;
                 case 27:
                     return VEHICLE_CREW;
+                default:
+                    break;
             }
         } catch (Exception ignored) {
 
@@ -448,7 +460,7 @@ public enum PersonnelRole {
     //endregion File I/O
 
     /**
-     * This method is not recommend to be used in MekHQ, but is provided for non-specified utilization
+     * This method is not recommend for use in MekHQ, but is provided for non-specified utilization
      * @return the base name of this role, without applying any overrides
      */
     @Override
