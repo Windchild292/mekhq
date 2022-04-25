@@ -1651,8 +1651,8 @@ public class Person {
             }
         }
 
-        // TODO: distinguish DropShip, JumpShip, and WarShip crew
-        // TODO: Add era mod to salary calc..
+        // TODO : distinguish DropShip, JumpShip, and WarShip crew
+        // TODO : Add era mod to salary calc..
         return primaryBase.plus(secondaryBase)
                 .multipliedBy(getRank().isOfficer()
                         ? campaign.getCampaignOptions().getSalaryCommissionMultiplier()

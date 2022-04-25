@@ -2066,7 +2066,7 @@ public class CampaignGUI extends JPanel {
                 xmlDoc = db.parse(is);
             } catch (Exception ex) {
                 LogManager.getLogger().error("Cannot load person XML", ex);
-                return; // otherwise we NPE out in the next line
+                return; // otherwise, we NPE out in the next line
             }
 
             Element personnelEle = xmlDoc.getDocumentElement();
@@ -2089,25 +2089,30 @@ public class CampaignGUI extends JPanel {
                 }
 
                 if (!wn2.getNodeName().equalsIgnoreCase("person")) {
-                    LogManager.getLogger().error("Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
+                    LogManager.getLogger().error("Unknown node type not loaded in Personnel nodes: "
+                            + wn2.getNodeName());
                     continue;
                 }
 
-                Person p = Person.generateInstanceFromXML(wn2, getCampaign(), version);
-                if ((p != null) && (getCampaign().getPerson(p.getId()) != null)) {
-                    LogManager.getLogger().error("ERROR: Cannot load person who exists, ignoring. (Name: "
-                            + p.getName() + ", Id " + p.getId() + ')');
-                    p = null;
-                }
+                try {
+                    Person p = Person.generateInstanceFromXML(wn2, getCampaign(), version);
+                    if (getCampaign().getPerson(p.getId()) != null) {
+                        LogManager.getLogger().error("ERROR: Cannot load person who exists, ignoring. (Name: "
+                                + p.getName() + ", Id " + p.getId() + ')');
+                        p = null;
+                    }
 
-                if (p != null) {
-                    getCampaign().recruitPerson(p, true);
+                    if (p != null) {
+                        getCampaign().recruitPerson(p, true);
 
-                    // Clear some values we no longer should have set in case this
-                    // has transferred campaigns or things in the campaign have
-                    // changed...
-                    p.setUnit(null);
-                    p.clearTechUnits();
+                        // Clear some values we no longer should have set in case this
+                        // has transferred campaigns or things in the campaign have
+                        // changed...
+                        p.setUnit(null);
+                        p.clearTechUnits();
+                    }
+                } catch (Exception ex) {
+                    LogManager.getLogger().error("Failed to parse person from personnel file", ex);
                 }
             }
 
@@ -2139,7 +2144,7 @@ public class CampaignGUI extends JPanel {
         }
     }
 
-    // TODO: disable if not using personnel tab
+    // TODO : disable if not using personnel tab
     private void savePersonFile() {
         File file = FileDialogs.savePersonnel(frame, getCampaign()).orElse(null);
         if (file == null) {

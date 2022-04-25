@@ -112,7 +112,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
     private Clan originClan;
     private int bloodnameYear;
     private Phenotype selectedPhenotype;
-    private String lastGeneratedBloodname;
+    private Bloodname lastGeneratedBloodname;
     //endregion Name Tab
 
     //region Personnel Module Tab
@@ -441,11 +441,11 @@ public class GMToolsDialog extends AbstractMHQDialog {
         this.selectedPhenotype = selectedPhenotype;
     }
 
-    public @Nullable String getLastGeneratedBloodname() {
+    public @Nullable Bloodname getLastGeneratedBloodname() {
         return lastGeneratedBloodname;
     }
 
-    public void setLastGeneratedBloodname(final @Nullable String lastGeneratedBloodname) {
+    public void setLastGeneratedBloodname(final @Nullable Bloodname lastGeneratedBloodname) {
         this.lastGeneratedBloodname = lastGeneratedBloodname;
     }
     //endregion Name Tab
@@ -1245,8 +1245,8 @@ public class GMToolsDialog extends AbstractMHQDialog {
             }
         }
 
-        if (!StringUtility.isNullOrBlank(getPerson().getName().getBloodname())) {
-            getLblCurrentBloodname().setText(getPerson().getName().getBloodname());
+        if (getPerson().getName().getBloodname() != null) {
+            getLblCurrentBloodname().setText(getPerson().getName().getBloodname().getName());
         }
 
         int year = getGUI().getCampaign().getGameYear();
@@ -1445,7 +1445,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
             getLblBloodnameGenerated().setText(bloodname.getName() + " (" + bloodname.getFounder() + ")");
             getLblOriginClanGenerated().setText(bloodname.getOriginClan().getFullName(getBloodnameYear()));
             getLblPhenotypeGenerated().setText(bloodname.getPhenotype().getGroupingName());
-            setLastGeneratedBloodname(bloodname.getName());
+            setLastGeneratedBloodname(bloodname);
         }
     }
 
@@ -1455,7 +1455,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
         }
 
         if (getLastGeneratedBloodname() != null) {
-            getLblCurrentBloodname().setText(getLastGeneratedBloodname());
+            getLblCurrentBloodname().setText(getLastGeneratedBloodname().getName());
             getPerson().getName().setBloodname(getLastGeneratedBloodname());
             MekHQ.triggerEvent(new PersonChangedEvent(getPerson()));
         }

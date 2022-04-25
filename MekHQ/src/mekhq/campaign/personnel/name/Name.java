@@ -385,7 +385,8 @@ public class Name {
                     setCallsignDirect(wn.getTextContent().trim());
                     break;
                 case "bloodname":
-                    setBloodnameDirect(Bloodname.fillFromXML(wn));
+                    final Bloodname bloodname = new Bloodname();
+                    setBloodnameDirect(bloodname.fillFromXML(wn));
                     break;
                 default:
                     LogManager.getLogger().error("Failed to parse unknown node" + wn.getNodeName());

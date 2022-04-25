@@ -2,7 +2,7 @@
  * Bloodname.java
  *
  * Copyright (c) 2014 - Carl Spain. All Rights Reserved.
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -35,6 +35,7 @@ import javax.xml.parsers.DocumentBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -165,59 +166,6 @@ public class Bloodname {
         }
     }
 
-    public static Bloodname loadFromXml(Node node) {
-        Bloodname retVal = new Bloodname();
-        NodeList nl = node.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node wn = nl.item(i);
-
-            try {
-                if (wn.getNodeName().equalsIgnoreCase("name")) {
-                    retVal.name = wn.getTextContent().trim();
-                } else if (wn.getNodeName().equalsIgnoreCase("founder")) {
-                    retVal.founder = wn.getTextContent().trim();
-                } else if (wn.getNodeName().equalsIgnoreCase("clan")) {
-                    retVal.origClan = Clan.getClan(wn.getTextContent().trim());
-                } else if (wn.getNodeName().equalsIgnoreCase("exclusive")) {
-                    retVal.exclusive = true;
-                } else if (wn.getNodeName().equalsIgnoreCase("reaved")) {
-                    retVal.inactive = Integer.parseInt(wn.getTextContent().trim());
-                } else if (wn.getNodeName().equalsIgnoreCase("dormant")) {
-                    retVal.inactive = Integer.parseInt(wn.getTextContent().trim()) + 10;
-                } else if (wn.getNodeName().equalsIgnoreCase("abjured")) {
-                    retVal.abjured = Integer.parseInt(wn.getTextContent().trim());
-                } else if (wn.getNodeName().equalsIgnoreCase("reactivated")) {
-                    retVal.reactivated = Integer.parseInt(wn.getTextContent().trim() + 20);
-                } else if (wn.getNodeName().equalsIgnoreCase("phenotype")) {
-                    retVal.phenotype = Phenotype.parseFromString(wn.getTextContent().trim());
-                } else if (wn.getNodeName().equalsIgnoreCase("postReaving")) {
-                    String[] clans = wn.getTextContent().trim().split(",");
-                    for (String c : clans) {
-                        retVal.postReavingClans.add(Clan.getClan(c));
-                    }
-                } else if (wn.getNodeName().equalsIgnoreCase("acquired")) {
-                    retVal.acquiringClans.add(new NameAcquired(
-                            Integer.parseInt(wn.getAttributes().getNamedItem("date").getTextContent()) + 10,
-                            wn.getTextContent().trim()));
-                } else if (wn.getNodeName().equalsIgnoreCase("shared")) {
-                    retVal.acquiringClans.add(new NameAcquired(
-                            Integer.parseInt(wn.getAttributes().getNamedItem("date").getTextContent()),
-                            wn.getTextContent().trim()));
-                } else if (wn.getNodeName().equalsIgnoreCase("absorbed")) {
-                    retVal.absorbed = new NameAcquired(
-                            Integer.parseInt(wn.getAttributes().getNamedItem("date").getTextContent()),
-                            wn.getTextContent().trim());
-                } else if (wn.getNodeName().equalsIgnoreCase("created")) {
-                    retVal.startDate = Integer.parseInt(wn.getTextContent().trim()) + 20;
-                }
-            } catch (Exception e) {
-                LogManager.getLogger().error("", e);
-            }
-        }
-
-        return retVal;
-    }
-
     /**
      * Determines a likely Bloodname based on Clan, phenotype, and year.
      *
@@ -331,7 +279,7 @@ public class Bloodname {
                      * When the actual Clans sharing the Bloodname are known, it is divided
                      * among those Clans.
                      */
-                    for (Bloodname.NameAcquired a : name.getAcquiringClans()) {
+                    for (NameAcquired a : name.getAcquiringClans()) {
                         if (faction.getGenerationCode().equals(a.clan)) {
                             weight = new Fraction(1, numClans);
                             break;
@@ -410,6 +358,11 @@ public class Bloodname {
         }
     }
 
+    //region File I/O
+    public void writeToXML(final PrintWriter pw, int indent) {
+        // FIXME : Windchild
+    }
+
     public static void loadBloodnameData() {
         Clan.loadClanData();
         bloodnames = new ArrayList<>();
@@ -449,6 +402,66 @@ public class Bloodname {
         LogManager.getLogger().info("Loaded " + bloodnames.size() + " Bloodname records.");
     }
 
+    public static Bloodname loadFromXml(final Node wn) {
+        Bloodname retVal = new Bloodname();
+        NodeList nl = wn.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node wn2 = nl.item(i);
+
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("name")) {
+                    retVal.name = wn2.getTextContent().trim();
+                } else if (wn2.getNodeName().equalsIgnoreCase("founder")) {
+                    retVal.founder = wn2.getTextContent().trim();
+                } else if (wn2.getNodeName().equalsIgnoreCase("clan")) {
+                    retVal.origClan = Clan.getClan(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("exclusive")) {
+                    retVal.exclusive = true;
+                } else if (wn2.getNodeName().equalsIgnoreCase("reaved")) {
+                    retVal.inactive = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("dormant")) {
+                    retVal.inactive = Integer.parseInt(wn2.getTextContent().trim()) + 10;
+                } else if (wn2.getNodeName().equalsIgnoreCase("abjured")) {
+                    retVal.abjured = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("reactivated")) {
+                    retVal.reactivated = Integer.parseInt(wn2.getTextContent().trim() + 20);
+                } else if (wn2.getNodeName().equalsIgnoreCase("phenotype")) {
+                    retVal.phenotype = Phenotype.parseFromString(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("postReaving")) {
+                    String[] clans = wn2.getTextContent().trim().split(",");
+                    for (String c : clans) {
+                        retVal.postReavingClans.add(Clan.getClan(c));
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("acquired")) {
+                    retVal.acquiringClans.add(new NameAcquired(
+                            Integer.parseInt(wn2.getAttributes().getNamedItem("date").getTextContent()) + 10,
+                            wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("shared")) {
+                    retVal.acquiringClans.add(new NameAcquired(
+                            Integer.parseInt(wn2.getAttributes().getNamedItem("date").getTextContent()),
+                            wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("absorbed")) {
+                    retVal.absorbed = new NameAcquired(
+                            Integer.parseInt(wn2.getAttributes().getNamedItem("date").getTextContent()),
+                            wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("created")) {
+                    retVal.startDate = Integer.parseInt(wn2.getTextContent().trim()) + 20;
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
+            }
+        }
+
+        return retVal;
+    }
+
+    public Bloodname fillFromXML(final Node wn) {
+        // FIXME : Windchild
+        return this;
+    }
+    //endregion File I/O
+
+    //region Internal Classes
     private static class NameAcquired {
         public int year;
         public String clan;
@@ -458,7 +471,7 @@ public class Bloodname {
         }
     }
 
-    static class Fraction {
+    private static class Fraction {
         private int numerator;
         private int denominator;
 
@@ -602,4 +615,5 @@ public class Bloodname {
             return retVal;
         }
     }
+    //endregion Internal Classes
 }
