@@ -252,7 +252,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
 
                                     u.setTech(tech);
                                 } else {
-                                    cantTech += tech.getFullName() + " cannot maintain " + u.getName() + "\n";
+                                    cantTech += tech.getName() + " cannot maintain " + u.getName() + '\n';
                                 }
                             }
                         }
@@ -722,8 +722,9 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                                 }
                             }
 
-                            menuItem = new JMenuItem(tech.getFullTitle() + " (" + tech.getRoleDesc() + ")");
-                            menuItem.setActionCommand(COMMAND_ADD_LANCE_TECH + tech.getId() + "|" + forceIds);
+                            menuItem = new JMenuItem(tech.getName().getFullTitle(tech)
+                                    + " (" + tech.getRoleDesc() + ')');
+                            menuItem.setActionCommand(COMMAND_ADD_LANCE_TECH + tech.getId() + '|' + forceIds);
                             menuItem.addActionListener(this);
                             switch (skillLvl) {
                                 case SkillType.ELITE_NM:
@@ -815,7 +816,8 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     if (null != u.getCommander()) {
                         Person p = u.getCommander();
                         if (p.getStatus().isActive() && (u.getForceId() < 1) && u.isPresent()) {
-                            JMenuItem menuItem0 = new JMenuItem(p.getFullTitle() + ", " + u.getName());
+                            JMenuItem menuItem0 = new JMenuItem(p.getName().getFullTitle(p)
+                                    + ", " + u.getName());
                             menuItem0.setActionCommand(TOEMouseAdapter.COMMAND_ADD_UNIT + u.getId() + "|" + forceIds);
                             menuItem0.addActionListener(this);
                             menuItem0.setEnabled(u.isAvailable());

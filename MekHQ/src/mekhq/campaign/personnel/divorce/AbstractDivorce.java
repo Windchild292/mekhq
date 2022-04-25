@@ -201,10 +201,11 @@ public abstract class AbstractDivorce {
             PersonalLogger.divorcedFrom(spouse, origin, today);
 
             campaign.addReport(String.format(resources.getString("divorce.report"),
-                    origin.getHyperlinkedName(), spouse.getHyperlinkedName()));
+                    origin.getName().getHyperlinkedName(origin),
+                    spouse.getName().getHyperlinkedName(spouse)));
 
-            spouse.setMaidenName(null);
-            origin.setMaidenName(null);
+            spouse.getName().setMaidenName(null);
+            origin.getName().setMaidenName(null);
 
             spouse.getGenealogy().setSpouse(null);
             origin.getGenealogy().setSpouse(null);
@@ -214,7 +215,7 @@ public abstract class AbstractDivorce {
             if (spouse.getStatus().isKIA()) {
                 PersonalLogger.spouseKia(origin, spouse, today);
             }
-            origin.setMaidenName(null);
+            origin.getName().setMaidenName(null);
             origin.getGenealogy().setSpouse(null);
         } else { // Origin is Dead or MIA
             reason = FormerSpouseReason.WIDOWED;
@@ -222,7 +223,7 @@ public abstract class AbstractDivorce {
             if (origin.getStatus().isKIA()) {
                 PersonalLogger.spouseKia(spouse, origin, today);
             }
-            spouse.setMaidenName(null);
+            spouse.getName().setMaidenName(null);
             spouse.getGenealogy().setSpouse(null);
         }
 

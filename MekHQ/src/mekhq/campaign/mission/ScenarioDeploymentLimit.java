@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 /**
  * This class is optionally used by Scenario to determine any limits on the type and quantity of units that the player
@@ -303,14 +304,11 @@ public class ScenarioDeploymentLimit {
      * @return a String that is a comma separated list of required personnel names
      */
     public String getRequiredPersonnelDesc(Campaign c) {
-        ArrayList<String> personNames = new ArrayList<>();
-        for (UUID personId: requiredPersonnel) {
-            Person p = c.getPerson(personId);
-            if ((null != p) && p.getStatus().isActive()) {
-                personNames.add(p.getFullName());
-            }
-        }
-        return String.join(", ", personNames);
+        return requiredPersonnel.stream()
+                .map(c::getPerson)
+                .filter(p -> (null != p) && p.getStatus().isActive())
+                .map(p -> p.getName().toString())
+                .collect(Collectors.joining(", "));
     }
     //endregion Required personnel methods
 

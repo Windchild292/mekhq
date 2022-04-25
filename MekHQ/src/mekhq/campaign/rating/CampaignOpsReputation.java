@@ -728,8 +728,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
                 if (!first) {
                     out.append("\n");
                 }
-                out.append(String.format(TEMPLATE, nm + ":",
-                                         skillRatingCounts.get(nm)));
+                out.append(String.format(TEMPLATE, nm + ':', skillRatingCounts.get(nm)));
                 first = false;
             }
         }
@@ -738,11 +737,10 @@ public class CampaignOpsReputation extends AbstractUnitRating {
 
     private String getCommanderDetails() {
         StringBuilder out = new StringBuilder();
-        String commanderName = null == getCommander() ? "" :
-                "(" + getCommander().getFullTitle() + ")";
-        out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s",
-                                 "Commander:", getCommanderValue(),
-                                 commanderName));
+        String commanderName = null == getCommander() ? ""
+                : '(' + getCommander().getName().getFullTitle(getCommander()) + ')';
+        out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s", "Commander:",
+                getCommanderValue(), commanderName));
 
         final String TEMPLATE = "    %-" + SUBHEADER_LENGTH + "s %3d";
         out.append("\n").append(String.format(TEMPLATE, "Leadership:",

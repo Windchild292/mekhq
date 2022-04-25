@@ -257,12 +257,12 @@ public abstract class AbstractProcreation {
 
         final String babyAmount = resources.getString("babyAmount.text").split(",")[size - 1];
         campaign.addReport(String.format(resources.getString("babyConceived.report"),
-                mother.getHyperlinkedName(), babyAmount).trim());
+                mother.getName().getHyperlinkedName(mother), babyAmount).trim());
         if (campaign.getCampaignOptions().isLogProcreation()) {
             MedicalLogger.hasConceived(mother, today, babyAmount);
             if (mother.getGenealogy().hasSpouse()) {
                 PersonalLogger.spouseConceived(mother.getGenealogy().getSpouse(),
-                        mother.getFullName(), today, babyAmount);
+                        mother.getName().toString(), today, babyAmount);
             }
         }
     }
@@ -303,7 +303,7 @@ public abstract class AbstractProcreation {
         // Output a specific report to the campaign if they are giving birth to multiple children
         if (size > 1) {
             campaign.addReport(String.format(resources.getString("multipleBabiesBorn.report"),
-                    mother.getHyperlinkedName(),
+                    mother.getName().getHyperlinkedName(mother),
                     resources.getString("babyAmount.text").split(",")[size - 1]));
         }
 
@@ -311,18 +311,19 @@ public abstract class AbstractProcreation {
         for (int i = 0; i < size; i++) {
             // Create the specific baby
             final Person baby = campaign.newDependent(true);
-            baby.setSurname(campaign.getCampaignOptions().getBabySurnameStyle()
+            baby.getName().setSurname(campaign.getCampaignOptions().getBabySurnameStyle()
                     .generateBabySurname(mother, father, baby.getGender()));
             baby.setBirthday(today);
 
             // Create reports and log the birth
             campaign.addReport(String.format(resources.getString("babyBorn.report"),
-                    mother.getHyperlinkedName(), baby.getHyperlinkedName(),
+                    mother.getName().getHyperlinkedName(mother),
+                    baby.getName().getHyperlinkedName(baby),
                     GenderDescriptors.BOY_GIRL.getDescriptor(baby.getGender())));
             if (campaign.getCampaignOptions().isLogProcreation()) {
                 MedicalLogger.deliveredBaby(mother, baby, today);
                 if (father != null) {
-                    PersonalLogger.ourChildBorn(father, baby, mother.getFullName(), today);
+                    PersonalLogger.ourChildBorn(father, baby, mother.getName().toString(), today);
                 }
             }
 

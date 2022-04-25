@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,11 +20,20 @@ package mekhq.io.migration;
 
 import megamek.Version;
 import mekhq.MHQConstants;
+import mekhq.campaign.personnel.Bloodname;
 import mekhq.campaign.personnel.Person;
 
 import java.util.Collection;
 
 public class PersonMigrator {
+    /**
+     * This migrates a bloodname from the old text setup to actually using the bloodname object
+     * This occurred in 0.49.8.
+     */
+    public static Bloodname migrateBloodname(final String text) {
+        // FIXME : Windchild
+        return new Bloodname();
+    }
 
     /**
      * This performs the final migration for a person, with everything but sanity checks performed.

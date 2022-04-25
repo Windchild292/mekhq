@@ -225,8 +225,8 @@ public class CampaignXmlParser {
                 }*/ else if (xn.equalsIgnoreCase("parts")) {
                     processPartNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("personnel")) {
-                    // TODO: Make this depending on campaign options
-                    // TODO: hoist registerAll out of this
+                    // TODO : Make this depending on campaign options
+                    // TODO : hoist registerAll out of this
                     InjuryTypes.registerAll();
                     processPersonnelNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("ancestors")) { // Legacy
@@ -255,11 +255,11 @@ public class CampaignXmlParser {
                     retVal.setPersonnelMarket(PersonnelMarket.generateInstanceFromXML(wn, retVal, version));
                     foundPersonnelMarket = true;
                 } else if (xn.equalsIgnoreCase("contractMarket")) {
-                    // CAW: implicit DEPENDS-ON to the <missions> node
+                    // CAW : implicit DEPENDS-ON to the <missions> node
                     retVal.setContractMarket(ContractMarket.generateInstanceFromXML(wn, retVal, version));
                     foundContractMarket = true;
                 } else if (xn.equalsIgnoreCase("unitMarket")) {
-                    // Windchild: implicit DEPENDS ON to the <campaignOptions> nodes
+                    // Windchild : implicit DEPENDS ON to the <campaignOptions> nodes
                     retVal.setUnitMarket(retVal.getCampaignOptions().getUnitMarketMethod().getUnitMarket());
                     retVal.getUnitMarket().fillFromXML(wn, retVal, version);
                     foundUnitMarket = true;
@@ -574,20 +574,20 @@ public class CampaignXmlParser {
                     unitDesc = u.getName();
                     tech.removeTechUnit(u);
                 } else if (u.getTech() != null && !tech.getId().equals(u.getTech().getId())) {
-                    reason = String.format("referenced tech %s's maintained unit", u.getTech().getFullName());
+                    reason = String.format("referenced tech %s's maintained unit", u.getTech());
                     unitDesc = u.getName();
                     tech.removeTechUnit(u);
                 }
                 if (null != reason) {
-                    LogManager.getLogger().warn(String.format("Tech %s %s %s (fixed)", tech.getFullName(), reason, unitDesc));
+                    LogManager.getLogger().warn(String.format("Tech %s %s %s (fixed)",
+                            tech.getName(), reason, unitDesc));
                 }
             }
         }
     }
 
     /**
-     * Pulled out purely for encapsulation. Makes the code neater and easier to
-     * read.
+     * Pulled out purely for encapsulation. Makes the code neater and easier to read.
      *
      * @param retVal The Campaign object that is being populated.
      * @param wni    The XML node we're working from.
@@ -843,17 +843,16 @@ public class CampaignXmlParser {
             }
 
             if (!wn2.getNodeName().equalsIgnoreCase("person")) {
-                // Error condition of sorts!
-                // Errr, what should we do here?
                 LogManager.getLogger().error("Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
 
                 continue;
             }
 
-            Person p = Person.generateInstanceFromXML(wn2, retVal, version);
-
-            if (p != null) {
-                retVal.importPerson(p);
+            try {
+                retVal.importPerson(Person.generateInstanceFromXML(wn2, retVal, version));
+            } catch (Exception ex) {
+                LogManager.getLogger().error(String.format("Failed to parse a person from XML, originating with text context\n%s",
+                        wn2.getTextContent()), ex);
             }
         }
 

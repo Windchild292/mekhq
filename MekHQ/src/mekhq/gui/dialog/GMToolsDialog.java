@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 public class GMToolsDialog extends AbstractMHQDialog {
     //region Variable Declarations
@@ -1214,18 +1215,18 @@ public class GMToolsDialog extends AbstractMHQDialog {
             return;
         }
 
-        setTitle(getTitle() + " - " + getPerson().getFullTitle());
+        setTitle(getTitle() + " - " + getPerson().getName().getFullTitle(getPerson()));
 
         // Current Name is the Person's full name
-        getLblCurrentName().setText(getPerson().getFullName());
+        getLblCurrentName().setText(getPerson().getName().toString());
 
         // Gender is set based on the person's gender
         getComboGender().setSelectedItem(getPerson().getGender().isExternal() ? getPerson().getGender()
                 : getPerson().getGender().getExternalVariant());
 
         // Current Callsign is set if applicable
-        if (!StringUtility.isNullOrBlank(getPerson().getCallsign())) {
-            getLblCurrentCallsign().setText(getPerson().getCallsign());
+        if (!StringUtility.isNullOrBlank(getPerson().getName().getCallsign())) {
+            getLblCurrentCallsign().setText(getPerson().getName().getCallsign());
         }
 
         // We set the clanner value based on whether or not the person is a clanner
@@ -1244,17 +1245,15 @@ public class GMToolsDialog extends AbstractMHQDialog {
             }
         }
 
-        if (!StringUtility.isNullOrBlank(getPerson().getBloodname())) {
-            getLblCurrentBloodname().setText(getPerson().getBloodname());
+        if (!StringUtility.isNullOrBlank(getPerson().getName().getBloodname())) {
+            getLblCurrentBloodname().setText(getPerson().getName().getBloodname());
         }
 
         int year = getGUI().getCampaign().getGameYear();
-        for (int i = BLOODNAME_ERAS.length - 1; i >= 0; i--) {
-            if (BLOODNAME_ERAS[i] <= year) {
-                getComboBloodnameEra().setSelectedIndex(i);
-                break;
-            }
-        }
+        IntStream.iterate(BLOODNAME_ERAS.length - 1, i -> i >= 0, i -> i - 1)
+                .filter(i -> BLOODNAME_ERAS[i] <= year)
+                .findFirst()
+                .ifPresent(i -> getComboBloodnameEra().setSelectedIndex(i));
 
         final Clan clan = Clan.getClan((getGUI().getCampaign().getFaction().isClan()
                 ? getGUI().getCampaign().getFaction() : getPerson().getOriginFaction()).getShortName());
@@ -1407,9 +1406,9 @@ public class GMToolsDialog extends AbstractMHQDialog {
         }
 
         if (getLastGeneratedName() != null) {
-            getLblCurrentName().setText((getLastGeneratedName()[0] + " " + getLastGeneratedName()[1]).trim());
-            getPerson().setGivenName(getLastGeneratedName()[0]);
-            getPerson().setSurname(getLastGeneratedName()[1]);
+            getLblCurrentName().setText((getLastGeneratedName()[0] + ' ' + getLastGeneratedName()[1]).trim());
+            getPerson().getName().setGivenName(getLastGeneratedName()[0]);
+            getPerson().getName().setSurname(getLastGeneratedName()[1]);
             MekHQ.triggerEvent(new PersonChangedEvent(getPerson()));
         }
     }
@@ -1434,7 +1433,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
 
         if (getLastGeneratedCallsign() != null) {
             getLblCurrentCallsign().setText(getLastGeneratedCallsign());
-            getPerson().setCallsign(getLastGeneratedCallsign());
+            getPerson().getName().setCallsign(getLastGeneratedCallsign());
             MekHQ.triggerEvent(new PersonChangedEvent(getPerson()));
         }
     }
@@ -1457,7 +1456,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
 
         if (getLastGeneratedBloodname() != null) {
             getLblCurrentBloodname().setText(getLastGeneratedBloodname());
-            getPerson().setBloodname(getLastGeneratedBloodname());
+            getPerson().getName().setBloodname(getLastGeneratedBloodname());
             MekHQ.triggerEvent(new PersonChangedEvent(getPerson()));
         }
     }

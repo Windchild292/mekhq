@@ -298,11 +298,11 @@ public class MedicalViewDialog extends JDialog {
         panel.setBorder(BorderFactory.createMatteBorder(3, 3, 0, 3, Color.BLACK));
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-        String givenName = p.getGivenName();
-        String surname = p.getSurname();
+        String givenName = p.getName().getGivenName();
+        String surname = p.getName().getSurname();
 
         if (p.isClanner()) {
-            surname = p.getBloodname();
+            surname = p.getName().getBloodname().getName();
         }
 
         Period age = Period.between(p.getBirthday(), c.getLocalDate());
@@ -316,7 +316,7 @@ public class MedicalViewDialog extends JDialog {
         Person doc = c.getPerson(p.getDoctorId());
         String doctor = resourceMap.getString("none.text");
         if ((null != doc) && doc.getStatus().isActive()) {
-            doctor = doc.getFullTitle();
+            doctor = doc.getName().getFullTitle(doc);
         }
         panel.add(genLabel(resourceMap.getString("familyName.text")));
         panel.add(genLabel(resourceMap.getString("givenNames.text")));

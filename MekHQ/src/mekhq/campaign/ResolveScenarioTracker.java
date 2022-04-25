@@ -563,8 +563,8 @@ public class ResolveScenarioTracker {
                     missingCrew = true;
                 }
                 for (Person p : crew) {
-                    PersonStatus status = new PersonStatus(p.getFullName(), u.getEntity().getDisplayName(),
-                            p.getHits(), p.getId());
+                    PersonStatus status = new PersonStatus(p.getName().toString(),
+                            u.getEntity().getDisplayName(), p.getHits(), p.getId());
                     status.setMissing(missingCrew);
                     // if the pilot was not found in either the pilot or mia vector
                     // then the unit was devastated and no one ejected, so they should be dead, really dead
@@ -738,7 +738,7 @@ public class ResolveScenarioTracker {
 
         // And assign the casualties and experience amongst the crew and marines
         for (Person p : personnel) {
-            PersonStatus status = new PersonStatus(p.getFullName(),
+            PersonStatus status = new PersonStatus(p.getName().toString(),
                     ship.getEntity().getDisplayName(), p.getHits(), p.getId());
             boolean wounded = false;
             if (casualtiesAssigned < casualties) {
@@ -770,14 +770,14 @@ public class ResolveScenarioTracker {
         List<Entity> cargo = bayLoadedEntities.get(UUID.fromString(en.getExternalIdAsString()));
         if (cargo != null) {
             for (Entity e : cargo) {
-                // Match the still-loaded cargo entity with its unit so we can get the crew
+                // Match the still-loaded cargo entity with its unit, so we can get the crew
                 Unit u = campaign.getUnit(UUID.fromString(e.getExternalIdAsString()));
                 if (u != null) {
                     List<Person> cargoCrew = u.getActiveCrew();
                     cargoCrew.add(u.getTech());
                     cargoCrew = shuffleCrew(cargoCrew);
                     for (Person p : cargoCrew) {
-                        PersonStatus status = new PersonStatus(p.getFullName(),
+                        PersonStatus status = new PersonStatus(p.getName().toString(),
                                 u.getEntity().getDisplayName(), p.getHits(), p.getId());
                         boolean wounded = false;
                         // The lore says bay crews have pressurized sleeping alcoves in the corners of each bay
@@ -953,7 +953,8 @@ public class ResolveScenarioTracker {
             }
 
             for (Person p : crew) {
-                OppositionPersonnelStatus status = new OppositionPersonnelStatus(p.getFullName(), u.getEntity().getDisplayName(), p);
+                OppositionPersonnelStatus status = new OppositionPersonnelStatus(
+                        p.getName().toString(), u.getEntity().getDisplayName(), p);
                 if (en instanceof Mech
                         || en instanceof Protomech
                         || en.isFighter()
@@ -1446,7 +1447,7 @@ public class ResolveScenarioTracker {
                 getCampaign().recruitPerson(person, prisonerStatus);
                 if (prisonerStatus.isWillingToDefect()) {
                     getCampaign().addReport(String.format("You have convinced %s to defect.",
-                            person.getHyperlinkedName()));
+                            person.getName().getHyperlinkedName(person)));
                 }
             } else {
                 continue;

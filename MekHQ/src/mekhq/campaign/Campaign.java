@@ -685,7 +685,7 @@ public class Campaign implements ITechManager {
                 for (UUID pid : getRetirementDefectionTracker().getRetirees()) {
                     if (getPerson(pid).getStatus().isActive()) {
                         getPerson(pid).changeStatus(this, getLocalDate(), PersonnelStatus.RETIRED);
-                        addReport(getPerson(pid).getFullName() + " has retired.");
+                        addReport(getPerson(pid).getName() + " has retired.");
                     }
 
                     if (!getRetirementDefectionTracker().getPayout(pid).getRecruitRole().isNone()) {
@@ -839,7 +839,7 @@ public class Campaign implements ITechManager {
 
                     u.setTech(forceTech);
                 } else {
-                    String cantTech = forceTech.getFullName() + " cannot maintain " + u.getName() + "\n"
+                    String cantTech = forceTech.getName() + " cannot maintain " + u.getName() + '\n'
                             + "You will need to assign a tech manually.";
                     JOptionPane.showMessageDialog(null, cantTech, "Warning", JOptionPane.WARNING_MESSAGE);
                 }
@@ -1390,9 +1390,9 @@ public class Campaign implements ITechManager {
         if (getCampaignOptions().payForRecruitment() && !p.getPrimaryRole().isDependent()
                 && !gmAdd && prisonerStatus.isFree()) {
             if (!getFinances().debit(TransactionType.RECRUITMENT, getLocalDate(),
-                    p.getSalary(this).multipliedBy(2), "Recruitment of " + p.getFullName())) {
+                    p.getSalary(this).multipliedBy(2), "Recruitment of " + p.getName())) {
                 addReport("<font color='red'><b>Insufficient funds to recruit "
-                        + p.getFullName() + "</b></font>");
+                        + p.getName() + "</b></font>");
                 return false;
             }
         }
@@ -1401,7 +1401,7 @@ public class Campaign implements ITechManager {
 
         if (log) {
             String add = !prisonerStatus.isFree() ? (prisonerStatus.isBondsman() ? " as a bondsman" : " as a prisoner") : "";
-            addReport(String.format("%s has been added to the personnel roster%s.", p.getHyperlinkedName(), add));
+            addReport(String.format("%s has been added to the personnel roster%s.", p.getName().getHyperlinkedName(p), add));
         }
 
         if (p.getPrimaryRole().isAstech()) {
@@ -1436,9 +1436,10 @@ public class Campaign implements ITechManager {
 
         // Person already has a bloodname, we open up the dialog to ask if they want to keep the
         // current bloodname or assign a new one
-        if (!person.getBloodname().isEmpty()) {
+        if (person.getName().getBloodname() != null) {
             int result = JOptionPane.showConfirmDialog(null,
-                    person.getFullTitle() + " already has the bloodname " + person.getBloodname()
+                    person.getName().getFullTitle(person) + " already has the bloodname "
+                            + person.getName().getBloodname().getName()
                             + "\nDo you wish to remove that bloodname and generate a new one?",
                     "Already Has Bloodname", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (result == JOptionPane.NO_OPTION) {
@@ -1581,7 +1582,7 @@ public class Campaign implements ITechManager {
                     (getFaction().isClan() ? getFaction() : person.getOriginFaction()).getShortName(),
                     phenotype, getGameYear());
             if (bloodname != null) {
-                person.setBloodname(bloodname.getName());
+                person.getName().setBloodname(bloodname);
                 personUpdated(person);
             }
         }
@@ -2022,21 +2023,21 @@ public class Campaign implements ITechManager {
             return "";
         }
         String report = "";
-        report += doctor.getHyperlinkedFullTitle() + " attempts to heal "
-                + medWork.getFullName();
+        report += doctor.getName().getHyperlinkedFullTitle(doctor) + " attempts to heal "
+                + medWork.getName();
         TargetRoll target = getTargetFor(medWork, doctor);
         int roll = Compute.d6(2);
-        report = report + ",  needs " + target.getValueAsString()
-                + " and rolls " + roll + ":";
+        report = report + ", needs " + target.getValueAsString()
+                + " and rolls " + roll + ':';
         int xpGained = 0;
-        //If we get a natural 2 that isn't an automatic success, reroll if Edge is available and in use.
+        // If we get a natural 2 that isn't an automatic success, reroll if Edge is available and in use.
         if (getCampaignOptions().useSupportEdge()
                 && doctor.getOptions().booleanOption(PersonnelOptions.EDGE_MEDICAL)) {
             if ((roll == 2) && (doctor.getCurrentEdge() > 0) && (target.getValue() != TargetRoll.AUTOMATIC_SUCCESS)) {
                 doctor.changeCurrentEdge(-1);
                 roll = Compute.d6(2);
-                report += medWork.fail() + "\n" + doctor.getHyperlinkedFullTitle() + " uses Edge to reroll:"
-                        + " rolls " + roll + ":";
+                report += medWork.fail() + '\n' + doctor.getName().getHyperlinkedFullTitle(doctor)
+                        + " uses Edge to reroll: rolls " + roll + ':';
             }
         }
         if (roll >= target.getValue()) {
@@ -2073,21 +2074,21 @@ public class Campaign implements ITechManager {
     public TargetRoll getTargetFor(Person medWork, Person doctor) {
         Skill skill = doctor.getSkill(SkillType.S_DOCTOR);
         if (null == skill) {
-            return new TargetRoll(TargetRoll.IMPOSSIBLE, doctor.getFullName()
+            return new TargetRoll(TargetRoll.IMPOSSIBLE, doctor.getName()
                     + " isn't a doctor, he just plays one on TV.");
         }
         if (medWork.getDoctorId() != null
                 && !medWork.getDoctorId().equals(doctor.getId())) {
             return new TargetRoll(TargetRoll.IMPOSSIBLE,
-                    medWork.getFullName() + " is already being tended by another doctor");
+                    medWork.getName() + " is already being tended by another doctor");
         }
         if (!medWork.needsFixing()
                 && !(getCampaignOptions().useAdvancedMedical() && medWork.needsAMFixing())) {
             return new TargetRoll(TargetRoll.IMPOSSIBLE,
-                    medWork.getFullName() + " does not require healing.");
+                    medWork.getName() + " does not require healing.");
         }
         if (getPatientsFor(doctor) > 25) {
-            return new TargetRoll(TargetRoll.IMPOSSIBLE, doctor.getFullName()
+            return new TargetRoll(TargetRoll.IMPOSSIBLE, doctor.getName()
                     + " already has 25 patients.");
         }
         TargetRoll target = new TargetRoll(skill.getFinalSkillValue(),
@@ -2302,7 +2303,7 @@ public class Campaign implements ITechManager {
         // shopping list
         List<IAcquisitionWork> shelvedItems = new ArrayList<>();
 
-        //find planets within a certain radius - the function will weed out dead planets
+        // find planets within a certain radius - the function will weed out dead planets
         List<PlanetarySystem> systems = Systems.getInstance().getShoppingSystems(getCurrentSystem(),
                 getCampaignOptions().getMaxJumpsPlanetaryAcquisition(), currentDate);
 
@@ -2312,7 +2313,7 @@ public class Campaign implements ITechManager {
                 break;
             }
 
-            String personTitle = person.getHyperlinkedFullTitle() + " ";
+            String personTitle = person.getName().getHyperlinkedFullTitle(person) + ' ';
 
             for (PlanetarySystem system: systems) {
                 if (currentList.isEmpty()) {
@@ -2322,8 +2323,8 @@ public class Campaign implements ITechManager {
 
                 List<IAcquisitionWork> remainingItems = new ArrayList<>();
 
-                //loop through shopping list. If its time to check, then check as appropriate. Items not
-                //found get added to the remaining item list. Rotate through personnel
+                // loop through shopping list. If It's time to check, then check as appropriate.
+                // Items not found get added to the remaining item list. Rotate through personnel
                 boolean done = false;
                 for (IAcquisitionWork shoppingItem : currentList) {
                     if (!canAcquireParts(person)) {
@@ -2413,10 +2414,10 @@ public class Campaign implements ITechManager {
      * @return true if the campaign can pay for the acquisition; false if it cannot.
      */
     public boolean canPayFor(IAcquisitionWork acquisition) {
-        //SHOULD we check to see if this acquisition needs to be paid for
+        // SHOULD we check to see if this acquisition needs to be paid for
         if ( (acquisition instanceof UnitOrder && getCampaignOptions().payForUnits())
                 ||(acquisition instanceof Part && getCampaignOptions().payForParts()) ) {
-            //CAN the acquisition actually be paid for
+            // CAN the acquisition actually be paid for
             return getFunds().isGreaterOrEqualThan(acquisition.getBuyCost());
         }
         return true;
@@ -2442,7 +2443,7 @@ public class Campaign implements ITechManager {
             return false;
         }
         if (Compute.d6(2) < target.getValue()) {
-            //no contacts on this planet, move along
+            // no contacts on this planet, move along
             if (getCampaignOptions().usePlanetAcquisitionVerboseReporting()) {
                 addReport("<font color='red'><b>No contacts available for " + acquisition.getAcquisitionName()
                         + " on " + system.getPrintableName(getLocalDate()) + "</b></font>");
@@ -2481,7 +2482,7 @@ public class Campaign implements ITechManager {
         String report = "";
 
         if (null != person) {
-            report += person.getHyperlinkedFullTitle() + " ";
+            report += person.getName().getHyperlinkedFullTitle(person) + ' ';
         }
 
         TargetRoll target = getTargetForAcquisition(acquisition, person);
@@ -2510,7 +2511,7 @@ public class Campaign implements ITechManager {
         int roll = Compute.d6(2);
         report += "  needs " + target.getValueAsString();
         report += " and rolls " + roll + ":";
-        //Edge reroll, if applicable
+        // Edge reroll, if applicable
         if (getCampaignOptions().useSupportEdge() && (roll < target.getValue()) && (person != null)
                 && person.getOptions().booleanOption(PersonnelOptions.EDGE_ADMIN_ACQUIRE_FAIL)
                 && (person.getCurrentEdge() > 0)) {
@@ -2594,25 +2595,25 @@ public class Campaign implements ITechManager {
 
         Person tech = u.getTech();
         if (null == tech) {
-            //uh-oh
+            // uh-oh
             addReport("No tech assigned to the mothballing of " + u.getHyperlinkedName());
             return;
         }
 
-        //don't allow overtime minutes for mothballing because its cheating
-        //since you don't roll
+        // don't allow overtime minutes for mothballing because it's cheating since you don't roll
         int minutes = Math.min(tech.getMinutesLeft(), u.getMothballTime());
 
-        //check astech time
+        // check astech time
         if (!u.isSelfCrewed() && astechPoolMinutes < minutes * 6) {
-            //uh-oh
+            // uh-oh
             addReport("Not enough astechs to work on mothballing of " + u.getHyperlinkedName());
             return;
         }
 
         u.setMothballTime(u.getMothballTime() - minutes);
 
-        String report = tech.getHyperlinkedFullTitle() + " spent " + minutes + " minutes mothballing " + u.getHyperlinkedName();
+        String report = tech.getName().getHyperlinkedFullTitle(tech) + " spent " + minutes
+                + " minutes mothballing " + u.getHyperlinkedName();
         if (!u.isMothballing()) {
             u.completeMothball();
             report += ". Mothballing complete.";
@@ -2641,25 +2642,25 @@ public class Campaign implements ITechManager {
 
         Person tech = u.getTech();
         if (null == tech) {
-            //uh-oh
+            // Uh-oh
             addReport("No tech assigned to the activation of " + u.getHyperlinkedName());
             return;
         }
 
-        //don't allow overtime minutes for activation because its cheating
-        //since you don't roll
+        // Don't allow overtime minutes for activation because it's cheating since you don't roll
         int minutes = Math.min(tech.getMinutesLeft(), u.getMothballTime());
 
-        //check astech time
+        // Check astech time
         if (!u.isSelfCrewed() && astechPoolMinutes < minutes * 6) {
-            //uh-oh
+            // Uh-oh
             addReport("Not enough astechs to work on activation of " + u.getHyperlinkedName());
             return;
         }
 
         u.setMothballTime(u.getMothballTime() - minutes);
 
-        String report = tech.getHyperlinkedFullTitle() + " spent " + minutes + " minutes activating " + u.getHyperlinkedName();
+        String report = tech.getName().getHyperlinkedFullTitle(tech) + " spent " + minutes
+                + " minutes activating " + u.getHyperlinkedName();
 
         tech.setMinutesLeft(tech.getMinutesLeft() - minutes);
         if (!u.isSelfCrewed()) {
@@ -2688,9 +2689,9 @@ public class Campaign implements ITechManager {
         if (!r.acquireParts()) {
             return;
         }
-        String report = tech.getHyperlinkedFullTitle() + " works on " + r.getPartName();
+        String report = tech.getName().getHyperlinkedFullTitle(tech) + " works on " + r.getPartName();
         int minutes = r.getTimeLeft();
-        // FIXME: Overtime?
+        // FIXME : Overtime?
         if (minutes > tech.getMinutesLeft()) {
             r.addTimeSpent(tech.getMinutesLeft());
             tech.setMinutesLeft(0);
@@ -2769,7 +2770,7 @@ public class Campaign implements ITechManager {
         String report = "";
         String action = " fix ";
 
-        // TODO: this should really be a method on its own class
+        // TODO : this should really be a method on its own class
         if (partWork instanceof AmmoBin) {
             action = " reload ";
         }
@@ -2808,11 +2809,11 @@ public class Campaign implements ITechManager {
             }
         }
         if (partWork instanceof SpacecraftCoolingSystem) {
-            //Change the string since we're not working on the part itself
-            report += tech.getHyperlinkedFullTitle() + " attempts to" + action
+            // Change the string since we're not working on the part itself
+            report += tech.getName().getHyperlinkedFullTitle(tech) + " attempts to" + action
                     + "a heat sink";
         } else {
-            report += tech.getHyperlinkedFullTitle() + " attempts to" + action
+            report += tech.getName().getHyperlinkedFullTitle(tech) + " attempts to" + action
                     + partWork.getPartName();
         }
         if (null != partWork.getUnit()) {
@@ -3189,7 +3190,7 @@ public class Campaign implements ITechManager {
                     while ((change < 0) && !dependents.isEmpty()) {
                         final Person person = ObjectUtility.getRandomItem(dependents);
                         addReport(String.format(resources.getString("dependentLeavesForce.text"),
-                                person.getFullTitle()));
+                                person.getName().getFullTitle(person)));
                         removePerson(person, false);
                         dependents.remove(person);
                         change++;
@@ -3201,7 +3202,7 @@ public class Campaign implements ITechManager {
                         final Person person = newDependent(false);
                         recruitPerson(person, PrisonerStatus.FREE, true, false);
                         addReport(String.format(resources.getString("dependentJoinsForce.text"),
-                                person.getFullTitle()));
+                                person.getName().getFullTitle(person)));
                     }
                 }
             }
@@ -3253,7 +3254,7 @@ public class Campaign implements ITechManager {
                         addReport(healPerson(p, doctor));
                     }
                 } else if (p.checkNaturalHealing(15)) {
-                    addReport(p.getHyperlinkedFullTitle() + " heals naturally!");
+                    addReport(p.getName().getHyperlinkedFullTitle(p) + " heals naturally!");
                     Unit u = p.getUnit();
                     if (u != null) {
                         u.resetPilotAndEntity();
@@ -3284,7 +3285,7 @@ public class Campaign implements ITechManager {
                 if (p.getIdleMonths() >= getCampaignOptions().getMonthsIdleXP()) {
                     if (Compute.d6(2) >= getCampaignOptions().getTargetIdleXP()) {
                         p.awardXP(this, getCampaignOptions().getIdleXP());
-                        addReport(p.getHyperlinkedFullTitle() + " has gained "
+                        addReport(p.getName().getHyperlinkedFullTitle(p) + " has gained "
                                 + getCampaignOptions().getIdleXP() + " XP");
                     }
                     p.setIdleMonths(0);
@@ -3375,7 +3376,7 @@ public class Campaign implements ITechManager {
                 } else {
                     addReport(String.format(
                             "%s looks at %s, recalls his total lack of skill for working with such technology, then slowly puts the tools down before anybody gets hurt.",
-                            tech.getHyperlinkedFullTitle(), part.getName()));
+                            tech.getName().getHyperlinkedFullTitle(tech), part.getName()));
                     part.setTech(null);
                 }
             } else {
@@ -3578,7 +3579,7 @@ public class Campaign implements ITechManager {
         getRetirementDefectionTracker().removePerson(person);
 
         if (log) {
-            addReport(person.getFullTitle() + " has been removed from the personnel roster.");
+            addReport(person.getName().getFullTitle(person) + " has been removed from the personnel roster.");
         }
 
         personnel.remove(person.getId());
@@ -3638,7 +3639,7 @@ public class Campaign implements ITechManager {
                             if (experienceLevel >= 0 && experienceLevel < SkillType.EXP_REGULAR) {
                                 // ...add one XP.
                                 p.awardXP(this, 1);
-                                addReport(p.getHyperlinkedName() + " has gained 1 XP from training.");
+                                addReport(p.getName().getHyperlinkedName(p) + " has gained 1 XP from training.");
                             }
                         }
                     }
@@ -3878,10 +3879,10 @@ public class Campaign implements ITechManager {
                 if (!personnel.containsKey(p.getGenealogy().getSpouse().getId())) {
                     p.getGenealogy().setSpouse(null);
                     if (!getCampaignOptions().getKeepMarriedNameUponSpouseDeath()
-                            && (p.getMaidenName() != null)) {
-                        p.setSurname(p.getMaidenName());
+                            && (p.getName().getMaidenName() != null)) {
+                        p.getName().setSurname(p.getName().getMaidenName());
                     }
-                    p.setMaidenName(null);
+                    p.getName().setMaidenName(null);
                 }
             }
         }
@@ -5184,7 +5185,7 @@ public class Campaign implements ITechManager {
         if (reportBuilder != null) {
             reportBuilder.append(getUnitRatingMod()).append("(unit rating)");
             if (person != null) {
-                reportBuilder.append(modifier).append("(").append(person.getFullName()).append(", logistics admin)");
+                reportBuilder.append(modifier).append('(').append(person.getName()).append(", logistics admin)");
             } else {
                 reportBuilder.append(modifier).append("(no logistics admin)");
             }
@@ -6328,8 +6329,8 @@ public class Campaign implements ITechManager {
             String techName = "Nobody";
             String techNameLinked = techName;
             if (null != tech) {
-                techName = tech.getFullTitle();
-                techNameLinked = tech.getHyperlinkedFullTitle();
+                techName = tech.getName().getFullTitle(tech);
+                techNameLinked = tech.getName().getHyperlinkedFullTitle(tech);
             }
             // don't do actual damage until we clear the for loop to avoid
             // concurrent mod problems

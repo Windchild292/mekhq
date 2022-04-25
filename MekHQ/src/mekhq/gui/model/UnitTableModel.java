@@ -233,14 +233,14 @@ public class UnitTableModel extends DataTableModel {
             case COL_QUALITY:
                 return u.getQualityName();
             case COL_PILOT:
-                return (u.getCommander() != null) ? u.getCommander().getHTMLTitle() : "-";
+                return (u.getCommander() != null) ? u.getCommander().getName().getHTMLTitle(u.getCommander()) : "-";
             case COL_FORCE:
                 Force force = u.getCampaign().getForce(u.getForceId());
                 return (force != null) ? force.getFullName() : "-";
             case COL_CREW:
                 return u.getActiveCrew().size() + "/" + u.getFullCrewSize();
             case COL_TECH_CRW:
-                return (u.getTech() != null) ? u.getTech().getHTMLTitle() : "-";
+                return (u.getTech() != null) ? u.getTech().getName().getHTMLTitle(u.getTech()) : "-";
             case COL_MAINTAIN:
                 return u.getMaintenanceCost();
             case COL_BV:

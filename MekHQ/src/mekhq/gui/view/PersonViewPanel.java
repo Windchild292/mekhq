@@ -79,10 +79,8 @@ public class PersonViewPanel extends JScrollablePanel {
     }
 
     private void initComponents() {
-        GridBagConstraints gridBagConstraints;
-
         setLayout(new GridBagLayout());
-        getAccessibleContext().setAccessibleName("Details for " + person.getFullName());
+        getAccessibleContext().setAccessibleName("Details for " + person.getName());
 
         JPanel pnlPortrait = setPortrait();
         GridBagConstraints gbc_pnlPortrait = new GridBagConstraints();
@@ -94,7 +92,7 @@ public class PersonViewPanel extends JScrollablePanel {
         add(pnlPortrait, gbc_pnlPortrait);
 
         JPanel pnlInfo = fillInfo();
-        gridBagConstraints = new GridBagConstraints();
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
@@ -405,7 +403,7 @@ public class PersonViewPanel extends JScrollablePanel {
         // Panel portrait will include the person picture and the ribbons
         pnlPortrait.setName("pnlPortrait");
         pnlPortrait.setLayout(new GridBagLayout());
-        pnlPortrait.getAccessibleContext().setAccessibleName("Portrait for: " + person.getFullName());
+        pnlPortrait.getAccessibleContext().setAccessibleName("Portrait for: " + person.getName());
 
         JLabel lblPortrait = new JLabel();
         lblPortrait.setName("lblPortrait");
@@ -425,7 +423,7 @@ public class PersonViewPanel extends JScrollablePanel {
 
     private JPanel fillInfo() {
         JPanel pnlInfo = new JPanel(new GridBagLayout());
-        pnlInfo.setBorder(BorderFactory.createTitledBorder(person.getFullTitle()));
+        pnlInfo.setBorder(BorderFactory.createTitledBorder(person.getName().getFullTitle(person)));
         JLabel lblType = new JLabel();
         JLabel lblStatus1 = new JLabel();
         JLabel lblStatus2 = new JLabel();
@@ -532,7 +530,7 @@ public class PersonViewPanel extends JScrollablePanel {
             firsty++;
         }
 
-        if (!person.getCallsign().equals("-") && !person.getCallsign().isBlank()) {
+        if (!person.getName().getCallsign().equals("-") && !person.getName().getCallsign().isBlank()) {
             lblCall1.setName("lblCall1");
             lblCall1.setText(resourceMap.getString("lblCall1.text"));
             gridBagConstraints = new GridBagConstraints();
@@ -543,7 +541,7 @@ public class PersonViewPanel extends JScrollablePanel {
             pnlInfo.add(lblCall1, gridBagConstraints);
 
             lblCall2.setName("lblCall2");
-            lblCall2.setText(person.getCallsign());
+            lblCall2.setText(person.getName().getCallsign());
             lblCall1.setLabelFor(lblCall2);
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
@@ -837,7 +835,7 @@ public class PersonViewPanel extends JScrollablePanel {
 
             lblSpouse2.setName("lblSpouse2");
             lblSpouse1.setLabelFor(lblSpouse2);
-            lblSpouse2.setText(String.format("<html>%s</html>", spouse.getHyperlinkedName()));
+            lblSpouse2.setText(String.format("<html>%s</html>", spouse.getName().getHyperlinkedName(spouse)));
             lblSpouse2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             lblSpouse2.addMouseListener(new MouseAdapter() {
                 @Override
@@ -877,7 +875,7 @@ public class PersonViewPanel extends JScrollablePanel {
                 );
                 lblFormerSpouses2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 lblFormerSpouses2.setText(String.format("<html><a href='#'>%s</a>, %s, %s</html>",
-                        ex.getFullName(), formerSpouse.getReason(),
+                        ex.getName(), formerSpouse.getReason(),
                         MekHQ.getMHQOptions().getDisplayFormattedDate(formerSpouse.getDate())));
                 lblFormerSpouses2.addMouseListener(new MouseAdapter() {
                     @Override
@@ -914,7 +912,7 @@ public class PersonViewPanel extends JScrollablePanel {
                         new AccessibleRelation(AccessibleRelation.LABELED_BY, lblChildren1)
                     );
                     lblChildren2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    lblChildren2.setText(String.format("<html><a href='#'>%s</a></html>", child.getFullName()));
+                    lblChildren2.setText(String.format("<html><a href='#'>%s</a></html>", child.getName()));
                     lblChildren2.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
@@ -952,7 +950,8 @@ public class PersonViewPanel extends JScrollablePanel {
                         new AccessibleRelation(AccessibleRelation.LABELED_BY, lblGrandchildren1)
                     );
                     lblGrandchildren2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    lblGrandchildren2.setText(String.format("<html><a href='#'>%s</a></html>", grandchild.getFullName()));
+                    lblGrandchildren2.setText(String.format("<html><a href='#'>%s</a></html>",
+                            grandchild.getName()));
                     lblGrandchildren2.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
@@ -976,7 +975,8 @@ public class PersonViewPanel extends JScrollablePanel {
                     gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
                     pnlFamily.add(labelParent, gridBagConstraints);
 
-                    JLabel labelParentName = new JLabel(String.format("<html>%s</html>", parent.getHyperlinkedName()));
+                    JLabel labelParentName = new JLabel(String.format("<html>%s</html>",
+                            parent.getName().getHyperlinkedName(parent)));
                     labelParentName.setName("lblParentName");
                     labelParent.setLabelFor(labelParentName);
                     labelParentName.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1014,7 +1014,8 @@ public class PersonViewPanel extends JScrollablePanel {
 
                 for (Person sibling : siblings) {
                     gridBagConstraints.gridy = firsty;
-                    lblSiblings2 = new JLabel(String.format("<html>%s</html>", sibling.getHyperlinkedName()));
+                    lblSiblings2 = new JLabel(String.format("<html>%s</html>",
+                            sibling.getName().getHyperlinkedName(sibling)));
                     lblSiblings2.setName("lblSiblings2");
                     lblSiblings2.getAccessibleContext().getAccessibleRelationSet().add(
                         new AccessibleRelation(AccessibleRelation.LABELED_BY, lblSiblings1));
@@ -1052,7 +1053,7 @@ public class PersonViewPanel extends JScrollablePanel {
                 for (Person grandparent : grandparents) {
                     gridBagConstraints.gridy = firsty;
                     lblGrandparents2 = new JLabel(String.format("<html>%s</html>",
-                            grandparent.getHyperlinkedName()));
+                            grandparent.getName().getHyperlinkedName(grandparent)));
                     lblGrandparents2.setName("lblGrandparents2");
                     lblGrandparents2.getAccessibleContext().getAccessibleRelationSet().add(
                         new AccessibleRelation(AccessibleRelation.LABELED_BY, lblGrandparents1));
@@ -1089,7 +1090,7 @@ public class PersonViewPanel extends JScrollablePanel {
                 for (Person auntOrUncle : auntsAndUncles) {
                     gridBagConstraints.gridy = firsty;
                     lblAuntsOrUncles2 = new JLabel(String.format("<html>%s</html>",
-                            auntOrUncle.getHyperlinkedName()));
+                            auntOrUncle.getName().getHyperlinkedName(auntOrUncle)));
                     lblAuntsOrUncles2.setName("lblAuntsOrUncles2");
                     lblAuntsOrUncles2.getAccessibleContext().getAccessibleRelationSet().add(
                         new AccessibleRelation(AccessibleRelation.LABELED_BY, lblAuntsOrUncles1));
@@ -1129,9 +1130,10 @@ public class PersonViewPanel extends JScrollablePanel {
                     lblCousins2 = new JLabel();
                     lblCousins2.setName("lblCousins2");
                     lblCousins2.getAccessibleContext().getAccessibleRelationSet().add(
-                        new AccessibleRelation(AccessibleRelation.LABELED_BY, lblCousins1));
+                            new AccessibleRelation(AccessibleRelation.LABELED_BY, lblCousins1));
                     lblCousins2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    lblCousins2.setText(String.format("<html>%s</html>", cousin.getHyperlinkedName()));
+                    lblCousins2.setText(String.format("<html>%s</html>",
+                            cousin.getName().getHyperlinkedName(cousin)));
                     lblCousins2.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
@@ -1148,11 +1150,11 @@ public class PersonViewPanel extends JScrollablePanel {
     }
 
     private JPanel fillSkills() {
-        //skill panel
+        // skill panel
         JPanel pnlSkills = new JPanel(new GridBagLayout());
         pnlSkills.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("pnlSkills.title")));
 
-        //abilities and implants
+        // abilities and implants
         JLabel lblTough1 = new JLabel();
         JLabel lblTough2 = new JLabel();
         JLabel lblEdge1 = new JLabel();
@@ -1344,7 +1346,7 @@ public class PersonViewPanel extends JScrollablePanel {
         PersonnelEventLogModel eventModel = new PersonnelEventLogModel();
         eventModel.setData(logs);
         JTable eventTable = new JTable(eventModel);
-        eventTable.getAccessibleContext().setAccessibleName("Event log for " + person.getFullName());
+        eventTable.getAccessibleContext().setAccessibleName("Event log for " + person.getName());
         eventTable.setRowSelectionAllowed(false);
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         TableColumn column;
@@ -1393,7 +1395,7 @@ public class PersonViewPanel extends JScrollablePanel {
         eventModel.setData(missionLog);
         JTable missionsTable = new JTable(eventModel);
         lblMissions.setLabelFor(missionsTable);
-        missionsTable.getAccessibleContext().setAccessibleName("Mission log for " + person.getFullName());
+        missionsTable.getAccessibleContext().setAccessibleName("Mission log for " + person.getName());
         missionsTable.setRowSelectionAllowed(false);
         missionsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         TableColumn column;
@@ -1445,7 +1447,7 @@ public class PersonViewPanel extends JScrollablePanel {
         pnlInjuries.add(medicalButton, BorderLayout.LINE_START);
 
         JPanel pnlInjuryDetails = new JPanel(new GridBagLayout());
-        pnlInjuryDetails.getAccessibleContext().setAccessibleName("Injury Details for " + person.getFullName());
+        pnlInjuryDetails.getAccessibleContext().setAccessibleName("Injury Details for " + person.getName());
         pnlInjuryDetails.setAlignmentY(Component.TOP_ALIGNMENT);
 
 

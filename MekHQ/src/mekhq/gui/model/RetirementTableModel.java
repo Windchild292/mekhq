@@ -172,7 +172,7 @@ public class RetirementTableModel extends AbstractTableModel {
         }
         switch (col) {
             case COL_PERSON:
-                return p.makeHTMLRank();
+                return p.getName().makeHTMLRank(p);
             case COL_ASSIGN:
                 Unit u = p.getUnit();
                 if (null != u) {
@@ -197,7 +197,7 @@ public class RetirementTableModel extends AbstractTableModel {
                     }
                     return name;
                 }
-                //check for tech
+                // check for tech
                 if (!p.getTechUnits().isEmpty()) {
                     if (p.getTechUnits().size() == 1) {
                         u = p.getTechUnits().get(0);

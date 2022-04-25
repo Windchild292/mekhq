@@ -492,7 +492,7 @@ public class UnitTableMouseAdapter extends JPopupMenuAdapter {
                 tech = gui.getCampaign().getPerson(id);
                 if (!tech.getTechUnits().isEmpty()) {
                     if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(gui.getFrame(),
-                            tech.getFullName() + " will not be able to perform maintenance on "
+                            tech.getName() + " will not be able to perform maintenance on "
                                     + tech.getTechUnits().size() + " assigned units. Proceed?",
                                     "Unmaintained unit warning",
                                     JOptionPane.YES_NO_OPTION)) {

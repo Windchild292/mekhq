@@ -126,8 +126,8 @@ public abstract class AbstractPersonnelGenerator {
 
         String[] name = getNameGenerator().generateGivenNameSurnameSplit(person.getGender(), person.isClanner(),
                 factionCode);
-        person.setGivenName(name[0]);
-        person.setSurname(name[1]);
+        person.getName().setGivenName(name[0]);
+        person.getName().setSurname(name[1]);
     }
 
     /**
