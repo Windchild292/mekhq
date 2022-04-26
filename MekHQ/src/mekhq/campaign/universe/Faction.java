@@ -1,8 +1,6 @@
 /*
- * Faction.java
- *
  * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
- * Copyright (c) 2009-2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2009-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -32,8 +30,8 @@ import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Jay Lawson (jaylawson39 at yahoo.com)
@@ -367,17 +365,15 @@ public class Faction {
         return retVal;
     }
 
-    /** @return Sorted list of faction names as one string */
+    /**
+     * @return Sorted list of faction names as one string
+     */
     public static String getFactionNames(Collection<Faction> factions, int year) {
-        if (null == factions) {
-            return "-";
-        }
-        List<String> factionNames = new ArrayList<>(factions.size());
-        for (Faction f : factions) {
-            factionNames.add(f.getFullName(year));
-        }
-        Collections.sort(factionNames);
-        return Utilities.combineString(factionNames, "/");
+        return (factions == null) ? "-"
+                : Utilities.combineString(factions.stream()
+                        .map(faction -> faction.getFullName(year))
+                        .sorted()
+                        .collect(Collectors.toList()), "/");
     }
 
     @Override

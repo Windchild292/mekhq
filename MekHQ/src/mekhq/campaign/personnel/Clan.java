@@ -1,20 +1,3 @@
-/*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
- * This file is part of MekHQ.
- *
- * MekHQ is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * MekHQ is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
- */
 package mekhq.campaign.personnel;
 
 import megamek.codeUtilities.StringUtility;
@@ -31,12 +14,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.stream.Collectors;
 
-/**
- * This is used to supply clan data needed to generate bloodnames
- * TODO : I should be part of faction, and hence I am deprecated
- */
-@Deprecated
 public class Clan {
     //region Variable Declarations
     private static Map<String, Clan> allClans;
@@ -73,11 +52,6 @@ public class Clan {
         } else {
             return false;
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getCode());
     }
 
     /**
@@ -149,36 +123,19 @@ public class Clan {
     }
 
     /**
-     * @param year the year to determine if the Clan has been abjured by
-     * @return whether or not the Clan has been abjured
-     */
-    public boolean isAbjured(int year) {
-        if (abjurationDate == 0) {
-            return false;
-        } else {
-            return abjurationDate < year;
-        }
-    }
-
-    /**
      * @param year the year to get the Clan's rivals in
-     * @return a list of all of the Clan's rivals in the specified year
+     * @return a list of all the Clan's rivals in the specified year
      */
     public List<Clan> getRivals(int year) {
-        List<Clan> retVal = new ArrayList<>();
-        for (DatedRecord r : rivals) {
-            if (r.isActive(year)) {
-                Clan c = allClans.get(r.getDescription());
-                if (c.isActive(year)) {
-                    retVal.add(c);
-                }
-            }
-        }
-        return retVal;
+        return rivals.stream()
+                .filter(r -> r.isActive(year))
+                .map(r -> allClans.get(r.getDescription()))
+                .filter(c -> c.isActive(year))
+                .collect(Collectors.toList());
     }
 
     /**
-     * @return whether or not the Clan is a Home Clan
+     * @return whether the Clan is a Home Clan
      */
     public boolean isHomeClan() {
         return homeClan;
@@ -199,19 +156,11 @@ public class Clan {
 
     /**
      * @param year the year to get a random Clan for
-     * @param homeClan whether or not the Clan is a Home Clan
+     * @param homeClan whether the Clan is a Home Clan
      * @return a random Clan
      */
     public static Clan randomClan(int year, boolean homeClan) {
-        List<Clan> list = new ArrayList<>();
-        for (Clan c : getClans()) {
-            if ((year > 3075) && (homeClan != c.isHomeClan())) {
-                continue;
-            }
-            if (c.isActive(year)) {
-                list.add(c);
-            }
-        }
+        List<Clan> list = getClans().stream().filter(c -> (year <= 3075) || (homeClan == c.isHomeClan())).filter(c -> c.isActive(year)).collect(Collectors.toList());
         return list.get(Compute.randomInt(list.size()));
     }
 
