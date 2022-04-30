@@ -31,7 +31,9 @@ VERSION HISTORY:
 + PR #3221: Increasing Maximum Bulk Part and Personnel Purchase Quantity to 10k
 + Issue #3224: Personnel Modules: Death
 + PR #3238: Fixing MekHQ's log paths
-+ Issue #3173: Hangar Table: Adding Crew State and Condition columns 
++ Issue #3173: Hangar Table: Adding Crew State and Condition columns
++ Issue #2696: Adding Colouring to the Personnel Unit Assignment Menus
++ PR #3245: PersonnelTable: Fixing Dead and Absent Personnel Colour Usage
 + Updating to JAXB 4.0.0 from 2.3.2
 + Updating to Launch4j 2.5.3 from 2.5.1
 + Updating to Apache Commons CSV 1.9.0 from 1.8
@@ -41,7 +43,7 @@ VERSION HISTORY:
 + Updating to JAXB Runtime 3.0.2 from 2.3.2
 + Adding JUnit Jupiter 5.8.2
 + Updating to JUnit Vintage 5.8.2 from JUnit 4.13.2
-+ Updating to Mockito 4.3.2 from 4.2.0
++ Updating to Mockito 4.5.1 from 4.2.0
 
 0.49.7 (2021-12-18 0300 UTC)
 + PR #3043: Logging: Default Global Exception Handler and Standardized Legacy Logging
