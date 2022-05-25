@@ -262,7 +262,7 @@ public class PartsTableMouseAdapter extends JPopupMenuAdapter {
         }
         // **lets fill the pop up menu**//
         // sell part
-        if (gui.getCampaign().getCampaignOptions().canSellParts() && areAllPartsPresent(parts)) {
+        if (gui.getCampaign().getCampaignOptions().isSellParts() && areAllPartsPresent(parts)) {
             menu = new JMenu("Sell");
             if (areAllPartsAmmo(parts)) {
                 menuItem = new JMenuItem("Sell All Ammo of This Type");

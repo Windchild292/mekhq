@@ -906,7 +906,7 @@ public class UnitTableMouseAdapter extends JPopupMenuAdapter {
             }
 
             // sell unit
-            if (!allDeployed && gui.getCampaign().getCampaignOptions().canSellUnits()) {
+            if (!allDeployed && gui.getCampaign().getCampaignOptions().isSellUnits()) {
                 popup.addSeparator();
                 menuItem = new JMenuItem("Sell Unit");
                 menuItem.setActionCommand(COMMAND_SELL);

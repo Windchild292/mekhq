@@ -1391,7 +1391,7 @@ public class Campaign implements ITechManager {
             return false;
         }
         // Only pay if option set, they weren't GM added, and they aren't a dependent, prisoner or bondsman
-        if (getCampaignOptions().payForRecruitment() && !p.getPrimaryRole().isDependent()
+        if (getCampaignOptions().isPayForRecruitment() && !p.getPrimaryRole().isDependent()
                 && !gmAdd && prisonerStatus.isFree()) {
             if (!getFinances().debit(TransactionType.RECRUITMENT, getLocalDate(),
                     p.getSalary(this).multipliedBy(2), "Recruitment of " + p.getFullName())) {
@@ -2417,10 +2417,10 @@ public class Campaign implements ITechManager {
      * @return true if the campaign can pay for the acquisition; false if it cannot.
      */
     public boolean canPayFor(IAcquisitionWork acquisition) {
-        //SHOULD we check to see if this acquisition needs to be paid for
-        if ( (acquisition instanceof UnitOrder && getCampaignOptions().payForUnits())
-                ||(acquisition instanceof Part && getCampaignOptions().payForParts()) ) {
-            //CAN the acquisition actually be paid for
+        // SHOULD we check to see if this acquisition needs to be paid for
+        if ((acquisition instanceof UnitOrder && getCampaignOptions().isPayForUnits())
+                ||(acquisition instanceof Part && getCampaignOptions().isPayForParts())) {
+            // CAN the acquisition actually be paid for
             return getFunds().isGreaterOrEqualThan(acquisition.getBuyCost());
         }
         return true;
@@ -2926,7 +2926,7 @@ public class Campaign implements ITechManager {
 
         if (roll >= target.getValue()) {
             report = report + partWork.succeed();
-            if (getCampaignOptions().payForRepairs()
+            if (getCampaignOptions().isPayForRepairs()
                     && action.equals(" fix ")
                     && !(partWork instanceof Armor)) {
                 Money cost = ((Part) partWork).getStickerPrice().multipliedBy(0.2);
@@ -6327,7 +6327,7 @@ public class Campaign implements ITechManager {
 
         if (u.getDaysSinceMaintenance() >= (getCampaignOptions().getMaintenanceCycleDays() * ruggedMultiplier)) {
             // maybe use the money
-            if (campaignOptions.payForMaintain()) {
+            if (getCampaignOptions().isPayForMaintain()) {
                 if (!(finances.debit(TransactionType.MAINTENANCE, getLocalDate(), u.getMaintenanceCost(),
                         "Maintenance for " + u.getName()))) {
                     addReport("<font color='red'><b>You cannot afford to pay maintenance costs for "

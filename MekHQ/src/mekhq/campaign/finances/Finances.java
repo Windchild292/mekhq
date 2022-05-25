@@ -138,7 +138,7 @@ public class Finances {
      * in order to keep the transaction record from becoming too large
      */
     public void newFiscalYear(final Campaign campaign) {
-        if (campaign.getCampaignOptions().getNewFinancialYearFinancesToCSVExport()) {
+        if (campaign.getCampaignOptions().isNewFinancialYearFinancesToCSVExport()) {
             final String exportFileName = campaign.getName() + " Finances for "
                     + campaign.getCampaignOptions().getFinancialYearDuration().getExportFilenameDateString(campaign.getLocalDate())
                     + "." + FileType.CSV.getRecommendedExtension();
@@ -258,8 +258,8 @@ public class Finances {
 
         // Handle peacetime operating expenses, payroll, and loan payments
         if (campaign.getLocalDate().getDayOfMonth() == 1) {
-            if (campaignOptions.usePeacetimeCost()) {
-                if (!campaignOptions.showPeacetimeCost()) {
+            if (campaignOptions.isUsePeacetimeCost()) {
+                if (!campaignOptions.isShowPeacetimeCost()) {
                     // Do not include salaries as that will be tracked below
                     Money peacetimeCost = accountant.getPeacetimeCost(false);
 
@@ -308,7 +308,7 @@ public class Finances {
                 }
             }
 
-            if (campaignOptions.payForSalaries()) {
+            if (campaignOptions.isPayForSalaries()) {
                 Money payRollCost = accountant.getPayRoll();
 
                 if (debit(TransactionType.SALARIES, campaign.getLocalDate(), payRollCost,
@@ -329,7 +329,7 @@ public class Finances {
             }
 
             // Handle overhead expenses
-            if (campaignOptions.payForOverhead()) {
+            if (campaignOptions.isPayForOverhead()) {
                 Money overheadCost = accountant.getOverheadExpenses();
 
                 if (debit(TransactionType.OVERHEAD, campaign.getLocalDate(), overheadCost,

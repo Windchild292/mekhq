@@ -2092,7 +2092,7 @@ public class Unit implements ITechnology {
             value = getBuyCost();
         }
 
-        if (getCampaign().getCampaignOptions().usePercentageMaint()) {
+        if (getCampaign().getCampaignOptions().isUsePercentageMaint()) {
             if (en instanceof Mech) {
                 mCost = value.multipliedBy(0.02);
             } else if (en instanceof Warship) {
@@ -5221,7 +5221,7 @@ public class Unit implements ITechnology {
         // TODO Obsolete quirk
 
         // Now for extended parts cost modifiers
-        if (getCampaign().getCampaignOptions().useExtendedPartsModifier()) {
+        if (getCampaign().getCampaignOptions().isUseExtendedPartsModifier()) {
             Engine engine = entity.getEngine();
             int currentYear = getCampaign().getGameYear();
             int rating = getTechRating();

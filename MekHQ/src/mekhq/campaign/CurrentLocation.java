@@ -211,8 +211,8 @@ public class CurrentLocation {
                 }
             }
             if (isAtJumpPoint() && (rechargeTime >= neededRechargeTime)) {
-                //jump
-                if (campaign.getCampaignOptions().payForTransport()) {
+                // jump
+                if (campaign.getCampaignOptions().isPayForTransport()) {
                     if (!campaign.getFinances().debit(TransactionType.TRANSPORTATION, campaign.getLocalDate(),
                             campaign.calculateCostPerJump(
                                     true, campaign.getCampaignOptions().useEquipmentContractBase()),
@@ -227,11 +227,11 @@ public class CurrentLocation {
                 jumpZenith = pickJumpPoint(campaign.getLocalDate());
                 jumpPath.removeFirstSystem();
                 MekHQ.triggerEvent(new LocationChangedEvent(this, true));
-                //reduce remaining hours by usedRechargeTime or usedTransitTime, whichever is greater
+                // reduce remaining hours by usedRechargeTime or usedTransitTime, whichever is greater
                 hours -= Math.max(usedRechargeTime, usedTransitTime);
                 transitTime = currentSystem.getTimeToJumpPoint(1.0);
                 rechargeTime = 0;
-                //if there are hours remaining, then begin recharging jump drive
+                // if there are hours remaining, then begin recharging jump drive
                 usedRechargeTime = Math.min(hours, neededRechargeTime - rechargeTime);
                 if (usedRechargeTime > 0) {
                     campaign.addReport("JumpShips spent " + (Math.round(100.0 * usedRechargeTime) / 100.0) + " hours recharging drives");
@@ -242,14 +242,14 @@ public class CurrentLocation {
                 }
             }
         }
-        //if we are now at the final jump point, then lets begin in-system transit
+        // if we are now at the final jump point, then lets begin in-system transit
         if (jumpPath.size() == 1) {
             double usedTransitTime = Math.min(hours, 24.0 * transitTime);
             campaign.addReport("DropShips spent " + (Math.round(100.0 * usedTransitTime) / 100.0) + " hours transiting into system");
             transitTime -= usedTransitTime/24.0;
             if (transitTime <= 0) {
                 campaign.addReport(jumpPath.getLastSystem().getPrintableName(campaign.getLocalDate()) + " reached.");
-                //we are here!
+                // we are here!
                 transitTime = 0;
                 jumpPath = null;
             }

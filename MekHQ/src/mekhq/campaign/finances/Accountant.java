@@ -59,11 +59,8 @@ public class Accountant {
     }
 
     public Money getPayRoll(boolean noInfantry) {
-        if (getCampaignOptions().payForSalaries()) {
-            return getTheoreticalPayroll(noInfantry);
-        } else {
-            return Money.zero();
-        }
+        return getCampaign().getCampaignOptions().isPayForSalaries()
+                ? getTheoreticalPayroll(noInfantry) : Money.zero();
     }
 
     private Money getTheoreticalPayroll(boolean noInfantry) {
@@ -87,13 +84,12 @@ public class Accountant {
     }
 
     public Money getMaintenanceCosts() {
-        if (getCampaignOptions().payForMaintain()) {
-            return getHangar().getUnitsStream()
-                .filter(u -> u.requiresMaintenance() && (null != u.getTech()))
-                .map(Unit::getMaintenanceCost)
-                .reduce(Money.zero(), Money::plus);
-        }
-        return Money.zero();
+        return getCampaign().getCampaignOptions().isPayForMaintain()
+                ? getHangar().getUnitsStream()
+                        .filter(u -> u.requiresMaintenance() && (null != u.getTech()))
+                        .map(Unit::getMaintenanceCost)
+                        .reduce(Money.zero(), Money::plus)
+                : Money.zero();
     }
 
     public Money getWeeklyMaintenanceCosts() {
@@ -103,11 +99,9 @@ public class Accountant {
     }
 
     public Money getOverheadExpenses() {
-        if (getCampaignOptions().payForOverhead()) {
-            return getTheoreticalPayroll(false).multipliedBy(0.05);
-        } else {
-            return Money.zero();
-        }
+        return getCampaignOptions().isPayForOverhead()
+                ? getTheoreticalPayroll(false).multipliedBy(0.05)
+                : Money.zero();
     }
 
     /**
@@ -129,11 +123,11 @@ public class Accountant {
      */
     public Money getPeacetimeCost(boolean includeSalaries) {
         Money peaceTimeCosts = Money.zero()
-                                .plus(getMonthlySpareParts())
-                                .plus(getMonthlyFuel())
-                                .plus(getMonthlyAmmo());
+                .plus(getMonthlySpareParts())
+                .plus(getMonthlyFuel())
+                .plus(getMonthlyAmmo());
         if (includeSalaries) {
-            peaceTimeCosts = peaceTimeCosts.plus(getPayRoll(getCampaignOptions().useInfantryDontCount()));
+            peaceTimeCosts = peaceTimeCosts.plus(getPayRoll(getCampaignOptions().isInfantryDontCount()));
         }
 
         return peaceTimeCosts;
@@ -219,14 +213,14 @@ public class Accountant {
     }
 
     public Money getContractBase() {
-        if (getCampaignOptions().usePeacetimeCost()) {
+        if (getCampaignOptions().isUsePeacetimeCost()) {
             return getPeacetimeCost()
                     .multipliedBy(0.75)
-                    .plus(getForceValue(getCampaignOptions().useInfantryDontCount()));
+                    .plus(getForceValue(getCampaignOptions().isInfantryDontCount()));
         } else if (getCampaignOptions().useEquipmentContractBase()) {
-            return getForceValue(getCampaignOptions().useInfantryDontCount());
+            return getForceValue(getCampaignOptions().isInfantryDontCount());
         } else {
-            return getTheoreticalPayroll(getCampaignOptions().useInfantryDontCount());
+            return getTheoreticalPayroll(getCampaignOptions().isInfantryDontCount());
         }
     }
 }

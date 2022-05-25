@@ -1191,7 +1191,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
         JMenuHelpers.addMenuIfNonEmpty(popup, menu);
 
         // change salary
-        if (gui.getCampaign().getCampaignOptions().payForSalaries() && StaticChecks.areAllActive(selected)) {
+        if (gui.getCampaign().getCampaignOptions().isPayForSalaries() && StaticChecks.areAllActive(selected)) {
             menuItem = new JMenuItem(resources.getString("setSalary.text"));
             menuItem.setActionCommand(CMD_EDIT_SALARY);
             menuItem.addActionListener(this);
