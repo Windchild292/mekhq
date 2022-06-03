@@ -80,6 +80,7 @@ import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
 import mekhq.campaign.personnel.generator.RandomPortraitGenerator;
 import mekhq.campaign.personnel.marriage.AbstractMarriage;
 import mekhq.campaign.personnel.marriage.DisabledRandomMarriage;
+import mekhq.campaign.personnel.names.LegacyBloodname;
 import mekhq.campaign.personnel.procreation.AbstractProcreation;
 import mekhq.campaign.personnel.procreation.DisabledRandomProcreation;
 import mekhq.campaign.personnel.ranks.RankSystem;
@@ -1580,7 +1581,7 @@ public class Campaign implements ITechManager {
                 phenotype = Phenotype.GENERAL;
             }
 
-            Bloodname bloodname = Bloodname.randomBloodname(
+            LegacyBloodname bloodname = LegacyBloodname.randomBloodname(
                     (getFaction().isClan() ? getFaction() : person.getOriginFaction()).getShortName(),
                     phenotype, getGameYear());
             if (bloodname != null) {

@@ -33,7 +33,7 @@ import megamek.common.enums.Gender;
 import mekhq.MekHQ;
 import mekhq.campaign.event.PersonChangedEvent;
 import mekhq.campaign.mission.AtBDynamicScenarioFactory;
-import mekhq.campaign.personnel.Bloodname;
+import mekhq.campaign.personnel.names.LegacyBloodname;
 import mekhq.campaign.personnel.Clan;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.Phenotype;
@@ -1440,7 +1440,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
     }
 
     private void generateBloodname() {
-        final Bloodname bloodname = Bloodname.randomBloodname(getOriginClan(),
+        final LegacyBloodname bloodname = LegacyBloodname.randomBloodname(getOriginClan(),
                 getSelectedPhenotype(), getBloodnameYear());
         if (bloodname != null) {
             getLblBloodnameGenerated().setText(bloodname.getName() + " (" + bloodname.getFounder() + ")");

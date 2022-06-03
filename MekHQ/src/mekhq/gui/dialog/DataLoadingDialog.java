@@ -34,7 +34,7 @@ import mekhq.campaign.CampaignPreset;
 import mekhq.campaign.event.OptionsChangedEvent;
 import mekhq.campaign.finances.CurrencyManager;
 import mekhq.campaign.mod.am.InjuryTypes;
-import mekhq.campaign.personnel.Bloodname;
+import mekhq.campaign.personnel.names.LegacyBloodname;
 import mekhq.campaign.personnel.ranks.Ranks;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.RATManager;
@@ -221,7 +221,7 @@ public class DataLoadingDialog extends AbstractMHQDialog implements PropertyChan
             setProgress(2);
             RandomNameGenerator.getInstance();
             RandomCallsignGenerator.getInstance();
-            Bloodname.loadBloodnameData();
+            LegacyBloodname.loadBloodnameData();
             //endregion Progress 2
 
             //region Progress 3

@@ -19,10 +19,11 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-package mekhq.campaign.personnel;
+package mekhq.campaign.personnel.names;
 
 import megamek.common.Compute;
 import megamek.common.annotations.Nullable;
+import mekhq.campaign.personnel.Clan;
 import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.personnel.enums.Phenotype;
 import org.apache.logging.log4j.LogManager;
@@ -40,9 +41,9 @@ import java.util.*;
 /**
  * @author Neoancient
  */
-public class Bloodname {
+public class LegacyBloodname {
     //region Variable Declarations
-    private static List<Bloodname> bloodnames;
+    private static List<LegacyBloodname> bloodnames;
 
     private String name;
     private String founder;
@@ -59,7 +60,7 @@ public class Bloodname {
     private NameAcquired absorbed;
     //endregion Variable Declarations
 
-    public Bloodname() {
+    public LegacyBloodname() {
         name = "";
         founder = "";
         exclusive = false;
@@ -165,8 +166,8 @@ public class Bloodname {
         }
     }
 
-    public static Bloodname loadFromXml(Node node) {
-        Bloodname retVal = new Bloodname();
+    public static LegacyBloodname loadFromXml(Node node) {
+        LegacyBloodname retVal = new LegacyBloodname();
         NodeList nl = node.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node wn = nl.item(i);
@@ -229,7 +230,7 @@ public class Bloodname {
      * Though based as much as possible on official sources, the method employed here involves a
      * considerable amount of speculation.
      */
-    public static @Nullable Bloodname randomBloodname(String factionCode, Phenotype phenotype, int year) {
+    public static @Nullable LegacyBloodname randomBloodname(String factionCode, Phenotype phenotype, int year) {
         return randomBloodname(Clan.getClan(factionCode), phenotype, year);
     }
 
@@ -244,7 +245,7 @@ public class Bloodname {
      * Though based as much as possible on official sources, the method employed here involves a
      * considerable amount of speculation.
      */
-    public static @Nullable Bloodname randomBloodname(Clan faction, Phenotype phenotype, int year) {
+    public static @Nullable LegacyBloodname randomBloodname(Clan faction, Phenotype phenotype, int year) {
         if (faction == null) {
             LogManager.getLogger().error("Random Bloodname attempted for a clan that does not exist."
                     + System.lineSeparator()
@@ -274,16 +275,16 @@ public class Bloodname {
         }
 
         /* The relative probability of the various Bloodnames that are original to this Clan */
-        Map<Bloodname, Fraction> weights = new HashMap<>();
+        Map<LegacyBloodname, Fraction> weights = new HashMap<>();
         /* A list of non-exclusive Bloodnames from other Clans */
-        List<Bloodname> nonExclusives = new ArrayList<>();
+        List<LegacyBloodname> nonExclusives = new ArrayList<>();
         /* The relative probability that a warrior in this Clan will have a non-exclusive
          * Bloodname that originally belonged to another Clan; the smaller the number
          * of exclusive Bloodnames of this Clan, the larger this chance.
          */
         double nonExclusivesWeight = 0.0;
 
-        for (Bloodname name : bloodnames) {
+        for (LegacyBloodname name : bloodnames) {
             /* Bloodnames exclusive to Clans that have been abjured (NC, WIE) continue
              * to be used by those Clans but not by others.
              */
@@ -301,7 +302,7 @@ public class Bloodname {
              */
             if (year < 3100) {
                 int numClans = 1;
-                for (Bloodname.NameAcquired a : name.getAcquiringClans()) {
+                for (LegacyBloodname.NameAcquired a : name.getAcquiringClans()) {
                     if (a.year < year) {
                         numClans++;
                     }
@@ -331,7 +332,7 @@ public class Bloodname {
                      * When the actual Clans sharing the Bloodname are known, it is divided
                      * among those Clans.
                      */
-                    for (Bloodname.NameAcquired a : name.getAcquiringClans()) {
+                    for (LegacyBloodname.NameAcquired a : name.getAcquiringClans()) {
                         if (faction.getGenerationCode().equals(a.clan)) {
                             weight = new Fraction(1, numClans);
                             break;
@@ -372,8 +373,8 @@ public class Bloodname {
         for (Fraction f : weights.values()) {
             f.mul(lcd);
         }
-        List<Bloodname> nameList = new ArrayList<>();
-        for (Bloodname b : weights.keySet()) {
+        List<LegacyBloodname> nameList = new ArrayList<>();
+        for (LegacyBloodname b : weights.keySet()) {
             for (int i = 0; i < weights.get(b).value(); i++) {
                 nameList.add(b);
             }
@@ -442,7 +443,7 @@ public class Bloodname {
             Node wn = nl.item(i);
             if (wn.getNodeType() == Node.ELEMENT_NODE) {
                 if (wn.getNodeName().equalsIgnoreCase("bloodname")) {
-                    bloodnames.add(Bloodname.loadFromXml(wn));
+                    bloodnames.add(LegacyBloodname.loadFromXml(wn));
                 }
             }
         }

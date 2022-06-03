@@ -36,6 +36,7 @@ import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.*;
 import mekhq.campaign.personnel.enums.Phenotype;
+import mekhq.campaign.personnel.names.LegacyBloodname;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Faction.Tag;
@@ -995,7 +996,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         Faction faction = campaign.getFaction().isClan() ? campaign.getFaction()
                 : (Faction) choiceFaction.getSelectedItem();
         faction = ((faction != null) && faction.isClan()) ? faction : person.getOriginFaction();
-        Bloodname bloodname = Bloodname.randomBloodname(faction.getShortName(), selectedPhenotype, campaign.getGameYear());
+        LegacyBloodname bloodname = LegacyBloodname.randomBloodname(faction.getShortName(), selectedPhenotype, campaign.getGameYear());
         textBloodname.setText((bloodname != null) ? bloodname.getName() : resourceMap.getString("textBloodname.error"));
     }
 
