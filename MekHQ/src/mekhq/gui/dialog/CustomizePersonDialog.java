@@ -47,6 +47,7 @@ import mekhq.gui.control.EditKillLogControl;
 import mekhq.gui.control.EditMissionLogControl;
 import mekhq.gui.control.EditPersonnelLogControl;
 import mekhq.gui.utilities.MarkdownEditorPanel;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -252,7 +253,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
 
         y++;
 
-        if (person.isClanner()) {
+        if (person.isClanPersonnel()) {
             lblBloodname.setText(resourceMap.getString("lblBloodname.text"));
             lblBloodname.setName("lblBloodname");
             gridBagConstraints = new GridBagConstraints();
@@ -508,7 +509,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         choicePhenotype = new JComboBox<>(phenotypeModel);
         choicePhenotype.setSelectedItem(selectedPhenotype);
         choicePhenotype.addActionListener(evt -> backgroundChanged());
-        choicePhenotype.setEnabled(person.isClanner());
+        choicePhenotype.setEnabled(person.isClanPersonnel());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = y;
@@ -519,7 +520,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         panDemog.add(choicePhenotype, gridBagConstraints);
 
         chkClan = new JCheckBox("Clanner");
-        chkClan.setSelected(person.isClanner());
+        chkClan.setSelected(person.isClanPersonnel());
         chkClan.addItemListener(et -> backgroundChanged());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -840,10 +841,15 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(CustomizePersonDialog.class);
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(CustomizePersonDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private DefaultComboBoxModel<Faction> getFactionsComboBoxModel() {
@@ -970,7 +976,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             person.setOriginPlanet(null);
         }
         person.setPhenotype((Phenotype) choicePhenotype.getSelectedItem());
-        person.setClanner(chkClan.isSelected());
+        person.setClanPersonnel(chkClan.isSelected());
         try {
             person.setToughness(Integer.parseInt(textToughness.getText()));
         } catch (NumberFormatException ignored) { }
@@ -992,7 +998,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
                 : RandomNameGenerator.getInstance().getChosenFaction();
 
         String[] name = RandomNameGenerator.getInstance().generateGivenNameSurnameSplit(
-                (Gender) choiceGender.getSelectedItem(), person.isClanner(), factionCode);
+                (Gender) choiceGender.getSelectedItem(), person.isClanPersonnel(), factionCode);
         textGivenName.setText(name[0]);
         textSurname.setText(name[1]);
     }

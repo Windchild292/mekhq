@@ -21,9 +21,9 @@ package mekhq.campaign.personnel.name;
 import megamek.client.generator.RandomNameGenerator;
 import megamek.codeUtilities.StringUtility;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHqXmlUtil;
 import mekhq.campaign.personnel.Bloodname;
 import mekhq.campaign.personnel.Person;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 
 public class Name {
     //region Variable Declarations
+    private final transient Person origin;
     private transient String fullName;
     private String preNominal;
     private String givenName;
@@ -43,16 +44,17 @@ public class Name {
     //endregion Variable Declarations
 
     //region Constructors
-    public Name() {
-        this(RandomNameGenerator.UNNAMED, RandomNameGenerator.UNNAMED_SURNAME);
+    public Name(final Person origin) {
+        this(origin, RandomNameGenerator.UNNAMED, RandomNameGenerator.UNNAMED_SURNAME);
     }
 
-    public Name(final String givenName, final String surname) {
-        this("", givenName, surname, "");
+    public Name(final Person origin, final String givenName, final String surname) {
+        this(origin, "", givenName, surname, "");
     }
 
-    public Name(final String preNominal, final String givenName, final String surname,
-                final String postNominal) {
+    public Name(final Person origin, final String preNominal, final String givenName,
+                final String surname, final String postNominal) {
+        this.origin = origin;
         setPreNominalDirect(preNominal);
         setGivenNameDirect(givenName);
         setSurnameDirect(surname);
@@ -63,8 +65,14 @@ public class Name {
     }
     //endregion Constructors
 
-
     //region Name
+    /**
+     * @return the Person whose name this is
+     */
+    public Person getOrigin() {
+        return origin;
+    }
+
     /**
      * @return the person's full name
      */
@@ -73,11 +81,10 @@ public class Name {
     }
 
     /**
-     * @param person the person whose name this is
      * @return a hyperlinked string for the person's name
      */
-    public String getHyperlinkedName(final Person person) {
-        return String.format("<a href='PERSON:%s'>%s</a>", person.getId(), this);
+    public String getHyperlinkedName() {
+        return String.format("<a href='PERSON:%s'>%s</a>", getOrigin().getId(), this);
     }
 
     /**
@@ -267,7 +274,7 @@ public class Name {
         final String[] name = text.trim().split("\\s+");
         final StringBuilder givenName = new StringBuilder(name[0]);
 
-        if (person.isClanner()) {
+        if (person.isClanPersonnel()) {
             if (name.length > 1) {
                 int i;
                 for (i = 1; i < name.length - 1; i++) {
@@ -326,28 +333,28 @@ public class Name {
 
     //region File I/O
     public void writeToXML(final PrintWriter pw, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "name");
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "name");
         if (!StringUtility.isNullOrBlank(getPreNominal())) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "preNominal", getPreNominal());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "preNominal", getPreNominal());
         }
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "givenName", getGivenName());
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "surname", getSurname());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "givenName", getGivenName());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "surname", getSurname());
         if (!StringUtility.isNullOrBlank(getPostNominal())) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "postNominal", getPostNominal());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "postNominal", getPostNominal());
         }
 
         if (getMaidenName() != null) { // this is only a != null comparison because empty is a use case for divorce
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "maidenName", getMaidenName());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "maidenName", getMaidenName());
         }
 
         if (!StringUtility.isNullOrBlank(getCallsign())) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "callsign", getCallsign());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "callsign", getCallsign());
         }
 
         if (getBloodname() != null) {
             getBloodname().writeToXML(pw, indent);
         }
-        MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "name");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "name");
     }
 
     /**
@@ -400,7 +407,7 @@ public class Name {
 
     @Override
     public String toString() {
-        return getFullName();
+        return getFullTitle();
     }
 
     @Override

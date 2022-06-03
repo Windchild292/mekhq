@@ -61,6 +61,7 @@ import mekhq.io.migration.FactionMigrator;
 import mekhq.io.migration.ForceIconMigrator;
 import mekhq.io.migration.PersonMigrator;
 import mekhq.module.atb.AtBEventProcessor;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.*;
@@ -99,7 +100,7 @@ public class CampaignXmlParser {
 
         try {
             // Using factory get an instance of document builder
-            DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+            DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
             // Parse using builder to get DOM representation of the XML file
             xmlDoc = db.parse(is);
@@ -219,10 +220,7 @@ public class CampaignXmlParser {
                     retVal.setCampaignOptions(CampaignOptions.generateCampaignOptionsFromXml(wn, version));
                 } else if (xn.equalsIgnoreCase("randomSkillPreferences")) {
                     retVal.setRandomSkillPreferences(RandomSkillPreferences.generateRandomSkillPreferencesFromXml(wn, version));
-                } /* We don't need this since info is processed above in the first iteration...
-                else if (xn.equalsIgnoreCase("info")) {
-                    processInfoNode(retVal, wn, version);
-                }*/ else if (xn.equalsIgnoreCase("parts")) {
+                } else if (xn.equalsIgnoreCase("parts")) {
                     processPartNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("personnel")) {
                     // TODO : Make this depending on campaign options
@@ -268,13 +266,13 @@ public class CampaignXmlParser {
                 } else if (xn.equalsIgnoreCase("retirementDefectionTracker")) {
                     retVal.setRetirementDefectionTracker(RetirementDefectionTracker.generateInstanceFromXML(wn, retVal));
                 } else if (xn.equalsIgnoreCase("shipSearchStart")) {
-                    retVal.setShipSearchStart(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
+                    retVal.setShipSearchStart(MHQXMLUtility.parseDate(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase("shipSearchType")) {
                     retVal.setShipSearchType(Integer.parseInt(wn.getTextContent()));
                 } else if (xn.equalsIgnoreCase("shipSearchResult")) {
                     retVal.setShipSearchResult(wn.getTextContent());
                 } else if (xn.equalsIgnoreCase("shipSearchExpiration")) {
-                    retVal.setShipSearchExpiration(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
+                    retVal.setShipSearchExpiration(MHQXMLUtility.parseDate(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase("customPlanetaryEvents")) {
                     updatePlanetaryEventsFromXML(wn);
                 }
@@ -609,7 +607,7 @@ public class CampaignXmlParser {
 
             try {
                 if (xn.equalsIgnoreCase("calendar")) {
-                    retVal.setLocalDate(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
+                    retVal.setLocalDate(MHQXMLUtility.parseDate(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase(Camouflage.XML_TAG)) {
                     retVal.setCamouflage(Camouflage.parseFromXML(wn));
                 } else if (xn.equalsIgnoreCase("camoCategory")) {
@@ -1013,13 +1011,12 @@ public class CampaignXmlParser {
             }
 
             // If this file already exists then don't overwrite it or we will end up with a bunch of copies
-            String safeName = MhqFileUtil.escapeReservedCharacters(name);
+            String safeName = MHQXMLUtility.escape(name);
             String fileName = sCustomsDir + File.separator + safeName + ext;
             String fileNameCampaign = sCustomsDirCampaign + File.separator + safeName + ext;
 
-            // TODO: get a hash or something to validate and overwrite if we updated this
-            if ((new File(fileName)).exists()
-                    || (new File(fileNameCampaign)).exists()) {
+            // TODO : get a hash or something to validate and overwrite if we updated this
+            if ((new File(fileName)).exists() || (new File(fileNameCampaign)).exists()) {
                 return false;
             }
 
@@ -1110,9 +1107,9 @@ public class CampaignXmlParser {
                 Node wn3 = nl.item(y);
                 if (wn3.getNodeName().equalsIgnoreCase("entity")) {
                     try {
-                        final Entity entity = MekHqXmlUtil.parseSingleEntityMul((Element) wn3, null);
+                        final Entity entity = MHQXMLUtility.parseSingleEntityMul((Element) wn3, null);
                         if (entity == null) {
-                            String name = MekHqXmlUtil.getEntityNameFromXmlString(wn3);
+                            String name = MHQXMLUtility.getEntityNameFromXmlString(wn3);
                             if (!unitList.contains(name)) {
                                 unitList.add(name);
                             }
