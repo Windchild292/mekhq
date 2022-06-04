@@ -252,7 +252,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
 
                                     u.setTech(tech);
                                 } else {
-                                    cantTech += tech.getFullName() + " cannot maintain " + u.getName() + "\n";
+                                    cantTech += tech.getName().getFullName() + " cannot maintain " + u.getName() + "\n";
                                 }
                             }
                         }
@@ -722,7 +722,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                                 }
                             }
 
-                            menuItem = new JMenuItem(tech.getFullTitle() + " (" + tech.getRoleDesc() + ")");
+                            menuItem = new JMenuItem(tech + " (" + tech.getRoleDesc() + ")");
                             menuItem.setActionCommand(COMMAND_ADD_LANCE_TECH + tech.getId() + "|" + forceIds);
                             menuItem.addActionListener(this);
                             switch (skillLvl) {
@@ -815,13 +815,13 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     if (null != u.getCommander()) {
                         Person p = u.getCommander();
                         if (p.getStatus().isActive() && (u.getForceId() < 1) && u.isPresent()) {
-                            JMenuItem menuItem0 = new JMenuItem(p.getFullTitle() + ", " + u.getName());
+                            JMenuItem menuItem0 = new JMenuItem(p + ", " + u.getName());
                             menuItem0.setActionCommand(TOEMouseAdapter.COMMAND_ADD_UNIT + u.getId() + "|" + forceIds);
                             menuItem0.addActionListener(this);
                             menuItem0.setEnabled(u.isAvailable());
-                            if (null != weightClassForUnitType.get(type + "_" + className)) {
-                                weightClassForUnitType.get(type + "_" + className).add(menuItem0);
-                                weightClassForUnitType.get(type + "_" + className).setEnabled(true);
+                            if (null != weightClassForUnitType.get(type + '_' + className)) {
+                                weightClassForUnitType.get(type + '_' + className).add(menuItem0);
+                                weightClassForUnitType.get(type + '_' + className).setEnabled(true);
                             } else {
                                 unsorted.add(menuItem0);
                             }

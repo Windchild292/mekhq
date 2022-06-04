@@ -18,6 +18,7 @@
  */
 package mekhq.gui.dialog;
 
+import megamek.codeUtilities.StringUtility;
 import megamek.common.AmmoType;
 import megamek.common.UnitType;
 import megamek.common.util.EncodeControl;
@@ -778,11 +779,11 @@ public class CampaignExportWizard extends JDialog {
             Component cmp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             Person person = (Person) value;
             String callsign = "";
-            if ((person.getCallsign() != null) && !person.getCallsign().isBlank()) {
-                callsign = String.format("\"%s\" ", person.getCallsign());
+            if (!StringUtility.isNullOrBlank(person.getName().getCallsign())) {
+                callsign = String.format("\"%s\" ", person.getName().getCallsign());
             }
 
-            String cellValue = String.format("%s %s(%s)", person.getFullName(), callsign,
+            String cellValue = String.format("%s %s(%s)", person.getName().getFullName(), callsign,
                     person.getPrimaryRoleDesc());
             ((JLabel) cmp).setText(cellValue);
             return cmp;

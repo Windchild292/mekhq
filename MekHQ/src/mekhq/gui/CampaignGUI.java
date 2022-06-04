@@ -1655,7 +1655,7 @@ public class CampaignGUI extends JPanel {
                     continue;
                 }
                 skillLvl = SkillType.getExperienceLevelName(tech.getExperienceLevel(getCampaign(), false));
-                name = tech.getFullName() + ", " + skillLvl + " " + tech.getPrimaryRoleDesc()
+                name = tech + ", " + skillLvl + " " + tech.getPrimaryRoleDesc()
                         + " (" + getCampaign().getTargetFor(r, tech).getValueAsString() + "+), "
                         + tech.getMinutesLeft() + "/" + tech.getDailyAvailableTechTime() + " minutes";
                 techHash.put(name, tech);
@@ -1757,7 +1757,7 @@ public class CampaignGUI extends JPanel {
                 if (!ignoreMaintenance) {
                     time -= Math.max(0, tech.getMaintenanceTimeUsing());
                 }
-                name = tech.getFullTitle() + ", "
+                name = tech + ", "
                         + SkillType.getExperienceLevelName(tech.getSkillForWorkingOn(u).getExperienceLevel())
                         + " (" + time + "min)";
                 techHash.put(name, tech);
@@ -1999,7 +1999,7 @@ public class CampaignGUI extends JPanel {
                 Person p = Person.generateInstanceFromXML(wn2, getCampaign(), version);
                 if ((p != null) && (getCampaign().getPerson(p.getId()) != null)) {
                     LogManager.getLogger().error("ERROR: Cannot load person who exists, ignoring. (Name: "
-                            + p.getFullName() + ", Id " + p.getId() + ")");
+                            + p + ", Id " + p.getId() + ")");
                     p = null;
                 }
 
@@ -2021,8 +2021,8 @@ public class CampaignGUI extends JPanel {
                 if (p.getGenealogy().hasSpouse()
                         && !getCampaign().getPersonnel().contains(p.getGenealogy().getSpouse())) {
                     // If this happens, we need to clear the spouse
-                    if (p.getMaidenName() != null) {
-                        p.setSurname(p.getMaidenName());
+                    if (p.getName().getMaidenName() != null) {
+                        p.getName().setSurname(p.getName().getMaidenName());
                     }
 
                     p.getGenealogy().setSpouse(null);

@@ -197,27 +197,27 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
 
-        textPreNominal = new JTextField(person.getPreNominal());
+        textPreNominal = new JTextField(person.getName().getPreNominal());
         textPreNominal.setName("textPreNominal");
         textPreNominal.setMinimumSize(new Dimension(50, 28));
         textPreNominal.setPreferredSize(new Dimension(50, 28));
         panName.add(textPreNominal, gridBagConstraints);
 
-        textGivenName = new JTextField(person.getGivenName());
+        textGivenName = new JTextField(person.getName().getGivenName());
         textGivenName.setName("textGivenName");
         textGivenName.setMinimumSize(new Dimension(100, 28));
         textGivenName.setPreferredSize(new Dimension(100, 28));
         gridBagConstraints.gridx = 2;
         panName.add(textGivenName, gridBagConstraints);
 
-        textSurname = new JTextField(person.getSurname());
+        textSurname = new JTextField(person.getName().getSurname());
         textSurname.setName("textSurname");
         textSurname.setMinimumSize(new Dimension(100, 28));
         textSurname.setPreferredSize(new Dimension(100, 28));
         gridBagConstraints.gridx = 3;
         panName.add(textSurname, gridBagConstraints);
 
-        textPostNominal = new JTextField(person.getPostNominal());
+        textPostNominal = new JTextField(person.getName().getPostNominal());
         textPostNominal.setName("textPostNominal");
         textPostNominal.setMinimumSize(new Dimension(50, 28));
         textPostNominal.setPreferredSize(new Dimension(50, 28));
@@ -264,7 +264,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             gridBagConstraints.gridwidth = 1;
             gridBagConstraints.anchor = GridBagConstraints.WEST;
             gridBagConstraints.fill = GridBagConstraints.BOTH;
-            textBloodname.setText(person.getBloodname());
+            textBloodname.setText(person.getName().getBloodname().toString());
             panDemog.add(textBloodname, gridBagConstraints);
 
             btnRandomBloodname.setText(resourceMap.getString("btnRandomBloodname.text"));
@@ -282,7 +282,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             gridBagConstraints.insets = new Insets(0, 5, 0, 0);
             panDemog.add(lblNickname, gridBagConstraints);
 
-            textNickname.setText(person.getCallsign());
+            textNickname.setText(person.getName().getCallsign());
             textNickname.setName("textNickname");
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
@@ -941,12 +941,12 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
     }
 
     private void btnOkActionPerformed(ActionEvent evt) {
-        person.setPreNominal(textPreNominal.getText());
-        person.setGivenName(textGivenName.getText());
-        person.setSurname(textSurname.getText());
-        person.setPostNominal(textPostNominal.getText());
-        person.setCallsign(textNickname.getText());
-        person.setBloodname(textBloodname.getText().equals(resourceMap.getString("textBloodname.error"))
+        person.getName().setPreNominal(textPreNominal.getText());
+        person.getName().setGivenName(textGivenName.getText());
+        person.getName().setSurname(textSurname.getText());
+        person.getName().setPostNominal(textPostNominal.getText());
+        person.getName().setCallsign(textNickname.getText());
+        person.getName().setBloodname(textBloodname.getText().equals(resourceMap.getString("textBloodname.error"))
                 ? "" : textBloodname.getText());
         person.setBiography(txtBio.getText());
         if (choiceGender.getSelectedItem() != null) {

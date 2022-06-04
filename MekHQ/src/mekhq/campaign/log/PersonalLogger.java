@@ -39,17 +39,17 @@ public class PersonalLogger {
 
     public static void spouseKia(Person spouse, Person person, LocalDate date) {
         String message = resources.getString("spouseKia.text");
-        spouse.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, person.getFullName())));
+        spouse.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, person.getName().getFullName())));
     }
 
     public static void divorcedFrom(Person person, Person spouse, LocalDate date) {
         String message = resources.getString("divorcedFrom.text");
-        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getFullName())));
+        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getName().getFullName())));
     }
 
     public static void marriage(Person person, Person spouse, LocalDate date) {
         String message = resources.getString("marries.text");
-        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getFullName())));
+        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getName().getFullName())));
     }
 
     public static void marriageNameChange(Person person, Person spouse, LocalDate date) {
@@ -57,9 +57,9 @@ public class PersonalLogger {
 
         message = MessageFormat.format(message,
                 GenderDescriptors.HIS_HER.getDescriptor(person.getGender()),
-                (!StringUtility.isNullOrBlank(person.getMaidenName())) ? person.getMaidenName()
+                (!StringUtility.isNullOrBlank(person.getName().getMaidenName())) ? person.getName().getMaidenName()
                         : resources.getString("marriageNameChange.emptyMaidenName.text"),
-                person.getSurname(), spouse.getFullName());
+                person.getName().getSurname(), spouse.getName().getFullName());
 
         person.addLogEntry(new PersonalLogEntry(date, message));
     }
@@ -98,7 +98,7 @@ public class PersonalLogger {
         String message = MessageFormat.format(resources.getString("spouseConceived.text"), spouseName);
 
         if (sizeString != null) {
-            message += " " + sizeString;
+            message += ' ' + sizeString;
         }
 
         person.addLogEntry(new PersonalLogEntry(date, message));

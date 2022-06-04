@@ -192,8 +192,8 @@ public abstract class AbstractMarriage {
         }
 
         // Immediately set both Maiden Names, to avoid any divorce bugs (as the default is now an empty string)
-        origin.setMaidenName(origin.getSurname());
-        spouse.setMaidenName(spouse.getSurname());
+        origin.getName().setMaidenName(origin.getName().getSurname());
+        spouse.getName().setMaidenName(spouse.getName().getSurname());
 
         // Then add them as spouses
         origin.getGenealogy().setSpouse(spouse);
@@ -206,8 +206,9 @@ public abstract class AbstractMarriage {
         PersonalLogger.marriage(origin, spouse, today);
         PersonalLogger.marriage(spouse, origin, today);
 
-        campaign.addReport(String.format(resources.getString("marriage.report"), origin.getHyperlinkedName(),
-                spouse.getHyperlinkedName()));
+        campaign.addReport(String.format(resources.getString("marriage.report"),
+                origin.getName().getHyperlinkedFullTitle(),
+                spouse.getName().getHyperlinkedFullTitle()));
 
         // And finally we trigger person changed events
         MekHQ.triggerEvent(new PersonChangedEvent(origin));

@@ -572,12 +572,14 @@ public class CampaignXmlParser {
                     unitDesc = u.getName();
                     tech.removeTechUnit(u);
                 } else if (u.getTech() != null && !tech.getId().equals(u.getTech().getId())) {
-                    reason = String.format("referenced tech %s's maintained unit", u.getTech().getFullName());
+                    reason = String.format("referenced tech %s's maintained unit",
+                            u.getTech().getName().getFullName());
                     unitDesc = u.getName();
                     tech.removeTechUnit(u);
                 }
                 if (null != reason) {
-                    LogManager.getLogger().warn(String.format("Tech %s %s %s (fixed)", tech.getFullName(), reason, unitDesc));
+                    LogManager.getLogger().warn(String.format("Tech %s %s %s (fixed)",
+                            tech.getName().getFullName(), reason, unitDesc));
                 }
             }
         }

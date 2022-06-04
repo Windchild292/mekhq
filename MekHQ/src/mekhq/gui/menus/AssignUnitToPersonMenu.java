@@ -279,7 +279,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                         }
 
                         if (subMenu != null) {
-                            final JMenuItem miPilot = new JMenuItem(person.getFullTitle());
+                            final JMenuItem miPilot = new JMenuItem(person.toString());
                             miPilot.setName("miPilot");
                             miPilot.addActionListener(evt -> {
                                 final Unit oldUnit = person.getUnit();
@@ -348,7 +348,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                         }
 
                         if (subMenu != null) {
-                            final JMenuItem miDriver = new JMenuItem(person.getFullTitle());
+                            final JMenuItem miDriver = new JMenuItem(person.toString());
                             miDriver.setName("miDriver");
                             miDriver.addActionListener(evt -> {
                                 final Unit oldUnit = person.getUnit();
@@ -412,7 +412,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                     }
 
                     if (subMenu != null) {
-                        final JMenuItem miGunner = new JMenuItem(person.getFullTitle());
+                        final JMenuItem miGunner = new JMenuItem(person.toString());
                         miGunner.setName("miGunner");
                         miGunner.addActionListener(evt -> {
                             final Unit oldUnit = person.getUnit();
@@ -474,7 +474,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                     }
 
                     if (subMenu != null) {
-                        final JMenuItem miCrewmember = new JMenuItem(person.getFullTitle());
+                        final JMenuItem miCrewmember = new JMenuItem(person.toString());
                         miCrewmember.setName("miCrewmember");
                         miCrewmember.addActionListener(evt -> {
                             final Unit oldUnit = person.getUnit();
@@ -508,7 +508,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                 // or a gunner, but not necessarily both
                 if (isTank) {
                     if (person.canDrive(units[0].getEntity()) || person.canGun(units[0].getEntity())) {
-                        final JMenuItem miConsoleCommander = new JMenuItem(person.getFullTitle());
+                        final JMenuItem miConsoleCommander = new JMenuItem(person.toString());
                         miConsoleCommander.setName("miConsoleCommander");
                         miConsoleCommander.addActionListener(evt -> {
                             final Unit oldUnit = person.getUnit();
@@ -522,7 +522,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                         consoleCommanderMenu.add(miConsoleCommander);
                     }
                 } else if (person.canDrive(units[0].getEntity()) && person.canGun(units[0].getEntity())) {
-                    final JMenuItem miTechOfficer = new JMenuItem(person.getFullTitle());
+                    final JMenuItem miTechOfficer = new JMenuItem(person.toString());
                     miTechOfficer.setName("miTechOfficer");
                     miTechOfficer.addActionListener(evt -> {
                         final Unit oldUnit = person.getUnit();
@@ -579,7 +579,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                     }
 
                     if (subMenu != null) {
-                        final JMenuItem miSoldier = new JMenuItem(person.getFullTitle());
+                        final JMenuItem miSoldier = new JMenuItem(person.toString());
                         miSoldier.setName("miSoldier");
                         miSoldier.addActionListener(evt -> {
                             final Unit oldUnit = person.getUnit();
@@ -641,7 +641,7 @@ public class AssignUnitToPersonMenu extends JScrollableMenu {
                     }
 
                     if (subMenu != null) {
-                        final JMenuItem miNavigator = new JMenuItem(person.getFullTitle());
+                        final JMenuItem miNavigator = new JMenuItem(person.toString());
                         miNavigator.setName("miNavigator");
                         miNavigator.addActionListener(evt -> {
                             final Unit oldUnit = person.getUnit();

@@ -323,10 +323,6 @@ public class Name {
         return rank + this;
     }
 
-    public String makeHTMLRank() {
-        return String.format("<html><div id=\"%s\">%s</div></html>", getOrigin().getId(), getOrigin().getRankName().trim());
-    }
-
     public String getHyperlinkedFullTitle() {
         return String.format("<a href='PERSON:%s'>%s</a>", getOrigin().getId(), getFullTitle());
     }

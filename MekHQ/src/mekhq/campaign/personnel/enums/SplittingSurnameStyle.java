@@ -100,27 +100,27 @@ public enum SplittingSurnameStyle {
 
         switch (surnameStyle) {
             case ORIGIN_CHANGES_SURNAME:
-                if (origin.getMaidenName() != null) {
-                    origin.setSurname(origin.getMaidenName());
+                if (origin.getName().getMaidenName() != null) {
+                    origin.getName().setSurname(origin.getName().getMaidenName());
                 }
                 break;
             case SPOUSE_CHANGES_SURNAME:
-                if (spouse.getMaidenName() != null) {
-                    spouse.setSurname(spouse.getMaidenName());
+                if (spouse.getName().getMaidenName() != null) {
+                    spouse.getName().setSurname(spouse.getName().getMaidenName());
                 }
                 break;
             case BOTH_CHANGE_SURNAME:
-                if (origin.getMaidenName() != null) {
-                    origin.setSurname(origin.getMaidenName());
+                if (origin.getName().getMaidenName() != null) {
+                    origin.getName().setSurname(origin.getName().getMaidenName());
                 }
 
-                if (spouse.getMaidenName() != null) {
-                    spouse.setSurname(spouse.getMaidenName());
+                if (spouse.getName().getMaidenName() != null) {
+                    spouse.getName().setSurname(spouse.getName().getMaidenName());
                 }
                 break;
             case WEIGHTED: // Should be impossible by design, so we print the stacktrace
                 final String message = String.format(resources.getString("SplittingSurnameStyle.WEIGHTED.ApplicationError.text"),
-                        origin.getFullTitle(), spouse.getFullTitle());
+                        origin.toString(), spouse.toString());
                 // We want the full stacktrace, as otherwise how this could happen is bloody painful to track down.
                 LogManager.getLogger().error(message, new Exception());
                 JOptionPane.showMessageDialog(null, message,

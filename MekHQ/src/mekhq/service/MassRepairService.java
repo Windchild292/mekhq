@@ -705,7 +705,7 @@ public class MassRepairService {
 
             Person tech = techs.get(i);
 
-            debugLog("Checking tech %s", "repairPart", tech.getFullName());
+            debugLog("Checking tech %s", "repairPart", tech);
 
             Skill skill = tech.getSkillForWorkingOn(partWork);
 
@@ -846,7 +846,7 @@ public class MassRepairService {
             WorkTime wt = techSkillToWorktimeMap.get(skill.getType().getName() + "-" + skill.getLevel());
 
             if (null == wt) {
-                debugLog("[ERROR] Null work-time from techToWorktimeMap for %s", "repairPart", tech.getFullName());
+                debugLog("[ERROR] Null work-time from techToWorktimeMap for %s", "repairPart", tech);
                 wt = WorkTime.NORMAL;
             }
 

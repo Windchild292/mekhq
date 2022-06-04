@@ -90,7 +90,7 @@ public class TechTableModel extends DataTableModel {
         else {
             toReturn.append("><b>");
         }
-        toReturn.append(tech.getFullTitle()).append("</b><br/>");
+        toReturn.append(tech.toString()).append("</b><br/>");
 
         boolean first = true;
         for (String skillName : DISPLAYED_SKILL_LEVELS) {

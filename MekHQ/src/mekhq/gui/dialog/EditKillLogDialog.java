@@ -65,7 +65,7 @@ public class EditKillLogDialog extends JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName(resourceMap.getString("dialog.name"));
-        setTitle(resourceMap.getString("dialog.title") + " " + person.getFullName());
+        setTitle(resourceMap.getString("dialog.title") + ' ' + person.getName().getFullName());
         getContentPane().setLayout(new java.awt.BorderLayout());
 
         editKillLogControl = new EditKillLogControl(frame, campaign, person);

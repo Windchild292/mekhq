@@ -74,7 +74,7 @@ public class UnitStub {
         String uname;
         Person pp = u.getCommander();
         if (null != pp) {
-            name = pp.getFullTitle();
+            name = pp.toString();
             name += " (" + u.getEntity().getCrew().getGunnery() + "/" + u.getEntity().getCrew().getPiloting() + ")";
             if (pp.needsFixing()) {
                 name = "<font color='red'>" + name + "</font>";

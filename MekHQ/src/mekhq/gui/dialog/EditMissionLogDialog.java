@@ -61,7 +61,7 @@ public class EditMissionLogDialog extends JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setName(resourceMap.getString("dialog.name"));
-        setTitle(resourceMap.getString("dialog.title") + " " + person.getFullName());
+        setTitle(resourceMap.getString("dialog.title") + ' ' + person.getName().getFullName());
         getContentPane().setLayout(new java.awt.BorderLayout());
 
         editMissionsControl = new EditMissionLogControl(frame, campaign, person);

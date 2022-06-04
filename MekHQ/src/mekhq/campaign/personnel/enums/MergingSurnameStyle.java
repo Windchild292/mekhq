@@ -146,8 +146,8 @@ public enum MergingSurnameStyle {
      */
     public void apply(final Campaign campaign, final LocalDate today, final Person origin,
                       final Person spouse) {
-        final String surname = origin.getSurname();
-        final String spouseSurname = spouse.getSurname();
+        final String surname = origin.getName().getSurname();
+        final String spouseSurname = spouse.getName().getSurname();
         final MergingSurnameStyle surnameStyle = isWeighted()
                 ? createWeightedSurnameMap(campaign.getCampaignOptions().getMarriageSurnameWeights()).randomItem()
                 : this;
@@ -156,106 +156,106 @@ public enum MergingSurnameStyle {
             case NO_CHANGE:
                 break;
             case YOURS:
-                spouse.setSurname(surname);
+                spouse.getName().setSurname(surname);
                 break;
             case SPOUSE:
-                origin.setSurname(spouseSurname);
+                origin.getName().setSurname(spouseSurname);
                 break;
             case SPACE_YOURS:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    spouse.setSurname(spouseSurname + " " + surname);
+                    spouse.getName().setSurname(spouseSurname + ' ' + surname);
                 } else {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 }
                 break;
             case BOTH_SPACE_YOURS:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(spouseSurname + " " + surname);
-                    spouse.setSurname(spouseSurname + " " + surname);
+                    origin.getName().setSurname(spouseSurname + ' ' + surname);
+                    spouse.getName().setSurname(spouseSurname + ' ' + surname);
                 } else if (!StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 } else if (!StringUtility.isNullOrBlank(surname)) {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 }
                 break;
             case HYP_YOURS:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    spouse.setSurname(spouseSurname + "-" + surname);
+                    spouse.getName().setSurname(spouseSurname + '-' + surname);
                 } else {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 }
                 break;
             case BOTH_HYP_YOURS:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(spouseSurname + "-" + surname);
-                    spouse.setSurname(spouseSurname + "-" + surname);
+                    origin.getName().setSurname(spouseSurname + '-' + surname);
+                    spouse.getName().setSurname(spouseSurname + '-' + surname);
                 } else if (!StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 } else if (!StringUtility.isNullOrBlank(surname)) {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 }
                 break;
             case SPACE_SPOUSE:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(surname + " " + spouseSurname);
+                    origin.getName().setSurname(surname + ' ' + spouseSurname);
                 } else {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 }
                 break;
             case BOTH_SPACE_SPOUSE:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(surname + " " + spouseSurname);
-                    spouse.setSurname(surname + " " + spouseSurname);
+                    origin.getName().setSurname(surname + ' ' + spouseSurname);
+                    spouse.getName().setSurname(surname + ' ' + spouseSurname);
                 } else if (!StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 } else if (!StringUtility.isNullOrBlank(surname)) {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 }
                 break;
             case HYP_SPOUSE:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(surname + "-" + spouseSurname);
+                    origin.getName().setSurname(surname + '-' + spouseSurname);
                 } else {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 }
                 break;
             case BOTH_HYP_SPOUSE:
                 if (!StringUtility.isNullOrBlank(surname) && !StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(surname + "-" + spouseSurname);
-                    spouse.setSurname(surname + "-" + spouseSurname);
+                    origin.getName().setSurname(surname + '-' + spouseSurname);
+                    spouse.getName().setSurname(surname + '-' + spouseSurname);
                 } else if (!StringUtility.isNullOrBlank(spouseSurname)) {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 } else if (!StringUtility.isNullOrBlank(surname)) {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 }
                 break;
             case MALE:
                 if (origin.getGender().isMale()) {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 } else {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 }
                 break;
             case FEMALE:
                 if (origin.getGender().isMale()) {
-                    origin.setSurname(spouseSurname);
+                    origin.getName().setSurname(spouseSurname);
                 } else {
-                    spouse.setSurname(surname);
+                    spouse.getName().setSurname(surname);
                 }
                 break;
             case WEIGHTED:
             default:
                 LogManager.getLogger().error(String.format("Merging Surname Style is not defined, and cannot be used \"%s\" and \"%s\"",
-                        origin.getFullName(), spouse.getFullName()));
+                        origin.getName().getFullName(), spouse.getName().getFullName()));
                 break;
         }
 
         if (campaign.getCampaignOptions().isLogMarriageNameChanges()) {
-            if (!spouse.getSurname().equals(spouseSurname)) {
+            if (!spouse.getName().getSurname().equals(spouseSurname)) {
                 PersonalLogger.marriageNameChange(spouse, origin, today);
             }
 
-            if (!origin.getSurname().equals(surname)) {
+            if (!origin.getName().getSurname().equals(surname)) {
                 PersonalLogger.marriageNameChange(origin, spouse, today);
             }
         }
