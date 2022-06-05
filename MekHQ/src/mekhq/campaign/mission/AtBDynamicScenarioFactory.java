@@ -1384,10 +1384,10 @@ public class AtBDynamicScenarioFactory {
                     break;
             }
 
-            if (phenotype != Phenotype.NONE) {
+            if (!phenotype.isNone()) {
                 String bloodname = LegacyBloodname.randomBloodname(faction.getShortName(), phenotype,
                         campaign.getGameYear()).getName();
-                crewName += " " + bloodname;
+                crewName += ' ' + bloodname;
                 innerMap.put(Crew.MAP_BLOODNAME, bloodname);
                 innerMap.put(Crew.MAP_PHENOTYPE, phenotype.name());
             }

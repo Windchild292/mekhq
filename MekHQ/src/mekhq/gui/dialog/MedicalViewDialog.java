@@ -33,7 +33,6 @@ import mekhq.campaign.personnel.InjuryType;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.BodyLocation;
 import mekhq.campaign.personnel.enums.InjuryLevel;
-import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.gui.view.Paperdoll;
 import org.apache.logging.log4j.LogManager;
 
@@ -311,7 +310,7 @@ public class MedicalViewDialog extends JDialog {
 
         Period age = Period.between(p.getBirthday(), c.getLocalDate());
 
-        String phenotype = (p.getPhenotype() != Phenotype.NONE) ? p.getPhenotype().toString()
+        String phenotype = !p.getPhenotype().isNone() ? p.getPhenotype().toString()
                 : resourceMap.getString("baselinePhenotype.text");
 
         Force f = c.getForceFor(p);

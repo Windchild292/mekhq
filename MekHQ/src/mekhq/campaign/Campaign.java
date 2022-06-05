@@ -73,7 +73,6 @@ import mekhq.campaign.personnel.divorce.AbstractDivorce;
 import mekhq.campaign.personnel.divorce.DisabledRandomDivorce;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
-import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.personnel.generator.AbstractPersonnelGenerator;
 import mekhq.campaign.personnel.generator.DefaultPersonnelGenerator;
@@ -1434,7 +1433,7 @@ public class Campaign implements ITechManager {
      */
     public void checkBloodnameAdd(Person person, boolean ignoreDice) {
         // if a non-clanner or a clanner without a phenotype is here, we can just return
-        if (!person.isClanPersonnel() || (person.getPhenotype() == Phenotype.NONE)) {
+        if (!person.isClanPersonnel() || person.getPhenotype().isNone()) {
             return;
         }
 
@@ -1576,14 +1575,9 @@ public class Campaign implements ITechManager {
         }
 
         if (ignoreDice || (Compute.d6(2) >= bloodnameTarget)) {
-            Phenotype phenotype = person.getPhenotype();
-            if (phenotype == Phenotype.NONE) {
-                phenotype = Phenotype.GENERAL;
-            }
-
             LegacyBloodname bloodname = LegacyBloodname.randomBloodname(
                     (getFaction().isClan() ? getFaction() : person.getOriginFaction()).getShortName(),
-                    phenotype, getGameYear());
+                    person.getPhenotype(), getGameYear());
             if (bloodname != null) {
                 person.getName().setBloodname(bloodname);
                 personUpdated(person);
