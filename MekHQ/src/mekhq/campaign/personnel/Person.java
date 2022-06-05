@@ -1533,7 +1533,7 @@ public class Person {
                 } else if (wn2.getNodeName().equalsIgnoreCase("extraData")) {
                     retVal.extraData = ExtraData.createFromXml(wn2);
                 } else if (wn2.getNodeName().equalsIgnoreCase("bloodname")) { // Legacy - 0.49.9 removal
-                    retVal.getName().setBloodnameDirect(PersonMigrator.migrateBloodname(wn2.getTextContent().trim()));
+                    retVal.getName().setBloodnameDirect(PersonMigrator.migrateBloodname(retVal, wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("preNominal")) { // Legacy - 0.49.9 removal
                     retVal.getName().setPreNominalDirect(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("givenName")) { // Legacy - 0.49.9 removal

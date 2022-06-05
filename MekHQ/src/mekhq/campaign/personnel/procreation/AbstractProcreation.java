@@ -317,7 +317,7 @@ public abstract class AbstractProcreation {
 
             // Create reports and log the birth
             campaign.addReport(String.format(resources.getString("babyBorn.report"),
-                    mother.getName().getHyperlinkedFullTitle(), baby.getName().getHyperlinkedName(),
+                    mother.getName().getHyperlinkedFullTitle(), baby.getName().getHyperlinkedFullTitle(),
                     GenderDescriptors.BOY_GIRL.getDescriptor(baby.getGender())));
             if (campaign.getCampaignOptions().isLogProcreation()) {
                 MedicalLogger.deliveredBaby(mother, baby, today);

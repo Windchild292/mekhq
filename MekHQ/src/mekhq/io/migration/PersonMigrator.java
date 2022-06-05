@@ -19,10 +19,14 @@
 package mekhq.io.migration;
 
 import megamek.Version;
+import megamek.common.annotations.Nullable;
 import mekhq.MHQConstants;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.names.Bloodname;
+import org.apache.logging.log4j.LogManager;
 
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PersonMigrator {
 
@@ -40,6 +44,27 @@ public class PersonMigrator {
             people.stream()
                     .filter(person -> person.getPrimaryRole().isDependent() && (person.getUnit() != null))
                     .forEach(person -> person.getUnit().remove(person, true));
+        }
+    }
+
+    public static @Nullable Bloodname migrateBloodname(final Person person, final String text) {
+        final List<Bloodname> bloodnames = new ArrayList<>();
+        final List<Bloodname> potentialBloodnames = bloodnames.stream()
+                .filter(bloodname -> bloodname.toString().equals(text))
+                .collect(Collectors.toList());
+
+        if (potentialBloodnames.isEmpty()) {
+            // Return null for no potential bloodname, with an error message
+            LogManager.getLogger().error("Cannot parse unknown bloodname " + text);
+            return null;
+        } else if (potentialBloodnames.size() == 1) {
+            // Return the only potential bloodname
+            return potentialBloodnames.get(0);
+        } else {
+            // Multiple potential bloodnames for the same name
+            // FIXME : Windchild how should I handle this? Probably check if it currently exists,
+            // FIXME : Origin Faction, Phenotype, and then... random chance?
+            return potentialBloodnames.get(0);
         }
     }
 

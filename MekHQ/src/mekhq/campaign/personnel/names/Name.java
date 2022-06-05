@@ -29,6 +29,14 @@ import org.w3c.dom.NodeList;
 
 import java.io.PrintWriter;
 
+/**
+ * Rework Notes:
+ * Bloodname needs to be implemented
+ * Split LegacyBloodname into a generator and the Bloodname class
+ * MekHQ -> MegaMek -> MekHQ Bloodname transfer needs to be redone - probably use the same method for bloodname saving
+ * better organize the name methods
+ * {@link mekhq.io.migration.PersonMigrator#migrateBloodname(Person, String)} doesn't handle the multiple potential migrations yet
+ */
 public class Name {
     //region Variable Declarations
     private final transient Person origin;
@@ -85,7 +93,7 @@ public class Name {
      * @return a hyperlinked string for the person's name
      */
     public String getHyperlinkedName() {
-        return String.format("<a href='PERSON:%s'>%s</a>", getOrigin().getId(), this);
+        return String.format("<a href='PERSON:%s'>%s</a>", getOrigin().getId(), getFullName());
     }
 
     /**
@@ -324,7 +332,7 @@ public class Name {
     }
 
     public String getHyperlinkedFullTitle() {
-        return String.format("<a href='PERSON:%s'>%s</a>", getOrigin().getId(), getFullTitle());
+        return String.format("<a href='PERSON:%s'>%s</a>", getOrigin().getId(), this);
     }
 
     //region File I/O
@@ -389,7 +397,8 @@ public class Name {
                     break;
                 case "bloodname":
                     final Bloodname bloodname = new Bloodname();
-                    setBloodnameDirect(bloodname.fillFromXML(wn));
+                    bloodname.fillFromXML(wn);
+                    setBloodnameDirect(bloodname);
                     break;
                 default:
                     LogManager.getLogger().error("Failed to parse unknown node" + wn.getNodeName());
