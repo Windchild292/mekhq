@@ -5273,7 +5273,7 @@ public class Unit implements ITechnology {
 
         for (Part p : getParts()) {
             if (p instanceof EquipmentPart && ((EquipmentPart) p).getType() instanceof AmmoType) {
-                ammoCost = ammoCost.plus(p.getStickerPrice());
+                ammoCost = ammoCost.plus(p.getActualValue());
             }
         }
 
