@@ -18,31 +18,28 @@
  */
 package mekhq.gui.view;
 
+import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.mission.AtBContract;
+import mekhq.campaign.mission.Contract;
+import mekhq.campaign.mission.Mission;
+import mekhq.gui.CampaignGUI;
+import mekhq.gui.enums.MekHQTabType;
+import mekhq.gui.baseComponents.JScrollablePanel;
+import mekhq.gui.utilities.MarkdownRenderer;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
 
-import javax.swing.*;
-
-import megamek.common.util.EncodeControl;
-import mekhq.MekHQ;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.mission.Mission;
-import mekhq.campaign.mission.Contract;
-import mekhq.gui.CampaignGUI;
-import mekhq.gui.GuiTabType;
-import mekhq.gui.baseComponents.JScrollablePanel;
-import mekhq.gui.utilities.MarkdownRenderer;
-
 /**
  * A custom panel that gets filled in with goodies from a scenario object
- * @author  Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissionViewPanel extends JScrollablePanel {
-    private static final long serialVersionUID = 7004741688464105277L;
-
     private Mission mission;
     protected CampaignGUI gui;
 
@@ -94,6 +91,8 @@ public class MissionViewPanel extends JScrollablePanel {
 
     protected JTable scenarioTable;
 
+    private final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ContractViewPanel",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     public MissionViewPanel(Mission m, JTable scenarioTable, CampaignGUI gui) {
         super();
@@ -104,7 +103,6 @@ public class MissionViewPanel extends JScrollablePanel {
     }
 
     private void initComponents() {
-
         GridBagConstraints gridBagConstraints;
 
         pnlStats = new JPanel();
@@ -148,8 +146,6 @@ public class MissionViewPanel extends JScrollablePanel {
     }
 
     private void fillStatsBasic() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ContractViewPanel", new EncodeControl()); //$NON-NLS-1$
-
         lblStatus = new JLabel();
         lblLocation = new JLabel();
         txtLocation = new JLabel();
@@ -174,7 +170,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(lblStatus, gridBagConstraints);
 
         if ((null != mission.getSystemName(null)) && !mission.getSystemName(null).isEmpty()) {
-            lblLocation.setName("lblLocation"); // NOI18N
+            lblLocation.setName("lblLocation");
             lblLocation.setText(resourceMap.getString("lblLocation.text"));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -183,7 +179,7 @@ public class MissionViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             pnlStats.add(lblLocation, gridBagConstraints);
 
-            txtLocation.setName("txtLocation"); // NOI18N
+            txtLocation.setName("txtLocation");
             String systemName = mission.getSystemName(null);
             txtLocation.setText(String.format("<html><a href='#'>%s</a></html>", systemName));
             txtLocation.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -192,7 +188,7 @@ public class MissionViewPanel extends JScrollablePanel {
                 public void mouseClicked(MouseEvent e) {
                     // Display where it is on the interstellar map
                     gui.getMapTab().switchSystemsMap(mission.getSystem());
-                    gui.setSelectedTab(GuiTabType.MAP);
+                    gui.setSelectedTab(MekHQTabType.INTERSTELLAR_MAP);
                 }
             });
             gridBagConstraints = new GridBagConstraints();
@@ -206,7 +202,7 @@ public class MissionViewPanel extends JScrollablePanel {
         }
 
         if ((null != mission.getType()) && !mission.getType().isEmpty()) {
-            lblType.setName("lblType"); // NOI18N
+            lblType.setName("lblType");
             lblType.setText(resourceMap.getString("lblType.text"));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -215,7 +211,7 @@ public class MissionViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             pnlStats.add(lblType, gridBagConstraints);
 
-            txtType.setName("txtType"); // NOI18N
+            txtType.setName("txtType");
             txtType.setText(mission.getType());
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
@@ -244,7 +240,7 @@ public class MissionViewPanel extends JScrollablePanel {
     }
 
     private void fillStatsContract() {
-        Contract contract = (Contract)mission;
+        Contract contract = (Contract) mission;
 
         lblStatus = new JLabel();
         lblLocation = new JLabel();
@@ -263,7 +259,6 @@ public class MissionViewPanel extends JScrollablePanel {
         txtCommand = new JLabel();
         lblBLC = new JLabel();
         txtBLC = new JLabel();
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ContractViewPanel", new EncodeControl());
 
         GridBagConstraints gridBagConstraints;
         pnlStats.setLayout(new GridBagLayout());
@@ -283,7 +278,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(lblStatus, gridBagConstraints);
 
         if ((null != contract.getSystemName(null)) && !contract.getSystemName(null).isEmpty()) {
-            lblLocation.setName("lblLocation"); // NOI18N
+            lblLocation.setName("lblLocation");
             lblLocation.setText(resourceMap.getString("lblLocation.text"));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -292,7 +287,7 @@ public class MissionViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             pnlStats.add(lblLocation, gridBagConstraints);
 
-            txtLocation.setName("txtLocation"); // NOI18N
+            txtLocation.setName("txtLocation");
             String systemName = contract.getSystemName(null);
             txtLocation.setText(String.format("<html><a href='#'>%s</a></html>", systemName));
             txtLocation.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -301,7 +296,7 @@ public class MissionViewPanel extends JScrollablePanel {
                 public void mouseClicked(MouseEvent e) {
                     // Display where it is on the interstellar map
                     gui.getMapTab().switchSystemsMap(contract.getSystem());
-                    gui.setSelectedTab(GuiTabType.MAP);
+                    gui.setSelectedTab(MekHQTabType.INTERSTELLAR_MAP);
                 }
             });
             gridBagConstraints = new GridBagConstraints();
@@ -315,7 +310,7 @@ public class MissionViewPanel extends JScrollablePanel {
         }
 
         if ((null != contract.getEmployer()) && !contract.getEmployer().isEmpty()) {
-            lblEmployer.setName("lblEmployer"); // NOI18N
+            lblEmployer.setName("lblEmployer");
             lblEmployer.setText(resourceMap.getString("lblEmployer.text"));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -324,7 +319,7 @@ public class MissionViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             pnlStats.add(lblEmployer, gridBagConstraints);
 
-            txtEmployer.setName("txtEmployer"); // NOI18N
+            txtEmployer.setName("txtEmployer");
             txtEmployer.setText(contract.getEmployer());
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
@@ -337,7 +332,7 @@ public class MissionViewPanel extends JScrollablePanel {
         }
 
         if ((null != contract.getType()) && !contract.getType().isEmpty()) {
-            lblType.setName("lblType"); // NOI18N
+            lblType.setName("lblType");
             lblType.setText(resourceMap.getString("lblType.text"));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -346,7 +341,7 @@ public class MissionViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             pnlStats.add(lblType, gridBagConstraints);
 
-            txtType.setName("txtType"); // NOI18N
+            txtType.setName("txtType");
             txtType.setText(contract.getType());
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
@@ -358,7 +353,7 @@ public class MissionViewPanel extends JScrollablePanel {
             pnlStats.add(txtType, gridBagConstraints);
         }
 
-        lblStartDate.setName("lblStartDate"); // NOI18N
+        lblStartDate.setName("lblStartDate");
         lblStartDate.setText(resourceMap.getString("lblStartDate.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -368,7 +363,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(lblStartDate, gridBagConstraints);
 
         txtStartDate.setName("txtStartDate");
-        txtStartDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getStartDate()));
+        txtStartDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getStartDate()));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -378,7 +373,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtStartDate, gridBagConstraints);
 
-        lblEndDate.setName("lblEndDate"); // NOI18N
+        lblEndDate.setName("lblEndDate");
         lblEndDate.setText(resourceMap.getString("lblEndDate.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -388,7 +383,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(lblEndDate, gridBagConstraints);
 
         txtEndDate.setName("txtEndDate");
-        txtEndDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getEndingDate()));
+        txtEndDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getEndingDate()));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -398,7 +393,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtEndDate, gridBagConstraints);
 
-        lblPayout.setName("lblPayout"); // NOI18N
+        lblPayout.setName("lblPayout");
         lblPayout.setText(resourceMap.getString("lblPayout.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -407,7 +402,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblPayout, gridBagConstraints);
 
-        txtPayout.setName("txtPayout"); // NOI18N
+        txtPayout.setName("txtPayout");
         txtPayout.setText(contract.getMonthlyPayOut().toAmountAndSymbolString());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -418,7 +413,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtPayout, gridBagConstraints);
 
-        lblCommand.setName("lblCommand"); // NOI18N
+        lblCommand.setName("lblCommand");
         lblCommand.setText(resourceMap.getString("lblCommand.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -439,7 +434,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtCommand, gridBagConstraints);
 
-        lblBLC.setName("lblBLC"); // NOI18N
+        lblBLC.setName("lblBLC");
         lblBLC.setText(resourceMap.getString("lblBLC.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -448,7 +443,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblBLC, gridBagConstraints);
 
-        txtBLC.setName("txtBLC"); // NOI18N
+        txtBLC.setName("txtBLC");
         txtBLC.setText(contract.getBattleLossComp() + "%");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -561,8 +556,6 @@ public class MissionViewPanel extends JScrollablePanel {
         AtBContract contract = (AtBContract) mission;
         Campaign campaign = gui.getCampaign();
 
-        // TODO : Switch me to use a modified RandomSkillsGenerator.levelNames
-        String[] skillNames = {"Green", "Regular", "Veteran", "Elite"};
         // TODO : Switch me to use IUnitRating
         String[] ratingNames = {"F", "D", "C", "B", "A"};
         lblStatus = new JLabel();
@@ -595,8 +588,6 @@ public class MissionViewPanel extends JScrollablePanel {
         lblScore = new JLabel();
         txtScore = new JLabel();
 
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ContractViewPanel", new EncodeControl()); //$NON-NLS-1$
-
         GridBagConstraints gridBagConstraints;
         pnlStats.setLayout(new GridBagLayout());
 
@@ -617,7 +608,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(lblStatus, gridBagConstraints);
 
 
-        lblLocation.setName("lblLocation"); // NOI18N
+        lblLocation.setName("lblLocation");
         lblLocation.setText(resourceMap.getString("lblLocation.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -626,7 +617,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblLocation, gridBagConstraints);
 
-        txtLocation.setName("txtLocation"); // NOI18N
+        txtLocation.setName("txtLocation");
         String systemName = contract.getSystemName(campaign.getLocalDate());
         txtLocation.setText(String.format("<html><a href='#'>%s</a></html>", systemName));
         txtLocation.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -635,7 +626,7 @@ public class MissionViewPanel extends JScrollablePanel {
             public void mouseClicked(MouseEvent e) {
                 // Display where it is on the interstellar map
                 gui.getMapTab().switchSystemsMap(contract.getSystem());
-                gui.setSelectedTab(GuiTabType.MAP);
+                gui.setSelectedTab(MekHQTabType.INTERSTELLAR_MAP);
             }
         });
         gridBagConstraints = new GridBagConstraints();
@@ -647,7 +638,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtLocation, gridBagConstraints);
 
-        lblEmployer.setName("lblEmployer"); // NOI18N
+        lblEmployer.setName("lblEmployer");
         lblEmployer.setText(resourceMap.getString("lblEmployer.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -656,7 +647,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblEmployer, gridBagConstraints);
 
-        txtEmployer.setName("txtEmployer"); // NOI18N
+        txtEmployer.setName("txtEmployer");
         txtEmployer.setText(contract.getEmployerName(campaign.getGameYear()));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -667,7 +658,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtEmployer, gridBagConstraints);
 
-        lblEnemy.setName("lblEnemy"); // NOI18N
+        lblEnemy.setName("lblEnemy");
         lblEnemy.setText(resourceMap.getString("lblEnemy.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -676,7 +667,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblEnemy, gridBagConstraints);
 
-        txtEnemy.setName("txtEnemy"); // NOI18N
+        txtEnemy.setName("txtEnemy");
         txtEnemy.setText(contract.getEnemyName(campaign.getGameYear()));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -709,7 +700,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtType, gridBagConstraints);
 
-        lblAllyRating.setName("lblAllyRating"); // NOI18N
+        lblAllyRating.setName("lblAllyRating");
         lblAllyRating.setText(resourceMap.getString("lblAllyRating.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -718,9 +709,8 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblAllyRating, gridBagConstraints);
 
-        txtAllyRating.setName("txtAllyRating"); // NOI18N
-        txtAllyRating.setText(skillNames[contract.getAllySkill()] + "/" +
-                ratingNames[contract.getAllyQuality()]);
+        txtAllyRating.setName("txtAllyRating");
+        txtAllyRating.setText(contract.getAllySkill() + "/" + ratingNames[contract.getAllyQuality()]);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = y++;
@@ -730,7 +720,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtAllyRating, gridBagConstraints);
 
-        lblEnemyRating.setName("lblEnemyRating"); // NOI18N
+        lblEnemyRating.setName("lblEnemyRating");
         lblEnemyRating.setText(resourceMap.getString("lblEnemyRating.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -739,9 +729,8 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblEnemyRating, gridBagConstraints);
 
-        txtEnemyRating.setName("txtEnemyRating"); // NOI18N
-        txtEnemyRating.setText(skillNames[contract.getEnemySkill()] + "/" +
-                ratingNames[contract.getEnemyQuality()]);
+        txtEnemyRating.setName("txtEnemyRating");
+        txtEnemyRating.setText(contract.getEnemySkill() + "/" + ratingNames[contract.getEnemyQuality()]);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = y++;
@@ -751,7 +740,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtEnemyRating, gridBagConstraints);
 
-        lblStartDate.setName("lblStartDate"); // NOI18N
+        lblStartDate.setName("lblStartDate");
         lblStartDate.setText(resourceMap.getString("lblStartDate.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -761,7 +750,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(lblStartDate, gridBagConstraints);
 
         txtStartDate.setName("txtStartDate");
-        txtStartDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getStartDate()));
+        txtStartDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getStartDate()));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = y++;
@@ -771,7 +760,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtStartDate, gridBagConstraints);
 
-        lblEndDate.setName("lblEndDate"); // NOI18N
+        lblEndDate.setName("lblEndDate");
         lblEndDate.setText(resourceMap.getString("lblEndDate.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -781,7 +770,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(lblEndDate, gridBagConstraints);
 
         txtEndDate.setName("txtEndDate");
-        txtEndDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getEndingDate()));
+        txtEndDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getEndingDate()));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = y++;
@@ -791,7 +780,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtEndDate, gridBagConstraints);
 
-        lblPayout.setName("lblPayout"); // NOI18N
+        lblPayout.setName("lblPayout");
         lblPayout.setText(resourceMap.getString("lblPayout.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -800,7 +789,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblPayout, gridBagConstraints);
 
-        txtPayout.setName("txtPayout"); // NOI18N
+        txtPayout.setName("txtPayout");
         txtPayout.setText(contract.getMonthlyPayOut().toAmountAndSymbolString());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -811,7 +800,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtPayout, gridBagConstraints);
 
-        lblCommand.setName("lblCommand"); // NOI18N
+        lblCommand.setName("lblCommand");
         lblCommand.setText(resourceMap.getString("lblCommand.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -832,7 +821,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(txtCommand, gridBagConstraints);
 
-        lblBLC.setName("lblBLC"); // NOI18N
+        lblBLC.setName("lblBLC");
         lblBLC.setText(resourceMap.getString("lblBLC.text"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -841,7 +830,7 @@ public class MissionViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         pnlStats.add(lblBLC, gridBagConstraints);
 
-        txtBLC.setName("txtBLC"); // NOI18N
+        txtBLC.setName("txtBLC");
         txtBLC.setText(contract.getBattleLossComp() + "%");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -891,7 +880,7 @@ public class MissionViewPanel extends JScrollablePanel {
         }
         lblSalvagePct = new JLabel(resourceMap.getString("lblSalvage.text"));
         txtSalvagePct = new JLabel();
-        txtSalvagePct.setName("txtSalvagePct"); // NOI18N
+        txtSalvagePct.setName("txtSalvagePct");
 
         if (contract.isSalvageExchange()) {
             txtSalvagePct.setText(resourceMap.getString("exchange") + " (" + contract.getSalvagePct() + "%)");
@@ -951,7 +940,7 @@ public class MissionViewPanel extends JScrollablePanel {
         pnlStats.add(txtMorale, gridBagConstraints);
 
         if (campaign.getCampaignOptions().getUseShareSystem()) {
-            lblSharePct.setName("lblSharePct"); // NOI18N
+            lblSharePct.setName("lblSharePct");
             lblSharePct.setText(resourceMap.getString("lblSharePct.text"));
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -960,7 +949,7 @@ public class MissionViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             pnlStats.add(lblSharePct, gridBagConstraints);
 
-            txtSharePct.setName("txtSharePct"); // NOI18N
+            txtSharePct.setName("txtSharePct");
             txtSharePct.setText(contract.getSharesPct() + "%");
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
@@ -974,10 +963,10 @@ public class MissionViewPanel extends JScrollablePanel {
 
         // for StratCon, contract score is irrelevant and only leads to confusion, so we
         // do not display it in that situation
-        boolean showContractScore = 
-                !gui.getCampaign().getCampaignOptions().getUseStratCon() &&
-                (mission instanceof AtBContract) && (((AtBContract) mission).getStratconCampaignState() != null);
-        
+        boolean showContractScore = !gui.getCampaign().getCampaignOptions().getUseStratCon()
+                && (mission instanceof AtBContract)
+                && (((AtBContract) mission).getStratconCampaignState() == null);
+
         if (showContractScore) {
             lblScore.setName("lblScore");
             lblScore.setText(resourceMap.getString("lblScore.text"));

@@ -1,7 +1,7 @@
 /*
  * MekCockpit.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,28 +20,22 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.enums.PartRepairType;
+import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Compute;
-import megamek.common.CriticalSlot;
-import megamek.common.Entity;
-import megamek.common.Mech;
-import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.SkillType;
+import java.io.PrintWriter;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MekCockpit extends Part {
-    private static final long serialVersionUID = -1989526319692474127L;
-
     private int type;
     private boolean isClan;
 
@@ -56,6 +50,7 @@ public class MekCockpit extends Part {
         this.isClan = isClan;
     }
 
+    @Override
     public MekCockpit clone() {
         MekCockpit clone = new MekCockpit(getUnitTonnage(), type, isClan, campaign);
         clone.copyBaseData(this);
@@ -65,48 +60,48 @@ public class MekCockpit extends Part {
     @Override
     public double getTonnage() {
         switch (type) {
-        case Mech.COCKPIT_SMALL:
-            return 2;
-        case Mech.COCKPIT_TORSO_MOUNTED:
-        case Mech.COCKPIT_SUPERHEAVY:
-        case Mech.COCKPIT_TRIPOD:
-        case Mech.COCKPIT_INTERFACE:
-        case Mech.COCKPIT_QUADVEE:
-        case Mech.COCKPIT_DUAL:
-            return 4;
-        case Mech.COCKPIT_SUPERHEAVY_TRIPOD:
-        case Mech.COCKPIT_PRIMITIVE:
-        case Mech.COCKPIT_PRIMITIVE_INDUSTRIAL:
-            return 5;
-        case Mech.COCKPIT_COMMAND_CONSOLE:
-            return 6;
-        default:
-            return 3;
+            case Mech.COCKPIT_SMALL:
+                return 2;
+            case Mech.COCKPIT_TORSO_MOUNTED:
+            case Mech.COCKPIT_SUPERHEAVY:
+            case Mech.COCKPIT_TRIPOD:
+            case Mech.COCKPIT_INTERFACE:
+            case Mech.COCKPIT_QUADVEE:
+            case Mech.COCKPIT_DUAL:
+                return 4;
+            case Mech.COCKPIT_SUPERHEAVY_TRIPOD:
+            case Mech.COCKPIT_PRIMITIVE:
+            case Mech.COCKPIT_PRIMITIVE_INDUSTRIAL:
+                return 5;
+            case Mech.COCKPIT_COMMAND_CONSOLE:
+                return 6;
+            default:
+                return 3;
         }
     }
 
     @Override
     public Money getStickerPrice() {
         switch (type) {
-        case Mech.COCKPIT_COMMAND_CONSOLE:
-            // 500000 for command console + 200000 for primary cockpit
-            return Money.of(700000);
-        case Mech.COCKPIT_SMALL:
-            return Money.of(175000);
-        case Mech.COCKPIT_TORSO_MOUNTED:
-            return Money.of(750000);
-        case Mech.COCKPIT_STANDARD:
-            return Money.of(200000);
-        case Mech.COCKPIT_INDUSTRIAL:
-            return Money.of(100000);
-        case Mech.COCKPIT_DUAL:
-            return Money.of(40000);
-        case Mech.COCKPIT_VRRP:
-            return Money.of(1250000);
-        case Mech.COCKPIT_QUADVEE:
-            return Money.of(375000);
-        default:
-            return Money.of(200000);
+            case Mech.COCKPIT_COMMAND_CONSOLE:
+                // 500000 for command console + 200000 for primary cockpit
+                return Money.of(700000);
+            case Mech.COCKPIT_SMALL:
+                return Money.of(175000);
+            case Mech.COCKPIT_TORSO_MOUNTED:
+                return Money.of(750000);
+            case Mech.COCKPIT_STANDARD:
+                return Money.of(200000);
+            case Mech.COCKPIT_INDUSTRIAL:
+                return Money.of(100000);
+            case Mech.COCKPIT_DUAL:
+                return Money.of(40000);
+            case Mech.COCKPIT_VRRP:
+                return Money.of(1250000);
+            case Mech.COCKPIT_QUADVEE:
+                return Money.of(375000);
+            default:
+                return Money.of(200000);
         }
     }
 
@@ -120,9 +115,9 @@ public class MekCockpit extends Part {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<type>" + type + "</type>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<type>" + type + "</type>");
         writeToXmlEnd(pw1, indent);
     }
 
@@ -133,8 +128,12 @@ public class MekCockpit extends Part {
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("type")) {
-                type = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("type")) {
+                    type = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

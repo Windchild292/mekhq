@@ -1,7 +1,7 @@
 /*
  * Unit.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,45 +20,27 @@
  */
 package mekhq.campaign.unit;
 
-
-import java.io.PrintWriter;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import megamek.common.Aero;
-import megamek.common.BattleArmor;
-import megamek.common.ConvFighter;
-import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
-import megamek.common.EntityWeightClass;
-import megamek.common.EquipmentType;
-import megamek.common.ITechnology;
-import megamek.common.Infantry;
-import megamek.common.Mech;
-import megamek.common.MechFileParser;
-import megamek.common.MechSummary;
-import megamek.common.MechSummaryCache;
-import megamek.common.Protomech;
-import megamek.common.Tank;
-import megamek.common.TargetRoll;
+import megamek.common.*;
 import megamek.common.loaders.EntityLoadingException;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlSerializable;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.Availability;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.work.IAcquisitionWork;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
 
 /**
  * We use an extension of unit to create a unit order acquisition work
  *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
-public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSerializable {
+public class UnitOrder extends Unit implements IAcquisitionWork {
 
     int quantity;
     int daysToWait;
@@ -125,7 +107,7 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
     @Override
     public String getQuantityName(int quantity) {
         String answer = "" + quantity + " " + getName();
-        if(quantity > 1) {
+        if (quantity > 1) {
             answer += "s";
         }
         return answer;
@@ -136,14 +118,14 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
         String name = getEntity().getChassis() + " " + getEntity().getModel();
         name = name.trim();
         MechSummary summary = MechSummaryCache.getInstance().getMech(name);
-        if(null == summary) {
-            MekHQ.getLogger().error(this, "Could not find a mech summary for " + name);
+        if (null == summary) {
+            LogManager.getLogger().error("Could not find a mech summary for " + name);
             return null;
         }
         try {
             return new MechFileParser(summary.getSourceFile(), summary.getEntryName()).getEntity();
         } catch (EntityLoadingException e) {
-            MekHQ.getLogger().error(this, "Could not load " + summary.getEntryName());
+            LogManager.getLogger().error("Could not load " + summary.getEntryName());
             return null;
         }
     }
@@ -191,7 +173,7 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
 
     @Override
     public void decrementDaysToWait() {
-        if(daysToWait > 0) {
+        if (daysToWait > 0) {
             daysToWait--;
         }
     }
@@ -214,93 +196,84 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
     @Override
     public TargetRoll getAllAcquisitionMods() {
         TargetRoll target = new TargetRoll();
-        if(!entity.isCanon()) {
+        if (!entity.isCanon()) {
             //TODO: custom job
         }
-        if(entity.isClan() && getCampaign().getCampaignOptions().getClanAcquisitionPenalty() > 0) {
+        if (entity.isClan() && getCampaign().getCampaignOptions().getClanAcquisitionPenalty() > 0) {
             target.addModifier(getCampaign().getCampaignOptions().getClanAcquisitionPenalty(), "clan-tech");
-        }
-        else if(getCampaign().getCampaignOptions().getIsAcquisitionPenalty() > 0) {
+        } else if (getCampaign().getCampaignOptions().getIsAcquisitionPenalty() > 0) {
             target.addModifier(getCampaign().getCampaignOptions().getIsAcquisitionPenalty(), "Inner Sphere tech");
         }
         //TODO: Fix weight classes
         //TODO: aero large craft
         //TODO: support vehicles
-        if(entity instanceof Mech) {
-            if(!((Mech) entity).isIndustrial()) {
+        if (entity instanceof Mech) {
+            if (!((Mech) entity).isIndustrial()) {
                 target.addModifier(0, "BattleMech");
             } else {
                 target.addModifier(-1, "IndustrialMech");
             }
-            switch(entity.getWeightClass()) {
-            case EntityWeightClass.WEIGHT_LIGHT:
-                target.addModifier(-1, "Light");
-                break;
-            case EntityWeightClass.WEIGHT_MEDIUM:
-                target.addModifier(0, "Medium");
-                break;
-            case EntityWeightClass.WEIGHT_HEAVY:
-                target.addModifier(1, "Heavy");
-                break;
-            case EntityWeightClass.WEIGHT_ASSAULT:
-            default:
-                target.addModifier(3, "Assault");
+            switch (entity.getWeightClass()) {
+                case EntityWeightClass.WEIGHT_LIGHT:
+                    target.addModifier(-1, "Light");
+                    break;
+                case EntityWeightClass.WEIGHT_MEDIUM:
+                    target.addModifier(0, "Medium");
+                    break;
+                case EntityWeightClass.WEIGHT_HEAVY:
+                    target.addModifier(1, "Heavy");
+                    break;
+                case EntityWeightClass.WEIGHT_ASSAULT:
+                default:
+                    target.addModifier(3, "Assault");
             }
-        }
-        else if(entity instanceof BattleArmor) {
+        } else if (entity instanceof BattleArmor) {
             target.addModifier(0, "BattleArmor");
-        }
-        else if(entity instanceof Infantry) {
-            if(entity.getMovementMode() == EntityMovementMode.INF_LEG) {
+        } else if (entity instanceof Infantry) {
+            if (entity.getMovementMode() == EntityMovementMode.INF_LEG) {
                 target.addModifier(-3, "Foot Infantry");
-            }
-            else if(entity.getMovementMode() == EntityMovementMode.INF_JUMP) {
+            } else if (entity.getMovementMode() == EntityMovementMode.INF_JUMP) {
                 target.addModifier(-1, "Jump Infantry");
-            }
-            else if(entity.getMovementMode() == EntityMovementMode.INF_MOTORIZED) {
+            } else if (entity.getMovementMode() == EntityMovementMode.INF_MOTORIZED) {
                 target.addModifier(-2, "Motorized Infantry");
             } else {
                 target.addModifier(-1, "Mechanized Infantry");
             }
-        }
-        else if(entity instanceof Tank) {
+        } else if (entity instanceof Tank) {
             target.addModifier(-1, "Vehicle");
-            switch(entity.getWeightClass()) {
-            case EntityWeightClass.WEIGHT_LIGHT:
-                target.addModifier(-1, "Light");
-                break;
-            case EntityWeightClass.WEIGHT_MEDIUM:
-                target.addModifier(0, "Medium");
-                break;
-            case EntityWeightClass.WEIGHT_HEAVY:
-                target.addModifier(1, "Heavy");
-                break;
-            case EntityWeightClass.WEIGHT_ASSAULT:
-            default:
-                target.addModifier(3, "Assault");
+            switch (entity.getWeightClass()) {
+                case EntityWeightClass.WEIGHT_LIGHT:
+                    target.addModifier(-1, "Light");
+                    break;
+                case EntityWeightClass.WEIGHT_MEDIUM:
+                    target.addModifier(0, "Medium");
+                    break;
+                case EntityWeightClass.WEIGHT_HEAVY:
+                    target.addModifier(1, "Heavy");
+                    break;
+                case EntityWeightClass.WEIGHT_ASSAULT:
+                default:
+                    target.addModifier(3, "Assault");
             }
-        }
-        else if(entity instanceof ConvFighter) {
+        } else if (entity instanceof ConvFighter) {
             target.addModifier(+0, "Conventional Fighter");
-        }
-        else if(entity instanceof Aero) {
+        } else if (entity instanceof Aero) {
             target.addModifier(0, "Aerospace Fighter");
-            switch(entity.getWeightClass()) {
-            case EntityWeightClass.WEIGHT_LIGHT:
-                target.addModifier(-1, "Light");
-                break;
-            case EntityWeightClass.WEIGHT_MEDIUM:
-                target.addModifier(0, "Medium");
-                break;
-            case EntityWeightClass.WEIGHT_HEAVY:
-                target.addModifier(1, "Heavy");
-                break;
-            case EntityWeightClass.WEIGHT_ASSAULT:
-            default:
-                target.addModifier(3, "Assault");
+            switch (entity.getWeightClass()) {
+                case EntityWeightClass.WEIGHT_LIGHT:
+                    target.addModifier(-1, "Light");
+                    break;
+                case EntityWeightClass.WEIGHT_MEDIUM:
+                    target.addModifier(0, "Medium");
+                    break;
+                case EntityWeightClass.WEIGHT_HEAVY:
+                    target.addModifier(1, "Heavy");
+                    break;
+                case EntityWeightClass.WEIGHT_ASSAULT:
+                default:
+                    target.addModifier(3, "Assault");
             }
-        }
-        else if(entity instanceof Protomech) {
+        } else if (entity instanceof Protomech) {
             target.addModifier(+1, "Protomech");
         }
         //parts need to be initialized for this to work
@@ -339,25 +312,19 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
         return getHyperlinkedName() + " added to procurement list.";
     }
 
-    /*
+    /**
      * Don't need as much info as unit to re-create
      */
-    public void writeToXml(PrintWriter pw1, int indentLvl) {
-        pw1.println(MekHqXmlUtil.indentStr(indentLvl) + "<unitOrder>");
-
-        pw1.println(MekHqXmlUtil.writeEntityToXmlString(getEntity(), indentLvl+1, getCampaign().getEntities()));
-        pw1.println(MekHqXmlUtil.indentStr(indentLvl+1)
-                +"<quantity>"
-                +quantity
-                +"</quantity>");
-        pw1.println(MekHqXmlUtil.indentStr(indentLvl+1)
-                +"<daysToWait>"
-                +daysToWait
-                +"</daysToWait>");
-        pw1.println(MekHqXmlUtil.indentStr(indentLvl) + "</unitOrder>");
+    @Override
+    public void writeToXML(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "unitOrder");
+        pw.println(MHQXMLUtility.writeEntityToXmlString(getEntity(), indent, getCampaign().getEntities()));
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "quantity", quantity);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "daysToWait", daysToWait);
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "unitOrder");
     }
 
-    public static UnitOrder generateInstanceFromXML(Node wn, Campaign c, Version version) {
+    public static UnitOrder generateInstanceFromXML(Node wn, Campaign c) {
         UnitOrder retVal = new UnitOrder();
         retVal.setCampaign(c);
 
@@ -372,12 +339,11 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
                 } else if (wn2.getNodeName().equalsIgnoreCase("daysToWait")) {
                     retVal.daysToWait = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("entity")) {
-                    retVal.entity = MekHqXmlUtil.getEntityFromXmlString(wn2);
+                    retVal.entity = MHQXMLUtility.parseSingleEntityMul((Element) wn2, c.getGameOptions());
                 }
             }
         } catch (Exception ex) {
-            // Doh!
-            MekHQ.getLogger().error(UnitOrder.class, ex);
+            LogManager.getLogger().error("", ex);
         }
 
         retVal.initializeParts(false);
@@ -398,6 +364,7 @@ public class UnitOrder extends Unit implements IAcquisitionWork, MekHqXmlSeriali
     /**
      * @return TechConstants tech level
      */
+    @Override
     public int getTechLevel() {
         return getSimpleTechLevel().getCompoundTechLevel(getCampaign().getFaction().isClan());
     }

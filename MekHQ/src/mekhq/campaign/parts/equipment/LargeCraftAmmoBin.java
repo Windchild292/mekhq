@@ -18,25 +18,24 @@
  */
 package mekhq.campaign.parts.equipment;
 
-import java.io.PrintWriter;
-
-import mekhq.campaign.finances.Money;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import megamek.common.AmmoType;
 import megamek.common.CriticalSlot;
 import megamek.common.Mounted;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.parts.PartInventory;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
 
 /**
  * Ammo bin for a weapon bay that combines multiple tons of ammo into a single bin. Reload times
- * are calculated per ton, and a  reload tech action handles a single ton of ammo (or whatever the
+ * are calculated per ton, and a reload tech action handles a single ton of ammo (or whatever the
  * smallest amount is for capital weapon ammo).
  *
  * When the munition type is changed, fix actions diminish the capacity of this bay and add to
@@ -45,8 +44,6 @@ import mekhq.campaign.parts.PartInventory;
  * @author Neoancient
  */
 public class LargeCraftAmmoBin extends AmmoBin {
-    private static final long serialVersionUID = -7931419849350769887L;
-
     private int bayEqNum = -1;
 
     transient private Mounted bay;
@@ -97,7 +94,7 @@ public class LargeCraftAmmoBin extends AmmoBin {
             }
         }
 
-        MekHQ.getLogger().warning("Could not find weapon bay for " + typeName + " for " + unit.getName());
+        LogManager.getLogger().warn("Could not find weapon bay for " + typeName + " for " + unit.getName());
         return null;
     }
 
@@ -176,7 +173,7 @@ public class LargeCraftAmmoBin extends AmmoBin {
 
     @Override
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "bayEqNum", bayEqNum);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "bayEqNum", bayEqNum);
 
         super.writeToXmlEnd(pw1, indent);
     }
@@ -185,13 +182,17 @@ public class LargeCraftAmmoBin extends AmmoBin {
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
-            // CAW: campaigns prior to 0.47.15 stored `size` in `capacity`
-            if (wn2.getNodeName().equalsIgnoreCase("capacity")) {
-                size = Double.parseDouble(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("bayEqNum")) {
-                bayEqNum = Integer.parseInt(wn2.getTextContent());
+            try {
+                // CAW: campaigns prior to 0.47.15 stored `size` in `capacity`
+                if (wn2.getNodeName().equalsIgnoreCase("capacity")) {
+                    size = Double.parseDouble(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("bayEqNum")) {
+                    bayEqNum = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 
@@ -321,7 +322,7 @@ public class LargeCraftAmmoBin extends AmmoBin {
 
     @Override
     public boolean isSamePartType(Part part) {
-        return getClass().equals(part.getClass())
+        return (getClass() == part.getClass())
                 && getType().isCompatibleWith(((AmmoBin) part).getType());
     }
 

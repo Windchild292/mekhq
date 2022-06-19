@@ -1,7 +1,7 @@
 /*
  * ShoppingList.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,18 +20,11 @@
  */
 package mekhq.campaign.market;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
+import megamek.Version;
 import megamek.common.Entity;
+import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
-import mekhq.MekHqXmlSerializable;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.event.ProcurementEvent;
 import mekhq.campaign.parts.Part;
@@ -39,6 +32,13 @@ import mekhq.campaign.parts.Refit;
 import mekhq.campaign.parts.equipment.MissingEquipmentPart;
 import mekhq.campaign.unit.UnitOrder;
 import mekhq.campaign.work.IAcquisitionWork;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A list of IAcquisitionWork
@@ -63,7 +63,7 @@ import mekhq.campaign.work.IAcquisitionWork;
  *
  * Do we use a separate shopping list for new units?
  */
-public class ShoppingList implements MekHqXmlSerializable {
+public class ShoppingList {
     //region Variable Declarations
     private List<IAcquisitionWork> shoppingList;
     //endregion Variable Declarations
@@ -80,7 +80,7 @@ public class ShoppingList implements MekHqXmlSerializable {
 
     //region Getters/Setters
     public List<IAcquisitionWork> getShoppingList() {
-    	return shoppingList;
+        return shoppingList;
     }
 
     public void setShoppingList(List<IAcquisitionWork> shoppingList) {
@@ -88,13 +88,11 @@ public class ShoppingList implements MekHqXmlSerializable {
     }
     //endregion Getters/Setters
 
-    public IAcquisitionWork getShoppingItem(Object newEquipment) {
-        for (IAcquisitionWork shoppingItem : getShoppingList()) {
-            if (isSameEquipment(shoppingItem.getNewEquipment(), newEquipment)) {
-                return shoppingItem;
-            }
-        }
-        return null;
+    public @Nullable IAcquisitionWork getShoppingItem(final Object newEquipment) {
+        return getShoppingList().stream()
+                .filter(shoppingItem -> isSameEquipment(shoppingItem.getNewEquipment(), newEquipment))
+                .findFirst()
+                .orElse(null);
     }
 
     public void removeItem(Object equipment) {
@@ -156,23 +154,22 @@ public class ShoppingList implements MekHqXmlSerializable {
         }
     }
 
-    @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(final PrintWriter pw, int indent) {
         if (getShoppingList().isEmpty()) {
             return;
         }
 
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "shoppingList");
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "shoppingList");
         for (IAcquisitionWork shoppingItem : getShoppingList()) {
             //don't write refits to the shopping list - we will add them manually
             //when we parse units and find refit kits that have not been found
             if ((shoppingItem instanceof Part) && !(shoppingItem instanceof Refit)) {
-                ((Part) shoppingItem).writeToXml(pw1, indent);
+                ((Part) shoppingItem).writeToXML(pw, indent);
             } else if (shoppingItem instanceof UnitOrder) {
-                ((UnitOrder) shoppingItem).writeToXml(pw1, indent);
+                ((UnitOrder) shoppingItem).writeToXML(pw, indent);
             }
         }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "shoppingList");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "shoppingList");
     }
 
     public static ShoppingList generateInstanceFromXML(Node wn, Campaign c, Version version) {
@@ -190,7 +187,7 @@ public class ShoppingList implements MekHqXmlSerializable {
                         retVal.getShoppingList().add((IAcquisitionWork) p);
                     }
                 } else if (wn2.getNodeName().equalsIgnoreCase("unitOrder")) {
-                    UnitOrder u = UnitOrder.generateInstanceFromXML(wn2, c, version);
+                    UnitOrder u = UnitOrder.generateInstanceFromXML(wn2, c);
                     u.setCampaign(c);
                     if (u.getEntity() != null) {
                         retVal.getShoppingList().add(u);
@@ -198,30 +195,30 @@ public class ShoppingList implements MekHqXmlSerializable {
                 }
             }
         } catch (Exception ex) {
-            MekHQ.getLogger().error(ex);
+            LogManager.getLogger().error("", ex);
         }
 
         return retVal;
     }
 
     public void restore() {
-    	List<IAcquisitionWork> newShoppingList = new ArrayList<>();
+        List<IAcquisitionWork> newShoppingList = new ArrayList<>();
 
         for (IAcquisitionWork shoppingItem : getShoppingList()) {
             if (shoppingItem instanceof MissingEquipmentPart) {
                 ((MissingEquipmentPart) shoppingItem).restore();
                 if (((MissingEquipmentPart) shoppingItem).getType() != null) {
-                	newShoppingList.add(shoppingItem);
+                    newShoppingList.add(shoppingItem);
                 }
             } else {
-            	newShoppingList.add(shoppingItem);
+                newShoppingList.add(shoppingItem);
             }
         }
         setShoppingList(newShoppingList);
     }
 
     public void removeZeroQuantityFromList() {
-    	List<IAcquisitionWork> newShoppingList = new ArrayList<>();
+        List<IAcquisitionWork> newShoppingList = new ArrayList<>();
         for (IAcquisitionWork shoppingItem : getShoppingList()) {
             if (shoppingItem.getQuantity() > 0) {
                 newShoppingList.add(shoppingItem);

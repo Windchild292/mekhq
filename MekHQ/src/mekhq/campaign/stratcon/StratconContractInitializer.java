@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 The Megamek Team. All rights reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -16,26 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.stratcon;
+
+import megamek.common.Compute;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.force.Force;
+import mekhq.campaign.mission.*;
+import mekhq.campaign.mission.ScenarioForceTemplate.ForceAlignment;
+import mekhq.campaign.mission.atb.AtBScenarioModifier;
+import mekhq.campaign.mission.enums.ContractCommandRights;
+import mekhq.campaign.stratcon.StratconContractDefinition.ObjectiveParameters;
+import mekhq.campaign.stratcon.StratconContractDefinition.StrategicObjectiveType;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import megamek.common.Compute;
-import mekhq.MekHQ;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.force.Force;
-import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.mission.AtBDynamicScenario;
-import mekhq.campaign.mission.Mission;
-import mekhq.campaign.mission.Scenario;
-import mekhq.campaign.mission.ScenarioTemplate;
-import mekhq.campaign.mission.ScenarioForceTemplate.ForceAlignment;
-import mekhq.campaign.mission.atb.AtBScenarioModifier;
-import mekhq.campaign.stratcon.StratconContractDefinition.ObjectiveParameters;
-import mekhq.campaign.stratcon.StratconContractDefinition.StrategicObjectiveType;
 
 /**
  * This class handles StratCon state initialization when a contract is signed.
@@ -50,7 +46,7 @@ public class StratconContractInitializer {
         StratconCampaignState campaignState = new StratconCampaignState(contract);
         campaignState.setBriefingText(contractDefinition.getBriefing() + "<br/>" + contract.getCommandRights().getStratConText());
         campaignState.setAllowEarlyVictory(contractDefinition.isAllowEarlyVictory());
-        
+
         // dependency: this is required here in order for scenario initialization to work properly
         contract.setStratconCampaignState(campaignState);
 
@@ -103,12 +99,12 @@ public class StratconContractInitializer {
                                 objectiveParams.objectiveScenarios, objectiveParams.objectiveScenarioModifiers);
                         break;
                     case AlliedFacilityControl:
-                        initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Allied, 
+                        initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Allied,
                                 true, objectiveParams.objectiveScenarioModifiers);
                         break;
                     case HostileFacilityControl:
                     case FacilityDestruction:
-                        initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Opposing, 
+                        initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Opposing,
                                 true, objectiveParams.objectiveScenarioModifiers);
                         break;
                     case AnyScenarioVictory:
@@ -117,7 +113,7 @@ public class StratconContractInitializer {
                         sso.setDesiredObjectiveCount(numObjects);
                         sso.setObjectiveType(StrategicObjectiveType.AnyScenarioVictory);
                         campaignState.getTrack(x).addStrategicObjective(sso);
-                        
+
                         // modifiers defined for "any scenario" by definition apply to any scenario
                         // so they get added to the global campaign modifiers. Use sparingly since
                         // this can snowball pretty quickly.
@@ -128,12 +124,12 @@ public class StratconContractInitializer {
                                 }
                             }
                         }
-                        
+
                         break;
                 }
             }
         }
-        
+
         // if any modifiers are to be applied across all scenarios in the campaign
         // do so here; do not add duplicates
         if (contractDefinition.getGlobalScenarioModifiers() != null) {
@@ -154,7 +150,7 @@ public class StratconContractInitializer {
         for (int x = 0; x < trackObjects.size(); x++) {
             int numObjects = trackObjects.get(x);
 
-            initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Allied, 
+            initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Allied,
                     false, Collections.emptyList());
         }
 
@@ -168,8 +164,19 @@ public class StratconContractInitializer {
         for (int x = 0; x < trackObjects.size(); x++) {
             int numObjects = trackObjects.get(x);
 
-            initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Opposing, 
+            initializeTrackFacilities(campaignState.getTrack(x), numObjects, ForceAlignment.Opposing,
                     false, Collections.emptyList());
+        }
+        
+        // clean up objectives for integrated command:
+        // we're still going to have all the objective facilities and scenarios
+        // but the player has no control over where they go, so they're
+        // not on the hook for actually completing objectives, 
+        // just fighting where they're told to fight
+        if (contract.getCommandRights() == ContractCommandRights.INTEGRATED) {
+            for (StratconTrackState track : campaignState.getTracks()) {
+                track.getStrategicObjectives().clear();
+            }
         }
 
         // now we're done
@@ -367,7 +374,7 @@ public class StratconContractInitializer {
                         if ((campaignScenario instanceof AtBDynamicScenario)) {
                             scenario.setBackingScenario((AtBDynamicScenario) campaignScenario);
                         } else {
-                            MekHQ.getLogger().warning(String.format("Unable to set backing scenario for stratcon scenario in track %s ID %d",
+                            LogManager.getLogger().warn(String.format("Unable to set backing scenario for stratcon scenario in track %s ID %d",
                                             track.getDisplayableName(), scenario.getBackingScenarioID()));
                         }
                     }

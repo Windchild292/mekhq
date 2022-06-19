@@ -1,7 +1,7 @@
 /*
  * SkillType.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,41 +20,29 @@
  */
 package mekhq.campaign.personnel;
 
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.util.Hashtable;
-
+import megamek.Version;
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Aero;
-import megamek.common.BattleArmor;
-import megamek.common.ConvFighter;
-import megamek.common.Entity;
-import megamek.common.Infantry;
-import megamek.common.Jumpship;
-import megamek.common.Protomech;
-import megamek.common.SmallCraft;
-import megamek.common.Tank;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import java.io.PrintWriter;
+import java.util.Hashtable;
 
 /**
  * Skill type will hold static information for each skill type like base target number,
  * whether to count up, and XP costs for advancement.
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
-public class SkillType implements Serializable {
-    private static final long serialVersionUID = -5569555585715305914L;
-
+public class SkillType {
     public static final String ULTRA_GREEN_NM = "Ultra-Green";
     public static final String GREEN_NM = "Green";
     public static final String REGULAR_NM = "Regular";
     public static final String VETERAN_NM = "Veteran";
     public static final String ELITE_NM = "Elite";
-    public static final String[] SKILL_LEVEL_NAMES = {ULTRA_GREEN_NM, GREEN_NM, REGULAR_NM, VETERAN_NM, ELITE_NM};
+    public static final String[] SKILL_LEVEL_NAMES = { ULTRA_GREEN_NM, GREEN_NM, REGULAR_NM, VETERAN_NM, ELITE_NM };
 
     //combat skills
     public static final String S_PILOT_MECH  = "Piloting/Mech";
@@ -107,6 +95,7 @@ public class SkillType implements Serializable {
 
     public static final int SKILL_NONE = 0;
 
+    public static final int EXP_NONE = -1;
     public static final int EXP_ULTRA_GREEN = 0;
     public static final int EXP_GREEN = 1;
     public static final int EXP_REGULAR = 2;
@@ -134,6 +123,10 @@ public class SkillType implements Serializable {
 
     public static Hashtable<String, SkillType> getSkillHash() {
         return lookupHash;
+    }
+
+    public static void setSkillHash(final Hashtable<String, SkillType> hash) {
+        lookupHash = hash;
     }
 
     public static String[] getSkillList() {
@@ -306,10 +299,6 @@ public class SkillType implements Serializable {
     }
 
     public static SkillType getType(String t) {
-        //legacy check for typo in earlier version
-        if (t.equalsIgnoreCase("administation")) {
-            return lookupHash.get(S_ADMIN);
-        }
         return lookupHash.get(t);
     }
 
@@ -381,17 +370,17 @@ public class SkillType implements Serializable {
         }
     }
 
-    public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "skillType");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "name", name);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "target", target);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "countUp", countUp);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "greenLvl", greenLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "regLvl", regLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "vetLvl", vetLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "eliteLvl", eliteLvl);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "costs", StringUtils.join(costs, ','));
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "skillType");
+    public void writeToXML(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "skillType");
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "name", name);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "target", target);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "countUp", countUp);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "greenLvl", greenLvl);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "regLvl", regLvl);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "vetLvl", vetLvl);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "eliteLvl", eliteLvl);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "costs", StringUtils.join(costs, ','));
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "skillType");
     }
 
     public static void generateInstanceFromXML(Node wn, Version version) {
@@ -399,7 +388,7 @@ public class SkillType implements Serializable {
             SkillType retVal = new SkillType();
             NodeList nl = wn.getChildNodes();
 
-            for (int x=0; x<nl.getLength(); x++) {
+            for (int x = 0; x < nl.getLength(); x++) {
                 Node wn2 = nl.item(x);
                 if (wn2.getNodeName().equalsIgnoreCase("name")) {
                     retVal.name = wn2.getTextContent();
@@ -425,21 +414,16 @@ public class SkillType implements Serializable {
 
             lookupHash.put(retVal.name, retVal);
         } catch (Exception ex) {
-            // Errrr, apparently either the class name was invalid...
-            // Or the listed name doesn't exist.
-            // Doh!
-            MekHQ.getLogger().error(ex);
+            LogManager.getLogger().error("", ex);
         }
     }
 
     public static void generateSeparateInstanceFromXML(Node wn, Hashtable<String, SkillType> hash) {
-        final String METHOD_NAME = "generateSeparateInstanceFromXML(Node,Hashtable<String, SkillType>)";
-
         try {
             SkillType retVal = new SkillType();
             NodeList nl = wn.getChildNodes();
 
-            for (int x=0; x<nl.getLength(); x++) {
+            for (int x = 0; x < nl.getLength(); x++) {
                 Node wn2 = nl.item(x);
                 if (wn2.getNodeName().equalsIgnoreCase("name")) {
                     retVal.name = wn2.getTextContent();
@@ -465,10 +449,7 @@ public class SkillType implements Serializable {
 
             hash.put(retVal.name, retVal);
         } catch (Exception ex) {
-            // Errrr, apparently either the class name was invalid...
-            // Or the listed name doesn't exist.
-            // Doh!
-            MekHQ.getLogger().error(SkillType.class, METHOD_NAME, ex);
+            LogManager.getLogger().error("", ex);
         }
     }
 

@@ -29,6 +29,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import megamek.common.TargetRoll;
 import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.unit.UnitOrder;
@@ -40,8 +41,6 @@ import mekhq.campaign.work.IAcquisitionWork;
  */
 public class ProcurementTableModel extends DataTableModel {
     //region Variable Declarations
-    private static final long serialVersionUID = 534443424190075264L;
-
     private final Campaign campaign;
 
     public final static int COL_NAME    =    0;
@@ -53,7 +52,8 @@ public class ProcurementTableModel extends DataTableModel {
     public final static int COL_QUEUE     =  6;
     public final static int N_COL          = 7;
 
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.GUI", new EncodeControl());
+    private final transient ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.GUI",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
@@ -110,7 +110,7 @@ public class ProcurementTableModel extends DataTableModel {
             case COL_TOTAL_COST:
                 return shoppingItem.getBuyCost().multipliedBy(shoppingItem.getQuantity()).toAmountAndSymbolString();
             case COL_TARGET:
-                final TargetRoll target = getCampaign().getTargetForAcquisition(shoppingItem, getCampaign().getLogisticsPerson(), false);
+                final TargetRoll target = getCampaign().getTargetForAcquisition(shoppingItem);
                 String value = target.getValueAsString();
                 if (IntStream.of(TargetRoll.IMPOSSIBLE, TargetRoll.AUTOMATIC_SUCCESS, TargetRoll.AUTOMATIC_FAIL)
                         .allMatch(i -> (target.getValue() != i))) {
@@ -179,8 +179,7 @@ public class ProcurementTableModel extends DataTableModel {
     private String getTooltipFor(final IAcquisitionWork shoppingItem, final int column) {
         switch (column) {
             case COL_TARGET:
-                return getCampaign().getTargetForAcquisition(shoppingItem,
-                        getCampaign().getLogisticsPerson(), false).getDesc();
+                return getCampaign().getTargetForAcquisition(shoppingItem).getDesc();
             default:
                 return resources.getString("ProcurementTableModel.defaultToolTip.toolTipText");
         }

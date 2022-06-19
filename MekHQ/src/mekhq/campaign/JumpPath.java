@@ -1,7 +1,7 @@
 /*
  * JumpPath,java
  *
- * Copyright (c) 2011 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2011 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,18 +20,16 @@
  */
 package mekhq.campaign;
 
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.universe.PlanetarySystem;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.universe.PlanetarySystem;
+import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is an array list of planets for a jump path, from which we can derive
@@ -40,10 +38,9 @@ import mekhq.campaign.universe.PlanetarySystem;
  * this object will need to spit out a list of planet names and then reconstruct
  * the planets from that.
  *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
-public class JumpPath implements Serializable {
-    private static final long serialVersionUID = 708430867050359759L;
+public class JumpPath {
     private List<PlanetarySystem> path;
 
     public JumpPath() {
@@ -146,15 +143,12 @@ public class JumpPath implements Serializable {
         return path.contains(system);
     }
 
-    public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<jumpPath>");
-        for (PlanetarySystem p : path) {
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"<planetName>"
-                    +MekHqXmlUtil.escape(p.getId())
-                    +"</planetName>");
+    public void writeToXML(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "jumpPath");
+        for (PlanetarySystem planetarySystem : path) {
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "planetName", planetarySystem.getId());
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</jumpPath>");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "jumpPath");
     }
 
     public static JumpPath generateInstanceFromXML(Node wn, Campaign c) {
@@ -171,15 +165,12 @@ public class JumpPath implements Serializable {
                     if (null != p) {
                         retVal.addSystem(p);
                     } else {
-                        MekHQ.getLogger().error(JumpPath.class, "Couldn't find planet named " + wn2.getTextContent());
+                        LogManager.getLogger().error("Couldn't find planet named " + wn2.getTextContent());
                     }
                 }
             }
         } catch (Exception ex) {
-            // Errrr, apparently either the class name was invalid...
-            // Or the listed name doesn't exist.
-            // Doh!
-            MekHQ.getLogger().error(JumpPath.class, ex);
+            LogManager.getLogger().error("", ex);
         }
 
         return retVal;

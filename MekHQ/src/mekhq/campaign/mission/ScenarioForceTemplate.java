@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 The Megamek Team. All rights reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,33 +10,26 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.mission;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-
-import org.w3c.dom.Node;
-
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
 import megamek.common.Board;
 import megamek.common.UnitType;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHQ;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+
+import java.util.*;
 
 public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> {
     // A scenario force template is a way to describe a particular force that gets generated when creating a DymanicScenario
@@ -88,22 +81,22 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
          * On this player's side, controlled by the player
          */
         Player,
-        
+
         /**
          * Allied, bot-controlled
          */
         Allied,
-        
+
         /**
          * Opposing, bot-controlled
          */
         Opposing,
-        
+
         /**
          * Hostile to both allied and opposing, bot-controlled
          */
         Third,
-        
+
         /**
          * Dynamically either allied, opposing or third, depending on who owns the current planet
          */
@@ -128,27 +121,27 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
      */
     public enum ForceGenerationMethod {
         /**
-         * Assigned by player from TO&E
+         * Assigned by player from TO&amp;E
          */
         PlayerSupplied,
-        
+
         /**
          * Scale using BV, based on the BV value of already generated units flagged as contributing towards BV
          */
         BVScaled,
-        
+
         /*
          * Scale on the unit count, based on number of already generated units flagged as contributing towards unit count
          */
         UnitCountScaled,
-        
+
         /**
          * What it says on the tin
          */
         FixedUnitCount,
-        
+
         /**
-         * Either assigned by player from TO&E or a minimum fixed number of units; TODO: currently unimplemented
+         * Either assigned by player from TO&amp;E or a minimum fixed number of units; TODO: currently unimplemented
          */
         PlayerOrFixedUnitCount
     }
@@ -161,22 +154,22 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
          * Don't
          */
         None,
-        
+
         /**
          * Same edge as the designated force
          */
         SameEdge,
-        
+
         /**
          * Same or adjacent edge as the designated force (e.g. E = E, NE, SE)
          */
         SameArc,
-        
+
         /**
          * Opposite edge from the designated force (ANY = ANY, CTR = EDGE, EDGE = CTR)
          */
         OppositeEdge,
-        
+
         /**
          * Oppositee or adjacent edge as the designated force (e.g. W = E, NE, SE)
          */
@@ -351,11 +344,17 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
      */
     private List<String> objectiveLinkedForces;
 
+    /**
+     * Whether or not this force is subject to modifiers that cause random unit removal
+     * e.g. "Good Intel".
+     */
+    private boolean subjectToRandomRemoval = true;
+    
     @Override
     public ScenarioForceTemplate clone() {
         return new ScenarioForceTemplate(this);
     }
-    
+
     /**
      * Blank constructor for deserialization purposes.
      */
@@ -378,7 +377,7 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
         this.deploymentZones = deploymentZones == null ? new ArrayList<>() : new ArrayList<>(deploymentZones);
         this.objectiveLinkedForces = new ArrayList<>();
     }
-    
+
     /**
      * Copy constructor
      */
@@ -387,11 +386,11 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
         generationMethod = forceDefinition.generationMethod;
         forceMultiplier = forceDefinition.forceMultiplier;
         deploymentZones = new ArrayList<>();
-        
+
         for (int zone : forceDefinition.deploymentZones) {
             deploymentZones.add(zone);
         }
-        
+
         destinationZone = forceDefinition.destinationZone;
         retreatThreshold = forceDefinition.retreatThreshold;
         allowedUnitType = forceDefinition.allowedUnitType;
@@ -413,11 +412,8 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
         startingAltitude = forceDefinition.startingAltitude;
         useArtillery = forceDefinition.useArtillery;
         deployOffBoard = forceDefinition.deployOffBoard;
-        objectiveLinkedForces = new ArrayList<String>();
-        
-        for (String force : forceDefinition.objectiveLinkedForces) {
-            objectiveLinkedForces.add(force);
-        }
+        objectiveLinkedForces = new ArrayList<>();
+        objectiveLinkedForces.addAll(forceDefinition.objectiveLinkedForces);
     }
 
     public int getForceAlignment() {
@@ -432,8 +428,8 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
         return forceMultiplier;
     }
 
-    @XmlElementWrapper(name="deploymentZones")
-    @XmlElement(name="deploymentZone")
+    @XmlElementWrapper(name = "deploymentZones")
+    @XmlElement(name = "deploymentZone")
     public List<Integer> getDeploymentZones() {
         return deploymentZones;
     }
@@ -617,9 +613,17 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
     public void setDeployOffboard(boolean deployOffBoard) {
         this.deployOffBoard = deployOffBoard;
     }
+    
+    public boolean isSubjectToRandomRemoval() {
+        return subjectToRandomRemoval;
+    }
 
-    @XmlElementWrapper(name="objectiveLinkedForces")
-    @XmlElement(name="objectiveLinkedForce")
+    public void setSubjectToRandomRemoval(boolean subjectToRandomRemoval) {
+        this.subjectToRandomRemoval = subjectToRandomRemoval;
+    }
+
+    @XmlElementWrapper(name = "objectiveLinkedForces")
+    @XmlElement(name = "objectiveLinkedForce")
     public List<String> getObjectiveLinkedForces() {
         return objectiveLinkedForces;
     }
@@ -666,7 +670,7 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
      * @return
      */
     public String getAllowedUnitTypeName() {
-        if(getAllowedUnitType() >= UnitType.SIZE || getAllowedUnitType() < 0) {
+        if (getAllowedUnitType() >= UnitType.SIZE || getAllowedUnitType() < 0) {
             return SPECIAL_UNIT_TYPES.get(getAllowedUnitType());
         } else {
             return UnitType.getTypeDisplayableName(getAllowedUnitType());
@@ -686,8 +690,8 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
             Unmarshaller um = context.createUnmarshaller();
             JAXBElement<ScenarioForceTemplate> templateElement = um.unmarshal(xmlNode, ScenarioForceTemplate.class);
             resultingTemplate = templateElement.getValue();
-        } catch(Exception e) {
-            MekHQ.getLogger().error(ScenarioTemplate.class, "Deserialize", "Error Deserializing Scenario Force Template", e);
+        } catch (Exception e) {
+            LogManager.getLogger().error("Error Deserializing Scenario Force Template", e);
         }
 
         return resultingTemplate;
@@ -695,9 +699,9 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
 
     @Override
     public int compareTo(ScenarioForceTemplate o) {
-        if(this.forceAlignment > o.forceAlignment) {
+        if (this.forceAlignment > o.forceAlignment) {
             return 1;
-        } else if(this.forceAlignment < o.forceAlignment) {
+        } else if (this.forceAlignment < o.forceAlignment) {
             return -1;
         } else {
             return this.forceName.charAt(0) > o.forceName.charAt(0) ? 1 : -1;
@@ -724,7 +728,7 @@ public class ScenarioForceTemplate implements Comparable<ScenarioForceTemplate> 
 
         return rft;
     }
-    
+
     @Override
     public String toString() {
         return getForceName();

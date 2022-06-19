@@ -18,26 +18,31 @@
  */
 package mekhq.campaign.personnel.generator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import megamek.common.Compute;
 import mekhq.Utilities;
-import mekhq.campaign.CampaignOptions;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.RandomSkillPreferences;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DefaultSkillGenerator extends AbstractSkillGenerator {
+    //region Constructors
+    public DefaultSkillGenerator(final RandomSkillPreferences randomSkillPreferences) {
+        super(randomSkillPreferences);
+    }
+    //endregion Constructors
 
     @Override
-    public void generateSkills(Person person, int expLvl) {
+    public void generateSkills(final Campaign campaign, final Person person, final int expLvl) {
         PersonnelRole primaryRole = person.getPrimaryRole();
         PersonnelRole secondaryRole = person.getSecondaryRole();
         RandomSkillPreferences rskillPrefs = getSkillPreferences();
 
-        int bonus = 0;
+        int bonus = getPhenotypeBonus(person);
         int mod = 0;
 
         if (primaryRole.isLAMPilot()) {
@@ -50,7 +55,8 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
             generateDefaultSkills(person, secondaryRole, expLvl, bonus, mod);
         }
 
-        bonus = getPhenotypeBonus(person);
+        // apply phenotype bonus only to primary skills
+        bonus = 0;
 
         // roll small arms skill
         if (!person.getSkills().hasSkill(SkillType.S_SMALL_ARMS)) {
@@ -71,13 +77,10 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
         }
 
         // roll artillery skill
-        if (getCampaignOptions(person).useArtillery()
+        if (campaign.getCampaignOptions().useArtillery()
                 && (primaryRole.isMechWarrior() || primaryRole.isVehicleGunner() || primaryRole.isSoldier())
                 && Utilities.rollProbability(rskillPrefs.getArtilleryProb())) {
-            int artyLvl = Utilities.generateExpLevel(rskillPrefs.getArtilleryBonus());
-            if (artyLvl > SkillType.EXP_ULTRA_GREEN) {
-                addSkill(person, SkillType.S_ARTILLERY, artyLvl, rskillPrefs.randomizeSkill(), bonus);
-            }
+            generateArtillerySkill(person, bonus);
         }
 
         // roll random secondary skill
@@ -92,9 +95,5 @@ public class DefaultSkillGenerator extends AbstractSkillGenerator {
             int secondLvl = Utilities.generateExpLevel(rskillPrefs.getSecondSkillBonus());
             addSkill(person, selSkill, secondLvl, rskillPrefs.randomizeSkill(), bonus);
         }
-    }
-
-    private CampaignOptions getCampaignOptions(Person person) {
-        return person.getCampaign().getCampaignOptions();
     }
 }

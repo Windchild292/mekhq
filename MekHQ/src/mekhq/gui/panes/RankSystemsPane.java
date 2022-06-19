@@ -23,8 +23,7 @@ import megamek.client.ui.baseComponents.MMComboBox;
 import megamek.client.ui.baseComponents.SpinnerCellEditor;
 import megamek.common.annotations.Nullable;
 import megamek.common.util.sorter.NaturalOrderComparator;
-import mekhq.MekHQ;
-import mekhq.MekHqConstants;
+import mekhq.MHQConstants;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.enums.RankSystemType;
 import mekhq.campaign.personnel.ranks.RankSystem;
@@ -36,16 +35,14 @@ import mekhq.gui.baseComponents.JScrollablePanel;
 import mekhq.gui.baseComponents.SortedComboBoxModel;
 import mekhq.gui.dialog.CustomRankSystemCreationDialog;
 import mekhq.gui.model.RankTableModel;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class RankSystemsPane extends AbstractMHQScrollPane {
     //region Variable Declarations
@@ -160,7 +157,7 @@ public class RankSystemsPane extends AbstractMHQScrollPane {
                 ? new RankSystem(getCampaign().getRankSystem()) : getCampaign().getRankSystem());
 
         // Then, we can start creating the actual panel
-        final JPanel rankSystemsPanel = new JScrollablePanel(new GridBagLayout());
+        final JScrollablePanel rankSystemsPanel = new JScrollablePanel(new GridBagLayout());
         rankSystemsPanel.setName("rankSystemsPanel");
 
         final GridBagConstraints gbc = new GridBagConstraints();
@@ -174,7 +171,6 @@ public class RankSystemsPane extends AbstractMHQScrollPane {
                 BorderFactory.createTitledBorder(resources.getString("txtInstructionsRanks.title")),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         txtInstructionsRanks.setOpaque(false);
-        txtInstructionsRanks.setMinimumSize(new Dimension(250, 120));
         txtInstructionsRanks.setEditable(false);
         txtInstructionsRanks.setLineWrap(true);
         txtInstructionsRanks.setWrapStyleWord(true);
@@ -395,7 +391,7 @@ public class RankSystemsPane extends AbstractMHQScrollPane {
         // Then update the selected rank system, with null protection (although it shouldn't be null)
         setSelectedRankSystem(getRankSystemModel().getSelectedItem());
         if (getSelectedRankSystem() == null) {
-            MekHQ.getLogger().error("The selected rank system is null. Not changing the ranks, just returning.");
+            LogManager.getLogger().error("The selected rank system is null. Not changing the ranks, just returning.");
             getComboRankSystemType().setEnabled(false);
             return;
         }
@@ -462,7 +458,7 @@ public class RankSystemsPane extends AbstractMHQScrollPane {
                 rankSystems.add(rankSystem);
             }
         }
-        Ranks.exportRankSystemsToFile(new File(MekHqConstants.USER_RANKS_FILE_PATH), rankSystems);
+        Ranks.exportRankSystemsToFile(new File(MHQConstants.USER_RANKS_FILE_PATH), rankSystems);
         if (refresh) {
             refreshRankSystems();
         }

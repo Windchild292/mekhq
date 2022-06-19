@@ -1,10 +1,11 @@
 Version:1.0
 Titan
 TI-1A
+mul id:3257
 
 Config:Biped
 TechBase:Inner Sphere
-Era:2787
+Era:2765
 Source:TRO 3075
 Rules Level:1
 

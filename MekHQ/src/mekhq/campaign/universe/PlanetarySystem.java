@@ -1,8 +1,8 @@
 /*
  * PlanetarySystem.java
  *
- * Copyright (C) 2011-2016, 2019 MegaMek team
- * Copyright (c) 2011 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2011 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
+ * Copyright (c) 2011-2022 - The MegaMek team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -13,40 +13,27 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.universe;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import megamek.codeUtilities.ObjectUtility;
 import megamek.common.EquipmentType;
-import mekhq.Utilities;
 import mekhq.adapter.BooleanValueAdapter;
 import mekhq.adapter.DateAdapter;
 import mekhq.adapter.SpectralClassAdapter;
 import mekhq.campaign.universe.Planet.PlanetaryEvent;
+
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * This is a PlanetarySystem object which will contain information
@@ -55,13 +42,10 @@ import mekhq.campaign.universe.Planet.PlanetaryEvent;
  *
  * @author Taharqa
  */
-@XmlRootElement(name="system")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class PlanetarySystem implements Serializable {
-    private static final long serialVersionUID = -8699502165157515100L;
-
+@XmlRootElement(name = "system")
+@XmlAccessorType(value = XmlAccessType.FIELD)
+public class PlanetarySystem {
     // Star classification data and methods
-
     public static final int SPECTRAL_O = 0;
     public static final int SPECTRAL_B = 1;
     public static final int SPECTRAL_A = 2;
@@ -78,26 +62,26 @@ public class PlanetarySystem implements Serializable {
     public static final int SPECTRAL_Q = 100;
     // TODO: Wolf-Rayet stars ("W"), carbon stars ("C"), S-type stars ("S"),
 
-    public static final String LUM_0           = "0"; //$NON-NLS-1$
-    public static final String LUM_IA          = "Ia"; //$NON-NLS-1$
-    public static final String LUM_IAB         = "Iab"; //$NON-NLS-1$
-    public static final String LUM_IB          = "Ib"; //$NON-NLS-1$
+    public static final String LUM_0           = "0";
+    public static final String LUM_IA          = "Ia";
+    public static final String LUM_IAB         = "Iab";
+    public static final String LUM_IB          = "Ib";
     // Generic class, consisting of Ia, Iab and Ib
-    public static final String LUM_I           = "I"; //$NON-NLS-1$
-    public static final String LUM_II_EVOLVED  = "I/II"; //$NON-NLS-1$
-    public static final String LUM_II          = "II"; //$NON-NLS-1$
-    public static final String LUM_III_EVOLVED = "II/III"; //$NON-NLS-1$
-    public static final String LUM_III         = "III"; //$NON-NLS-1$
-    public static final String LUM_IV_EVOLVED  = "III/IV"; //$NON-NLS-1$
-    public static final String LUM_IV          = "IV"; //$NON-NLS-1$
-    public static final String LUM_V_EVOLVED   = "IV/V"; //$NON-NLS-1$
-    public static final String LUM_V           = "V"; //$NON-NLS-1$
+    public static final String LUM_I           = "I";
+    public static final String LUM_II_EVOLVED  = "I/II";
+    public static final String LUM_II          = "II";
+    public static final String LUM_III_EVOLVED = "II/III";
+    public static final String LUM_III         = "III";
+    public static final String LUM_IV_EVOLVED  = "III/IV";
+    public static final String LUM_IV          = "IV";
+    public static final String LUM_V_EVOLVED   = "IV/V";
+    public static final String LUM_V           = "V";
     // typically used as a prefix "sd", not as a suffix
-    public static final String LUM_VI          = "VI";  //$NON-NLS-1$
+    public static final String LUM_VI          = "VI";
     // typically used as a prefix "esd", not as a suffix
-    public static final String LUM_VI_PLUS     = "VI+"; //$NON-NLS-1$
+    public static final String LUM_VI_PLUS     = "VI+";
     // always used as class designation "D", never as a suffix
-    public static final String LUM_VII         = "VII"; //$NON-NLS-1$
+    public static final String LUM_VII         = "VII";
 
     @XmlElement(name = "xcood")
     private Double x;
@@ -122,15 +106,15 @@ public class PlanetarySystem implements Serializable {
     @XmlJavaTypeAdapter(BooleanValueAdapter.class)
     private Boolean zenithCharge;
 
-    //tree map of planets sorted by system position
+    // tree map of planets sorted by system position
     @XmlTransient
     private TreeMap<Integer, Planet> planets;
 
-    //for reading in because lists are easier
+    // for reading in because lists are easier
     @XmlElement(name = "planet")
     private List<Planet> planetList;
 
-    //the location of the primary planet for this system
+    // the location of the primary planet for this system
     private int primarySlot;
 
     /** Marker for "please delete this system" */
@@ -152,6 +136,7 @@ public class PlanetarySystem implements Serializable {
     private List<PlanetarySystemEvent> eventList;
 
     public PlanetarySystem() {
+
     }
 
     public PlanetarySystem(String id) {
@@ -171,12 +156,12 @@ public class PlanetarySystem implements Serializable {
     }
 
     public String getName(LocalDate when) {
-    	if (primarySlot < 1) {
-    		//if no primary slot, then just return the id
-    		if (null != id) {
-    			return id;
-    		}
-    	}
+        if (primarySlot < 1) {
+            // if no primary slot, then just return the id
+            if (null != id) {
+                return id;
+            }
+        }
         if (null != getPrimaryPlanet()) {
             return getPrimaryPlanet().getName(when);
         }
@@ -202,22 +187,21 @@ public class PlanetarySystem implements Serializable {
                 factions.addAll(f);
             }
         }
-        //ignore cases where abandoned (ABN) is given in addition
-        //to real factions
+        // ignore cases where abandoned (ABN) is given in addition to real factions
         if (factions.size() > 1) {
-        	factions.remove(Factions.getInstance().getFaction("ABN"));
+            factions.remove(Factions.getInstance().getFaction("ABN"));
         }
         return factions;
     }
 
     public long getPopulation(LocalDate when) {
-    	long pop = 0L;
-    	for (Planet planet : planets.values()) {
-    		if (null != planet.getPopulation(when)) {
-    			pop += planet.getPopulation(when);
-    		}
-    	}
-    	return pop;
+        long pop = 0L;
+        for (Planet planet : planets.values()) {
+            if (null != planet.getPopulation(when)) {
+                pop += planet.getPopulation(when);
+            }
+        }
+        return pop;
     }
 
     /** highest socio-industrial ratings among all planets in system for the map **/
@@ -262,21 +246,24 @@ public class PlanetarySystem implements Serializable {
         return rating;
     }
 
-    /** @return short name if set, else full name, else "unnamed" */
+    /**
+     * @return short name if set, else full name, else "unnamed"
+     */
     public String getPrintableName(LocalDate when) {
-        String result = getName(when);
-        if (null == result) {
-            return "Unknown System"; //$NON-NLS-1$ $NON-NLS-2$
-        }
-        return result; //$NON-NLS-1$
+        final String system = getName(when);
+        return (system == null) ? "Unknown System" : system;
     }
 
-    /** @return the distance to a point in space in light years */
+    /**
+     * @return the distance to a point in space in light years
+     */
     public double getDistanceTo(double x, double y) {
         return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
     }
 
-    /** @return the distance to another system in light years (0 if both are in the same system) */
+    /**
+     * @return the distance to another system in light years (0 if both are in the same system)
+     */
     public double getDistanceTo(PlanetarySystem anotherSystem) {
         return Math.sqrt(Math.pow(x - anotherSystem.x, 2) + Math.pow(y - anotherSystem.y, 2));
     }
@@ -290,7 +277,7 @@ public class PlanetarySystem implements Serializable {
     }
 
     public int getNumberRechargeStations(LocalDate when) {
-    	return (isNadirCharge(when) ? 1 : 0) + (isZenithCharge(when) ? 1 : 0);
+        return (isNadirCharge(when) ? 1 : 0) + (isZenithCharge(when) ? 1 : 0);
     }
 
     public String getRechargeStationsText(LocalDate when) {
@@ -310,7 +297,7 @@ public class PlanetarySystem implements Serializable {
     /** Recharge time in hours (assuming the usage of the fastest charging method available) */
     public double getRechargeTime(LocalDate when) {
         if (isZenithCharge(when) || isNadirCharge(when)) {
-        	//The 176 value comes from pg. 87-88 and 138 of StratOps
+            // The 176 value comes from pg. 87-88 and 138 of StratOps
             return Math.min(176.0, getSolarRechargeTime());
         } else {
             return getSolarRechargeTime();
@@ -320,7 +307,7 @@ public class PlanetarySystem implements Serializable {
     /** Recharge time in hours using solar radiation alone (at jump point and 100% efficiency) */
     public double getSolarRechargeTime() {
         if ((null == spectralClass) || (null == subtype)) {
-        	//176 is the average recharge time across all spectral classes and subtypes
+            // 176 is the average recharge time across all spectral classes and subtypes
             return 176;
         }
         return StarUtil.getSolarRechargeTime(spectralClass, subtype);
@@ -329,26 +316,30 @@ public class PlanetarySystem implements Serializable {
     public String getRechargeTimeText(LocalDate when) {
         double time = getRechargeTime(when);
         if (Double.isInfinite(time)) {
-            return "recharging impossible"; //$NON-NLS-1$
+            return "recharging impossible";
         } else {
-            return String.format("%.0f hours", time); //$NON-NLS-1$
+            return String.format("%.0f hours", time);
         }
     }
 
     public double getStarDistanceToJumpPoint() {
         if ((null == spectralClass) || (null == subtype)) {
-        	//40 is close to the midpoint value across all star types
+            // 40 is close to the midpoint value across all star types
             return StarUtil.getDistanceToJumpPoint(40);
         }
         return StarUtil.getDistanceToJumpPoint(spectralClass, subtype);
     }
 
-    /** @return the average travel time from low orbit to the jump point at 1g, in Terran days for a given planetary position*/
+    /**
+     * @return the average travel time from low orbit to the jump point at 1g, in Terran days for a given planetary position
+     */
     public double getTimeToJumpPoint(double acceleration) {
         return getTimeToJumpPoint(acceleration, getPrimaryPlanetPosition());
     }
 
-    /** @return the average travel time from low orbit to the jump point at 1g, in Terran days for a given planetary position*/
+    /**
+     * @return the average travel time from low orbit to the jump point at 1g, in Terran days for a given planetary position
+     */
     public double getTimeToJumpPoint(double acceleration, int sysPos) {
         return planets.get(sysPos).getTimeToJumpPoint(acceleration);
     }
@@ -357,9 +348,11 @@ public class PlanetarySystem implements Serializable {
         return spectralType;
     }
 
-    /** @return normalized spectral type, for display */
+    /**
+     * @return normalized spectral type, for display
+     */
     public String getSpectralTypeNormalized() {
-        return null != spectralType ? StarUtil.getSpectralType(spectralClass, subtype, luminosity) : "?"; //$NON-NLS-1$
+        return null != spectralType ? StarUtil.getSpectralType(spectralClass, subtype, luminosity) : "?";
     }
 
     public String getSpectralTypeText() {
@@ -369,11 +362,11 @@ public class PlanetarySystem implements Serializable {
         if (spectralType.startsWith("Q")) {
             switch (spectralType) {
                 case "QB":
-                    return "black hole"; //$NON-NLS-1$
+                    return "black hole";
                 case "QN":
-                    return "neutron star"; //$NON-NLS-1$
+                    return "neutron star";
                 case "QP":
-                    return "pulsar"; //$NON-NLS-1$
+                    return "pulsar";
                 default:
                     return "unknown";
             }
@@ -398,17 +391,15 @@ public class PlanetarySystem implements Serializable {
     }
 
     /**
-     *
-     * @return the planet object identified by the primary slot. If no primary slot is given then this function will return the first planet
-     *
+     * @return the planet object identified by the primary slot. If no primary slot is given then
+     * this function will return the first planet
      */
     public Planet getPrimaryPlanet() {
         return planets.get(getPrimaryPlanetPosition());
     }
 
     public int getPrimaryPlanetPosition() {
-        //if no primary slot (uninhabited system)
-        //just return first planet
+        // if no primary slot (uninhabited system) just return first planet
         return Math.max(primarySlot, 1);
     }
 
@@ -451,7 +442,6 @@ public class PlanetarySystem implements Serializable {
             default:
                 return "default";
         }
-
     }
 
     @Override
@@ -490,7 +480,7 @@ public class PlanetarySystem implements Serializable {
     public PlanetaryEvent getOrCreateEvent(LocalDate when, int position) {
         Planet p = getPlanet(position);
         if (null == p) {
-        	return null;
+            return null;
         }
         return p.getOrCreateEvent(when);
     }
@@ -511,7 +501,7 @@ public class PlanetarySystem implements Serializable {
             if (date.isAfter(when)) {
                 break;
             }
-            result = Utilities.nonNull(getter.get(events.get(date)), result);
+            result = ObjectUtility.nonNull(getter.get(events.get(date)), result);
         }
         return result;
     }
@@ -548,10 +538,10 @@ public class PlanetarySystem implements Serializable {
         if (null != spectralType) {
             setSpectralType(spectralType);
         }
-        nadirCharge = Utilities.nonNull(nadirCharge, Boolean.FALSE);
-        zenithCharge = Utilities.nonNull(zenithCharge, Boolean.FALSE);
+        nadirCharge = ObjectUtility.nonNull(nadirCharge, Boolean.FALSE);
+        zenithCharge = ObjectUtility.nonNull(zenithCharge, Boolean.FALSE);
 
-        //fill up planets
+        // fill up planets
         planets = new TreeMap<>();
         if (null != planetList) {
             for (Planet p : planetList) {
@@ -580,7 +570,7 @@ public class PlanetarySystem implements Serializable {
     private boolean beforeMarshal(Marshaller marshaller) {
         // Fill up our event list from the internal data type
         eventList = new ArrayList<>(events.values());
-        //same for planet list
+        // same for planet list
         planetList = new ArrayList<>(planets.values());
         return true;
     }
@@ -588,22 +578,22 @@ public class PlanetarySystem implements Serializable {
     public void copyDataFrom(PlanetarySystem other) {
         if (null != other) {
             // We don't change the ID
-            name = Utilities.nonNull(other.name, name);
-            x = Utilities.nonNull(other.x, x);
-            y = Utilities.nonNull(other.y, y);
-            nadirCharge = Utilities.nonNull(other.nadirCharge, nadirCharge);
-            zenithCharge = Utilities.nonNull(other.zenithCharge, zenithCharge);
-            //TODO: some other changes should be possible
-            // Merge (not replace!) events
+            name = ObjectUtility.nonNull(other.name, name);
+            x = ObjectUtility.nonNull(other.x, x);
+            y = ObjectUtility.nonNull(other.y, y);
+            nadirCharge = ObjectUtility.nonNull(other.nadirCharge, nadirCharge);
+            zenithCharge = ObjectUtility.nonNull(other.zenithCharge, zenithCharge);
+            // TODO : some other changes should be possible
+            // TODO : Merge (not replace!) events
             if (null != other.events) {
                 for (PlanetarySystemEvent event : other.getEvents()) {
                     if ((null != event) && (null != event.date)) {
-                    	PlanetarySystemEvent myEvent = getOrCreateEvent(event.date);
+                        PlanetarySystemEvent myEvent = getOrCreateEvent(event.date);
                         myEvent.copyDataFrom(event);
                     }
                 }
             }
-            //check for planet level changes
+            // check for planet level changes
             if (null != other.planets) {
                 for (Planet p : other.planets.values()) {
                     int pos = p.getSystemPosition();
@@ -640,7 +630,7 @@ public class PlanetarySystem implements Serializable {
     /** A class representing some event, possibly changing planetary information */
     @XmlRootElement(name="event")
     public static final class PlanetarySystemEvent {
-    	@XmlJavaTypeAdapter(DateAdapter.class)
+        @XmlJavaTypeAdapter(DateAdapter.class)
         public LocalDate date;
         public Boolean nadirCharge;
         public Boolean zenithCharge;
@@ -648,8 +638,8 @@ public class PlanetarySystem implements Serializable {
         public transient boolean custom = false;
 
         public void copyDataFrom(PlanetarySystemEvent other) {
-            nadirCharge = Utilities.nonNull(other.nadirCharge, nadirCharge);
-            zenithCharge = Utilities.nonNull(other.zenithCharge, zenithCharge);
+            nadirCharge = ObjectUtility.nonNull(other.nadirCharge, nadirCharge);
+            zenithCharge = ObjectUtility.nonNull(other.zenithCharge, zenithCharge);
             custom = (other.custom || custom);
         }
 
@@ -659,10 +649,11 @@ public class PlanetarySystem implements Serializable {
             custom = (other.custom || custom);
         }
 
-        /** @return <code>true</code> if the event doesn't contain any change */
+        /**
+         * @return <code>true</code> if the event doesn't contain any change
+         */
         public boolean isEmpty() {
-            return (null == nadirCharge)
-                && (null == zenithCharge);
+            return (null == nadirCharge) && (null == zenithCharge);
         }
     }
 }

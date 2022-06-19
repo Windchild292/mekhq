@@ -1,7 +1,7 @@
 /*
  * MissingAeroSensor.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -31,15 +31,13 @@ import megamek.common.Dropship;
 import megamek.common.Entity;
 import megamek.common.Jumpship;
 import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissingAeroSensor extends MissingPart {
-    private static final long serialVersionUID = 2806921577150714477L;
-
     private boolean dropship;
 
     public MissingAeroSensor() {
@@ -78,7 +76,7 @@ public class MissingAeroSensor extends MissingPart {
 
     @Override
     public boolean isAcceptableReplacement(Part part, boolean refit) {
-        return part instanceof AeroSensor && dropship == ((AeroSensor)part).isForSpaceCraft()
+        return part instanceof AeroSensor && dropship == ((AeroSensor) part).isForSpaceCraft()
                 && (dropship || getUnitTonnage() == part.getUnitTonnage());
     }
 
@@ -88,9 +86,9 @@ public class MissingAeroSensor extends MissingPart {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<dropship>"
                 +dropship
                 +"</dropship>");

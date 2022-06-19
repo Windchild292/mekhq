@@ -1,7 +1,7 @@
 /*
  * HeatSink.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,22 +20,15 @@
  */
 package mekhq.campaign.parts.equipment;
 
-import megamek.common.Compute;
-import megamek.common.CriticalSlot;
-import megamek.common.EquipmentType;
-import megamek.common.MiscType;
-import megamek.common.Mounted;
+import megamek.common.*;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
-import mekhq.campaign.parts.MissingPart;
 import mekhq.campaign.parts.enums.PartRepairType;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class HeatSink extends EquipmentPart {
-    private static final long serialVersionUID = 2892728320891712304L;
-
     public HeatSink() {
         this(0, null, -1, false, null);
     }
@@ -44,6 +37,7 @@ public class HeatSink extends EquipmentPart {
         super(tonnage, et, equipNum, 1.0, omniPodded, c);
     }
 
+    @Override
     public HeatSink clone() {
         HeatSink clone = new HeatSink(getUnitTonnage(), getType(), getEquipmentNum(), omniPodded, campaign);
         clone.copyBaseData(this);
@@ -63,10 +57,10 @@ public class HeatSink extends EquipmentPart {
         }
     }
 
-	@Override
-	public MissingHeatSink getMissingPart() {
-		return new MissingHeatSink(getUnitTonnage(), type, equipmentNum, omniPodded, campaign);
-	}
+    @Override
+    public MissingHeatSink getMissingPart() {
+        return new MissingHeatSink(getUnitTonnage(), type, equipmentNum, omniPodded, campaign);
+    }
 
     @Override
     public void updateConditionFromEntity(boolean checkForDestruction) {

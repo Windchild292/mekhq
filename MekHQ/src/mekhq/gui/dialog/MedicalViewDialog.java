@@ -18,19 +18,27 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Window;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
+import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
+import mekhq.Utilities;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.ExtraData;
+import mekhq.campaign.force.Force;
+import mekhq.campaign.log.LogEntry;
+import mekhq.campaign.log.LogEntryType;
+import mekhq.campaign.personnel.Injury;
+import mekhq.campaign.personnel.InjuryType;
+import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.enums.BodyLocation;
+import mekhq.campaign.personnel.enums.InjuryLevel;
+import mekhq.campaign.personnel.enums.Phenotype;
+import mekhq.gui.view.Paperdoll;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -38,46 +46,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Period;
+import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-import megamek.common.util.EncodeControl;
-
-import mekhq.campaign.log.LogEntryType;
-import megamek.client.ui.preferences.JWindowPreference;
-import mekhq.gui.view.Paperdoll;
-import megamek.client.ui.preferences.PreferencesNode;
-import mekhq.MekHQ;
-import mekhq.Utilities;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.ExtraData;
-import mekhq.campaign.log.LogEntry;
-import mekhq.campaign.force.Force;
-import mekhq.campaign.personnel.Injury;
-import mekhq.campaign.personnel.enums.BodyLocation;
-import mekhq.campaign.personnel.enums.InjuryLevel;
-import mekhq.campaign.personnel.enums.Phenotype;
-import mekhq.campaign.personnel.InjuryType;
-import mekhq.campaign.personnel.Person;
-
 public class MedicalViewDialog extends JDialog {
-    private static final long serialVersionUID = 6178230374580087883L;
     private static final String MENU_CMD_SEPARATOR = ",";
 
     private static final ExtraData.Key<String> DOCTOR_NOTES = new ExtraData.StringKey("doctor_notes");
@@ -87,7 +62,6 @@ public class MedicalViewDialog extends JDialog {
 
     private final Campaign campaign;
     private final Person person;
-    private ResourceBundle resourceMap;
 
     private Paperdoll defaultMaleDoll;
     private Paperdoll defaultFemaleDoll;
@@ -102,37 +76,35 @@ public class MedicalViewDialog extends JDialog {
     private transient Font handwritingFont;
     private transient Color labelColor;
     private transient ImageIcon healImageIcon;
+    private final transient ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.MedicalViewDialog",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     public MedicalViewDialog(Window parent, Campaign c, Person p) {
         super();
         this.campaign = Objects.requireNonNull(c);
         this.person = Objects.requireNonNull(p);
-        resourceMap = ResourceBundle.getBundle("mekhq.resources.MedicalViewDialog", new EncodeControl());
 
         // Preload default paperdolls
-        try (InputStream fis = new FileInputStream(c.getApp().getIconPackage().getGuiElement("default_male_paperdoll"))) {
+        try (InputStream fis = new FileInputStream(c.getApp().getIconPackage().getGuiElement("default_male_paperdoll"))) { // TODO : Remove inline file path
             defaultMaleDoll = new Paperdoll(fis);
         } catch (IOException e) {
-            MekHQ.getLogger().error(getClass(), "<init>(Window,Campaign,Person,IconPackage)", e);
+            LogManager.getLogger().error("", e);
         }
-        try (InputStream fis = new FileInputStream(c.getApp().getIconPackage().getGuiElement("default_female_paperdoll"))) {
+
+        try (InputStream fis = new FileInputStream(c.getApp().getIconPackage().getGuiElement("default_female_paperdoll"))) { // TODO : Remove inline file path
             defaultFemaleDoll = new Paperdoll(fis);
         } catch (IOException e) {
-            MekHQ.getLogger().error(getClass(), "<init>(Window,Campaign,Person,IconPackage)", e); //$NON-NLS-1$
+            LogManager.getLogger().error("", e);
         }
 
         setPreferredSize(new Dimension(1024, 840));
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(parent);
 
-        labelFont = UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.PLAIN, 16); //$NON-NLS-1$
-        try (InputStream fis = new FileInputStream("data/fonts/angelina.TTF")) { //$NON-NLS-1$
-            handwritingFont = Font.createFont(Font.TRUETYPE_FONT, fis).deriveFont(Font.PLAIN, 22);
-        } catch (FontFormatException | IOException e) {
-            handwritingFont = null;
-        }
+        labelFont = UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.PLAIN, 16);
+        handwritingFont = Font.decode(MekHQ.getMHQOptions().getMedicalViewDialogHandwritingFont()).deriveFont(Font.PLAIN, 22);
         labelColor = new Color(170, 170, 170);
-        healImageIcon = new ImageIcon(new ImageIcon("data/images/misc/medical.png").getImage().getScaledInstance(16, 16, Image.SCALE_DEFAULT)); //$NON-NLS-1$
+        healImageIcon = new ImageIcon(new ImageIcon("data/images/misc/medical.png").getImage().getScaledInstance(16, 16, Image.SCALE_DEFAULT)); // TODO : Remove inline file path
 
         dollActionListener = ae -> {
             final BodyLocation loc = BodyLocation.of(ae.getActionCommand());
@@ -141,7 +113,7 @@ public class MedicalViewDialog extends JDialog {
             JPopupMenu popup = new JPopupMenu();
             if (locationPicked) {
                 JLabel header = new JLabel(Utilities.capitalize(loc.locationName()));
-                header.setFont(UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.BOLD)); //$NON-NLS-1$
+                header.setFont(UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.BOLD));
                 popup.add(header);
                 popup.addSeparator();
             }
@@ -153,22 +125,22 @@ public class MedicalViewDialog extends JDialog {
                     person.addInjury(addIType.newInjury(c, person, loc, severity));
                     revalidate();
                 };
-                JMenu addMenu = new JMenu(resourceMap.getString("menuAdd.text")); //$NON-NLS-1$
+                JMenu addMenu = new JMenu(resourceMap.getString("menuAdd.text"));
                 InjuryType.getAllTypes().stream().filter(it -> it.isValidInLocation(loc))
                     .sorted((it1, it2) -> it1.getSimpleName().compareToIgnoreCase(it2.getSimpleName()))
                     .forEach(it -> IntStream.range(1, it.getMaxSeverity() + 1).forEach(severity -> {
-                    JMenuItem add = new JMenuItem(resourceMap.getString("menuMore.text") + it.getSimpleName(severity)); //$NON-NLS-1$
+                    JMenuItem add = new JMenuItem(resourceMap.getString("menuMore.text") + it.getSimpleName(severity));
                     add.setActionCommand(it.getKey() + MENU_CMD_SEPARATOR + severity);
                     add.addActionListener(addActionListener);
                     addMenu.add(add);
                 }));
                 popup.add(addMenu);
             } else {
-                JMenuItem edit = new JMenuItem(resourceMap.getString("menuNewInjury.text"), //$NON-NLS-1$
-                    UIManager.getIcon("FileView.fileIcon")); //$NON-NLS-1$
+                JMenuItem edit = new JMenuItem(resourceMap.getString("menuNewInjury.text"),
+                    UIManager.getIcon("FileView.fileIcon"));
                 popup.add(edit);
             }
-            JMenuItem remove = new JMenuItem(loc.locationName().isEmpty() ? resourceMap.getString("menuHealAll.text") : resourceMap.getString("menuHeal.text"), healImageIcon); //$NON-NLS-1$ //$NON-NLS-2$
+            JMenuItem remove = new JMenuItem(loc.locationName().isEmpty() ? resourceMap.getString("menuHealAll.text") : resourceMap.getString("menuHeal.text"), healImageIcon);
             if (locationPicked && p.getInjuriesByLocation(loc).isEmpty()) {
                 remove.setEnabled(false);
             } else {
@@ -188,7 +160,7 @@ public class MedicalViewDialog extends JDialog {
         getContentPane().add(new JScrollPane(scrollPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
         initComponents(scrollPanel);
 
-        JButton okayButton = new JButton(resourceMap.getString("buttonDone.text")); //$NON-NLS-1$
+        JButton okayButton = new JButton(resourceMap.getString("buttonDone.text"));
         okayButton.addActionListener(ae -> {
             if (!notesArea.getText().isEmpty()) {
                 p.getExtraData().set(DOCTOR_NOTES, notesArea.getText());
@@ -251,11 +223,15 @@ public class MedicalViewDialog extends JDialog {
         cont.add(genNotes(campaign, person), gbc);
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(MedicalViewDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(MedicalViewDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     @Override
@@ -329,11 +305,9 @@ public class MedicalViewDialog extends JDialog {
         String givenName = p.getGivenName();
         String surname = p.getSurname();
 
-        if (p.isClanner()) {
+        if (p.isClanPersonnel()) {
             surname = p.getBloodname();
         }
-
-        String birthdayString = MekHQ.getMekHQOptions().getDisplayFormattedDate(p.getBirthday());
 
         Period age = Period.between(p.getBirthday(), c.getLocalDate());
 
@@ -354,7 +328,7 @@ public class MedicalViewDialog extends JDialog {
         panel.add(genWrittenPanel(givenName));
         panel.add(genLabel(resourceMap.getString("birthDate.text")));
         panel.add(genLabel(resourceMap.getString("age.text")));
-        panel.add(genWrittenPanel(birthdayString));
+        panel.add(genWrittenPanel(MekHQ.getMHQOptions().getDisplayFormattedDate(p.getBirthday())));
         panel.add(genWrittenPanel(String.format(resourceMap.getString("age.format"), age.getYears(), age.getMonths())));
         panel.add(genLabel(resourceMap.getString("gender.text")));
         panel.add(genLabel(resourceMap.getString("phenotype.text")));
@@ -379,7 +353,7 @@ public class MedicalViewDialog extends JDialog {
         Map<String, List<LogEntry>> groupedEntries = p.getPersonnelLog().stream()
             .filter(entry -> entry.getType() == LogEntryType.MEDICAL)
             .sorted(Comparator.comparing(LogEntry::getDate))
-            .collect(Collectors.groupingBy(entry -> MekHQ.getMekHQOptions().getDisplayFormattedDate(entry.getDate())));
+            .collect(Collectors.groupingBy(entry -> MekHQ.getMHQOptions().getDisplayFormattedDate(entry.getDate())));
         groupedEntries.entrySet().stream()
             .filter(e -> !e.getValue().isEmpty())
             .sorted(Map.Entry.comparingByKey())
@@ -406,8 +380,8 @@ public class MedicalViewDialog extends JDialog {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        panel.add(genLabel(resourceMap.getString("allergies.text"))); //$NON-NLS-1$
-        panel.add(genWrittenText("")); //$NON-NLS-1$
+        panel.add(genLabel(resourceMap.getString("allergies.text")));
+        panel.add(genWrittenText(""));
 
         return panel;
     }
@@ -416,8 +390,8 @@ public class MedicalViewDialog extends JDialog {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        panel.add(genLabel(resourceMap.getString("illnesses.text"))); //$NON-NLS-1$
-        panel.add(genWrittenText("")); //$NON-NLS-1$
+        panel.add(genLabel(resourceMap.getString("illnesses.text")));
+        panel.add(genWrittenText(""));
 
         return panel;
     }
@@ -444,7 +418,7 @@ public class MedicalViewDialog extends JDialog {
         panel.removeAll();
         panel.setOpaque(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        panel.add(genLabel(resourceMap.getString("injuries.text"))); //$NON-NLS-1$
+        panel.add(genLabel(resourceMap.getString("injuries.text")));
 
         maxInjuryLevelLocationStream(p).forEachOrdered(bl -> {
             JPanel blWrapper = new JPanel();
@@ -462,15 +436,15 @@ public class MedicalViewDialog extends JDialog {
                     if (inj.getType().isPermanent()) {
                         injLabel = genWrittenText(String.format(resourceMap.getString("injuriesText.format"),
                                 inj.getType().getSimpleName(),
-                                MekHQ.getMekHQOptions().getDisplayFormattedDate(inj.getStart())));
+                                MekHQ.getMHQOptions().getDisplayFormattedDate(inj.getStart())));
                     } else if (inj.isPermanent() || (inj.getTime() <= 0)) {
                         injLabel = genWrittenText(String.format(resourceMap.getString("injuriesPermanent.format"),
                                 inj.getType().getSimpleName(),
-                                MekHQ.getMekHQOptions().getDisplayFormattedDate(inj.getStart())));
+                                MekHQ.getMHQOptions().getDisplayFormattedDate(inj.getStart())));
                     } else {
                         injLabel = genWrittenText(String.format(resourceMap.getString("injuriesTextAndDuration.format"),
                                 inj.getType().getSimpleName(),
-                                MekHQ.getMekHQOptions().getDisplayFormattedDate(inj.getStart()),
+                                MekHQ.getMHQOptions().getDisplayFormattedDate(inj.getStart()),
                                 genTimePeriod(inj.getTime())));
                     }
 
@@ -496,9 +470,9 @@ public class MedicalViewDialog extends JDialog {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(genLabel(resourceMap.getString("doctorsNotes.text"))); //$NON-NLS-1$
+        panel.add(genLabel(resourceMap.getString("doctorsNotes.text")));
 
-        String notes = p.getExtraData().get(DOCTOR_NOTES, ""); //$NON-NLS-1$
+        String notes = p.getExtraData().get(DOCTOR_NOTES, "");
         notesArea = new JTextArea(notes);
         notesArea.setEditable(true);
         notesArea.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -548,15 +522,15 @@ public class MedicalViewDialog extends JDialog {
 
     private String genTimePeriod(int days) {
         if (days <= 1) {
-            return resourceMap.getString("durationOneDay.text"); //$NON-NLS-1$
+            return resourceMap.getString("durationOneDay.text");
         } else if (days < 21) {
-            return String.format(resourceMap.getString("durationDays.format"), days); //$NON-NLS-1$
+            return String.format(resourceMap.getString("durationDays.format"), days);
         } else if (days <= 12 * 7) {
-            return String.format(resourceMap.getString("durationWeeks.format"), days * 1.0 / 7.0); //$NON-NLS-1$
+            return String.format(resourceMap.getString("durationWeeks.format"), days * 1.0 / 7.0);
         } else if (days <= 2 * 365) {
-            return String.format(resourceMap.getString("durationMonths.format"), days * 12.0 / 365.0); //$NON-NLS-1$
+            return String.format(resourceMap.getString("durationMonths.format"), days * 12.0 / 365.0);
         } else {
-            return String.format(resourceMap.getString("durationYears.format"), days * 1.0 / 365.0); //$NON-NLS-1$
+            return String.format(resourceMap.getString("durationYears.format"), days * 1.0 / 365.0);
         }
     }
 
@@ -565,14 +539,14 @@ public class MedicalViewDialog extends JDialog {
         private final Person person;
         private final Injury injury;
         private ImageIcon healImageIcon;
-        private ResourceBundle resourceMap;
+        private ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.MedicalViewDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
         public InjuryLabelMouseAdapter(JLabel label, Person person, Injury injury) {
             this.label = label;
             this.person = person;
             this.injury = injury;
-            this.healImageIcon = new ImageIcon(new ImageIcon("data/images/misc/medical.png").getImage().getScaledInstance(16, 16, Image.SCALE_DEFAULT)); //$NON-NLS-1$
-            this.resourceMap = ResourceBundle.getBundle("mekhq.resources.MedicalViewDialog", new EncodeControl()); //$NON-NLS-1$
+            this.healImageIcon = new ImageIcon(new ImageIcon("data/images/misc/medical.png").getImage().getScaledInstance(16, 16, Image.SCALE_DEFAULT)); // TODO : Remove inline file path
         }
 
         @Override
@@ -594,13 +568,13 @@ public class MedicalViewDialog extends JDialog {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 JPopupMenu popup = new JPopupMenu();
                 JLabel header = new JLabel(injury.getFluff());
-                header.setFont(UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.BOLD)); //$NON-NLS-1$
+                header.setFont(UIManager.getDefaults().getFont("Menu.font").deriveFont(Font.BOLD));
                 popup.add(header);
                 popup.addSeparator();
-                JMenuItem edit = new JMenuItem(resourceMap.getString("menuEdit.text"), //$NON-NLS-1$
-                    UIManager.getIcon("FileView.fileIcon")); //$NON-NLS-1$
+                JMenuItem edit = new JMenuItem(resourceMap.getString("menuEdit.text"),
+                    UIManager.getIcon("FileView.fileIcon"));
                 popup.add(edit);
-                JMenuItem remove = new JMenuItem(resourceMap.getString("menuRemove.text"), healImageIcon); //$NON-NLS-1$
+                JMenuItem remove = new JMenuItem(resourceMap.getString("menuRemove.text"), healImageIcon);
                 remove.addActionListener(ae -> {
                     person.removeInjury(injury);
                     label.getRootPane().getParent().revalidate();

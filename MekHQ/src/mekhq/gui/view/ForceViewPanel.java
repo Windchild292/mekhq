@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2011-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,21 +18,10 @@
  */
 package mekhq.gui.view;
 
-import java.awt.*;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.ResourceBundle;
-import java.util.UUID;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-
 import megamek.client.ui.Messages;
 import megamek.common.Entity;
 import megamek.common.UnitType;
 import megamek.common.util.EncodeControl;
-import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
@@ -42,13 +31,18 @@ import mekhq.campaign.unit.Unit;
 import mekhq.gui.baseComponents.JScrollablePanel;
 import mekhq.gui.utilities.MarkdownRenderer;
 
+import javax.swing.*;
+import java.awt.*;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+import java.util.UUID;
+
 /**
  * A custom panel that gets filled in with goodies from a Force record
- * @author  Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class ForceViewPanel extends JScrollablePanel {
-    private static final long serialVersionUID = 7004741688464105277L;
-
     private Force force;
     private Campaign campaign;
 
@@ -80,7 +74,7 @@ public class ForceViewPanel extends JScrollablePanel {
 
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
-        
+
         getAccessibleContext().setAccessibleName("Selected Force: " + force.getFullName());
 
         lblIcon = new javax.swing.JLabel();
@@ -90,15 +84,15 @@ public class ForceViewPanel extends JScrollablePanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        lblIcon.setName("lblPortrait"); // NOI18N
+        lblIcon.setIcon(force.getForceIcon().getImageIcon(150));
+        lblIcon.setName("lblIcon");
         lblIcon.getAccessibleContext().setAccessibleName("Force Icon");
-        setIcon(force, lblIcon, 150);
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(10,10,0,0);
+        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new Insets(10, 10, 0, 0);
         add(lblIcon, gridBagConstraints);
 
         pnlStats.setName("pnlStats");
@@ -147,22 +141,9 @@ public class ForceViewPanel extends JScrollablePanel {
         }
     }
 
-    private void setIcon(Force force, JLabel lbl, int scale) {
-        ImageIcon icon = null;
-        try {
-            icon = new ImageIcon(MHQStaticDirectoryManager.buildForceIcon(force.getIconCategory(),
-                    force.getIconFileName(), force.getIconMap())
-                    .getScaledInstance(scale, -1, Image.SCALE_SMOOTH));
-        } catch (Exception e) {
-            MekHQ.getLogger().error(e);
-        }
-
-        lbl.setIcon(icon);
-    }
-
-
     private void fillStats() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ForceViewPanel", new EncodeControl());
+        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ForceViewPanel",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
         lblType = new javax.swing.JLabel();
         lblAssign1 = new javax.swing.JLabel();
@@ -179,14 +160,14 @@ public class ForceViewPanel extends JScrollablePanel {
         lblTech2 = new javax.swing.JLabel();
         java.awt.GridBagConstraints gridBagConstraints;
         pnlStats.setLayout(new java.awt.GridBagLayout());
-      
+
         pnlStats.getAccessibleContext().setAccessibleName("Force Statistics");
 
         long bv = 0;
         Money cost = Money.zero();
         double ton = 0;
         String commander = "";
-        String LanceTech = "";
+        String lanceTech = "";
         String assigned = "";
         String type = null;
         ArrayList<Person> people = new ArrayList<>();
@@ -208,15 +189,18 @@ public class ForceViewPanel extends JScrollablePanel {
                 }
             }
         }
-        //sort person vector by rank
+
+        // sort person vector by rank
         people.sort((p1, p2) -> ((Comparable<Integer>) p2.getRankNumeric()).compareTo(p1.getRankNumeric()));
-        if (people.size() > 0) {
+        if (!people.isEmpty()) {
             commander = people.get(0).getFullTitle();
         }
 
-        if (null != force.getTechID()) {
-            Person p = campaign.getPerson(force.getTechID());
-            LanceTech = p.getFullName();
+        if (force.getTechID() != null) {
+            final Person person = campaign.getPerson(force.getTechID());
+            if (person != null) {
+                lanceTech = person.getFullName();
+            }
         }
 
         if (null != force.getParentForce()) {
@@ -241,8 +225,8 @@ public class ForceViewPanel extends JScrollablePanel {
             nexty++;
         }
 
-        if (!commander.equals("")) {
-            lblCommander1.setName("lblCommander1"); // NOI18N
+        if (!commander.isBlank()) {
+            lblCommander1.setName("lblCommander1");
             lblCommander1.setText(resourceMap.getString("lblCommander1.text"));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -251,7 +235,7 @@ public class ForceViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
             pnlStats.add(lblCommander1, gridBagConstraints);
 
-            lblCommander2.setName("lblCommander2"); // NOI18N
+            lblCommander2.setName("lblCommander2");
             lblCommander2.setText(commander);
             lblCommander1.setLabelFor(lblCommander2);
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -265,8 +249,8 @@ public class ForceViewPanel extends JScrollablePanel {
             nexty++;
         }
         if (null != force.getTechID()) {
-            if (!LanceTech.equals("")) {
-                lblTech1.setName("lblTech1"); // NOI18N
+            if (!lanceTech.isBlank()) {
+                lblTech1.setName("lblTech1");
                 lblTech1.setText(resourceMap.getString("lblTech1.text"));
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
@@ -275,8 +259,8 @@ public class ForceViewPanel extends JScrollablePanel {
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
                 pnlStats.add(lblTech1, gridBagConstraints);
 
-                lblTech2.setName("lblTech2"); // NOI18N
-                lblTech2.setText(LanceTech);
+                lblTech2.setName("lblTech2");
+                lblTech2.setText(lanceTech);
                 lblTech1.setLabelFor(lblTech2);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 1;
@@ -290,8 +274,8 @@ public class ForceViewPanel extends JScrollablePanel {
                 }
         }
 
-        if (!assigned.equals("")) {
-            lblAssign1.setName("lblAssign1"); // NOI18N
+        if (!assigned.isBlank()) {
+            lblAssign1.setName("lblAssign1");
             lblAssign1.setText(resourceMap.getString("lblAssign1.text"));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -300,7 +284,7 @@ public class ForceViewPanel extends JScrollablePanel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
             pnlStats.add(lblAssign1, gridBagConstraints);
 
-            lblAssign2.setName("lblAssign2"); // NOI18N
+            lblAssign2.setName("lblAssign2");
             lblAssign2.setText(assigned);
             lblAssign1.setLabelFor(lblAssign2);
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -314,7 +298,7 @@ public class ForceViewPanel extends JScrollablePanel {
             nexty++;
         }
 
-        lblBV1.setName("lblBV1"); // NOI18N
+        lblBV1.setName("lblBV1");
         lblBV1.setText(resourceMap.getString("lblBV1.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -323,7 +307,7 @@ public class ForceViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         pnlStats.add(lblBV1, gridBagConstraints);
 
-        lblBV2.setName("lblBV2"); // NOI18N
+        lblBV2.setName("lblBV2");
         lblBV2.setText(DecimalFormat.getInstance().format(bv));
         lblBV1.setLabelFor(lblBV1);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -336,7 +320,7 @@ public class ForceViewPanel extends JScrollablePanel {
         pnlStats.add(lblBV2, gridBagConstraints);
         nexty++;
 
-        lblTonnage1.setName("lblTonnage1"); // NOI18N
+        lblTonnage1.setName("lblTonnage1");
         lblTonnage1.setText(resourceMap.getString("lblTonnage1.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -345,7 +329,7 @@ public class ForceViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         pnlStats.add(lblTonnage1, gridBagConstraints);
 
-        lblTonnage2.setName("lblTonnage2"); // NOI18N
+        lblTonnage2.setName("lblTonnage2");
         lblTonnage2.setText(DecimalFormat.getInstance().format(ton));
         lblTonnage1.setLabelFor(lblTonnage2);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -365,7 +349,7 @@ public class ForceViewPanel extends JScrollablePanel {
             lblTonnage2.setToolTipText(resourceMap.getString("tonnageToolTip.text"));
         }
 
-        lblCost1.setName("lblCost1"); // NOI18N
+        lblCost1.setName("lblCost1");
         lblCost1.setText(resourceMap.getString("lblCost1.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -374,7 +358,7 @@ public class ForceViewPanel extends JScrollablePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         pnlStats.add(lblCost1, gridBagConstraints);
 
-        lblCost2.setName("lblCost2"); // NOI18N
+        lblCost2.setName("lblCost2");
         lblCost2.setText(cost.toAmountAndSymbolString());
         lblCost1.setLabelFor(lblCost2);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -395,10 +379,9 @@ public class ForceViewPanel extends JScrollablePanel {
     }
 
     private void fillSubUnits() {
+        GridBagConstraints gridBagConstraints;
 
-        java.awt.GridBagConstraints gridBagConstraints;
-
-        pnlSubUnits.setLayout(new java.awt.GridBagLayout());
+        pnlSubUnits.setLayout(new GridBagLayout());
 
         JLabel lblForce;
 
@@ -406,19 +389,20 @@ public class ForceViewPanel extends JScrollablePanel {
         for (Force subForce : force.getSubForces()) {
             lblForce = new JLabel();
             lblForce.setText(getSummaryFor(subForce));
-            setIcon(subForce, lblForce, 72);
+            lblForce.setIcon(subForce.getForceIcon().getImageIcon(72));
             nexty++;
-            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = nexty;
             gridBagConstraints.gridwidth = 2;
             gridBagConstraints.weighty = 1.0;
             gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+            gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             pnlSubUnits.add(lblForce, gridBagConstraints);
         }
+
         JLabel lblPerson;
         JLabel lblUnit;
         ArrayList<Unit> units = new ArrayList<>();
@@ -446,7 +430,7 @@ public class ForceViewPanel extends JScrollablePanel {
                 lblPerson.setIcon(p.getPortrait().getImageIcon());
             } else {
                 lblPerson.getAccessibleContext().setAccessibleName("Unmanned Unit");
-			      }
+                  }
             nexty++;
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -473,7 +457,7 @@ public class ForceViewPanel extends JScrollablePanel {
 
     public String getSummaryFor(Person person, Unit unit) {
         String toReturn = "<html><font size='2'><b>" + person.getFullTitle() + "</b><br/>";
-        toReturn += person.getSkillSummary() + " " + person.getRoleDesc();
+        toReturn += person.getSkillSummary(campaign) + " " + person.getRoleDesc();
         if (null != unit && null != unit.getEntity()
                 && null != unit.getEntity().getCrew() && unit.getEntity().getCrew().getHits() > 0) {
             toReturn += "<br><font color='red' size='2'>" + unit.getEntity().getCrew().getHits() + " hit(s)";
@@ -522,7 +506,7 @@ public class ForceViewPanel extends JScrollablePanel {
             int veeTotal = (int) (unit.getCurrentLightVehicleCapacity() + unit.getCurrentHeavyVehicleCapacity() + unit.getCurrentSuperHeavyVehicleCapacity());
             int aeroTotal = (int) (unit.getCurrentASFCapacity() + unit.getCurrentSmallCraftCapacity());
             if (unit.getCurrentMechCapacity() > 0) {
-                toReturn += "<br><i>" + "Mech Bays: " + (int)unit.getCurrentMechCapacity() + " free.</i>";
+                toReturn += "<br><i>" + "Mech Bays: " + (int) unit.getCurrentMechCapacity() + " free.</i>";
             }
             if (veeTotal > 0) {
                 toReturn += "<br><i>" + "Vehicle Bays: " + veeTotal + " free.</i>";
@@ -531,13 +515,13 @@ public class ForceViewPanel extends JScrollablePanel {
                 toReturn += "<br><i>" + "ASF/SC Bays: " + aeroTotal + " free.</i>";
             }
             if (unit.getCurrentProtomechCapacity() > 0) {
-                toReturn += "<br><i>" + "ProtoMech Bays: " + (int)unit.getCurrentProtomechCapacity() + " free.</i>";
+                toReturn += "<br><i>" + "ProtoMech Bays: " + (int) unit.getCurrentProtomechCapacity() + " free.</i>";
             }
             if (unit.getCurrentBattleArmorCapacity() > 0) {
-                toReturn += "<br><i>" + "Battle Armor Bays: " + (int)unit.getCurrentBattleArmorCapacity() + " free.</i>";
+                toReturn += "<br><i>" + "Battle Armor Bays: " + (int) unit.getCurrentBattleArmorCapacity() + " free.</i>";
             }
             if (unit.getCurrentInfantryCapacity() > 0) {
-                toReturn += "<br><i>" + "Infantry Bays: " + (int)unit.getCurrentInfantryCapacity() + " tons free.</i>";
+                toReturn += "<br><i>" + "Infantry Bays: " + (int) unit.getCurrentInfantryCapacity() + " tons free.</i>";
             }
         }
         toReturn += "</font></html>";
@@ -545,8 +529,8 @@ public class ForceViewPanel extends JScrollablePanel {
     }
 
     public String getSummaryFor(Force f) {
-        //we are not going to use the campaign methods here because we can be more efficient
-        //by only traversing once
+        // we are not going to use the campaign methods here because we can be more efficient
+        // by only traversing once
         int bv = 0;
         Money cost = Money.zero();
         double ton = 0;
@@ -570,9 +554,9 @@ public class ForceViewPanel extends JScrollablePanel {
                 }
             }
         }
-        //sort person vector by rank
+        // sort person vector by rank
         people.sort((p1, p2) -> ((Comparable<Integer>) p2.getRankNumeric()).compareTo(p1.getRankNumeric()));
-        if (people.size() > 0) {
+        if (!people.isEmpty()) {
             commander = people.get(0).getFullTitle();
         }
         String toReturn = "<html><font size='2'><b>" + f.getName() + "</b> (" + commander + ")<br/>";

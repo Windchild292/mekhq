@@ -1,35 +1,25 @@
-/*
- * MekViewDialog.java
- *
- * Created on July 15, 2009, 9:30 PM
- */
-
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.util.ResourceBundle;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.MechView;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ResourceBundle;
 
 /**
- *
- * @author  Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
+ * @since July 15, 2009, 9:30 PM
  */
-public class MekViewDialog extends javax.swing.JDialog {
-
-    /**
-	 *
-	 */
-	private static final long serialVersionUID = 5894364756899721545L;
-	private MechView mview;
+public class MekViewDialog extends JDialog {
+    private MechView mview;
 
     /** Creates new form MekViewDialog */
-    public MekViewDialog(java.awt.Frame parent, boolean modal, MechView mv) {
+    public MekViewDialog(JFrame parent, boolean modal, MechView mv) {
         super(parent, modal);
         this.mview = mv;
         initComponents();
@@ -38,51 +28,49 @@ public class MekViewDialog extends javax.swing.JDialog {
 
     private void initComponents() {
 
-        jScrollPane2 = new javax.swing.JScrollPane();
-        txtMek = new javax.swing.JTextPane();
-        btnOkay = new javax.swing.JButton();
+        jScrollPane2 = new JScrollPane();
+        txtMek = new JTextPane();
+        btnOkay = new JButton();
 
-		ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.MekViewDialog", new EncodeControl()); //$NON-NLS-1$
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.MekViewDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Unit View"); // NOI18N
+        setName("Unit View");
 
-        jScrollPane2.setName("jScrollPane2"); // NOI18N
+        jScrollPane2.setName("jScrollPane2");
 
-        txtMek.setContentType(resourceMap.getString("txtMek.contentType")); // NOI18N
+        txtMek.setContentType(resourceMap.getString("txtMek.contentType"));
         txtMek.setEditable(false);
-        txtMek.setFont(Font.decode(resourceMap.getString("txtMek.font"))); // NOI18N
-        txtMek.setName("txtMek"); // NOI18N
+        txtMek.setFont(Font.decode(resourceMap.getString("txtMek.font")));
+        txtMek.setName("txtMek");
         txtMek.setText(mview.getMechReadout());
         jScrollPane2.setViewportView(txtMek);
 
-        btnOkay.setText(resourceMap.getString("btnOkay.text")); // NOI18N
-        btnOkay.setName("btnOkay"); // NOI18N
-        btnOkay.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnOkayActionPerformed(evt);
-            }
-        });
+        btnOkay.setText(resourceMap.getString("btnOkay.text"));
+        btnOkay.setName("btnOkay");
+        btnOkay.addActionListener(this::btnOkayActionPerformed);
 
         getContentPane().add(jScrollPane2, BorderLayout.CENTER);
         getContentPane().add(btnOkay, BorderLayout.PAGE_END);
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(MekViewDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
     }
 
-	private void btnOkayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkayActionPerformed
-	    this.setVisible(false);
-	}//GEN-LAST:event_btnOkayActionPerformed
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
+    private void setUserPreferences() {
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(MekViewDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
+    }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnOkay;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextPane txtMek;
-    // End of variables declaration//GEN-END:variables
+    private void btnOkayActionPerformed(java.awt.event.ActionEvent evt) {
+        this.setVisible(false);
+    }
+    private JButton btnOkay;
+    private JScrollPane jScrollPane2;
+    private JTextPane txtMek;
 }

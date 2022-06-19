@@ -1,7 +1,7 @@
 /*
  * MissingMekLocation.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,32 +20,24 @@
  */
 package mekhq.campaign.parts;
 
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.parts.enums.PartRepairType;
+import mekhq.campaign.parts.equipment.EquipmentPart;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import megamek.common.CriticalSlot;
-import megamek.common.EquipmentType;
-import megamek.common.IArmorState;
-import megamek.common.LandAirMech;
-import megamek.common.Mech;
-import megamek.common.MiscType;
-import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-
-import mekhq.campaign.parts.enums.PartRepairType;
-import mekhq.campaign.parts.equipment.EquipmentPart;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissingMekLocation extends MissingPart {
-    private static final long serialVersionUID = -122291037522319765L;
     protected int loc;
     protected int structureType;
     protected boolean clan; // Needed for Endo-steel
@@ -93,29 +85,20 @@ public class MissingMekLocation extends MissingPart {
             case Mech.LOC_RT:
                 this.name = "Mech Right Torso";
                 break;
-            case(Mech.LOC_LARM):
-                this.name = "Mech Left Arm";
-                if (forQuad) {
-                    this.name = "Mech Front Left Leg";
-                }
+            case Mech.LOC_LARM:
+                this.name = forQuad ? "Mech Front Left Leg" : "Mech Left Arm";
                 break;
             case Mech.LOC_RARM:
-                this.name = "Mech Right Arm";
-                if (forQuad) {
-                    this.name = "Mech Front Left Leg";
-                }
+                this.name = forQuad ? "Mech Front Left Leg" : "Mech Right Arm";
                 break;
             case Mech.LOC_LLEG:
-                this.name = "Mech Left Leg";
-                if (forQuad) {
-                    this.name = "Mech Rear Left Leg";
-                }
+                this.name = forQuad ? "Mech Rear Left Leg" : "Mech Left Leg";
                 break;
             case Mech.LOC_RLEG:
-                this.name = "Mech Right Leg";
-                if (forQuad) {
-                    this.name = "Mech Rear Right Leg";
-                }
+                this.name = forQuad ? "Mech Rear Right Leg" : "Mech Right Leg";
+                break;
+            case Mech.LOC_CLEG:
+                this.name = "Mech Center Leg";
                 break;
         }
 
@@ -147,26 +130,26 @@ public class MissingMekLocation extends MissingPart {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<loc>"
                 +loc
                 +"</loc>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<structureType>"
                 +structureType
                 +"</structureType>");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "clan", clan);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "clan", clan);
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<tsm>"
                 +tsm
                 +"</tsm>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<percent>"
                 +percent
                 +"</percent>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<forQuad>"
                 +forQuad
                 +"</forQuad>");
@@ -180,18 +163,22 @@ public class MissingMekLocation extends MissingPart {
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("loc")) {
-                loc = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("structureType")) {
-                structureType = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("clan")) {
-                clan = Boolean.parseBoolean(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("percent")) {
-                percent = Double.parseDouble(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("tsm")) {
-                tsm = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("forQuad")) {
-                forQuad = Boolean.parseBoolean(wn2.getTextContent().trim());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("loc")) {
+                    loc = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("structureType")) {
+                    structureType = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("clan")) {
+                    clan = Boolean.parseBoolean(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("percent")) {
+                    percent = Double.parseDouble(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("tsm")) {
+                    tsm = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("forQuad")) {
+                    forQuad = Boolean.parseBoolean(wn2.getTextContent().trim());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }
@@ -228,7 +215,7 @@ public class MissingMekLocation extends MissingPart {
             return null;
         }
         if (unit.getEntity() instanceof Mech) {
-            // cant replace appendages when corresponding torso is gone
+            // Can't replace appendages when corresponding torso is gone
             if (loc == Mech.LOC_LARM
                     && unit.getEntity().isLocationBad(Mech.LOC_LT)) {
                 return "must replace left torso first";
@@ -238,8 +225,8 @@ public class MissingMekLocation extends MissingPart {
             }
         }
 
-        //there must be no usable equipment currently in the location
-        //you can only salvage a location that has nothing left on it
+        // There must be no usable equipment currently in the location
+        // You can only salvage a location that has nothing left on it
         Set<Integer> equipmentSeen = new HashSet<>();
         StringJoiner partsToSalvageOrScrap = new StringJoiner(", ");
         for (int i = 0; i < unit.getEntity().getNumberOfCriticals(loc); i++) {
@@ -249,7 +236,7 @@ public class MissingMekLocation extends MissingPart {
                 continue;
             }
 
-            //certain other specific crits need to be left out (uggh, must be a better way to do this!)
+            // certain other specific crits need to be left out (uggh, must be a better way to do this!)
             if (slot.getType() == CriticalSlot.TYPE_SYSTEM) {
                 // Skip Hip and Shoulder actuators
                 if ((slot.getIndex() == Mech.ACTUATOR_HIP)
@@ -341,20 +328,20 @@ public class MissingMekLocation extends MissingPart {
             unit.addPart(actualReplacement);
             campaign.getQuartermaster().addPart(actualReplacement, 0);
             replacement.decrementQuantity();
-            //TODO: if this is a mech head, check to see if it had components
+            // TODO : if this is a mech head, check to see if it had components
             if ((loc == Mech.LOC_HEAD) && (actualReplacement instanceof MekLocation)) {
                 updateHeadComponents((MekLocation) actualReplacement);
                 ((MekLocation) actualReplacement).setSensors(false);
                 ((MekLocation) actualReplacement).setLifeSupport(false);
             }
-            //fix shoulders and hips
+            // fix shoulders and hips
             if (loc == Mech.LOC_RARM || loc == Mech.LOC_LARM) {
                 if (forQuad) {
                     unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Mech.ACTUATOR_HIP, loc);
                 } else {
                     unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Mech.ACTUATOR_SHOULDER, loc);
                 }
-            } else if (loc == Mech.LOC_RLEG || loc == Mech.LOC_LLEG) {
+            } else if ((loc == Mech.LOC_RLEG) || (loc == Mech.LOC_LLEG) || (loc == Mech.LOC_CLEG)) {
                 unit.repairSystem(CriticalSlot.TYPE_SYSTEM, Mech.ACTUATOR_HIP, loc);
             }
             remove(false);
@@ -365,7 +352,7 @@ public class MissingMekLocation extends MissingPart {
     private void updateHeadComponents(MekLocation part) {
         MissingMekSensor missingSensor = null;
         MissingMekLifeSupport missingLifeSupport = null;
-        for(Part p : unit.getParts()) {
+        for (Part p : unit.getParts()) {
             if (null == missingSensor && p instanceof MissingMekSensor) {
                 missingSensor = (MissingMekSensor) p;
             }
@@ -377,7 +364,7 @@ public class MissingMekLocation extends MissingPart {
             }
         }
         Part newPart;
-        if(part.hasSensors() && null != missingSensor) {
+        if (part.hasSensors() && null != missingSensor) {
             newPart = missingSensor.getNewPart();
             unit.addPart(newPart);
             campaign.getQuartermaster().addPart(newPart, 0);

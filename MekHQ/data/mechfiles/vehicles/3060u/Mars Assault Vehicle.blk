@@ -20,12 +20,16 @@ Mars Assault Vehicle
 (Standard)
 </Model>
 
+<mul id:>
+2082
+</mul id:>
+
 <year>
-2842
+2871
 </year>
 
 <originalBuildYear>
-2842
+2871
 </originalBuildYear>
 
 <type>

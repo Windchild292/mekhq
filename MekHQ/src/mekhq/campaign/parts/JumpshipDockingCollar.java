@@ -1,7 +1,8 @@
 /*
  * JumpshipDockingCollar.java
  *
- * Copyright (c) 2019, MegaMek team
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
+ *
  * This file is part of MekHQ.
  *
  * MekHQ is free software: you can redistribute it and/or modify
@@ -11,42 +12,29 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
+import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Compute;
-import megamek.common.DockingCollar;
-import megamek.common.Entity;
-import megamek.common.Jumpship;
-import megamek.common.SimpleTechLevel;
-import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.SkillType;
+import java.io.PrintWriter;
 
 /**
- *
  * @author MKerensky
  */
 public class JumpshipDockingCollar extends Part {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = -7060162354112320241L;
-
     static final TechAdvancement TA_BOOM = new TechAdvancement(TECH_BASE_ALL)
             .setAdvancement(2458, 2470, 2500).setPrototypeFactions(F_TH)
             .setProductionFactions(F_TH).setTechRating(RATING_C)
@@ -69,7 +57,7 @@ public class JumpshipDockingCollar extends Part {
         super(tonnage, c);
         this.collarNumber = collarNumber;
         this.collarType = collarType;
-        this.name = "Jumpship Docking Collar";
+        this.name = "JumpShip Docking Collar";
         if (collarType == Jumpship.COLLAR_NO_BOOM) {
             name += " (Pre Boom)";
         }
@@ -79,6 +67,7 @@ public class JumpshipDockingCollar extends Part {
         return collarNumber;
     }
 
+    @Override
     public JumpshipDockingCollar clone() {
         JumpshipDockingCollar clone = new JumpshipDockingCollar(0, collarNumber, campaign, collarType);
         clone.copyBaseData(this);
@@ -109,7 +98,7 @@ public class JumpshipDockingCollar extends Part {
 
     @Override
     public int getBaseTime() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 2880;
         }
         return 120;
@@ -117,7 +106,7 @@ public class JumpshipDockingCollar extends Part {
 
     @Override
     public int getDifficulty() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return -2;
         }
         return 3;
@@ -152,9 +141,9 @@ public class JumpshipDockingCollar extends Part {
                 collar.setDamaged(true);
             }
             Part spare = campaign.getWarehouse().checkForExistingSparePart(this);
-            if(!salvage) {
+            if (!salvage) {
                 campaign.getWarehouse().removePart(this);
-            } else if(null != spare) {
+            } else if (null != spare) {
                 spare.incrementQuantity();
                 campaign.getWarehouse().removePart(this);
             }
@@ -199,14 +188,14 @@ public class JumpshipDockingCollar extends Part {
     @Override
     public boolean isSamePartType(Part part) {
         return (part instanceof JumpshipDockingCollar)
-                && (collarType == ((JumpshipDockingCollar)part).collarType);
+                && (collarType == ((JumpshipDockingCollar) part).collarType);
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "collarType", collarType);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "collarNumber", collarNumber);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "collarType", collarType);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "collarNumber", collarNumber);
         writeToXmlEnd(pw1, indent);
     }
 
@@ -214,12 +203,17 @@ public class JumpshipDockingCollar extends Part {
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
-            if (wn2.getNodeName().equalsIgnoreCase("collarType")) {
-                collarType = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("collarNumber")) {
-                collarNumber = Integer.parseInt(wn2.getTextContent());
+
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("collarType")) {
+                    collarType = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("collarNumber")) {
+                    collarNumber = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

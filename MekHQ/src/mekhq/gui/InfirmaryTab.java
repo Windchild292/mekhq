@@ -45,6 +45,7 @@ import mekhq.campaign.event.PersonEvent;
 import mekhq.campaign.event.PersonMedicalAssignmentEvent;
 import mekhq.campaign.event.ScenarioResolvedEvent;
 import mekhq.campaign.personnel.Person;
+import mekhq.gui.enums.MekHQTabType;
 import mekhq.gui.model.DocTableModel;
 import mekhq.gui.model.PatientTableModel;
 import mekhq.gui.sorter.PersonTitleSorter;
@@ -53,9 +54,6 @@ import mekhq.gui.sorter.PersonTitleSorter;
  * Shows injured and medical personnel
  */
 public final class InfirmaryTab extends CampaignGuiTab {
-
-    private static final long serialVersionUID = 7558886712192449186L;
-
     private JTable docTable;
     private JButton btnAssignDoc;
     private JButton btnUnassignDoc;
@@ -68,10 +66,12 @@ public final class InfirmaryTab extends CampaignGuiTab {
 
     private Image bgImage;
 
-    InfirmaryTab(CampaignGUI gui, String name) {
+    //region Constructors
+    public InfirmaryTab(CampaignGUI gui, String name) {
         super(gui, name);
         MekHQ.registerHandler(this);
     }
+    //endregion Constructors
 
     /*
      * (non-Javadoc)
@@ -80,7 +80,8 @@ public final class InfirmaryTab extends CampaignGuiTab {
      */
     @Override
     public void initTab() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         GridBagConstraints gridBagConstraints;
 
         setLayout(new GridBagLayout());
@@ -111,8 +112,8 @@ public final class InfirmaryTab extends CampaignGuiTab {
         gridBagConstraints.weighty = 1.0;
         add(scrollDocTable, gridBagConstraints);
 
-        btnAssignDoc = new JButton(resourceMap.getString("btnAssignDoc.text")); // NOI18N
-        btnAssignDoc.setToolTipText(resourceMap.getString("btnAssignDoc.toolTipText")); // NOI18N
+        btnAssignDoc = new JButton(resourceMap.getString("btnAssignDoc.text"));
+        btnAssignDoc.setToolTipText(resourceMap.getString("btnAssignDoc.toolTipText"));
         btnAssignDoc.setEnabled(false);
         btnAssignDoc.addActionListener(ev -> assignDoctor());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -121,7 +122,7 @@ public final class InfirmaryTab extends CampaignGuiTab {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(btnAssignDoc, gridBagConstraints);
 
-        btnUnassignDoc = new JButton(resourceMap.getString("btnUnassignDoc.text")); // NOI18N
+        btnUnassignDoc = new JButton(resourceMap.getString("btnUnassignDoc.text"));
         btnUnassignDoc.setEnabled(false);
         btnUnassignDoc.addActionListener(ev -> unassignDoctor());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -197,8 +198,8 @@ public final class InfirmaryTab extends CampaignGuiTab {
      * @see mekhq.gui.CampaignGuiTab#tabType()
      */
     @Override
-    public GuiTabType tabType() {
-        return GuiTabType.INFIRMARY;
+    public MekHQTabType tabType() {
+        return MekHQTabType.INFIRMARY;
     }
 
     @Override
@@ -225,8 +226,8 @@ public final class InfirmaryTab extends CampaignGuiTab {
         return doctorsModel.getDoctorAt(docTable.convertRowIndexToModel(row));
     }
 
-    protected ArrayList<Person> getSelectedAssignedPatients() {
-        ArrayList<Person> patients = new ArrayList<Person>();
+    private ArrayList<Person> getSelectedAssignedPatients() {
+        ArrayList<Person> patients = new ArrayList<>();
         int[] indices = listAssignedPatient.getSelectedIndices();
         if (assignedPatientModel.getSize() == 0) {
             return patients;

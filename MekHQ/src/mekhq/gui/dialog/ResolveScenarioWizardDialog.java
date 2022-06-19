@@ -1,8 +1,8 @@
 /*
  * ResolveScenarioWizardDialog.java
  *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -46,30 +46,19 @@ import mekhq.campaign.unit.TestUnit;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.utilities.MarkdownEditorPanel;
 import mekhq.gui.view.PersonViewPanel;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
+import java.awt.event.*;
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Taharqa
  */
 public class ResolveScenarioWizardDialog extends JDialog {
     //region Variable Declarations
-    private static final long serialVersionUID = -8038099101234445018L;
-
     final static String UNITSPANEL   = "Unit Status";
     final static String PILOTPANEL   = "Pilot Status";
     final static String SALVAGEPANEL = "Claim Salvage";
@@ -186,7 +175,8 @@ public class ResolveScenarioWizardDialog extends JDialog {
     private JLabel lblStatus;
     //endregion Preview Panel components
 
-    private static final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ResolveScenarioWizardDialog", new EncodeControl());
+    private final transient ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ResolveScenarioWizardDialog",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
     //endregion Variable Declarations
 
     public ResolveScenarioWizardDialog(JFrame parent, boolean modal, ResolveScenarioTracker t) {
@@ -660,7 +650,6 @@ public class ResolveScenarioWizardDialog extends JDialog {
             ransomed.setName("ransomed");
             ransomed.getAccessibleContext().setAccessibleName(resourceMap.getString("lblRansom.text"));
             ransomed.setEnabled(!tracker.usesSalvageExchange());
-            ransomed.setSelected(!tracker.usesSalvageExchange() && (maxSalvagePct >= 100));
             ransomed.addItemListener(evt -> checkSalvageRights());
             ransomUnitBoxes.add(ransomed);
             gridBagConstraints.gridx = gridx++;
@@ -1093,7 +1082,7 @@ public class ResolveScenarioWizardDialog extends JDialog {
 
                 // if it's a custom objective or there are no associated units, we display
                 // a single line and an override
-                if (currentObjectiveUnits.size() == 0) {
+                if (currentObjectiveUnits.isEmpty()) {
                     JCheckBox chkObjective = new JCheckBox();
                     chkObjective.setText(objective.getDescription());
                     chkObjective.setForeground(Color.RED);
@@ -1135,11 +1124,15 @@ public class ResolveScenarioWizardDialog extends JDialog {
         }
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(ResolveScenarioWizardDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(ResolveScenarioWizardDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void switchPanel(String name) {
@@ -1413,20 +1406,20 @@ public class ResolveScenarioWizardDialog extends JDialog {
     private boolean usePanel(String panelName) {
         switch (panelName) {
             case UNITSPANEL:
-                return tracker.getUnitsStatus().keySet().size() > 0;
+                return !tracker.getUnitsStatus().keySet().isEmpty();
             case OBJECTIVEPANEL:
                 return tracker.getScenario().hasObjectives();
             case PILOTPANEL:
-                return tracker.getPeopleStatus().keySet().size() > 0;
+                return !tracker.getPeopleStatus().keySet().isEmpty();
             case PRISONERPANEL:
-                return tracker.getOppositionPersonnel().keySet().size() > 0;
+                return !tracker.getOppositionPersonnel().keySet().isEmpty();
             case SALVAGEPANEL:
-                return tracker.getPotentialSalvage().size() > 0
+                return !tracker.getPotentialSalvage().isEmpty()
                         && (!(tracker.getMission() instanceof Contract) || ((Contract) tracker.getMission()).canSalvage());
             case KILLPANEL:
                 return !tracker.getKillCredits().isEmpty();
             case REWARDPANEL:
-                return loots.size() > 0;
+                return !loots.isEmpty();
             case PREVIEWPANEL:
                 return true;
             default:
@@ -1698,10 +1691,9 @@ public class ResolveScenarioWizardDialog extends JDialog {
         Person person = isPrisoner ? ((OppositionPersonnelStatus) status).getPerson()
                 : tracker.getCampaign().getPerson(status.getId());
         if (person == null) {
-            MekHQ.getLogger().error(getClass(), "showPerson",
-                    "Failed to show person after selecting view personnel for a "
-                            + (isPrisoner ? "Prisoner" : "member of the force") +
-                            " because the person could not be found.");
+            LogManager.getLogger().error("Failed to show person after selecting view personnel for a "
+                    + (isPrisoner ? "Prisoner" : "member of the force") +
+                    " because the person could not be found.");
             return;
         }
         PersonViewPanel personViewPanel = new PersonViewPanel(person, tracker.getCampaign(),

@@ -1,42 +1,25 @@
-/*
- * MercRosterDialog.java
- *
- * Created on Jan 6, 2010, 10:46:02 PM
- */
-
 package mekhq.gui.dialog;
 
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.SQLException;
-import java.util.ResourceBundle;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.ProgressMonitor;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.MercRosterAccess;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ResourceBundle;
 
 /**
  * A dialog that sets up a connection with a mysql MercRoster database to upload campaign data
  * @author Jay Lawson
+ * @since Jan 6, 2010, 10:46:02 PM
  */
-public class MercRosterDialog extends javax.swing.JDialog implements PropertyChangeListener {
-
+public class MercRosterDialog extends JDialog implements PropertyChangeListener {
     private Campaign campaign;
     private Frame frame;
 
@@ -51,9 +34,7 @@ public class MercRosterDialog extends javax.swing.JDialog implements PropertyCha
     private ProgressMonitor progressMonitor;
     private MercRosterAccess access;
 
-    private static final long serialVersionUID = 8376874926997734492L;
-    /** Creates new form */
-    public MercRosterDialog(java.awt.Frame parent, boolean modal, Campaign c) {
+    public MercRosterDialog(JFrame parent, boolean modal, Campaign c) {
         super(parent, modal);
         frame = parent;
         this.campaign = c;
@@ -63,8 +44,8 @@ public class MercRosterDialog extends javax.swing.JDialog implements PropertyCha
     }
 
     private void initComponents() {
-
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.MercRosterDialog", new EncodeControl()); //$NON-NLS-1$
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.MercRosterDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
         txtAddress = new JTextField("localhost");
         txtPort = new JTextField("3306");
@@ -75,8 +56,8 @@ public class MercRosterDialog extends javax.swing.JDialog implements PropertyCha
         btnCancel = new JButton(resourceMap.getString("btnCancel.text"));
 
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Form"); // NOI18N
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setName("Form");
         setTitle(resourceMap.getString("Form.title"));
 
         getContentPane().setLayout(new GridBagLayout());
@@ -145,17 +126,9 @@ public class MercRosterDialog extends javax.swing.JDialog implements PropertyCha
         panButtons.add(btnUpload);
         panButtons.add(btnCancel);
 
-        btnUpload.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                upload();
-            }
-        });
+        btnUpload.addActionListener(evt -> upload());
 
-        btnCancel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                setVisible(false);
-            }
-        });
+        btnCancel.addActionListener(evt -> setVisible(false));
 
         gbc.gridx = 0;
         gbc.gridy = 5;
@@ -170,10 +143,13 @@ public class MercRosterDialog extends javax.swing.JDialog implements PropertyCha
     }
 
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(MercRosterDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(MercRosterDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void upload() {
@@ -188,13 +164,11 @@ public class MercRosterDialog extends javax.swing.JDialog implements PropertyCha
                 access.getProgressNote(), 0, 100);
         try {
             access.connect();
-        } catch (SQLException e) {
+        } catch (Exception ex) {
             JOptionPane.showMessageDialog(frame,
-                    "Could not connect to the mysql database. Check your entries and confirm\n" +
-                    "that you can connect to the database remotely.",
-                    "Could not connect",
-                    JOptionPane.ERROR_MESSAGE);
-            MekHQ.getLogger().error(getClass(), "upload", e);
+                    "Could not connect to the mysql database. Check your entries and confirm\n that you can connect to the database remotely.",
+                    "Could not connect", JOptionPane.ERROR_MESSAGE);
+            LogManager.getLogger().error("", ex);
             return;
         }
         access.addPropertyChangeListener(this);
@@ -203,15 +177,12 @@ public class MercRosterDialog extends javax.swing.JDialog implements PropertyCha
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent arg0) {
+    public void propertyChange(PropertyChangeEvent evt) {
         progressMonitor.setProgress(access.getProgress());
         progressMonitor.setNote(access.getProgressNote());
         if (progressMonitor.isCanceled()) {
             access.cancel(true);
             access.close();
-        }
-        if (access.isDone()) {
-            //nothing
         }
     }
 }

@@ -1,6 +1,7 @@
 Version:1.0
 Catapult
 CPLT-C6
+mul id:485
 
 Config:Biped
 TechBase:Inner Sphere
@@ -54,7 +55,7 @@ Upper Arm Actuator
 ISPlasmaRifle
 ISPlasmaRifle
 ISPlasmaRifle
-ISPlasmaRifle Ammo
+ISPlasmaRifle
 ISPlasmaRifle Ammo
 ISPlasmaRifle Ammo
 ISPlasmaRifle Ammo

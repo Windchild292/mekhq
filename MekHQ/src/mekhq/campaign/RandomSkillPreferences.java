@@ -1,7 +1,7 @@
 /*
  * RandomSkillPreferences.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,24 +20,20 @@
  */
 package mekhq.campaign;
 
-import java.io.PrintWriter;
-import java.io.Serializable;
-
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-
-import mekhq.Version;
+import megamek.Version;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
 
 /**
  * @author Jay Lawson
  */
-public class RandomSkillPreferences implements Serializable {
-    private static final long serialVersionUID = 5698008431749303602L;
-
+public class RandomSkillPreferences {
     private int overallRecruitBonus;
     private int[] recruitBonuses;
     private boolean randomizeSkill;
@@ -183,25 +179,25 @@ public class RandomSkillPreferences implements Serializable {
     }
 
     public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "randomSkillPreferences");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "overallRecruitBonus", overallRecruitBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "recruitBonuses", StringUtils.join(recruitBonuses, ','));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "specialAbilBonus", StringUtils.join(specialAbilBonus, ','));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "tacticsMod", StringUtils.join(tacticsMod, ','));
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "randomizeSkill", randomizeSkill);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "useClanBonuses", useClanBonuses);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "antiMekProb", antiMekProb);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "combatSmallArmsBonus", combatSmallArmsBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "supportSmallArmsBonus", supportSmallArmsBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "artilleryProb", artilleryProb);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "artilleryBonus", artilleryBonus);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "secondSkillProb", secondSkillProb);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "secondSkillBonus", secondSkillBonus);
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "randomSkillPreferences");
+        MHQXMLUtility.writeSimpleXMLOpenIndentedLine(pw1, indent++, "randomSkillPreferences");
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "overallRecruitBonus", overallRecruitBonus);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "recruitBonuses", StringUtils.join(recruitBonuses, ','));
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "specialAbilBonus", StringUtils.join(specialAbilBonus, ','));
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "tacticsMod", StringUtils.join(tacticsMod, ','));
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "randomizeSkill", randomizeSkill);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "useClanBonuses", useClanBonuses);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "antiMekProb", antiMekProb);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "combatSmallArmsBonus", combatSmallArmsBonus);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "supportSmallArmsBonus", supportSmallArmsBonus);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "artilleryProb", artilleryProb);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "artilleryBonus", artilleryBonus);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "secondSkillProb", secondSkillProb);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "secondSkillBonus", secondSkillBonus);
+        MHQXMLUtility.writeSimpleXMLCloseIndentedLine(pw1, --indent, "randomSkillPreferences");
     }
 
     public static RandomSkillPreferences generateRandomSkillPreferencesFromXml(Node wn, Version version) {
-        MekHQ.getLogger().debug("Loading Random Skill Preferences from XML...");
+        LogManager.getLogger().debug("Loading Random Skill Preferences from XML...");
 
         wn.normalize();
         RandomSkillPreferences retVal = new RandomSkillPreferences();
@@ -212,55 +208,60 @@ public class RandomSkillPreferences implements Serializable {
             Node wn2 = wList.item(x);
 
             // If it's not an element node, we ignore it.
-            if (wn2.getNodeType() != Node.ELEMENT_NODE)
+            if (wn2.getNodeType() != Node.ELEMENT_NODE) {
                 continue;
+            }
 
-            MekHQ.getLogger().debug(wn2.getNodeName() + ": " + wn2.getTextContent());
-            if (wn2.getNodeName().equalsIgnoreCase("overallRecruitBonus")) {
-                retVal.overallRecruitBonus = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("randomizeSkill")) {
-                retVal.randomizeSkill = wn2.getTextContent().equalsIgnoreCase("true");
-            } else if (wn2.getNodeName().equalsIgnoreCase("useClanBonuses")) {
-                retVal.useClanBonuses = wn2.getTextContent().equalsIgnoreCase("true");
-            } else if (wn2.getNodeName().equalsIgnoreCase("antiMekProb")) {
-                retVal.antiMekProb = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("combatSmallArmsBonus")) {
-                retVal.combatSmallArmsBonus = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("supportSmallArmsBonus")) {
-                retVal.supportSmallArmsBonus = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("artilleryProb")) {
-                retVal.artilleryProb = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("artilleryBonus")) {
-                retVal.artilleryBonus = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("secondSkillProb")) {
-                retVal.secondSkillProb = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("secondSkillBonus")) {
-                retVal.secondSkillBonus = Integer.parseInt(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("recruitBonuses")) {
-                String[] values = wn2.getTextContent().split(",");
-                if (version.isLowerThan("0.49.0")) {
-                    for (int i = 0; i < values.length; i++) {
-                        retVal.recruitBonuses[PersonnelRole.parseFromString(String.valueOf(i)).ordinal()] = Integer.parseInt(values[i]);
+            LogManager.getLogger().debug(wn2.getNodeName() + ": " + wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("overallRecruitBonus")) {
+                    retVal.overallRecruitBonus = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("randomizeSkill")) {
+                    retVal.randomizeSkill = wn2.getTextContent().equalsIgnoreCase("true");
+                } else if (wn2.getNodeName().equalsIgnoreCase("useClanBonuses")) {
+                    retVal.useClanBonuses = wn2.getTextContent().equalsIgnoreCase("true");
+                } else if (wn2.getNodeName().equalsIgnoreCase("antiMekProb")) {
+                    retVal.antiMekProb = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("combatSmallArmsBonus")) {
+                    retVal.combatSmallArmsBonus = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("supportSmallArmsBonus")) {
+                    retVal.supportSmallArmsBonus = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("artilleryProb")) {
+                    retVal.artilleryProb = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("artilleryBonus")) {
+                    retVal.artilleryBonus = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("secondSkillProb")) {
+                    retVal.secondSkillProb = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("secondSkillBonus")) {
+                    retVal.secondSkillBonus = Integer.parseInt(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("recruitBonuses")) {
+                    String[] values = wn2.getTextContent().split(",");
+                    if (version.isLowerThan("0.49.0")) {
+                        for (int i = 0; i < values.length; i++) {
+                            retVal.recruitBonuses[PersonnelRole.parseFromString(String.valueOf(i)).ordinal()] = Integer.parseInt(values[i]);
+                        }
+                    } else {
+                        for (int i = 0; i < values.length; i++) {
+                            retVal.recruitBonuses[i] = Integer.parseInt(values[i]);
+                        }
                     }
-                } else {
+                } else if (wn2.getNodeName().equalsIgnoreCase("tacticsMod")) {
+                    String[] values = wn2.getTextContent().split(",");
                     for (int i = 0; i < values.length; i++) {
-                        retVal.recruitBonuses[i] = Integer.parseInt(values[i]);
+                        retVal.tacticsMod[i] = Integer.parseInt(values[i]);
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("specialAbilBonus")) {
+                    String[] values = wn2.getTextContent().split(",");
+                    for (int i = 0; i < values.length; i++) {
+                        retVal.specialAbilBonus[i] = Integer.parseInt(values[i]);
                     }
                 }
-            } else if (wn2.getNodeName().equalsIgnoreCase("tacticsMod")) {
-                String[] values = wn2.getTextContent().split(",");
-                for (int i = 0; i < values.length; i++) {
-                    retVal.tacticsMod[i] = Integer.parseInt(values[i]);
-                }
-            } else if (wn2.getNodeName().equalsIgnoreCase("specialAbilBonus")) {
-                String[] values = wn2.getTextContent().split(",");
-                for (int i = 0; i < values.length; i++) {
-                    retVal.specialAbilBonus[i] = Integer.parseInt(values[i]);
-                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 
-        MekHQ.getLogger().debug("Load Random Skill Preferences Complete!");
+        LogManager.getLogger().debug("Load Random Skill Preferences Complete!");
 
         return retVal;
     }

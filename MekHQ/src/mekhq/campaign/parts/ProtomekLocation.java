@@ -1,7 +1,7 @@
 /*
  * ProtomekLocation.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,40 +20,32 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import megamek.common.annotations.Nullable;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.enums.PartRepairType;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import megamek.common.CriticalSlot;
-import megamek.common.IArmorState;
-import megamek.common.ILocationExposureStatus;
-import megamek.common.Mounted;
-import megamek.common.Protomech;
-import megamek.common.SimpleTechLevel;
-import megamek.common.TargetRoll;
-import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.work.WorkTime;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class ProtomekLocation extends Part {
-    private static final long serialVersionUID = -122291037522319765L;
-
     static final TechAdvancement TECH_ADVANCEMENT = new TechAdvancement(TECH_BASE_CLAN)
             .setClanAdvancement(3055, 3060, 3060).setClanApproximate(true, false, false)
             .setPrototypeFactions(F_CSJ).setProductionFactions(F_CSJ)
             .setTechRating(RATING_D).setAvailability(RATING_X, RATING_X, RATING_D, RATING_D)
             .setStaticTechLevel(SimpleTechLevel.STANDARD);
 
-    //some of these aren't used but may be later for advanced designs (i.e. WoR)
+    // some of these aren't used but may be later for advanced designs (i.e. WoR)
     protected int loc;
     protected int structureType;
     protected boolean booster;
@@ -61,10 +53,6 @@ public class ProtomekLocation extends Part {
     boolean breached;
     boolean blownOff;
     boolean forQuad;
-
-    //system components for head
-    //protected boolean sensors;
-    //protected boolean lifeSupport;
 
     public ProtomekLocation() {
         this(0, 0, 0, false, false, null);
@@ -78,28 +66,28 @@ public class ProtomekLocation extends Part {
         this.percent = 1.0;
         this.forQuad = quad;
         this.breached = false;
-        this.name = "Protomech Location";
+        this.name = "ProtoMech Location";
         switch (loc) {
             case Protomech.LOC_HEAD:
-                this.name = "Protomech Head";
+                this.name = "ProtoMech Head";
                 break;
             case Protomech.LOC_TORSO:
-                this.name = "Protomech Torso";
+                this.name = "ProtoMech Torso";
                 break;
             case Protomech.LOC_LARM:
-                this.name = "Protomech Left Arm";
+                this.name = "ProtoMech Left Arm";
                 break;
             case Protomech.LOC_RARM:
-                this.name = "Protomech Right Arm";
+                this.name = "ProtoMech Right Arm";
                 break;
             case Protomech.LOC_LEG:
-                this.name = "Protomech Legs";
+                this.name = "ProtoMech Legs";
                 if (forQuad) {
-                    this.name = "Protomech Legs (Quad)";
+                    this.name = "ProtoMech Legs (Quad)";
                 }
                 break;
             case Protomech.LOC_MAINGUN:
-                this.name = "Protomech Main Gun";
+                this.name = "ProtoMech Main Gun";
                 break;
         }
         if (booster) {
@@ -107,6 +95,7 @@ public class ProtomekLocation extends Part {
         }
     }
 
+    @Override
     public ProtomekLocation clone() {
         ProtomekLocation clone = new ProtomekLocation(loc, getUnitTonnage(), structureType, booster, forQuad, campaign);
         clone.copyBaseData(this);
@@ -162,10 +151,10 @@ public class ProtomekLocation extends Part {
     @Override
     public boolean isSamePartType(Part part) {
         return part instanceof ProtomekLocation
-                && getLoc() == ((ProtomekLocation)part).getLoc()
+                && getLoc() == ((ProtomekLocation) part).getLoc()
                 && getUnitTonnage() == part.getUnitTonnage()
-                && hasBooster() == ((ProtomekLocation)part).hasBooster()
-                && (!isLegs() || forQuad == ((ProtomekLocation)part).forQuad);
+                && hasBooster() == ((ProtomekLocation) part).hasBooster()
+                && (!isLegs() || forQuad == ((ProtomekLocation) part).forQuad);
                // && getStructureType() == ((ProtomekLocation) part).getStructureType();
     }
 
@@ -175,7 +164,7 @@ public class ProtomekLocation extends Part {
 
     @Override
     public boolean isSameStatus(Part part) {
-        return super.isSameStatus(part) && this.getPercent() == ((ProtomekLocation)part).getPercent();
+        return super.isSameStatus(part) && this.getPercent() == ((ProtomekLocation) part).getPercent();
     }
 
     public double getPercent() {
@@ -183,29 +172,29 @@ public class ProtomekLocation extends Part {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<loc>"
                 +loc
                 +"</loc>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<structureType>"
                 +structureType
                 +"</structureType>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<booster>"
                 +booster
                 +"</booster>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<percent>"
                 +percent
                 +"</percent>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<forQuad>"
                 +forQuad
                 +"</forQuad>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<breached>"
                 +breached
                 +"</breached>");
@@ -219,18 +208,22 @@ public class ProtomekLocation extends Part {
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("loc")) {
-                loc = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("structureType")) {
-                structureType = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("percent")) {
-                percent = Double.parseDouble(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("booster")) {
-                booster = wn2.getTextContent().equalsIgnoreCase("true");
-            } else if (wn2.getNodeName().equalsIgnoreCase("forQuad")) {
-                forQuad = wn2.getTextContent().equalsIgnoreCase("true");
-            } else if (wn2.getNodeName().equalsIgnoreCase("breached")) {
-                breached = wn2.getTextContent().equalsIgnoreCase("true");
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("loc")) {
+                    loc = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("structureType")) {
+                    structureType = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("percent")) {
+                    percent = Double.parseDouble(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("booster")) {
+                    booster = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("forQuad")) {
+                    forQuad = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("breached")) {
+                    breached = Boolean.parseBoolean(wn2.getTextContent().trim());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }
@@ -452,7 +445,7 @@ public class ProtomekLocation extends Part {
     @Override
     public void updateConditionFromPart() {
         if (null != unit) {
-            unit.getEntity().setInternal((int)Math.round(percent * unit.getEntity().getOInternal(loc)), loc);
+            unit.getEntity().setInternal((int) Math.round(percent * unit.getEntity().getOInternal(loc)), loc);
             //if all the system crits are marked off on the entity in this location, then we need to
             //fix one of them, because the last crit on protomechs is always location destruction
             int systemIndx = getAppropriateSystemIndex();
@@ -519,20 +512,17 @@ public class ProtomekLocation extends Part {
 
     @Override
     public boolean isSalvaging() {
-        //cant salvage a center torso
-        if (loc ==  Protomech.LOC_TORSO) {
-            return false;
-        }
-        return super.isSalvaging();
+        // Can't salvage a center torso
+        return (loc != Protomech.LOC_TORSO) && super.isSalvaging();
     }
 
     @Override
-    public String checkScrappable() {
-        //cant scrap a center torso
+    public @Nullable String checkScrappable() {
+        // Can't scrap a center torso
         if (loc ==  Protomech.LOC_TORSO) {
-            return "Protomech's Torso cannot be scrapped";
+            return "ProtoMek Torsos cannot be scrapped";
         }
-        //check for armor
+        // Check for armor
         if (unit.getEntity().getArmor(loc, false) > 0
                 || (unit.getEntity().hasRearArmor(loc) && unit.getEntity().getArmor(loc, true) > 0 )) {
             return "You must first remove the armor from this location before you scrap it";
@@ -559,8 +549,8 @@ public class ProtomekLocation extends Part {
                 return "Repairable parts in " + unit.getEntity().getLocationName(loc) + " must be salvaged or scrapped first.";
             }
         }
-        //protomechs only have system stuff in the crits, so we need to also
-        //check for mounted equipment separately
+        // ProtoMeks only have system stuff in the crits, so we need to also check for mounted
+        // equipment separately
         for (Mounted m : unit.getEntity().getEquipment()) {
             if (m.isRepairable() && (m.getLocation() == loc || m.getSecondLocation() == loc)) {
                 return "Repairable parts in " + unit.getEntity().getLocationName(loc) + " must be salvaged or scrapped first." + m.getName();
@@ -608,7 +598,7 @@ public class ProtomekLocation extends Part {
                     bonus = "+" + bonus;
                 }
                 bonus = "(" + bonus + ")";
-                if(!getCampaign().getCampaignOptions().isDestroyByMargin()) {
+                if (!getCampaign().getCampaignOptions().isDestroyByMargin()) {
                     toReturn += ", " + SkillType.getExperienceLevelName(getSkillMin());
                 }
                 toReturn += " " + bonus;

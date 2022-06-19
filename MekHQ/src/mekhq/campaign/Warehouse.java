@@ -16,28 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign;
-
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.event.PartChangedEvent;
 import mekhq.campaign.event.PartNewEvent;
 import mekhq.campaign.event.PartRemovedEvent;
 import mekhq.campaign.parts.AmmoStorage;
 import mekhq.campaign.parts.Armor;
 import mekhq.campaign.parts.Part;
+
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Stores parts for a Campaign.
@@ -345,12 +340,12 @@ public class Warehouse {
     }
 
     public void writeToXml(PrintWriter pw1, int indent, String tag) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, tag);
+        MHQXMLUtility.writeSimpleXMLOpenIndentedLine(pw1, indent, tag);
 
         forEachPart(part -> {
-            part.writeToXml(pw1, indent + 1);
+            part.writeToXML(pw1, indent + 1);
         });
 
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, tag);
+        MHQXMLUtility.writeSimpleXMLCloseIndentedLine(pw1, indent, tag);
     }
 }

@@ -18,14 +18,9 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.*;
-
-import megamek.common.util.StringUtil;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
+import megamek.codeUtilities.StringUtility;
 import mekhq.MekHQ;
 import mekhq.campaign.event.PartChangedEvent;
 import mekhq.campaign.event.UnitChangedEvent;
@@ -35,19 +30,22 @@ import mekhq.campaign.parts.equipment.AmmoBin;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.gui.CampaignGUI;
-import mekhq.gui.GuiTabType;
+import mekhq.gui.enums.MekHQTabType;
 import mekhq.gui.RepairTab;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
 import mekhq.service.PartsAcquisitionService;
 import mekhq.service.PartsAcquisitionService.PartCountInfo;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Kipsta
  */
 public class AcquisitionsDialog extends JDialog {
-    private static final long serialVersionUID = -1942823778220741544L;
-
     private CampaignGUI campaignGUI;
     private Map<String, AcquisitionPanel> partPanelMap = new HashMap<>();
 
@@ -125,8 +123,8 @@ public class AcquisitionsDialog extends JDialog {
 
             btnSummary.firePropertyChange("missingCount", -1, PartsAcquisitionService.getMissingCount());
 
-            if (campaignGUI.getTab(GuiTabType.REPAIR) != null) {
-                ((RepairTab) campaignGUI.getTab(GuiTabType.REPAIR)).refreshPartsAcquisitionService(false);
+            if (campaignGUI.getTab(MekHQTabType.REPAIR_BAY) != null) {
+                ((RepairTab) campaignGUI.getTab(MekHQTabType.REPAIR_BAY)).refreshPartsAcquisitionService(false);
             }
         });
 
@@ -223,11 +221,15 @@ public class AcquisitionsDialog extends JDialog {
         return sbText.toString();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(AcquisitionsDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(AcquisitionsDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void calculateBonusParts() {
@@ -241,8 +243,6 @@ public class AcquisitionsDialog extends JDialog {
     }
 
     public class AcquisitionPanel extends JPanel {
-        private static final long serialVersionUID = -205430742799527142L;
-
         private List<IAcquisitionWork> awList;
         private int idx;
 
@@ -342,7 +342,7 @@ public class AcquisitionsDialog extends JDialog {
 
                 String countModifier = partCountInfo.getCountModifier();
 
-                if (!StringUtil.isNullOrEmpty(countModifier)) {
+                if (!StringUtility.isNullOrBlank(countModifier)) {
                     countModifier = " " + countModifier;
                 }
 

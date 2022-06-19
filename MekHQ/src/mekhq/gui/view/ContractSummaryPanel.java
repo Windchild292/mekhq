@@ -21,13 +21,6 @@
  */
 package mekhq.gui.view;
 
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ResourceBundle;
-
-import javax.swing.*;
-
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
@@ -39,7 +32,13 @@ import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.universe.Systems;
-import mekhq.gui.GuiTabType;
+import mekhq.gui.enums.MekHQTabType;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ResourceBundle;
 
 /**
  * Contract summary view for ContractMarketDialog
@@ -48,8 +47,6 @@ import mekhq.gui.GuiTabType;
  */
 public class ContractSummaryPanel extends JPanel {
     //region Variable Declarations
-    private static final long serialVersionUID = 8773615661962644614L;
-
     private Campaign campaign;
     private Contract contract;
     private boolean allowRerolls;
@@ -65,8 +62,8 @@ public class ContractSummaryPanel extends JPanel {
     private JLabel txtStraightSupport;
     private JLabel txtBattleLossComp;
 
-    private ResourceBundle resourceMap = ResourceBundle.getBundle(
-            "mekhq.resources.ContractMarketDialog", new EncodeControl());
+    private ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ContractMarketDialog",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
     private ContractPaymentBreakdown contractPaymentBreakdown;
 
     // These three are used locally to ensure consistent formatting
@@ -121,8 +118,6 @@ public class ContractSummaryPanel extends JPanel {
 
     private void fillStats() {
         //region Variable Initialization
-        // TODO : Switch me to use a modified RandomSkillsGenerator.levelNames
-        String[] skillNames = {"Green", "Regular", "Veteran", "Elite"};
         // TODO : Switch me to use IUnitRating
         String[] ratingNames = {"F", "D", "C", "B", "A"};
 
@@ -210,7 +205,7 @@ public class ContractSummaryPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 // Display where it is on the interstellar map
                 campaign.getApp().getCampaigngui().getMapTab().switchSystemsMap(contract.getSystem());
-                campaign.getApp().getCampaigngui().setSelectedTab(GuiTabType.MAP);
+                campaign.getApp().getCampaigngui().setSelectedTab(MekHQTabType.INTERSTELLAR_MAP);
             }
         });
         gridBagConstraintsText.gridy = y;
@@ -244,7 +239,7 @@ public class ContractSummaryPanel extends JPanel {
         mainPanel.add(lblAllyRating, gridBagConstraintsLabels);
 
         if (contract instanceof AtBContract) {
-            JLabel txtAllyRating = new JLabel(skillNames[((AtBContract) contract).getAllySkill()]
+            JLabel txtAllyRating = new JLabel(((AtBContract) contract).getAllySkill()
                     + "/" + ratingNames[((AtBContract) contract).getAllyQuality()]);
             txtAllyRating.setName("txtAllyRating");
             gridBagConstraintsText.gridy = y;
@@ -255,7 +250,7 @@ public class ContractSummaryPanel extends JPanel {
             gridBagConstraintsLabels.gridy = ++y;
             mainPanel.add(lblEnemyRating, gridBagConstraintsLabels);
 
-            JLabel txtEnemyRating = new JLabel(skillNames[((AtBContract) contract).getEnemySkill()]
+            JLabel txtEnemyRating = new JLabel(((AtBContract) contract).getEnemySkill()
                     + "/" + ratingNames[((AtBContract) contract).getEnemyQuality()]);
             txtEnemyRating.setName("txtEnemyRating");
             gridBagConstraintsText.gridy = y;
@@ -267,7 +262,7 @@ public class ContractSummaryPanel extends JPanel {
         gridBagConstraintsLabels.gridy = ++y;
         mainPanel.add(lblStartDate, gridBagConstraintsLabels);
 
-        JLabel txtStartDate = new JLabel(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getStartDate()));
+        JLabel txtStartDate = new JLabel(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getStartDate()));
         txtStartDate.setName("txtStartDate");
         gridBagConstraintsText.gridy = y;
         mainPanel.add(txtStartDate, gridBagConstraintsText);
@@ -487,30 +482,30 @@ public class ContractSummaryPanel extends JPanel {
                     ContractMarket.CLAUSE_COMMAND) < cmdRerolls);
     }
 
-    private boolean hasSupportRerolls(){
+    private boolean hasSupportRerolls() {
         return allowRerolls && (campaign.getContractMarket().getRerollsUsed(contract,
                 ContractMarket.CLAUSE_SUPPORT) < logRerolls);
     }
 
-    private void setCommandRerollButtonText(JButton rerollButton){
+    private void setCommandRerollButtonText(JButton rerollButton) {
         int rerolls = (cmdRerolls - campaign.getContractMarket().getRerollsUsed(contract,
                 ContractMarket.CLAUSE_COMMAND));
         rerollButton.setText(generateRerollText(rerolls));
     }
 
-    private void setTransportRerollButtonText(JButton rerollButton){
+    private void setTransportRerollButtonText(JButton rerollButton) {
         int rerolls = (tranRerolls - campaign.getContractMarket().getRerollsUsed(contract,
                 ContractMarket.CLAUSE_TRANSPORT));
         rerollButton.setText(generateRerollText(rerolls));
     }
 
-    private void setSupportRerollButtonText(JButton rerollButton){
+    private void setSupportRerollButtonText(JButton rerollButton) {
         int rerolls = (logRerolls - campaign.getContractMarket().getRerollsUsed(contract,
                 ContractMarket.CLAUSE_SUPPORT));
         rerollButton.setText(generateRerollText(rerolls));
     }
 
-    private String generateRerollText(int rerolls){
+    private String generateRerollText(int rerolls) {
         return resourceMap.getString("lblRenegotiate.text") + " (" + rerolls + ")";
     }
 

@@ -3,7 +3,7 @@
 1
 </BlockVersion>
 
-# Write the version number just in case...
+##Write the version number just in case...
 <Version>
 MAM0
 </Version>
@@ -20,9 +20,17 @@ Purifier Adaptive Battle Armor
 [Laser]
 </Model>
 
+<mul id:>
+2603
+</mul id:>
+
 <year>
 3062
 </year>
+
+<originalBuildYear>
+3062
+</originalBuildYear>
 
 <type>
 IS Level 2
@@ -31,6 +39,9 @@ IS Level 2
 <motion_type>
 Jump
 </motion_type>
+
+<transporters>
+</transporters>
 
 <cruiseMP>
 1
@@ -45,19 +56,19 @@ Jump
 </armor_tech>
 
 <Squad Equipment>
-BABattleClaw:LA
 ISBAERSmallLaser:LA
 SwarmMek
 SwarmWeaponMek
 StopSwarm
 LegAttack
-IS BA Mimetic:RA
-IS BA Mimetic:Body
-IS BA Mimetic:RA
-IS BA Mimetic:Body
-IS BA Mimetic:Body
-IS BA Mimetic:Body
-IS BA Mimetic:RA
+BA Mimetic:RA
+BA Mimetic:Body
+BA Mimetic:RA
+BA Mimetic:Body
+BA Mimetic:Body
+BA Mimetic:Body
+BA Mimetic:RA
+BABattleClaw:RA
 </Squad Equipment>
 
 <Trooper 1 Equipment>
@@ -101,3 +112,4 @@ biped
 <weightclass>
 2
 </weightclass>
+

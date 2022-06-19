@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,37 +18,6 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.io.File;
-import java.io.FileInputStream;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-
 import megamek.common.AmmoType;
 import megamek.common.UnitType;
 import megamek.common.util.EncodeControl;
@@ -58,7 +27,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignFactory;
 import mekhq.campaign.Kill;
 import mekhq.campaign.finances.Money;
-import mekhq.campaign.finances.Transaction;
+import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.mission.Contract;
 import mekhq.campaign.mission.Mission;
@@ -71,6 +40,16 @@ import mekhq.campaign.personnel.SpecialAbility;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.FileDialogs;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class manages the GUI and logic for the campaign subset export wizard.
@@ -78,8 +57,6 @@ import mekhq.gui.FileDialogs;
  * @author NickAragua
  */
 public class CampaignExportWizard extends JDialog {
-    private static final long serialVersionUID = -7171621116865584010L;
-
     private JList<Force> forceList;
     private JList<Person> personList;
     private JList<Unit> unitList;
@@ -96,11 +73,12 @@ public class CampaignExportWizard extends JDialog {
     private JTextField txtExportMoney = new JTextField();
     private JLabel lblMoney = new JLabel();
     private JLabel lblStatus;
-    private ResourceBundle resourceMap;
 
     private Campaign sourceCampaign;
 
     private Optional<File> destinationCampaignFile;
+    private ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignExportWizard",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     public enum CampaignExportWizardState {
         ForceSelection,
@@ -113,7 +91,6 @@ public class CampaignExportWizard extends JDialog {
     }
 
     public CampaignExportWizard(Campaign c) {
-        resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignExportWizard", new EncodeControl());
         chkExportState.setText(resourceMap.getString("chkExportSettings.text"));
         chkExportState.setToolTipText(resourceMap.getString("chkExportSettings.tooltip"));
         chkExportContractOffers.setText(resourceMap.getString("chkExportContractOffers.text"));
@@ -224,8 +201,7 @@ public class CampaignExportWizard extends JDialog {
                     destinationCampaignFile = FileDialogs.saveCampaign(null, sourceCampaign);
                     if (destinationCampaignFile.isPresent()) {
                         if (!exportToCampaign(destinationCampaignFile.get())) {
-                            MekHQ.getLogger().error(getClass(), "display",
-                                    "Failed to export campaign to new campaign file");
+                            LogManager.getLogger().error("Failed to export campaign to new campaign file");
                         }
                         setVisible(false);
                     }
@@ -238,8 +214,7 @@ public class CampaignExportWizard extends JDialog {
                     destinationCampaignFile = FileDialogs.openCampaign(null);
                     if (destinationCampaignFile.isPresent()) {
                         if (!exportToCampaign(destinationCampaignFile.get())) {
-                            MekHQ.getLogger().error(getClass(), "display",
-                                    "Failed to export campaign to existing campaign file");
+                            LogManager.getLogger().error("Failed to export campaign to existing campaign file");
                         }
                         setVisible(false);
                     }
@@ -460,24 +435,19 @@ public class CampaignExportWizard extends JDialog {
             destinationCampaign.setCampaignOptions(sourceCampaign.getCampaignOptions());
             destinationCampaign.setGameOptions(sourceCampaign.getGameOptions());
         } else {
-            try {
-                FileInputStream fis = new FileInputStream(file);
+            try (FileInputStream fis = new FileInputStream(file)) {
                 destinationCampaign = CampaignFactory.newInstance(sourceCampaign.getApp()).createCampaign(fis);
                 // Restores all transient attributes from serialized objects
                 destinationCampaign.restore();
                 destinationCampaign.cleanUp();
-                fis.close();
             } catch (NullEntityException ex) {
-                MekHQ.getLogger().error(this.getClass(), "exportToCampaign",
-                        "The following units could not be loaded by the campaign:\n" + ex.getError() + "\n\nPlease be sure to copy over any custom units before starting a new version of MekHQ.\nIf you believe the units listed are not customs, then try deleting the file data/mechfiles/units.cache and restarting MekHQ.\nIt is also possible that unit chassi and model names have changed across versions of MegaMek. You can check this by\nopening up MegaMek and searching for the units. Chassis and models can be edited in your MekHQ save file with a text editor.");
+                LogManager.getLogger().error("The following units could not be loaded by the campaign:\n" + ex.getMessage() + "\n\nPlease be sure to copy over any custom units before starting a new version of MekHQ.\nIf you believe the units listed are not customs, then try deleting the file data/mechfiles/units.cache and restarting MekHQ.\nIt is also possible that unit chassi and model names have changed across versions of MegaMek. You can check this by\nopening up MegaMek and searching for the units. Chassis and models can be edited in your MekHQ save file with a text editor.");
                 return false;
             } catch (Exception ex) {
-                MekHQ.getLogger().error(this.getClass(), "exportToCampaign",
-                        "The campaign file could not be loaded.\nPlease check the log file for details.");
+                LogManager.getLogger().error("The campaign file could not be loaded.\nPlease check the log file for details.");
                 return false;
             } catch (OutOfMemoryError e) {
-                MekHQ.getLogger().error(this.getClass(), "exportToCampaign",
-                        "MekHQ ran out of memory attempting to load the campaign file. \nTry increasing the memory allocated to MekHQ and reloading.\nSee the FAQ at http://megamek.org for details.");
+                LogManager.getLogger().error("MekHQ ran out of memory attempting to load the campaign file. \nTry increasing the memory allocated to MekHQ and reloading.\nSee the FAQ at http://megamek.org for details.");
                 return false;
             }
         }
@@ -506,9 +476,12 @@ public class CampaignExportWizard extends JDialog {
         try {
             money = Integer.parseInt(txtExportMoney.getText());
             if (money > 0) {
-                destinationCampaign.addFunds(Money.of(money), String.format("Transfer from %s", sourceCampaign.getName()), Transaction.C_START);
+                destinationCampaign.addFunds(TransactionType.STARTING_CAPITAL, Money.of(money),
+                        String.format("Transfer from %s", sourceCampaign.getName()));
             }
-        } catch(Exception ignored) { }
+        } catch (Exception ignored) {
+
+        }
 
         // forces aren't moved/copied over, we just use the force selection to pre-populate the list of people and units
         // to be exported
@@ -537,7 +510,7 @@ public class CampaignExportWizard extends JDialog {
         // overwrite any people with the same ID.
         for (Person person : personList.getSelectedValuesList()) {
             if (destinationCampaign.getPerson(person.getId()) != null) {
-                destinationCampaign.removePerson(person.getId());
+                destinationCampaign.removePerson(person);
             }
 
             destinationCampaign.importPerson(person);
@@ -592,11 +565,12 @@ public class CampaignExportWizard extends JDialog {
             }
 
             for (Person person : personList.getSelectedValuesList()) {
-                sourceCampaign.removePerson(person.getId(), true);
+                sourceCampaign.removePerson(person, true);
             }
 
             if (money > 0) {
-                sourceCampaign.addFunds(Money.of(-money), "Transfer to exported campaign", Transaction.C_START);
+                sourceCampaign.addFunds(TransactionType.STARTING_CAPITAL, Money.of(-money),
+                        "Transfer to exported campaign");
             }
 
             // here, we update the quantity of the relevant part in the source campaign
@@ -802,13 +776,11 @@ public class CampaignExportWizard extends JDialog {
             Component cmp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             Person person = (Person) value;
             String callsign = "";
-            if ((person.getCallsign() != null) && (person.getCallsign().trim().length() > 0)) {
+            if ((person.getCallsign() != null) && !person.getCallsign().isBlank()) {
                 callsign = String.format("\"%s\" ", person.getCallsign());
             }
 
-            String cellValue = String.format("%s %s(%s)",
-                    person.getFullName(),
-                    callsign,
+            String cellValue = String.format("%s %s(%s)", person.getFullName(), callsign,
                     person.getPrimaryRoleDesc());
             ((JLabel) cmp).setText(cellValue);
             return cmp;

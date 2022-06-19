@@ -81,14 +81,14 @@ public final class InjuryUtil {
         p.getInjuries().forEach(i -> effects.addAll(i.getType().genStressEffect(c, p, i, hits)));
 
         // We could do some fancy display-to-the-user thing here, but for now just resolve all actions
-        effects.stream().forEach(GameEffect::apply);
+        effects.forEach(GameEffect::apply);
     }
 
     /** Resolve effects of damage suffered during combat */
     public static void resolveCombatDamage(Campaign c, Person person, int hits) {
         Collection<Injury> newInjuries = genInjuries(c, person, hits);
         newInjuries.forEach(person::addInjury);
-        if (newInjuries.size() > 0) {
+        if (!newInjuries.isEmpty()) {
             MedicalLogger.returnedWithInjuries(person, c.getLocalDate(), newInjuries);
         }
     }
@@ -243,7 +243,7 @@ public final class InjuryUtil {
             time += Compute.d6();
         }
 
-        time = (int) Math.round((time * mod * p.getAbilityTimeModifier()) / 10000.0);
+        time = (int) Math.round((time * mod * p.getAbilityTimeModifier(c)) / 10000.0);
         return time;
     }
 
@@ -320,7 +320,7 @@ public final class InjuryUtil {
                         rnd -> {
                             int taskXP = c.getCampaignOptions().getTaskXP();
                             if ((taskXP > 0) && (doc.getNTasks() >= c.getCampaignOptions().getNTasksXP())) {
-                                doc.awardXP(taskXP);
+                                doc.awardXP(c, taskXP);
                                 doc.setNTasks(0);
 
                                 ServiceLogger.gainedXpFromMedWork(doc, c.getLocalDate(), taskXP);
@@ -365,7 +365,7 @@ public final class InjuryUtil {
             result.add(new GameEffect(treatmentSummary,
                 rnd -> {
                     if (xp > 0) {
-                        doc.awardXP(xp);
+                        doc.awardXP(c, xp);
                         ServiceLogger.successfullyTreatedWithXp(doc, p, c.getLocalDate(), injuries, xp);
                     } else {
                         ServiceLogger.successfullyTreated(doc, p, c.getLocalDate(), injuries);

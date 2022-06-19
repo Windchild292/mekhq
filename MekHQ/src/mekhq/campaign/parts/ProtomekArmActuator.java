@@ -1,7 +1,7 @@
 /*
  * ProtomekActuator.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,34 +20,29 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.enums.PartRepairType;
+import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Compute;
-import megamek.common.CriticalSlot;
-import megamek.common.Protomech;
-import megamek.common.TechAdvancement;
-import megamek.common.TechConstants;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.SkillType;
+import java.io.PrintWriter;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class ProtomekArmActuator extends Part {
-    private static final long serialVersionUID = 719878556021696393L;
-
     protected int location;
 
     public ProtomekArmActuator() {
         this(0, 0, null);
     }
 
+    @Override
     public ProtomekArmActuator clone() {
         ProtomekArmActuator clone = new ProtomekArmActuator(getUnitTonnage(), location, campaign);
         clone.copyBaseData(this);
@@ -60,7 +55,7 @@ public class ProtomekArmActuator extends Part {
 
     public ProtomekArmActuator(int tonnage, int loc, Campaign c) {
         super(tonnage, c);
-        this.name = "Protomech Arm Actuator";
+        this.name = "ProtoMech Arm Actuator";
         this.location = loc;
     }
 
@@ -93,9 +88,9 @@ public class ProtomekArmActuator extends Part {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<location>"
                 +location
                 +"</location>");
@@ -109,8 +104,12 @@ public class ProtomekArmActuator extends Part {
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("location")) {
-                location = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("location")) {
+                    location = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

@@ -20,12 +20,16 @@ Motorized Platoon
 (LRM)
 </Model>
 
+<mul id:>
+2237
+</mul id:>
+
 <year>
-3065
+3057
 </year>
 
 <type>
-IS Level 2
+IS Level 3
 </type>
 
 <motion_type>
@@ -62,7 +66,3 @@ LRM Launcher (FarShot)
 <antimek>
 6
 </antimek>
-
-<armorKit>
-GenericKit
-</armorKit>

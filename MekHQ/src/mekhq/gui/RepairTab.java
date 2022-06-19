@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2017-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,41 +18,15 @@
  */
 package mekhq.gui;
 
-import java.awt.*;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
-import javax.swing.text.DefaultCaret;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
-
+import megamek.client.ui.models.XTableColumnModel;
+import megamek.client.ui.preferences.JTablePreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.MechView;
 import megamek.common.TargetRoll;
 import megamek.common.event.Subscribe;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
-import mekhq.campaign.event.AcquisitionEvent;
-import mekhq.campaign.event.AstechPoolChangedEvent;
-import mekhq.campaign.event.DeploymentChangedEvent;
-import mekhq.campaign.event.OvertimeModeEvent;
-import mekhq.campaign.event.PartEvent;
-import mekhq.campaign.event.PartWorkEvent;
-import mekhq.campaign.event.PersonEvent;
-import mekhq.campaign.event.ProcurementEvent;
-import mekhq.campaign.event.RepairStatusChangedEvent;
-import mekhq.campaign.event.ScenarioResolvedEvent;
-import mekhq.campaign.event.StratconDeploymentEvent;
-import mekhq.campaign.event.UnitEvent;
-import mekhq.campaign.parts.MekLocation;
+import mekhq.campaign.event.*;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.parts.PodSpace;
 import mekhq.campaign.personnel.Person;
@@ -64,27 +38,37 @@ import mekhq.gui.adapter.ServicedUnitsTableMouseAdapter;
 import mekhq.gui.adapter.TaskTableMouseAdapter;
 import mekhq.gui.dialog.AcquisitionsDialog;
 import mekhq.gui.dialog.MassRepairSalvageDialog;
-import mekhq.service.MassRepairMassSalvageMode;
+import mekhq.gui.enums.MekHQTabType;
 import mekhq.gui.model.TaskTableModel;
 import mekhq.gui.model.TechTableModel;
 import mekhq.gui.model.UnitTableModel;
-import mekhq.gui.model.XTableColumnModel;
-import megamek.client.ui.preferences.JTablePreference;
 import mekhq.gui.sorter.TaskSorter;
 import mekhq.gui.sorter.TechSorter;
 import mekhq.gui.sorter.UnitStatusSorter;
 import mekhq.gui.sorter.UnitTypeSorter;
-import megamek.client.ui.preferences.PreferencesNode;
+import mekhq.service.MassRepairMassSalvageMode;
 import mekhq.service.MassRepairService;
 import mekhq.service.PartsAcquisitionService;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import java.awt.*;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.List;
+import java.util.*;
 
 /**
  * Shows damaged units and controls for repair.
  */
 public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
-
-    private static final long serialVersionUID = 6757065427956450309L;
-
     private JPanel panDoTask;
     private JPanel panDoTaskText;
     private JSplitPane splitServicedUnits;
@@ -111,18 +95,20 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
     private TableRowSorter<TaskTableModel> taskSorter;
     private TableRowSorter<TechTableModel> techSorter;
 
-    //Maintain selections after refresh
+    // Maintain selections after refresh
     private int selectedRow = -1;
     private int selectedLocation = -1;
     private Unit selectedUnit = null;
     private Person selectedTech = getSelectedTech();
     private boolean ignoreUnitTable = false; // Used to disable selection listener while data is updated.
 
-    RepairTab(CampaignGUI gui, String name) {
+    //region Constructors
+    public RepairTab(CampaignGUI gui, String name) {
         super(gui, name);
         MekHQ.registerHandler(this);
         setUserPreferences();
     }
+    //endregion Constructors
 
     /*
      * (non-Javadoc)
@@ -131,7 +117,8 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
      */
     @Override
     public void initTab() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         GridBagConstraints gridBagConstraints;
 
         setLayout(new GridLayout());
@@ -222,17 +209,17 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
         servicedUnitSorter.setComparator(UnitTableModel.COL_STATUS, new UnitStatusSorter());
         servicedUnitSorter.setComparator(UnitTableModel.COL_TYPE, new UnitTypeSorter());
         servicedUnitTable.setRowSorter(servicedUnitSorter);
-        ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(UnitTableModel.COL_TYPE, SortOrder.DESCENDING));
+        ArrayList<SortKey> sortKeys = new ArrayList<>();
+        sortKeys.add(new SortKey(UnitTableModel.COL_TYPE, SortOrder.DESCENDING));
         servicedUnitSorter.setSortKeys(sortKeys);
         TableColumn column;
         for (int i = 0; i < UnitTableModel.N_COL; i++) {
             column = ((XTableColumnModel) servicedUnitTable.getColumnModel()).getColumnByModelIndex(i);
             column.setPreferredWidth(servicedUnitModel.getColumnWidth(i));
             column.setCellRenderer(servicedUnitModel.getRenderer(false));
-            if ((i != UnitTableModel.COL_NAME) && (i != UnitTableModel.COL_STATUS)
-                    && (i != UnitTableModel.COL_REPAIR) && (i != UnitTableModel.COL_SITE)
-                    && (i != UnitTableModel.COL_TYPE)) {
+            if ((i != UnitTableModel.COL_NAME) && (i != UnitTableModel.COL_TYPE)
+                    && (i != UnitTableModel.COL_STATUS) && (i != UnitTableModel.COL_REPAIR)
+                    && (i != UnitTableModel.COL_SITE)) {
                 ((XTableColumnModel) servicedUnitTable.getColumnModel()).setColumnVisible(column, false);
             }
         }
@@ -337,7 +324,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
         textTarget.setEditable(false);
         textTarget.setLineWrap(true);
         textTarget.setRows(5);
-        textTarget.setText(resourceMap.getString("textTarget.text"));
+        textTarget.setText("");
         textTarget.setWrapStyleWord(true);
         textTarget.setBorder(null);
         textTarget.setName("textTarget");
@@ -448,11 +435,16 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
         filterTechs();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(RepairTab.class);
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(RepairTab.class);
 
-        servicedUnitTable.setName("serviceUnitsTable");
-        preferences.manage(new JTablePreference(servicedUnitTable));
+            servicedUnitTable.setName("serviceUnitsTable");
+            preferences.manage(new JTablePreference(servicedUnitTable));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     protected void updateTechTarget() {
@@ -515,8 +507,8 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
      * @see mekhq.gui.CampaignGuiTab#tabType()
      */
     @Override
-    public GuiTabType tabType() {
-        return GuiTabType.REPAIR;
+    public MekHQTabType tabType() {
+        return MekHQTabType.REPAIR_BAY;
     }
 
     @Override
@@ -598,7 +590,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
         if (null == selectedTech) {
             return;
         }
-        if (part instanceof Part && ((Part) part).onBadHipOrShoulder() && !part.isSalvaging()) {
+        if ((part instanceof Part) && ((Part) part).onBadHipOrShoulder() && !part.isSalvaging()) {
             if (0 != JOptionPane.showConfirmDialog(getFrame(),
                     "You are repairing/replacing a part on a limb with a bad shoulder or hip.\n"
                             + "You may continue, but this limb cannot be repaired and you will have to\n"
@@ -670,7 +662,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
     public void filterTasks() {
         selectedLocation = choiceLocation.getSelectedIndex();
         final String loc = (String) choiceLocation.getSelectedItem();
-        RowFilter<TaskTableModel, Integer> taskLocationFilter = new RowFilter<TaskTableModel, Integer>() {
+        RowFilter<TaskTableModel, Integer> taskLocationFilter = new RowFilter<>() {
             @Override
             public boolean include(Entry<? extends TaskTableModel, ? extends Integer> entry) {
                 TaskTableModel taskModel = entry.getModel();
@@ -697,7 +689,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
     public void filterTechs() {
         final IPartWork part = getSelectedTask();
         final Unit unit = getSelectedServicedUnit();
-        RowFilter<TechTableModel, Integer> techTypeFilter = new RowFilter<TechTableModel, Integer>() {
+        RowFilter<TechTableModel, Integer> techTypeFilter = new RowFilter<>() {
             @Override
             public boolean include(Entry<? extends TechTableModel, ? extends Integer> entry) {
                 if (part == null) {
@@ -711,8 +703,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
                     if (!tech.getPrimaryRole().isVesselCrew()) {
                         return false;
                     }
-                    // check whether the engineer is assigned to the correct
-                    // unit
+                    // check whether the engineer is assigned to the correct unit
                     return unit.equals(tech.getUnit());
                 } else if (tech.getPrimaryRole().isVesselCrew() && (unit != null) && !unit.isSelfCrewed()) {
                     return false;
@@ -728,8 +719,8 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
                 } else if (tech.getMinutesLeft() <= 0) {
                     return false;
                 } else {
-                    return (getCampaign().getCampaignOptions().isDestroyByMargin()
-                            || part.getSkillMin() <= (skill.getExperienceLevel() - modePenalty));
+                    return getCampaign().getCampaignOptions().isDestroyByMargin()
+                            || (part.getSkillMin() <= (skill.getExperienceLevel() - modePenalty));
                 }
             }
         };
@@ -743,8 +734,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
     /**
      * Focuses on the unit with the given ID if it exists.
      * @param id The unique identifier of the unit.
-     * @return A value indicating whether or not the unit
-     *         was focused.
+     * @return A value indicating whether or not the unit was focused.
      */
     public boolean focusOnUnit(UUID id) {
         int row = -1;
@@ -830,9 +820,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
         // The next gets all techs who have more than 0 minutes free, and sorted by skill descending (elites at bottom)
         List<Person> techs = getCampaign().getTechs(true);
         techsModel.setData(techs);
-        if ((selected > -1) && (selected < techs.size())) {
-            techTable.setRowSelectionInterval(selected, selected);
-        }
+        filterTechs();
         String astechString = "<html><b>Astech Pool Minutes:</> " + getCampaign().getAstechPoolMinutes();
         if (getCampaign().isOvertimeAllowed()) {
             astechString += " [" + getCampaign().getAstechPoolOvertime() + " overtime]";
@@ -841,17 +829,19 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
         astechPoolLabel.setText(astechString);
 
         // If requested, switch to top entry
-        if(getCampaign().getCampaignOptions().useResetToFirstTech() && techTable.getRowCount() > 0) {
+        if (getCampaign().getCampaignOptions().useResetToFirstTech() && (techTable.getRowCount() > 0)) {
             techTable.setRowSelectionInterval(0, 0);
         } else if (selectedTech != null) {
             // Or get the selected tech back
             for (int i = 0; i < techTable.getRowCount(); i++) {
                 Person p = techsModel.getTechAt(techTable.convertRowIndexToModel(i));
-                if (p != null && selectedTech.getId().equals(p.getId())) {
+                if (selectedTech.equals(p)) {
                     techTable.setRowSelectionInterval(i, i);
                     break;
                 }
             }
+        } else if ((selected > -1) && (selected < techs.size())) {
+            techTable.setRowSelectionInterval(selected, selected);
         }
     }
 
@@ -891,7 +881,7 @@ public final class RepairTab extends CampaignGuiTab implements ITechWorkPanel {
     public void handle(RepairStatusChangedEvent ev) {
         servicedUnitListScheduler.schedule();
     }
-    
+
     @Subscribe
     public void handle(StratconDeploymentEvent ev) {
         servicedUnitListScheduler.schedule();

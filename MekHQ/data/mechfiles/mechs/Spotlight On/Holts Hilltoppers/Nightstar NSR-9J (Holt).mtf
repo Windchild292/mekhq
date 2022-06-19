@@ -1,10 +1,11 @@
 Version:1.0
 Nightstar
 NSR-9J (Holt)
+mul id:7619
 
 Config:Biped
 TechBase:Mixed (IS Chassis)
-Era:3075
+Era:3063
 Source:SO:Holt's Hilltoppers
 Rules Level:4
 

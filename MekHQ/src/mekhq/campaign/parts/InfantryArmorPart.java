@@ -1,7 +1,7 @@
 /*
  * InfantryMotiveType.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -29,25 +29,23 @@ import org.w3c.dom.NodeList;
 
 import megamek.common.Entity;
 import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 
 /**
  * This part represents custom armor kit settings rather than one of the formal armor kits
  * from TacOps.
  *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class InfantryArmorPart extends Part {
-    private static final long serialVersionUID = 8298691936947743373L;
-
     private double damageDivisor;
-    private boolean encumbering = false;
-    private boolean spaceSuit = false;
-    private boolean dest = false;
-    private boolean sneak_camo = false;
-    private boolean sneak_ir = false;
-    private boolean sneak_ecm = false;
+    private boolean encumbering;
+    private boolean spaceSuit;
+    private boolean dest;
+    private boolean sneak_camo;
+    private boolean sneak_ir;
+    private boolean sneak_ecm;
 
     public InfantryArmorPart() {
         this(0, null, 1.0, false, false, false, false, false, false);
@@ -93,24 +91,28 @@ public class InfantryArmorPart extends Part {
         if (isEncumbering()) {
             details += "encumbering";
         }
+
         if (isSneakCamo()) {
-            if (!details.equals("")) {
+            if (!details.isBlank()) {
                 details += ", ";
             }
             details += "camo";
         }
+
         if (isSneakECM()) {
-            if (!details.equals("")) {
+            if (!details.isBlank()) {
                 details += ", ";
             }
             details += "ECM";
         }
+
         if (isSneakIR()) {
-            if (!details.equals("")) {
+            if (!details.isBlank()) {
                 details += ", ";
             }
             details += "IR";
         }
+
         return details;
     }
 
@@ -214,14 +216,14 @@ public class InfantryArmorPart extends Part {
 
     @Override
     public boolean isSamePartType(Part part) {
-        return getClass().equals(part.getClass())
-                && damageDivisor == ((InfantryArmorPart)part).getDamageDivisor()
-                && dest == ((InfantryArmorPart)part).isDest()
-                && encumbering == ((InfantryArmorPart)part).isEncumbering()
-                && sneak_camo == ((InfantryArmorPart)part).isSneakCamo()
-                && sneak_ecm == ((InfantryArmorPart)part).isSneakECM()
-                && sneak_ir == ((InfantryArmorPart)part).isSneakIR()
-                && spaceSuit == ((InfantryArmorPart)part).isSpaceSuit();
+        return (getClass() == part.getClass())
+                && damageDivisor == ((InfantryArmorPart) part).getDamageDivisor()
+                && dest == ((InfantryArmorPart) part).isDest()
+                && encumbering == ((InfantryArmorPart) part).isEncumbering()
+                && sneak_camo == ((InfantryArmorPart) part).isSneakCamo()
+                && sneak_ecm == ((InfantryArmorPart) part).isSneakECM()
+                && sneak_ir == ((InfantryArmorPart) part).isSneakIR()
+                && spaceSuit == ((InfantryArmorPart) part).isSpaceSuit();
     }
 
     public double getDamageDivisor() {
@@ -253,33 +255,33 @@ public class InfantryArmorPart extends Part {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<damageDivisor>"
                 +damageDivisor
                 +"</damageDivisor>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<dest>"
                 +dest
                 +"</dest>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<encumbering>"
                 +encumbering
                 +"</encumbering>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<sneak_camo>"
                 +sneak_camo
                 +"</sneak_camo>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<sneak_ecm>"
                 +sneak_ecm
                 +"</sneak_ecm>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<sneak_ir>"
                 +sneak_ir
                 +"</sneak_ir>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<spaceSuit>"
                 +spaceSuit
                 +"</spaceSuit>");
@@ -290,7 +292,7 @@ public class InfantryArmorPart extends Part {
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
             if (wn2.getNodeName().equalsIgnoreCase("damageDivisor")) {
                 damageDivisor =Double.parseDouble(wn2.getTextContent());

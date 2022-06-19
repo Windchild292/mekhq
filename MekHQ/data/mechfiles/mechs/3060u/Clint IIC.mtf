@@ -1,10 +1,11 @@
 Version:1.0
 Clint IIC
 (Standard)
+mul id:652
 
 Config:Biped
 TechBase:Clan
-Era:2830
+Era:2842
 Source:TRO 3060
 Rules Level:2
 

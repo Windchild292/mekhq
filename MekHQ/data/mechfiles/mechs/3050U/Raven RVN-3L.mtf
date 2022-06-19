@@ -1,6 +1,7 @@
 Version:1.0
 Raven
 RVN-3L
+mul id:2664
 
 Config:Biped
 TechBase:Inner Sphere
@@ -69,11 +70,11 @@ Left Torso:
 Fusion Engine
 Fusion Engine
 Fusion Engine
-ISGuardianECMSuite
-ISGuardianECMSuite
 IS Ammo SRM-6 Narc-capable
 ISNarc Pods
 ISNarc Pods
+ISGuardianECMSuite
+ISGuardianECMSuite
 ISCASE
 -Empty-
 -Empty-

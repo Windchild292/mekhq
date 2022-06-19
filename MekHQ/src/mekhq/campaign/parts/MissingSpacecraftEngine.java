@@ -1,7 +1,7 @@
 /*
  * MissingSpacecraftEngine.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -32,14 +32,13 @@ import megamek.common.Entity;
 import megamek.common.SmallCraft;
 import megamek.common.TechAdvancement;
 import megamek.common.TechConstants;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissingSpacecraftEngine extends MissingPart {
-    private static final long serialVersionUID = -6961398614705924172L;
     double engineTonnage;
     boolean clan;
 
@@ -91,16 +90,16 @@ public class MissingSpacecraftEngine extends MissingPart {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
         // The engine is a MM object...
         // And doesn't support XML serialization...
         // But it's defined by 3 ints. So we'll save those here.
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<engineTonnage>"
                 +engineTonnage
                 +"</engineTonnage>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<clan>"
                 +clan
                 +"</clan>");

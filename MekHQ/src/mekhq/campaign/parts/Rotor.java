@@ -1,7 +1,7 @@
 /*
  * Rotor.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,13 +12,12 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
 import megamek.common.IArmorState;
@@ -29,12 +28,9 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 
 /**
- *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class Rotor extends TankLocation {
-    private static final long serialVersionUID = -122291037522319765L;
-
     static final TechAdvancement TECH_ADVANCEMENT = new TechAdvancement(TECH_BASE_ALL)
             .setAdvancement(2460, 2470, 2510).setApproximate(true, false, false)
             .setPrototypeFactions(F_TH).setProductionFactions(F_TH)
@@ -51,6 +47,7 @@ public class Rotor extends TankLocation {
         this.damage = 0;
     }
 
+    @Override
     public Rotor clone() {
         Rotor clone = new Rotor(getUnitTonnage(), campaign);
         clone.copyBaseData(this);
@@ -63,9 +60,9 @@ public class Rotor extends TankLocation {
     @Override
     public boolean isSamePartType(Part part) {
         return part instanceof Rotor
-                && getLoc() == ((Rotor)part).getLoc()
-                && getUnitTonnage() == ((Rotor)part).getUnitTonnage()
-                && this.getDamage() == ((Rotor)part).getDamage()
+                && getLoc() == ((Rotor) part).getLoc()
+                && getUnitTonnage() == part.getUnitTonnage()
+                && this.getDamage() == ((Rotor) part).getDamage()
                 && part.getSkillMin() == this.getSkillMin();
     }
 
@@ -75,7 +72,7 @@ public class Rotor extends TankLocation {
         if (damage > 0) {
             damage--;
         }
-        if(null != unit && unit.getEntity() instanceof VTOL) {
+        if (null != unit && unit.getEntity() instanceof VTOL) {
             int currIsVal = unit.getEntity().getInternal(VTOL.LOC_ROTOR);
             int maxIsVal = unit.getEntity().getOInternal(VTOL.LOC_ROTOR);
             int repairedIsVal = Math.min(maxIsVal, currIsVal + 1);
@@ -90,12 +87,12 @@ public class Rotor extends TankLocation {
 
     @Override
     public void remove(boolean salvage) {
-        if(null != unit && unit.getEntity() instanceof VTOL) {
+        if (null != unit && unit.getEntity() instanceof VTOL) {
             unit.getEntity().setInternal(IArmorState.ARMOR_DESTROYED, VTOL.LOC_ROTOR);
             Part spare = campaign.getWarehouse().checkForExistingSparePart(this);
-            if(!salvage) {
+            if (!salvage) {
                 campaign.getWarehouse().removePart(this);
-            } else if(null != spare) {
+            } else if (null != spare) {
                 spare.incrementQuantity();
                 campaign.getWarehouse().removePart(this);
             }
@@ -103,9 +100,9 @@ public class Rotor extends TankLocation {
             Part missing = getMissingPart();
             unit.addPart(missing);
             campaign.getQuartermaster().addPart(missing, 0);
-            ((VTOL)unit.getEntity()).resetMovementDamage();
-            for(Part part : unit.getParts()) {
-                if(part instanceof MotiveSystem) {
+            ((VTOL) unit.getEntity()).resetMovementDamage();
+            for (Part part : unit.getParts()) {
+                if (part instanceof MotiveSystem) {
                     part.updateConditionFromEntity(false);
                 }
             }
@@ -115,7 +112,7 @@ public class Rotor extends TankLocation {
 
     @Override
     public int getBaseTime() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 300;
         }
         return 120;
@@ -123,7 +120,7 @@ public class Rotor extends TankLocation {
 
     @Override
     public int getDifficulty() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 0;
         }
         return 2;
@@ -131,19 +128,19 @@ public class Rotor extends TankLocation {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit && damage > 0 && unit.getEntity() instanceof VTOL) {
+        if (null != unit && damage > 0 && unit.getEntity() instanceof VTOL) {
             unit.getEntity().setInternal(unit.getEntity().getOInternal(VTOL.LOC_ROTOR) - damage, VTOL.LOC_ROTOR);
         }
     }
 
     @Override
     public String checkFixable() {
-        if(null == unit) {
+        if (null == unit) {
             return null;
         }
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             //check for armor
-            if(unit.getEntity().getArmorForReal(loc, false) > 0) {
+            if (unit.getEntity().getArmorForReal(loc, false) > 0) {
                 return "must salvage armor in this location first";
             }
         }
@@ -153,7 +150,7 @@ public class Rotor extends TankLocation {
     @Override
     public String checkScrappable() {
         //check for armor
-        if(unit.getEntity().getArmor(loc, false) != IArmorState.ARMOR_DESTROYED) {
+        if (unit.getEntity().getArmor(loc, false) != IArmorState.ARMOR_DESTROYED) {
             return "You must scrap armor in the rotor first";
         }
         return null;

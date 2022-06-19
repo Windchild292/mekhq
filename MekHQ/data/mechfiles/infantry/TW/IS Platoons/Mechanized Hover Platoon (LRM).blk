@@ -20,12 +20,16 @@ Mechanized Hover Platoon
 (LRM)
 </Model>
 
+<mul id:>
+2134
+</mul id:>
+
 <year>
-3065
+3057
 </year>
 
 <type>
-IS Level 2
+IS Level 3
 </type>
 
 <motion_type>
@@ -58,7 +62,3 @@ Auto-Rifle
 <Secondary>
 LRM Launcher (FarShot)
 </Secondary>
-
-<armorKit>
-GenericKit
-</armorKit>

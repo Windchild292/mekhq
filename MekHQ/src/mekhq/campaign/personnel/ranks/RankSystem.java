@@ -18,35 +18,25 @@
  */
 package mekhq.campaign.personnel.ranks;
 
+import megamek.Version;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
-import mekhq.campaign.io.Migration.PersonMigrator;
+import mekhq.MHQConstants;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.personnel.enums.RankSystemType;
+import mekhq.io.migration.PersonMigrator;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.stream.Stream;
 
-public class RankSystem implements Serializable {
+public class RankSystem {
     //region Variable Declarations
-    private static final long serialVersionUID = -6037712487121208137L;
-
     private String code; // Primary Key, must be unique
     private transient RankSystemType type; // no need to serialize
     private String name;
@@ -174,30 +164,30 @@ public class RankSystem implements Serializable {
              PrintWriter pw = new PrintWriter(osw)) {
             // Then save it out to that file.
             pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            pw.println("<individualRankSystem version=\"" + ResourceBundle.getBundle("mekhq.resources.MekHQ").getString("Application.version") + "\">");
+            pw.println("<individualRankSystem version=\"" + MHQConstants.VERSION + "\">");
             writeToXML(pw, 1, true);
-            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, 0, "individualRankSystem");
+            MHQXMLUtility.writeSimpleXMLCloseIndentedLine(pw, 0, "individualRankSystem");
         } catch (Exception e) {
-            MekHQ.getLogger().error(e);
+            LogManager.getLogger().error("", e);
         }
     }
 
     public void writeToXML(final PrintWriter pw, int indent, final boolean export) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw, indent++, "rankSystem");
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "code", getCode());
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "rankSystem");
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "code", getCode());
 
         // Only write out any other information if we are exporting the system or we are using a
         // campaign-specific custom system
         if (export || getType().isCampaign()) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "name", toString());
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "description", getDescription());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "name", toString());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "description", getDescription());
 
             if (isUseROMDesignation()) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "useROMDesignation", isUseROMDesignation());
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "useROMDesignation", isUseROMDesignation());
             }
 
             if (isUseManeiDomini()) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "useManeiDomini", isUseManeiDomini());
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "useManeiDomini", isUseManeiDomini());
             }
 
             for (int i = 0; i < getRanks().size(); i++) {
@@ -205,7 +195,7 @@ public class RankSystem implements Serializable {
             }
         }
 
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, --indent, "rankSystem");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "rankSystem");
     }
 
     /**
@@ -223,9 +213,9 @@ public class RankSystem implements Serializable {
 
         // Open up the file.
         try (InputStream is = new FileInputStream(file)) {
-            element = MekHqXmlUtil.newSafeDocumentBuilder().parse(is).getDocumentElement();
+            element = MHQXMLUtility.newSafeDocumentBuilder().parse(is).getDocumentElement();
         } catch (Exception e) {
-            MekHQ.getLogger().error("Failed to open file, returning null", e);
+            LogManager.getLogger().error("Failed to open file, returning null", e);
             return null;
         }
         element.normalize();
@@ -239,7 +229,7 @@ public class RankSystem implements Serializable {
                 return generateInstanceFromXML(wn.getChildNodes(), version);
             }
         }
-        MekHQ.getLogger().error("Failed to parse file, returning null");
+        LogManager.getLogger().error("Failed to parse file, returning null");
         return null;
     }
 
@@ -284,7 +274,7 @@ public class RankSystem implements Serializable {
                         return Ranks.getRankSystemFromCode(code);
                     }
                 } else if (wn.getNodeName().equalsIgnoreCase("code")) {
-                    final String systemCode = MekHqXmlUtil.unEscape(wn.getTextContent().trim());
+                    final String systemCode = MHQXMLUtility.unEscape(wn.getTextContent().trim());
                     // If this isn't the initial load and we already have a loaded system with the
                     // provided key, just return the rank system saved by the key in question.
                     // This does not need to be validated to ensure it is a proper rank system
@@ -293,9 +283,9 @@ public class RankSystem implements Serializable {
                     }
                     rankSystem.setCode(systemCode);
                 } else if (wn.getNodeName().equalsIgnoreCase("name")) {
-                    rankSystem.setName(MekHqXmlUtil.unEscape(wn.getTextContent().trim()));
+                    rankSystem.setName(MHQXMLUtility.unEscape(wn.getTextContent().trim()));
                 } else if (wn.getNodeName().equalsIgnoreCase("description")) {
-                    rankSystem.setDescription(MekHqXmlUtil.unEscape(wn.getTextContent().trim()));
+                    rankSystem.setDescription(MHQXMLUtility.unEscape(wn.getTextContent().trim()));
                 } else if (wn.getNodeName().equalsIgnoreCase("useROMDesignation")) {
                     rankSystem.setUseROMDesignation(Boolean.parseBoolean(wn.getTextContent().trim()));
                 } else if (wn.getNodeName().equalsIgnoreCase("useManeiDomini")) {
@@ -311,7 +301,7 @@ public class RankSystem implements Serializable {
                 rankSystem.setName(PersonMigrator.migrateRankSystemName(rankSystemId));
             }
         } catch (Exception e) {
-            MekHQ.getLogger().error(e);
+            LogManager.getLogger().error("", e);
             return null;
         }
         return rankSystem;

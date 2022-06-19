@@ -1,7 +1,7 @@
 /*
  * Turret.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,36 +12,29 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
+import mekhq.campaign.unit.Unit;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.CriticalSlot;
-import megamek.common.IArmorState;
-import megamek.common.Mounted;
-import megamek.common.Tank;
-import megamek.common.WeaponType;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.unit.Unit;
+import java.io.PrintWriter;
 
 /**
- *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class Turret extends TankLocation {
-    private static final long serialVersionUID = -122291037522319765L;
     protected double weight;
 
     public Turret() {
@@ -54,6 +47,7 @@ public class Turret extends TankLocation {
         this.name = "Turret";
     }
 
+    @Override
     public Turret clone() {
         Turret clone = new Turret(0, getUnitTonnage(), weight, campaign);
         clone.copyBaseData(this);
@@ -72,7 +66,7 @@ public class Turret extends TankLocation {
     @Override
     public void setUnit(Unit u) {
         super.setUnit(u);
-        if(null != unit) {
+        if (null != unit) {
             weight = 0;
             for (Mounted m : unit.getEntity().getWeaponList()) {
                 WeaponType wt = (WeaponType) m.getType();
@@ -87,22 +81,22 @@ public class Turret extends TankLocation {
     @Override
     public boolean isSamePartType(Part part) {
         return part instanceof Turret
-                && getLoc() == ((Turret)part).getLoc()
-                && getTonnage() == ((Turret)part).getTonnage();
+                && getLoc() == ((Turret) part).getLoc()
+                && getTonnage() == part.getTonnage();
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<loc>"
                 +loc
                 +"</loc>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<damage>"
                 +damage
                 +"</damage>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<weight>"
                 +weight
                 +"</weight>");
@@ -113,15 +107,19 @@ public class Turret extends TankLocation {
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("weight")) {
-                weight = Double.parseDouble(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("loc")) {
-                loc = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("damage")) {
-                damage = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("weight")) {
+                    weight = Double.parseDouble(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("loc")) {
+                    loc = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("damage")) {
+                    damage = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }
@@ -133,12 +131,12 @@ public class Turret extends TankLocation {
 
     @Override
     public void remove(boolean salvage) {
-        if(null != unit) {
+        if (null != unit) {
             unit.getEntity().setInternal(IArmorState.ARMOR_DESTROYED, loc);
             Part spare = campaign.getWarehouse().checkForExistingSparePart(this);
-            if(!salvage) {
+            if (!salvage) {
                 campaign.getWarehouse().removePart(this);
-            } else if(null != spare) {
+            } else if (null != spare) {
                 spare.incrementQuantity();
                 campaign.getWarehouse().removePart(this);
             }
@@ -146,14 +144,14 @@ public class Turret extends TankLocation {
             Part missing = getMissingPart();
             unit.addPart(missing);
             campaign.getQuartermaster().addPart(missing, 0);
-            ((Tank)unit.getEntity()).unlockTurret();
+            ((Tank) unit.getEntity()).unlockTurret();
         }
         setUnit(null);
     }
 
     @Override
     public int getBaseTime() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 160;
         }
         return 60;
@@ -161,7 +159,7 @@ public class Turret extends TankLocation {
 
     @Override
     public int getDifficulty() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 1;
         }
         return 0;
@@ -169,19 +167,19 @@ public class Turret extends TankLocation {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit) {
+        if (null != unit) {
             unit.getEntity().setInternal(unit.getEntity().getOInternal(loc) - damage, loc);
         }
     }
 
     @Override
     public String checkFixable() {
-        if(null == unit) {
+        if (null == unit) {
             return null;
         }
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             //check for armor
-            if(unit.getEntity().getArmorForReal(loc, false) > 0) {
+            if (unit.getEntity().getArmorForReal(loc, false) > 0) {
                 return "must salvage armor in this location first";
             }
             //you can only salvage a location that has nothing left on it
@@ -202,7 +200,7 @@ public class Turret extends TankLocation {
     @Override
     public String checkScrappable() {
         //check for armor
-        if(unit.getEntity().getArmor(loc, false) != IArmorState.ARMOR_DESTROYED) {
+        if (unit.getEntity().getArmor(loc, false) != IArmorState.ARMOR_DESTROYED) {
             return "You must scrap armor in the turret first";
         }
         //you can only scrap a location that has nothing left on it

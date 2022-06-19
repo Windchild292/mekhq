@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2018-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,24 +18,17 @@
  */
 package mekhq.campaign.universe;
 
+import megamek.common.annotations.Nullable;
+import megamek.common.event.Subscribe;
+import mekhq.campaign.event.LocationChangedEvent;
+import mekhq.campaign.event.NewDayEvent;
+import org.apache.logging.log4j.LogManager;
+
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import megamek.common.annotations.Nullable;
-import megamek.common.event.Subscribe;
-import mekhq.MekHQ;
-import mekhq.campaign.event.LocationChangedEvent;
-import mekhq.campaign.event.NewDayEvent;
 
 /**
  * Checks all planets within a given region of space and can report which factions control one or more
@@ -44,7 +37,7 @@ import mekhq.campaign.event.NewDayEvent;
  * rather than a circle, with the radius being the distance from the center to each vertex.
  *
  * Recalculates in the background whenever the date or the bound of the region to examine change. By
- * default queries made while the background thread is working will block until it finishes, but thresholds
+ * default, queries made while the background thread is working will block until it finishes, but thresholds
  * can be set for a number of days or a distance, any query made while a change falls under that threshold
  * will use the partially updated data.
  *
@@ -213,12 +206,11 @@ public class FactionBorderTracker {
      * @see #setDayThreshold(int)
      * @see #setDistanceThreshold(double)
      */
-
-    @Nullable public synchronized FactionBorders getBorders(Faction f) {
+    public synchronized @Nullable FactionBorders getBorders(Faction f) {
         while (invalid) {
             try {
                 wait();
-            } catch (InterruptedException ex) {
+            } catch (Exception ignored) {
                 Thread.currentThread().interrupt();
             }
         }
@@ -241,7 +233,7 @@ public class FactionBorderTracker {
      * @see #setDayThreshold(int)
      * @see #setDistanceThreshold(double)
      */
-    @Nullable public synchronized FactionBorders getBorders(String fKey) {
+    public synchronized @Nullable FactionBorders getBorders(String fKey) {
         while (invalid) {
             try {
                 wait();
@@ -250,10 +242,7 @@ public class FactionBorderTracker {
             }
         }
         Faction f = Factions.getInstance().getFaction(fKey);
-        if (null != f) {
-            return borders.get(f);
-        }
-        return null;
+        return (f == null) ? null : borders.get(f);
     }
 
     /**
@@ -279,15 +268,13 @@ public class FactionBorderTracker {
         while (invalid) {
             try {
                 wait();
-            } catch (InterruptedException ex) {
+            } catch (Exception ignored) {
                 Thread.currentThread().interrupt();
             }
         }
-        if (borderSystems.containsKey(self)
-                && borderSystems.get(self).containsKey(other)) {
-            return borderSystems.get(self).get(other);
-        }
-        return Collections.emptyList();
+
+        return (borderSystems.containsKey(self) && borderSystems.get(self).containsKey(other))
+                ? borderSystems.get(self).get(other) : Collections.emptyList();
     }
 
     /**
@@ -468,7 +455,7 @@ public class FactionBorderTracker {
             }
             lastUpdate = now;
         } catch (Exception ex) {
-            MekHQ.getLogger().error(getClass(), "recalculate()", ex.getMessage());
+            LogManager.getLogger().error("", ex);
         } finally {
             invalid = false;
             notify();

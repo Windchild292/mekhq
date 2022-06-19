@@ -1,10 +1,11 @@
 Version:1.0
 Enforcer III
 ENF-6Ma
+mul id:983
 
 Config:Biped
 TechBase:Inner Sphere
-Era:3076
+Era:3065
 Source:Civil War
 Rules Level:2
 

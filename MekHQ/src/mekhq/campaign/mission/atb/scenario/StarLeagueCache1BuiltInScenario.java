@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 The Megamek Team. All rights reserved.
+ * Copyright (c) 2019-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,16 +10,14 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.mission.atb.scenario;
 
-import megamek.client.generator.RandomSkillsGenerator;
 import megamek.client.generator.RandomUnitGenerator;
 import megamek.common.Board;
 import megamek.common.Compute;
@@ -27,8 +25,9 @@ import megamek.common.Entity;
 import megamek.common.EntityWeightClass;
 import megamek.common.MechSummary;
 import megamek.common.UnitType;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.unitMarket.AtBMonthlyUnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBDynamicScenarioFactory;
 import mekhq.campaign.mission.AtBScenario;
@@ -38,14 +37,14 @@ import mekhq.campaign.mission.Loot;
 import mekhq.campaign.mission.ScenarioObjective;
 import mekhq.campaign.mission.atb.AtBScenarioEnabled;
 import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.universe.Faction;
+import mekhq.campaign.universe.Factions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @AtBScenarioEnabled
 public class StarLeagueCache1BuiltInScenario extends AtBScenario {
-    private static final long serialVersionUID = 1994382390878571793L;
-
     private static String TECH_FORCE_ID = "Tech";
 
     @Override
@@ -104,18 +103,18 @@ public class StarLeagueCache1BuiltInScenario extends AtBScenario {
         /* Only has enemy if SL 'Mech is not primitive */
         for (int weight = EntityWeightClass.WEIGHT_LIGHT; weight <= EntityWeightClass.WEIGHT_ASSAULT; weight++) {
             if (roll > 1) {
-                enemyEntities = new ArrayList<Entity>();
+                enemyEntities = new ArrayList<>();
                 for (int i = 0; i < 3; i++) {
-                    enemyEntities
-                            .add(getEntity(getContract(campaign).getEnemyCode(), getContract(campaign).getEnemySkill(),
-                                    getContract(campaign).getEnemyQuality(), UnitType.MEK, weight, campaign));
+                    enemyEntities.add(getEntity(getContract(campaign).getEnemyCode(),
+                            getContract(campaign).getEnemySkill(),
+                            getContract(campaign).getEnemyQuality(), UnitType.MEK, weight, campaign));
                 }
             }
 
             getSpecMissionEnemies().add(enemyEntities);
         }
 
-        addBotForce(getEnemyBotForce(getContract(campaign), enemyStart, getSpecMissionEnemies().get(0)));
+        addBotForce(getEnemyBotForce(getContract(campaign), enemyStart, getSpecMissionEnemies().get(0)), campaign);
 
         List<Entity> otherForce = new ArrayList<>();
         MechSummary ms = null;
@@ -123,25 +122,27 @@ public class StarLeagueCache1BuiltInScenario extends AtBScenario {
         if (roll == 1) {
             RandomUnitGenerator.getInstance().setChosenRAT("CivilianUnits_PrimMech");
             ArrayList<MechSummary> msl = RandomUnitGenerator.getInstance().generate(1);
-            if (msl.size() > 0) {
+            if (!msl.isEmpty()) {
                 ms = msl.get(0);
             }
         } else {
-            ms = campaign.getUnitGenerator().generate("SL", UnitType.MEK, UnitMarket.getRandomMechWeight(), 2750,
+            // TODO : AtB Star League RAT Roll Year Option
+            final Faction faction = Factions.getInstance().getFaction("SL");
+            ms = campaign.getUnitGenerator().generate(faction.getShortName(), UnitType.MEK,
+                    AtBMonthlyUnitMarket.getRandomWeight(campaign, UnitType.MEK, faction), 2750,
                     (roll == 6) ? IUnitRating.DRAGOON_A : IUnitRating.DRAGOON_D);
         }
         Entity en = (ms == null) ? null
                 : AtBDynamicScenarioFactory.createEntityWithCrew(campaign.getFactionCode(),
-                        RandomSkillsGenerator.L_GREEN, campaign, ms);
+                        SkillLevel.GREEN, campaign, ms);
         otherForce.add(en);
 
-        // TODO: During SW offer a choice between an employer exchange or a
-        // contract breach
+        // TODO: During SW offer a choice between an employer exchange or a contract breach
         Loot loot = new Loot();
         loot.setName(defaultResourceBundle.getString("battleDetails.starLeagueCache.Mek"));
         loot.addUnit(en);
         getLoot().add(loot);
-        addBotForce(new BotForce(TECH_FORCE_ID, 1, getStart(), otherForce));
+        addBotForce(new BotForce(TECH_FORCE_ID, 1, getStart(), otherForce), campaign);
     }
 
     @Override

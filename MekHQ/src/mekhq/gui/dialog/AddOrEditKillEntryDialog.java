@@ -1,7 +1,7 @@
 /*
  * NewKillDialog.java
  *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
@@ -21,26 +21,26 @@
  */
 package mekhq.gui.dialog;
 
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
+import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
+import mekhq.campaign.Kill;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-import megamek.common.util.EncodeControl;
-import mekhq.MekHQ;
-import mekhq.campaign.Kill;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
-
-import javax.swing.*;
-
 /**
- * @author  Taharqa
+ * @author Taharqa
  */
-public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
-    private static final long serialVersionUID = -8038099101234445018L;
+public class AddOrEditKillEntryDialog extends JDialog {
     private static final int ADD_OPERATION = 1;
     private static final int EDIT_OPERATION = 2;
 
@@ -68,10 +68,8 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
     private AddOrEditKillEntryDialog(JFrame parent, boolean modal, int operationType, Kill kill) {
         super(parent, modal);
 
-        assert kill != null;
-
         this.frame = parent;
-        this.kill = kill;
+        this.kill = Objects.requireNonNull(kill);
         this.date = this.kill.getDate();
         this.operationType = operationType;
         initComponents();
@@ -94,9 +92,10 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
         btnClose = new JButton();
         btnDate = new JButton();
 
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.AddOrEditKillEntryDialog", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.AddOrEditKillEntryDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Form"); // NOI18N
+        setName("Form");
         if (this.operationType == ADD_OPERATION) {
             setTitle(resourceMap.getString("dialogAdd.title"));
         } else {
@@ -146,7 +145,7 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new Insets(5, 5, 5, 5);
         getContentPane().add(txtKiller, gridBagConstraints);
 
-        btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(date));
+        btnDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(date));
         btnDate.setName("btnDate");
         btnDate.addActionListener(evt -> changeDate());
         gridBagConstraints = new GridBagConstraints();
@@ -182,11 +181,15 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(AddOrEditKillEntryDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(AddOrEditKillEntryDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void btnOKActionPerformed(ActionEvent evt) {
@@ -205,7 +208,7 @@ public class AddOrEditKillEntryDialog extends javax.swing.JDialog {
         DateChooser dc = new DateChooser(frame, date);
         if (dc.showDateChooser() == DateChooser.OK_OPTION) {
             date = dc.getDate();
-            btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(date));
+            btnDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(date));
         }
     }
 }

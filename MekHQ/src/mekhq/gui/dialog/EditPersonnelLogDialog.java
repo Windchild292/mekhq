@@ -1,7 +1,7 @@
 /*
  * EditPersonnelLogDialog.java
  *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,36 +20,36 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.util.ResourceBundle;
-
-import javax.swing.*;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.gui.control.EditPersonnelLogControl;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Objects;
+import java.util.ResourceBundle;
 
 /**
- * @author  Taharqa
+ * @author Taharqa
  */
-public class EditPersonnelLogDialog extends javax.swing.JDialog {
-	private static final long serialVersionUID = -8038099101234445018L;
+public class EditPersonnelLogDialog extends JDialog {
     private JFrame frame;
     private Campaign campaign;
     private Person person;
 
     private EditPersonnelLogControl editPersonnelLogControl;
-    private javax.swing.JButton btnOK;
+    private JButton btnOK;
 
     /** Creates new form EditPersonnelLogDialog */
     public EditPersonnelLogDialog(JFrame parent, boolean modal, Campaign c, Person p) {
         super(parent, modal);
-        assert campaign != null;
-        assert person != null;
+        Objects.requireNonNull(c);
+        Objects.requireNonNull(p);
 
         this.frame = parent;
         campaign = c;
@@ -61,29 +61,34 @@ public class EditPersonnelLogDialog extends javax.swing.JDialog {
     }
 
     private void initComponents() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.EditPersonnelLogDialog", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.EditPersonnelLogDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setName(resourceMap.getString("dialog.name")); // NOI18N
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setName(resourceMap.getString("dialog.name"));
         setTitle(resourceMap.getString("dialog.title") + " " + person.getFullName());
-        getContentPane().setLayout(new java.awt.BorderLayout());
+        getContentPane().setLayout(new BorderLayout());
 
         editPersonnelLogControl = new EditPersonnelLogControl(frame, campaign, person);
         getContentPane().add(editPersonnelLogControl, BorderLayout.CENTER);
 
         btnOK = new JButton();
-        btnOK.setText(resourceMap.getString("btnOK.text")); // NOI18N
-        btnOK.setName("btnOK"); // NOI18N
+        btnOK.setText(resourceMap.getString("btnOK.text"));
+        btnOK.setName("btnOK");
         btnOK.addActionListener(x -> this.setVisible(false));
         getContentPane().add(btnOK, BorderLayout.PAGE_END);
 
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(EditPersonnelLogDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(EditPersonnelLogDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 }

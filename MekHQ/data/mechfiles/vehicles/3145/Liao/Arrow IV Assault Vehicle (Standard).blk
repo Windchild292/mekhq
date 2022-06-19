@@ -1,9 +1,9 @@
 #building block data file
 <BlockVersion>
-1
+1.1
 </BlockVersion>
 
-# Write the version number just in case...
+##Write the version number just in case...
 <Version>
 MAM0
 </Version>
@@ -20,9 +20,17 @@ Arrow IV Assault Vehicle
 (Standard)
 </Model>
 
+<mul id:>
+6446
+</mul id:>
+
 <year>
 3089
 </year>
+
+<originalBuildYear>
+3089
+</originalBuildYear>
 
 <type>
 IS Level 3
@@ -31,6 +39,9 @@ IS Level 3
 <motion_type>
 Tracked
 </motion_type>
+
+<transporters>
+</transporters>
 
 <cruiseMP>
 3
@@ -53,8 +64,8 @@ Tracked
 44
 44
 50
-32
 52
+32
 </armor>
 
 <Body Equipment>
@@ -86,8 +97,8 @@ ISArrowIV
 </Rear Turret Equipment>
 
 <Front Turret Equipment>
-ISMediumVariableSpeedLaser
-ISMediumVariableSpeedLaser
+ISMediumVSPLaser
+ISMediumVSPLaser
 </Front Turret Equipment>
 
 <source>
@@ -97,3 +108,4 @@ TRO 3145 Capellan Confederation - Early Republic
 <tonnage>
 80.0
 </tonnage>
+

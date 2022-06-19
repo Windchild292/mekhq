@@ -53,9 +53,15 @@ public class FactionDisplay {
 
     public static List<FactionDisplay> getSortedValidFactionDisplays(
             final Collection<Faction> factions, final LocalDate today) {
+        return getSortedFactionDisplays(factions.stream()
+                .filter(faction -> faction.validIn(today))
+                .collect(Collectors.toList()), today);
+    }
+
+    public static List<FactionDisplay> getSortedFactionDisplays(
+            final Collection<Faction> factions, final LocalDate today) {
         final NaturalOrderComparator naturalOrderComparator = new NaturalOrderComparator();
         return factions.stream()
-                .filter(faction -> faction.validIn(today))
                 .map(faction -> new FactionDisplay(faction, today))
                 .sorted((a, b) -> naturalOrderComparator.compare(a.toString(), b.toString()))
                 .collect(Collectors.toList());

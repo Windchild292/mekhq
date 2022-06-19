@@ -18,8 +18,7 @@
  */
 package mekhq.campaign.log;
 
-import mekhq.MekHqXmlSerializable;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.personnel.Person;
 
 import java.io.PrintWriter;
@@ -27,9 +26,9 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
-public class LogEntry implements Cloneable, MekHqXmlSerializable {
+public class LogEntry implements Cloneable {
     private LocalDate date;
     private String desc; // non-null
     private LogEntryType type;
@@ -70,26 +69,25 @@ public class LogEntry implements Cloneable, MekHqXmlSerializable {
         this.type = type;
     }
 
-    @Override
-    public void writeToXml(PrintWriter pw, int indent) {
+    public void writeToXML(PrintWriter pw, int indent) {
         StringBuilder sb = new StringBuilder();
-        sb.append(MekHqXmlUtil.indentStr(indent)).append("<logEntry>");
+        sb.append(MHQXMLUtility.indentStr(indent)).append("<logEntry>");
         if (date != null) {
-            sb.append("<date>").append(MekHqXmlUtil.saveFormattedDate(date)).append("</date>");
+            sb.append("<date>").append(MHQXMLUtility.saveFormattedDate(date)).append("</date>");
         }
-        sb.append("<desc>").append(MekHqXmlUtil.escape(desc)).append("</desc>");
+        sb.append("<desc>").append(MHQXMLUtility.escape(desc)).append("</desc>");
         if (type != null) {
-            sb.append("<type>").append(MekHqXmlUtil.escape(type.toString())).append("</type>");
+            sb.append("<type>").append(MHQXMLUtility.escape(type.toString())).append("</type>");
         }
         sb.append("</logEntry>");
-        pw.println(sb.toString());
+        pw.println(sb);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (null != date) {
-            sb.append("[").append(date.toString()).append("] ");
+            sb.append("[").append(date).append("] ");
         }
         sb.append(desc);
         if (null != type) {

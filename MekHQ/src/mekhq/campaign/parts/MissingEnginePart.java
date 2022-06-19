@@ -1,7 +1,7 @@
 /*
  * MissingMekEngine.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,30 +20,21 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import megamek.common.verifier.TestEntity;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.enums.PartRepairType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Aero;
-import megamek.common.CriticalSlot;
-import megamek.common.Engine;
-import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
-import megamek.common.Mech;
-import megamek.common.Protomech;
-import megamek.common.Tank;
-import megamek.common.TechAdvancement;
-import megamek.common.verifier.TestEntity;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
+import java.io.PrintWriter;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissingEnginePart extends MissingPart {
-    private static final long serialVersionUID = -6961398614705924172L;
     protected Engine engine;
     protected boolean forHover;
 
@@ -111,27 +102,27 @@ public class MissingEnginePart extends MissingPart {
             weight *= 1.5f;
         }
         double toReturn = TestEntity.ceilMaxHalf(weight, TestEntity.Ceil.HALFTON);
-        if(forHover) {
+        if (forHover) {
             return Math.max(TestEntity.ceilMaxHalf(getUnitTonnage()/5.0, TestEntity.Ceil.HALFTON), toReturn);
         }
         return toReturn;
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
         // The engine is a MM object...
         // And doesn't support XML serialization...
         // But it's defined by 3 ints. So we'll save those here.
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<engineType>"
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<engineType>"
                 + engine.getEngineType() + "</engineType>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<engineRating>"
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<engineRating>"
                 + engine.getRating() + "</engineRating>");
-         pw1.println(MekHqXmlUtil.indentStr(indent+1)
+         pw1.println(MHQXMLUtility.indentStr(indent+1)
                  +"<engineFlags>"
                  +engine.getFlags()
                  +"</engineFlags>");
-         pw1.println(MekHqXmlUtil.indentStr(indent+1)
+         pw1.println(MHQXMLUtility.indentStr(indent+1)
                     +"<forHover>"
                     +forHover
                     +"</forHover>");
@@ -145,15 +136,19 @@ public class MissingEnginePart extends MissingPart {
         int engineRating = -1;
         int engineFlags = 0;
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("engineType")) {
-                engineType = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("engineRating")) {
-                engineRating = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("engineFlags")) {
-                engineFlags = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("engineType")) {
+                    engineType = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("engineRating")) {
+                    engineRating = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("engineFlags")) {
+                    engineFlags = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 
@@ -164,14 +159,14 @@ public class MissingEnginePart extends MissingPart {
     @Override
     public boolean isAcceptableReplacement(Part part, boolean refit) {
         int year = campaign.getGameYear();
-        if(part instanceof EnginePart) {
-            Engine eng = ((EnginePart)part).getEngine();
+        if (part instanceof EnginePart) {
+            Engine eng = ((EnginePart) part).getEngine();
             if (null != eng) {
-                return getEngine().getEngineType() == eng.getEngineType()
-                        && getEngine().getRating() == eng.getRating()
-                        && getEngine().getTechType(year) == eng.getTechType(year)
-                        && getUnitTonnage() == ((EnginePart)part).getUnitTonnage()
-                        && getTonnage() == ((EnginePart)part).getTonnage();
+                return (getEngine().getEngineType() == eng.getEngineType())
+                        && (getEngine().getRating() == eng.getRating())
+                        && (getEngine().getTechType(year) == eng.getTechType(year))
+                        && (getUnitTonnage() == part.getUnitTonnage())
+                        && (getTonnage() == part.getTonnage());
             }
         }
         return false;
@@ -179,7 +174,7 @@ public class MissingEnginePart extends MissingPart {
 
     public void fixTankFlag(boolean hover) {
         int flags = engine.getFlags();
-        if(!engine.hasFlag(Engine.TANK_ENGINE)) {
+        if (!engine.hasFlag(Engine.TANK_ENGINE)) {
             flags |= Engine.TANK_ENGINE;
         }
         engine = new Engine(engine.getRating(), engine.getEngineType(), flags);
@@ -189,7 +184,7 @@ public class MissingEnginePart extends MissingPart {
 
     public void fixClanFlag() {
         int flags = engine.getFlags();
-        if(!engine.hasFlag(Engine.CLAN_ENGINE)) {
+        if (!engine.hasFlag(Engine.CLAN_ENGINE)) {
             flags |= Engine.CLAN_ENGINE;
         }
         engine = new Engine(engine.getRating(), engine.getEngineType(), flags);

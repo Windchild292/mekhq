@@ -1,7 +1,7 @@
 /*
  * RefitNameDialog.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,25 +20,24 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.*;
-import java.util.ResourceBundle;
-
-import javax.swing.*;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.MechSummaryCache;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.parts.Refit;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ResourceBundle;
 
 /**
- * @author  Taharqa
+ * @author Taharqa
  */
 public class RefitNameDialog extends JDialog {
-	private static final long serialVersionUID = -8038099101234445018L;
     @SuppressWarnings("unused") // FIXME
-	private Frame frame;
+    private Frame frame;
     private Refit refit;
     private boolean cancelled;
 
@@ -61,7 +60,7 @@ public class RefitNameDialog extends JDialog {
     }
 
     private void initComponents() {
-    	 java.awt.GridBagConstraints gridBagConstraints;
+         java.awt.GridBagConstraints gridBagConstraints;
 
         txtChassis = new JTextField();
         lblChassis = new JLabel();
@@ -70,7 +69,8 @@ public class RefitNameDialog extends JDialog {
         btnOK = new JButton();
         btnCancel = new JButton();
 
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.RefitNameDialog", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.RefitNameDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form");
         setTitle(resourceMap.getString("Form.title"));
@@ -89,8 +89,8 @@ public class RefitNameDialog extends JDialog {
         txtChassis.setMinimumSize(new Dimension(150, 28));
         //only allow chassis renaming for conventional infantry
         if (!refit.getNewEntity().isConventionalInfantry()) {
-        	txtChassis.setEditable(false);
-        	txtChassis.setEnabled(false);
+            txtChassis.setEditable(false);
+            txtChassis.setEnabled(false);
         }
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -102,7 +102,7 @@ public class RefitNameDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(txtChassis, gridBagConstraints);
 
-        lblModel.setText(resourceMap.getString("lblModel.text")); // NOI18N
+        lblModel.setText(resourceMap.getString("lblModel.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -123,13 +123,9 @@ public class RefitNameDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(txtModel, gridBagConstraints);
 
-        btnOK.setText(resourceMap.getString("btnOK.text")); // NOI18N
-        btnOK.setName("btnOK"); // NOI18N
-        btnOK.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnOKActionPerformed(evt);
-            }
-        });
+        btnOK.setText(resourceMap.getString("btnOK.text"));
+        btnOK.setName("btnOK");
+        btnOK.addActionListener(this::btnOKActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -138,13 +134,9 @@ public class RefitNameDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(btnOK, gridBagConstraints);
 
-        btnCancel.setText(resourceMap.getString("btnCancel.text")); // NOI18N
-        btnCancel.setName("btnClose"); // NOI18N
-        btnCancel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnCancel.setText(resourceMap.getString("btnCancel.text"));
+        btnCancel.setName("btnClose");
+        btnCancel.addActionListener(this::btnCloseActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -156,40 +148,44 @@ public class RefitNameDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(RefitNameDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(RefitNameDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
-    private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHireActionPerformed
-    	String chassis = txtChassis.getText().trim();
-    	String model = txtModel.getText().trim();
-    	if(chassis.isEmpty()) {
-    		chassis = refit.getOriginalEntity().getChassis();
-    	}
-    	if(model.isEmpty()) {
-    		model = refit.getOriginalEntity().getModel() + " Mk II";
-    	}
-    	if(null != MechSummaryCache.getInstance().getMech(chassis + " " + model)) {
-    		JOptionPane.showMessageDialog(null,
-					"There is already a unit in the database with this name.\nPlease select a different name.",
-					"Name already in use",
-					JOptionPane.ERROR_MESSAGE);
-    		return;
-    	}
-    	refit.getNewEntity().setChassis(chassis);
-    	refit.getNewEntity().setModel(model);
-    	this.setVisible(false);
+    private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {
+        String chassis = txtChassis.getText().trim();
+        String model = txtModel.getText().trim();
+        if (chassis.isEmpty()) {
+            chassis = refit.getOriginalEntity().getChassis();
+        }
+        if (model.isEmpty()) {
+            model = refit.getOriginalEntity().getModel() + " Mk II";
+        }
+        if (null != MechSummaryCache.getInstance().getMech(chassis + " " + model)) {
+            JOptionPane.showMessageDialog(null,
+                    "There is already a unit in the database with this name.\nPlease select a different name.",
+                    "Name already in use",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        refit.getNewEntity().setChassis(chassis);
+        refit.getNewEntity().setModel(model);
+        this.setVisible(false);
     }
 
-    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
-    	cancelled = true;
-    	this.setVisible(false);
+    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {
+        cancelled = true;
+        this.setVisible(false);
     }
 
     public boolean wasCancelled() {
-    	return cancelled;
+        return cancelled;
     }
 }

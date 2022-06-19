@@ -20,8 +20,12 @@ Aesir Medium AA Vehicle
 (HAG)
 </Model>
 
+<mul id:>
+6250
+</mul id:>
+
 <year>
-3104
+3142
 </year>
 
 <type>

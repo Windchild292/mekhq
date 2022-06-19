@@ -17,8 +17,12 @@ Thunderbird Battle Armor
 </Name>
 
 <Model>
-(DCMS) [Pulse Laser]
+(DCMS)(Pulse Laser) 
 </Model>
+
+<mul id:>
+3230
+</mul id:>
 
 <year>
 3086

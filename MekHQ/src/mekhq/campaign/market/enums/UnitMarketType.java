@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,6 +20,7 @@ package mekhq.campaign.market.enums;
 
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ResourceBundle;
 
@@ -34,18 +35,24 @@ public enum UnitMarketType {
 
     //region Variable Declarations
     private final String name;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market",
-            new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
-    UnitMarketType(String name) {
+    UnitMarketType(final String name) {
+        final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Market",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         this.name = resources.getString(name);
     }
     //endregion Constructors
 
+    //region Boolean Comparison Methods
+    public boolean isBlackMarket() {
+        return this == BLACK_MARKET;
+    }
+    //endregion Boolean Comparison Methods
+
     //region File IO
-    public static UnitMarketType parseFromString(String text) {
+    public static UnitMarketType parseFromString(final String text) {
         try {
             return valueOf(text);
         } catch (Exception ignored) {
@@ -70,7 +77,7 @@ public enum UnitMarketType {
 
         }
 
-        MekHQ.getLogger().error("Failed to parse " + text + " into a UnitMarketType");
+        LogManager.getLogger().error("Failed to parse " + text + " into a UnitMarketType");
 
         return OPEN;
     }

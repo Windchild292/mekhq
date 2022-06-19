@@ -1,7 +1,7 @@
 /*
  * LootDialog.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,37 +12,35 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.gui.dialog;
 
-import java.util.ArrayList;
-
-import javax.swing.*;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.UnitLoadingDialog;
 import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.common.Entity;
 import megamek.common.MechSummaryCache;
+import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.mission.Loot;
 import mekhq.campaign.parts.Part;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.util.ArrayList;
 
 /**
- *
- * @author  Taharqa
+ * @author Taharqa
  */
-public class LootDialog extends javax.swing.JDialog {
-    private static final long serialVersionUID = -8038099101234445018L;
+public class LootDialog extends JDialog {
     private JFrame frame;
     private Loot loot;
     private boolean cancelled;
@@ -96,7 +94,6 @@ public class LootDialog extends javax.swing.JDialog {
         listUnits = new JList<>(new DefaultListModel<>());
         listParts = new JList<>(new DefaultListModel<>());
 
-        //ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.AddOrEditKillEntryDialog", new EncodeControl());
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Potential Rewards");
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -252,18 +249,19 @@ public class LootDialog extends javax.swing.JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(LootDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(LootDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
-    public Loot getLoot() {
-        if(cancelled) {
-            return null;
-        }
-        return loot;
+    public @Nullable Loot getLoot() {
+        return cancelled ? null : loot;
     }
 
     private void addUnit() {
@@ -284,7 +282,7 @@ public class LootDialog extends javax.swing.JDialog {
 
     private void removeUnit() {
         int row = listUnits.getSelectedIndex();
-        if(-1 != row) {
+        if (-1 != row) {
             units.remove(row);
         }
         refreshUnitList();
@@ -294,7 +292,7 @@ public class LootDialog extends javax.swing.JDialog {
         PartsStoreDialog psd = new PartsStoreDialog(frame, true, null, campaign, false);
         psd.setVisible(true);
         Part p = psd.getPart();
-        if(null != p) {
+        if (null != p) {
             parts.add(p);
         }
         refreshPartList();
@@ -302,7 +300,7 @@ public class LootDialog extends javax.swing.JDialog {
 
     private void removePart() {
         int row = listParts.getSelectedIndex();
-        if(-1 != row) {
+        if (-1 != row) {
             parts.remove(row);
         }
         refreshPartList();
@@ -314,10 +312,10 @@ public class LootDialog extends javax.swing.JDialog {
         cancelled = false;
         loot.clearUnits();
         loot.clearParts();
-        for(Entity e : units) {
+        for (Entity e : units) {
             loot.addUnit(e);
         }
-        for(Part p : parts) {
+        for (Part p : parts) {
             loot.addPart(p);
         }
         this.setVisible(false);
@@ -325,18 +323,16 @@ public class LootDialog extends javax.swing.JDialog {
 
     private void refreshUnitList() {
         int selectedRow = listUnits.getSelectedIndex();
-        DefaultListModel<String> model = (DefaultListModel<String>)listUnits.getModel();
+        DefaultListModel<String> model = (DefaultListModel<String>) listUnits.getModel();
         model.removeAllElements();
-        //listUnits.removeAll();
-        for(Entity e : units) {
+        for (Entity e : units) {
             model.addElement(e.getShortName());
-            //listUnits.add(e.getDisplayName());
         }
         scrUnits.setViewportView(listUnits);
-        if(selectedRow != -1) {
-            if(((DefaultListModel<String>)listUnits.getModel()).getSize() > 0) {
-                if(((DefaultListModel<String>)listUnits.getModel()).getSize() == selectedRow) {
-                    listUnits.setSelectedIndex(selectedRow-1);
+        if (selectedRow != -1) {
+            if (((DefaultListModel<String>) listUnits.getModel()).getSize() > 0) {
+                if (((DefaultListModel<String>) listUnits.getModel()).getSize() == selectedRow) {
+                    listUnits.setSelectedIndex(selectedRow - 1);
                 } else {
                     listUnits.setSelectedIndex(selectedRow);
                 }
@@ -346,17 +342,15 @@ public class LootDialog extends javax.swing.JDialog {
 
     private void refreshPartList() {
         int selectedRow = listParts.getSelectedIndex();
-        DefaultListModel<String> model = (DefaultListModel<String>)listParts.getModel();
+        DefaultListModel<String> model = (DefaultListModel<String>) listParts.getModel();
         model.removeAllElements();
-        //listUnits.removeAll();
-        for(Part p : parts) {
+        for (Part p : parts) {
             model.addElement(p.getName());
-            //listParts.add(e.getDisplayName());
         }
         scrParts.setViewportView(listParts);
-        if(selectedRow != -1) {
-            if(((DefaultListModel<String>)listParts.getModel()).getSize() > 0) {
-                if(((DefaultListModel<String>)listParts.getModel()).getSize() == selectedRow) {
+        if (selectedRow != -1) {
+            if (((DefaultListModel<String>) listParts.getModel()).getSize() > 0) {
+                if (((DefaultListModel<String>) listParts.getModel()).getSize() == selectedRow) {
                     listParts.setSelectedIndex(selectedRow-1);
                 } else {
                     listParts.setSelectedIndex(selectedRow);
@@ -374,5 +368,4 @@ public class LootDialog extends javax.swing.JDialog {
         int row = listParts.getSelectedIndex();
         btnRemovePart.setEnabled(row != -1);
     }
-
 }

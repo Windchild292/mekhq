@@ -1,10 +1,11 @@
 Version:1.0
 Blackjack
 BJ-1X
+mul id:376
 
 Config:Biped
 TechBase:Inner Sphere
-Era:2769
+Era:2756
 Source:TRO 3039 - Star League
 Rules Level:1
 

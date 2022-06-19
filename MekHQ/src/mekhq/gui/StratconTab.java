@@ -13,22 +13,6 @@
 */
 package mekhq.gui;
 
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.time.LocalDate;
-import java.util.Objects;
-
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
-
 import megamek.common.event.Subscribe;
 import mekhq.MekHQ;
 import mekhq.campaign.event.MissionCompletedEvent;
@@ -40,13 +24,26 @@ import mekhq.campaign.stratcon.StratconCampaignState;
 import mekhq.campaign.stratcon.StratconContractDefinition.StrategicObjectiveType;
 import mekhq.campaign.stratcon.StratconStrategicObjective;
 import mekhq.campaign.stratcon.StratconTrackState;
+import mekhq.gui.enums.MekHQTabType;
+import mekhq.gui.stratcon.CampaignManagementDialog;
+
+import javax.swing.*;
+import java.awt.Dialog.ModalityType;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * This class contains code relevant to rendering the StratCon ("AtB Campaign State") tab.
  * @author NickAragua
  */
 public class StratconTab extends CampaignGuiTab {
-    private static final long serialVersionUID = 8179754409939346465L;
+    private static final String OBJECTIVE_FAILED = "x";
+    private static final String OBJECTIVE_COMPLETED = "&#10003;";
+    private static final String OBJECTIVE_IN_PROGRESS = "o";
 
     private StratconPanel stratconPanel;
     private JPanel infoPanel;
@@ -57,12 +54,16 @@ public class StratconTab extends CampaignGuiTab {
     private JScrollPane expandedObjectivePanel;
     private boolean objectivesCollapsed = true;
 
+    CampaignManagementDialog cmd;
+
+    //region Constructors
     /**
      * Creates an instance of the StratconTab.
      */
-    StratconTab(CampaignGUI gui, String tabName) {
+    public StratconTab(CampaignGUI gui, String tabName) {
         super(gui, tabName);
     }
+    //endregion Constructors
 
     /**
      * Override of the base initTab method. Populates the tab.
@@ -102,6 +103,8 @@ public class StratconTab extends CampaignGuiTab {
         // TODO: lance role assignment UI here?
 
         initializeInfoPanel();
+        cmd = new CampaignManagementDialog(this);
+
         JScrollPane infoScrollPane = new JScrollPane(infoPanel);
         this.add(infoScrollPane);
 
@@ -118,6 +121,12 @@ public class StratconTab extends CampaignGuiTab {
         infoPanel.add(new JLabel("Current Campaign Status:"));
         infoPanel.add(campaignStatusText);
 
+        JButton btnManageCampaignState = new JButton("Manage SP/VP");
+        btnManageCampaignState.setHorizontalAlignment(SwingConstants.LEFT);
+        btnManageCampaignState.setVerticalAlignment(SwingConstants.TOP);
+        btnManageCampaignState.addActionListener(this::showCampaignStateManagement);
+        infoPanel.add(btnManageCampaignState);
+
         expandedObjectivePanel = new JScrollPane(objectiveStatusText);
         expandedObjectivePanel.setMaximumSize(new Dimension(400, 300));
         expandedObjectivePanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -130,18 +139,13 @@ public class StratconTab extends CampaignGuiTab {
         cboCurrentTrack.setAlignmentX(LEFT_ALIGNMENT);
         cboCurrentTrack.setMaximumSize(new Dimension(320, 20));
         repopulateTrackList();
-        cboCurrentTrack.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                trackSelectionHandler();
-            }
-        });
+        cboCurrentTrack.addItemListener(evt -> trackSelectionHandler());
 
         infoPanel.add(cboCurrentTrack);
 
         // have a default selected
         if (cboCurrentTrack.getItemCount() > 0) {
-        	trackSelectionHandler();
+            trackSelectionHandler();
         }
 
         infoPanel.add(infoPanelText);
@@ -151,11 +155,11 @@ public class StratconTab extends CampaignGuiTab {
      * Worker that handles track selection.
      */
     private void trackSelectionHandler() {
-    	TrackDropdownItem tdi = (TrackDropdownItem) cboCurrentTrack.getSelectedItem();
-    	if (tdi != null) {
-	        stratconPanel.selectTrack(tdi.contract.getStratconCampaignState(), tdi.track);
-	        updateCampaignState();
-    	}
+        TrackDropdownItem tdi = (TrackDropdownItem) cboCurrentTrack.getSelectedItem();
+        if (tdi != null) {
+            stratconPanel.selectTrack(tdi.contract.getStratconCampaignState(), tdi.track);
+            updateCampaignState();
+        }
     }
 
     @Override
@@ -171,15 +175,15 @@ public class StratconTab extends CampaignGuiTab {
     }
 
     @Override
-    public GuiTabType tabType() {
-        return GuiTabType.STRATCON;
+    public MekHQTabType tabType() {
+        return MekHQTabType.STRAT_CON;
     }
 
     /**
      * Worker function that updates the campaign state section of the info panel
      * with such info as current objective status, VP/SP totals, etc.
      */
-    private void updateCampaignState() {
+    public void updateCampaignState() {
         if ((cboCurrentTrack == null) || (campaignStatusText == null)) {
             return;
         }
@@ -304,15 +308,21 @@ public class StratconTab extends CampaignGuiTab {
                 boolean coordsRevealed = track.getRevealedCoords().contains(objective.getObjectiveCoords());
                 boolean displayCoordinateData = objective.getObjectiveCoords() != null;
                 boolean objectiveCompleted = objective.isObjectiveCompleted(track);
+                boolean objectiveFailed = objective.isObjectiveFailed(track);
 
-                if ((objective.getObjectiveType() == StrategicObjectiveType.AlliedFacilityControl) && 
+                // special case: allied facilities can get lost at any point in time
+                if ((objective.getObjectiveType() == StrategicObjectiveType.AlliedFacilityControl) &&
                         !campaignState.allowEarlyVictory()) {
-                    sb.append("<span>");
+                    sb.append("<span color='orange'>").append(OBJECTIVE_IN_PROGRESS);
                 } else if (objectiveCompleted) {
-                    sb.append("<span color='green'>");                    
+                    sb.append("<span color='green'>").append(OBJECTIVE_COMPLETED);
+                } else if (objectiveFailed) {
+                    sb.append("<span color='red'>").append(OBJECTIVE_FAILED);
                 } else {
-                    sb.append("<span color='red'>");
+                    sb.append("<span color='orange'>").append(OBJECTIVE_IN_PROGRESS);
                 }
+
+                sb.append(" ");
 
                 if (!coordsRevealed && displayCoordinateData) {
                     sb.append("Locate and ");
@@ -330,7 +340,7 @@ public class StratconTab extends CampaignGuiTab {
                     case AlliedFacilityControl:
                         sb.append(coordsRevealed ? "M" : "m")
                             .append("aintain control of designated facility");
-                        
+
                         if (!campaignState.allowEarlyVictory()) {
                             sb.append(" until " + campaignState.getContract().getEndingDate());
                         }
@@ -355,13 +365,17 @@ public class StratconTab extends CampaignGuiTab {
 
         // special case text reminding player to complete required scenarios
         if (!campaignState.getContract().getCommandRights().isIndependent()) {
-            if (campaignState.getVictoryPoints() > 0) {
-                sb.append("<span color='green'>");
+            boolean contractIsActive = campaignState.getContract().isActiveOn(getCampaignGui().getCampaign().getLocalDate());
+
+            if (contractIsActive) {
+                sb.append("<span color='orange'>").append(OBJECTIVE_IN_PROGRESS);
+            } else if (campaignState.getVictoryPoints() > 0) {
+                sb.append("<span color='green'>").append(OBJECTIVE_COMPLETED);
             } else {
-                sb.append("<span color='red'>");
+                sb.append("<span color='red'>").append(OBJECTIVE_FAILED);
             }
 
-            sb.append("Maintain victory point count above 0 by completing required scenarios")
+            sb.append(" Maintain victory point count above 0 by completing required scenarios")
                 .append("</span><br/>");
         }
 
@@ -402,6 +416,16 @@ public class StratconTab extends CampaignGuiTab {
             infoPanelText.setText("No active campaign tracks");
             stratconPanel.setVisible(false);
         }
+    }
+
+    private void showCampaignStateManagement(ActionEvent e) {
+        TrackDropdownItem selectedTrack = (TrackDropdownItem) cboCurrentTrack.getSelectedItem();
+        if (selectedTrack == null) {
+            return;
+        }
+        cmd.display(selectedTrack.contract.getStratconCampaignState(), selectedTrack.track, getCampaign().isGM());
+        cmd.setModalityType(ModalityType.APPLICATION_MODAL);
+        cmd.setVisible(true);
     }
 
     @Subscribe

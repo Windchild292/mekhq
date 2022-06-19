@@ -34,6 +34,7 @@ import mekhq.campaign.event.PartChangedEvent;
 import mekhq.campaign.event.PartModeChangedEvent;
 import mekhq.campaign.event.UnitChangedEvent;
 import mekhq.campaign.parts.Part;
+import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.work.IPartWork;
 import mekhq.campaign.work.WorkTime;
@@ -86,24 +87,12 @@ public class TaskTableMouseAdapter extends JPopupMenuAdapter {
                 }
                 Unit u = p.getUnit();
                 gui.getCampaign().addReport(((Part) p).scrap());
+                ((Part) p).setSkillMin(SkillType.EXP_GREEN);
                 if ((u != null) && !u.isRepairable() && !u.hasSalvageableParts()) {
                     gui.getCampaign().removeUnit(u.getId());
                 }
                 MekHQ.triggerEvent(new UnitChangedEvent(u));
             }
-        } else if (command.contains("SWAP_AMMO")) {
-            /*
-             * WorkItem task =
-             * taskModel.getTaskAt(taskTable.getSelectedRow()); if (task
-             * instanceof ReloadItem) { ReloadItem reload = (ReloadItem)
-             * task; Entity en = reload.getUnit().getEntity(); Mounted m =
-             * reload.getMounted(); if (null == m) { return; } AmmoType
-             * curType = (AmmoType) m.getType(); String sel =
-             * command.split(":")[1]; int selType = Integer.parseInt(sel);
-             * AmmoType newType = Utilities.getMunitionsFor(en, curType)
-             * .get(selType); reload.swapAmmo(newType); refreshTaskList();
-             * refreshUnitView(); refreshAcquireList(); }
-             */
         } else if (command.contains("CHANGE_MODE")) {
             String sel = command.split(":")[1];
             for (IPartWork p : parts) {
@@ -112,33 +101,14 @@ public class TaskTableMouseAdapter extends JPopupMenuAdapter {
                     MekHQ.triggerEvent(new PartModeChangedEvent((Part) p));
                 }
             }
-        } else if (command.contains("UNASSIGN")) {
-            /*
-             * for (WorkItem task : tasks) { task.resetTimeSpent();
-             * task.setTeam(null); refreshServicedUnitList();
-             * refreshUnitList(); refreshTaskList(); refreshAcquireList();
-             * refreshCargo(); refreshOverview(); }
-             */
         } else if (command.contains("FIX")) {
-            /*
-             * for (WorkItem task : tasks) { if (task.checkFixable() ==
-             * null) { if ((task instanceof ReplacementItem) &&
-             * !((ReplacementItem) task).hasPart()) { ReplacementItem
-             * replace = (ReplacementItem) task; Part part =
-             * replace.partNeeded(); replace.setPart(part);
-             * getCampaign().getQuartermaster().addPart(part); } task.succeed(); if
-             * (task.isCompleted()) { getCampaign().removeTask(task); } }
-             * refreshServicedUnitList(); refreshUnitList();
-             * refreshTaskList(); refreshAcquireList(); refreshPartsList();
-             * refreshCargo(); refreshOverview(); }
-             */
             if (partWork.checkFixable() == null) {
                 for (IPartWork p : parts) {
                     gui.getCampaign().addReport(String.format("GM Repair, %s %s", p.getPartName(), p.succeed()));
                     if (p.getUnit() != null) {
                         p.getUnit().refreshPodSpace();
                     }
-                    //PodSpace triggers event for each child part
+                    // PodSpace triggers event for each child part
                     if (p instanceof Part) {
                         MekHQ.triggerEvent(new PartChangedEvent((Part) p));
                     }
@@ -146,7 +116,6 @@ public class TaskTableMouseAdapter extends JPopupMenuAdapter {
             }
         }
     }
-
 
     @Override
     protected Optional<JPopupMenu> createPopupMenu() {

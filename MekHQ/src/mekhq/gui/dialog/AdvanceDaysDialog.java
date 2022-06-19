@@ -27,6 +27,7 @@ import mekhq.campaign.event.ReportEvent;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.DailyReportLogPanel;
 import mekhq.gui.baseComponents.AbstractMHQDialog;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -155,6 +156,7 @@ public class AdvanceDaysDialog extends AbstractMHQDialog {
         final JPanel advanceDaysDurationPanel = createDurationPanel();
 
         setDailyLogPanel(new DailyReportLogPanel(getGUI()));
+        getDailyLogPanel().refreshLog(gui.getCommandCenterTab().getPanLog().getLogText());
 
         // Layout the Panel
         final JPanel panel = new JPanel();
@@ -228,7 +230,7 @@ public class AdvanceDaysDialog extends AbstractMHQDialog {
     }
 
     @Override
-    protected void finalizeInitialization() {
+    protected void finalizeInitialization() throws Exception {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(final WindowEvent evt) {
@@ -242,7 +244,7 @@ public class AdvanceDaysDialog extends AbstractMHQDialog {
     }
 
     @Override
-    protected void setCustomPreferences(final PreferencesNode preferences) {
+    protected void setCustomPreferences(final PreferencesNode preferences) throws Exception {
         super.setCustomPreferences(preferences);
         preferences.manage(new JIntNumberSpinnerPreference(getSpnDays()));
     }
@@ -279,7 +281,7 @@ public class AdvanceDaysDialog extends AbstractMHQDialog {
             days = Math.toIntExact(ChronoUnit.DAYS.between(today,
                     LocalDate.ofYearDay(today.getYear() + 10 - (today.getYear() % 10), 1)));
         } else {
-            MekHQ.getLogger().error("Unknown source to start advancing days. Advancing to tomorrow.");
+            LogManager.getLogger().error("Unknown source to start advancing days. Advancing to tomorrow.");
             days = 1;
         }
 
@@ -297,12 +299,12 @@ public class AdvanceDaysDialog extends AbstractMHQDialog {
                     getDailyLogPanel().refreshLog(report);
                     firstDay = false;
                 } else {
-                    reports.add(resources.getString("HR.text"));
+                    reports.add("<hr>");
                     reports.add(report);
                 }
                 getGUI().getCampaign().fetchAndClearNewReports();
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
+            } catch (Exception ex) {
+                LogManager.getLogger().error("", ex);
                 break;
             }
         }

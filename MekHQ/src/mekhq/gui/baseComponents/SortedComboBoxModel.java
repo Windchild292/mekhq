@@ -38,7 +38,6 @@ import java.util.List;
  */
 public class SortedComboBoxModel<E> extends DefaultComboBoxModel<E> {
     //region Variable Declarations
-    private static final long serialVersionUID = 3728158859609424148L;
     private final Comparator<E> comparator;
     //endregion Variable Declarations
 
@@ -200,7 +199,7 @@ public class SortedComboBoxModel<E> extends DefaultComboBoxModel<E> {
 
         if ((selectedElement != null) && elements.contains(selectedElement)) {
             setSelectedItem(selectedElement);
-        } else if (elements.size() > 0) {
+        } else if (!elements.isEmpty()) {
             setSelectedItem(getElementAt(0));
         }
     }

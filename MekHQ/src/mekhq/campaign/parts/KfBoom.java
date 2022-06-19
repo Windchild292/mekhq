@@ -1,7 +1,7 @@
 /*
  * KFBoom.java
  *
- * Copyright (c) 2019 MegaMek Team
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,41 +12,29 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
+import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Compute;
-import megamek.common.Dropship;
-import megamek.common.Entity;
-import megamek.common.SimpleTechLevel;
-import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.SkillType;
+import java.io.PrintWriter;
 
 /**
- *
  * @author MKerensky
  */
 public class KfBoom extends Part {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = -3211076278442082220L;
-
     static final TechAdvancement TA_KFBOOM = new TechAdvancement(TECH_BASE_ALL)
             .setAdvancement(2458, 2470, 2500).setPrototypeFactions(F_TH)
             .setProductionFactions(F_TH).setTechRating(RATING_C)
@@ -67,12 +55,13 @@ public class KfBoom extends Part {
     public KfBoom(int tonnage, Campaign c, int boomType) {
         super(tonnage, c);
         this.boomType = boomType;
-        this.name = "Dropship K-F Boom";
+        this.name = "DropShip K-F Boom";
         if (boomType == Dropship.BOOM_PROTOTYPE) {
             name += " (Prototype)";
         }
     }
 
+    @Override
     public KfBoom clone() {
         KfBoom clone = new KfBoom(getUnitTonnage(), campaign, boomType);
         clone.copyBaseData(this);
@@ -86,13 +75,13 @@ public class KfBoom extends Part {
     @Override
     public void updateConditionFromEntity(boolean checkForDestruction) {
         int priorHits = hits;
-        if(null != unit && unit.getEntity() instanceof Dropship) {
-             if(((Dropship)unit.getEntity()).isKFBoomDamaged()) {
+        if (null != unit && unit.getEntity() instanceof Dropship) {
+             if (((Dropship) unit.getEntity()).isKFBoomDamaged()) {
                  hits = 1;
              } else {
                  hits = 0;
              }
-             if(checkForDestruction
+             if (checkForDestruction
                      && hits > priorHits
                      && Compute.d6(2) < campaign.getCampaignOptions().getDestroyPartTarget()) {
                  remove(false);
@@ -102,7 +91,7 @@ public class KfBoom extends Part {
 
     @Override
     public int getBaseTime() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 3600;
         }
         return 360;
@@ -110,7 +99,7 @@ public class KfBoom extends Part {
 
     @Override
     public int getDifficulty() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 0;
         }
         return -1;
@@ -118,7 +107,7 @@ public class KfBoom extends Part {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit && unit.getEntity() instanceof Dropship) {
+        if (null != unit && unit.getEntity() instanceof Dropship) {
             ((Dropship) unit.getEntity()).setDamageKFBoom(hits > 0);
         }
     }
@@ -126,19 +115,19 @@ public class KfBoom extends Part {
     @Override
     public void fix() {
         super.fix();
-        if(null != unit && unit.getEntity() instanceof Dropship) {
-            ((Dropship)unit.getEntity()).setDamageKFBoom(false);
+        if (null != unit && unit.getEntity() instanceof Dropship) {
+            ((Dropship) unit.getEntity()).setDamageKFBoom(false);
         }
     }
 
     @Override
     public void remove(boolean salvage) {
-        if(null != unit && unit.getEntity() instanceof Dropship) {
-            ((Dropship)unit.getEntity()).setDamageKFBoom(true);
+        if (null != unit && unit.getEntity() instanceof Dropship) {
+            ((Dropship) unit.getEntity()).setDamageKFBoom(true);
             Part spare = campaign.getWarehouse().checkForExistingSparePart(this);
-            if(!salvage) {
+            if (!salvage) {
                 campaign.getWarehouse().removePart(this);
-            } else if(null != spare) {
+            } else if (null != spare) {
                 spare.incrementQuantity();
                 campaign.getWarehouse().removePart(this);
             }
@@ -185,13 +174,13 @@ public class KfBoom extends Part {
     @Override
     public boolean isSamePartType(Part part) {
         return (part instanceof KfBoom)
-                && (boomType == ((KfBoom)part).boomType);
+                && (boomType == ((KfBoom) part).boomType);
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "boomType", boomType);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "boomType", boomType);
         writeToXmlEnd(pw1, indent);
     }
 
@@ -199,10 +188,15 @@ public class KfBoom extends Part {
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
-            if (wn2.getNodeName().equalsIgnoreCase("boomType")) {
-                boomType = Integer.parseInt(wn2.getTextContent());
+
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("boomType")) {
+                    boomType = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

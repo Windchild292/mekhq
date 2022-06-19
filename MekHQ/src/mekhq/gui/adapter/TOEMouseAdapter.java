@@ -24,7 +24,6 @@ import megamek.common.EntityWeightClass;
 import megamek.common.GunEmplacement;
 import megamek.common.UnitType;
 import megamek.common.annotations.Nullable;
-import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
 import mekhq.campaign.event.DeploymentChangedEvent;
 import mekhq.campaign.event.NetworkChangedEvent;
@@ -33,7 +32,6 @@ import mekhq.campaign.event.UnitChangedEvent;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.log.ServiceLogger;
 import mekhq.campaign.mission.AtBDynamicScenario;
-import mekhq.campaign.mission.AtBScenario;
 import mekhq.campaign.mission.Mission;
 import mekhq.campaign.mission.Scenario;
 import mekhq.campaign.personnel.Person;
@@ -43,24 +41,16 @@ import mekhq.campaign.unit.HangarSorter;
 import mekhq.campaign.unit.Unit;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.dialog.ForceTemplateAssignmentDialog;
-import mekhq.gui.dialog.ImageChoiceDialog;
 import mekhq.gui.dialog.MarkdownEditorDialog;
+import mekhq.gui.dialog.iconDialogs.LayeredForceIconDialog;
 import mekhq.gui.utilities.JMenuHelpers;
 import mekhq.gui.utilities.StaticChecks;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.StringTokenizer;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 
 public class TOEMouseAdapter extends JPopupMenuAdapter {
     private final CampaignGUI gui;
@@ -76,8 +66,8 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                 .connect(tree);
     }
 
-    //Named Constants for various commands
-    //Force-related
+    // Named Constants for various commands
+    // Force-related
     private static final String FORCE = "FORCE";
     private static final String ADD_FORCE = "ADD_FORCE";
     private static final String REMOVE_FORCE = "REMOVE_FORCE";
@@ -89,7 +79,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
     private static final String COMMAND_REMOVE_FORCE = "REMOVE_FORCE|FORCE|empty|";
     private static final String COMMAND_UNDEPLOY_FORCE = "UNDEPLOY_FORCE|FORCE|empty|";
 
-    //Unit-related
+    // Unit-related
     private static final String UNIT = "UNIT";
     private static final String ADD_UNIT = "ADD_UNIT";
     private static final String ASSIGN_TO_SHIP = "ASSIGN_TO_SHIP";
@@ -107,17 +97,20 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
     private static final String COMMAND_UNDEPLOY_UNIT = "UNDEPLOY_UNIT|UNIT|empty|";
     private static final String COMMAND_GOTO_UNIT = "GOTO_UNIT|UNIT|empty|";
 
-    //Tech-Related
+    // Tech-Related
     private static final String ADD_LANCE_TECH = "ADD_LANCE_TECH";
     private static final String REMOVE_LANCE_TECH = "REMOVE_LANCE_TECH";
 
     private static final String COMMAND_ADD_LANCE_TECH = "ADD_LANCE_TECH|FORCE|";
     private static final String COMMAND_REMOVE_LANCE_TECH = "REMOVE_LANCE_TECH|FORCE|";
 
-    //Icons and Descriptions
+    // Icons and Descriptions
     private static final String CHANGE_CAMO = "CHANGE_CAMO";
     private static final String CHANGE_DESC = "CHANGE_DESC";
     private static final String CHANGE_ICON = "CHANGE_ICON";
+    private static final String COPY_ICON = "COPY_ICON";
+    private static final String PASTE_ICON = "PASTE_ICON";
+    private static final String SUBFORCES_PASTE_ICON = "SUBFORCES_PASTE_ICON";
     private static final String CHANGE_NAME = "CHANGE_NAME";
     private static final String CHANGE_COMBAT_STATUS = "CHANGE_COMBAT_STATUS";
     private static final String CHANGE_COMBAT_STATUSES = "CHANGE_COMBAT_STATUSES";
@@ -125,11 +118,14 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
     private static final String COMMAND_CHANGE_FORCE_CAMO = "CHANGE_CAMO|FORCE|empty|";
     private static final String COMMAND_CHANGE_FORCE_DESC = "CHANGE_DESC|FORCE|empty|";
     private static final String COMMAND_CHANGE_FORCE_ICON = "CHANGE_ICON|FORCE|empty|";
+    private static final String COMMAND_COPY_FORCE_ICON = "COPY_ICON|FORCE|empty|";
+    private static final String COMMAND_PASTE_FORCE_ICON = "PASTE_ICON|FORCE|empty|";
+    private static final String COMMAND_SUBFORCES_PASTE_FORCE_ICON = "SUBFORCES_PASTE_ICON|FORCE|empty|";
     private static final String COMMAND_CHANGE_FORCE_NAME = "CHANGE_NAME|FORCE|empty|";
     private static final String COMMAND_CHANGE_FORCE_COMBAT_STATUS = "CHANGE_COMBAT_STATUS|FORCE|empty|";
     private static final String COMMAND_CHANGE_FORCE_COMBAT_STATUSES = "CHANGE_COMBAT_STATUSES|FORCE|empty|";
 
-    //C3 Network-related
+    // C3 Network-related
     private static final String C3I = "C3I";
     private static final String NC3 = "NC3";
     private static final String ADD_NETWORK = "ADD_NETWORK";
@@ -150,9 +146,8 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
     private static final String COMMAND_DISBAND_NETWORK = "DISBAND_NETWORK|UNIT|empty|";
     private static final String COMMAND_REMOVE_FROM_NETWORK = "REMOVE_NETWORK|UNIT|empty|";
 
-    //Other
+    // Other
     private static final String GOTO_PILOT = "GOTO_PILOT";
-
     private static final String COMMAND_GOTO_PILOT = "GOTO_PILOT|UNIT|empty|";
 
     // String tokens for dialog boxes used for transport loading
@@ -195,6 +190,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                 }
             }
         }
+
         if (type.equals(TOEMouseAdapter.FORCE)) {
             Vector<Force> newForces = new Vector<>();
             for (Force force : forces) {
@@ -203,6 +199,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     if (otherForce.getId() == force.getId()) {
                         continue;
                     }
+
                     if (otherForce.isAncestorOf(force)) {
                         duplicate = true;
                         break;
@@ -214,16 +211,11 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             }
             forces = newForces;
         }
-        // TODO: eliminate any forces that are descendants of other forces
-        // in the vector
-        Force singleForce = null;
-        if (!forces.isEmpty()) {
-            singleForce = forces.get(0);
-        }
-        Unit singleUnit = null;
-        if (!units.isEmpty()) {
-            singleUnit = units.get(0);
-        }
+
+        // TODO : eliminate any forces that are descendants of other forces in the vector
+        final Force singleForce = forces.isEmpty() ? null : forces.get(0);
+        final Unit singleUnit = units.isEmpty() ? null : units.get(0);
+
         if (command.contains(TOEMouseAdapter.ADD_FORCE)) {
             if (null != singleForce) {
                 String name = (String) JOptionPane.showInputDialog(null,
@@ -235,8 +227,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     MekHQ.triggerEvent(new OrganizationChangedEvent(f));
                 }
             }
-        }
-        if (command.contains(TOEMouseAdapter.ADD_LANCE_TECH)) {
+        } else if (command.contains(TOEMouseAdapter.ADD_LANCE_TECH)) {
             if (null != singleForce) {
                 Person tech = gui.getCampaign().getPerson(UUID.fromString(target));
                 if (null != tech) {
@@ -265,7 +256,8 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                                 }
                             }
                         }
-                        if (!cantTech.equals("")) {
+
+                        if (!cantTech.isBlank()) {
                             cantTech += "You will need to assign a tech manually.";
                             JOptionPane.showMessageDialog(null, cantTech, "Warning", JOptionPane.WARNING_MESSAGE);
                         }
@@ -274,8 +266,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
 
                 MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
             }
-        }
-        if (command.contains(TOEMouseAdapter.ASSIGN_TO_SHIP)) {
+        } else if (command.contains(TOEMouseAdapter.ASSIGN_TO_SHIP)) {
             Unit ship = gui.getCampaign().getUnit(UUID.fromString(target));
             if ((!units.isEmpty()) && (ship != null)) {
                 StringJoiner cantLoad = new StringJoiner(", ");
@@ -300,8 +291,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     gui.getTOETab().refreshForceView();
                 }
             }
-        }
-        if (command.contains(UNASSIGN_FROM_SHIP)) {
+        } else if (command.contains(UNASSIGN_FROM_SHIP)) {
             for (Unit u : units) {
                 if (u.hasTransportShipAssignment()) {
                     Unit oldShip = u.getTransportShipAssignment().getTransportShip();
@@ -347,17 +337,28 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             }
         } else if (command.contains(CHANGE_ICON)) {
             if (singleForce != null) {
-                ImageChoiceDialog pcd = new ImageChoiceDialog(gui.getFrame(), true,
-                        singleForce.getIconCategory(), singleForce.getIconFileName(),
-                        singleForce.getIconMap(), MHQStaticDirectoryManager.getForceIcons(), true);
-                pcd.setVisible(true);
-                if (pcd.isChanged()) {
-                    singleForce.setIconCategory(pcd.getCategory());
-                    singleForce.setIconFileName(pcd.getFileName());
-                    singleForce.setIconMap(pcd.getCategory().equals(Force.ROOT_LAYERED) ? pcd.getIconMap() : new LinkedHashMap<>());
+                final LayeredForceIconDialog layeredForceIconDialog = new LayeredForceIconDialog(
+                        gui.getFrame(), singleForce.getForceIcon());
+                if (layeredForceIconDialog.showDialog().isConfirmed()
+                        && (layeredForceIconDialog.getSelectedItem() != null)) {
+                    singleForce.setForceIcon(layeredForceIconDialog.getSelectedItem());
                     MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
                 }
             }
+        } else if (command.contains(COPY_ICON)) {
+            if (singleForce != null) {
+                gui.setCopyForceIcon(singleForce.getForceIcon().clone());
+            }
+        } else if (command.contains(PASTE_ICON)) {
+            if (gui.getCopyForceIcon() == null) {
+                return;
+            }
+
+            final boolean subforces = command.contains(SUBFORCES_PASTE_ICON);
+            for (final Force force : forces) {
+                force.setForceIcon(gui.getCopyForceIcon().clone(), subforces);
+            }
+            gui.getTOETab().refreshForceView();
         } else if (command.contains(CHANGE_CAMO)) {
             if (singleForce != null) {
                 CamoChooserDialog ccd = new CamoChooserDialog(gui.getFrame(),
@@ -390,20 +391,18 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     MekHQ.triggerEvent(new OrganizationChangedEvent(singleForce));
                 }
             }
-        } else if (command.contains(TOEMouseAdapter.CHANGE_COMBAT_STATUSES)) {
-            if (singleForce != null) {
-                boolean combatForce = !singleForce.isCombatForce();
-                for (Force force : forces) {
-                    force.setCombatForce(combatForce, true);
-                }
-
-                gui.undeployForces(forces);
-            }
         } else if (command.contains(TOEMouseAdapter.CHANGE_COMBAT_STATUS)) {
-            if (singleForce != null) {
-                singleForce.setCombatForce(!singleForce.isCombatForce(), false);
-                gui.undeployForce(singleForce);
+            if (singleForce == null) {
+                return;
             }
+
+            final boolean combatForce = !singleForce.isCombatForce();
+            final boolean subforces = command.contains(TOEMouseAdapter.CHANGE_COMBAT_STATUSES);
+            for (final Force force : forces) {
+                force.setCombatForce(combatForce, subforces);
+            }
+            gui.undeployForces(forces);
+            gui.getTOETab().refreshForceView();
         } else if (command.contains(TOEMouseAdapter.REMOVE_FORCE)) {
             for (Force force : forces) {
                 if (null != force && null != force.getParentForce()) {
@@ -481,9 +480,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                             int optionChoice = JOptionPane.showConfirmDialog(null, TOEMouseAdapter.LOAD_UNITS_DIALOG_TEXT,
                                     TOEMouseAdapter.LOAD_UNITS_DIALOG_TITLE, JOptionPane.YES_NO_OPTION);
                             if (optionChoice == JOptionPane.YES_OPTION) {
-                                for (Unit cargo : unit.getTransportedUnits()) {
-                                    extraUnits.add(cargo);
-                                }
+                                extraUnits.addAll(unit.getTransportedUnits());
                             }
                         }
                         scenario.addUnit(unit.getId());
@@ -641,6 +638,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             for (int i = 1; i < forces.size(); i++) {
                 forceIds.append("|").append(forces.get(i).getId());
             }
+
             if (!multipleSelection) {
                 menuItem = new JMenuItem("Change Name...");
                 menuItem.setActionCommand(TOEMouseAdapter.COMMAND_CHANGE_FORCE_NAME + forceIds);
@@ -686,7 +684,8 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     for (Person tech : techList) {
                         if ((tech.getMaintenanceTimeUsing() == 0) && !tech.isEngineer()) {
                             role = tech.getPrimaryRole().isTech() ? tech.getPrimaryRole() : tech.getSecondaryRole();
-                            String skillLvl = SkillType.getExperienceLevelName(tech.getExperienceLevel(!tech.getPrimaryRole().isTech()));
+                            String skillLvl = SkillType.getExperienceLevelName(
+                                    tech.getExperienceLevel(gui.getCampaign(), !tech.getPrimaryRole().isTech()));
 
                             // We need to add all the non-empty menus to the current menu, then
                             // the current menu must be added to the main menu if the role changes
@@ -888,12 +887,38 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     menu.setEnabled(true);
                 }
                 JMenuHelpers.addMenuIfNonEmpty(popup, menu);
+            }
 
+            menu = new JMenu("Force Icon");
+            if (!multipleSelection) {
                 menuItem = new JMenuItem("Change Force Icon...");
                 menuItem.setActionCommand(COMMAND_CHANGE_FORCE_ICON + forceIds);
                 menuItem.addActionListener(this);
-                popup.add(menuItem);
+                menu.add(menuItem);
 
+                menuItem = new JMenuItem("Copy Force Icon");
+                menuItem.setName("miCopyForceIcon");
+                menuItem.setActionCommand(COMMAND_COPY_FORCE_ICON + forceIds);
+                menuItem.addActionListener(this);
+                menu.add(menuItem);
+            }
+
+            if (gui.getCopyForceIcon() != null) {
+                menuItem = new JMenuItem("Paste Force Icon");
+                menuItem.setName("miPasteForceIcon");
+                menuItem.setActionCommand(COMMAND_PASTE_FORCE_ICON + forceIds);
+                menuItem.addActionListener(this);
+                menu.add(menuItem);
+
+                menuItem = new JMenuItem("Paste Force Icon to Force and Subforces");
+                menuItem.setName("miSubforcesPasteForceIcon");
+                menuItem.setActionCommand(COMMAND_SUBFORCES_PASTE_FORCE_ICON + forceIds);
+                menuItem.addActionListener(this);
+                menu.add(menuItem);
+            }
+            JMenuHelpers.addMenuIfNonEmpty(popup, menu);
+
+            if (!multipleSelection) {
                 menuItem = new JMenuItem("Force Camouflage...");
                 menuItem.setActionCommand(COMMAND_CHANGE_FORCE_CAMO + forceIds);
                 menuItem.addActionListener(this);
@@ -910,16 +935,16 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             menuItem.addActionListener(this);
             popup.add(menuItem);
 
-            if (StaticChecks.areAllForcesUndeployed(forces) && StaticChecks.areAllCombatForces(forces)) {
+            if (StaticChecks.areAllForcesUndeployed(gui.getCampaign(), forces)
+                    && StaticChecks.areAllCombatForces(forces)) {
                 menu = new JMenu("Deploy Force");
 
                 JMenu missionMenu;
-                for (final Mission mission : gui.getCampaign().getActiveMissions()) {
+                for (final Mission mission : gui.getCampaign().getActiveMissions(true)) {
                     missionMenu = new JMenu(mission.getName());
                     for (final Scenario scenario : mission.getCurrentScenarios()) {
-                        if (gui.getCampaign().getCampaignOptions().getUseAtB()
-                                && (scenario instanceof AtBScenario)
-                                && !((AtBScenario) scenario).canDeployForces(forces, gui.getCampaign())) {
+                        if (scenario.isCloaked()
+                                || !scenario.canDeployForces(forces, gui.getCampaign())) {
                             continue;
                         }
                         menuItem = new JMenuItem(scenario.getName());
@@ -958,7 +983,7 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             JMenu sc_trn = new JMenu(TOEMouseAdapter.SC_CARRIERS);
             JMenu singleUnitMenu = new JMenu();
 
-            if (unitsInForces.size() > 0) {
+            if (!unitsInForces.isEmpty()) {
                 Unit unit = unitsInForces.get(0);
                 String unitIds = "" + unit.getId().toString();
                 boolean shipInSelection = false;
@@ -1097,9 +1122,15 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             JMenu availMenu;
             if (StaticChecks.areAllUnitsC3Slaves(units)) {
                 availMenu = new JMenu("Slave to");
-                for (String[] network : gui.getCampaign()
-                        .getAvailableC3MastersForSlaves()) {
-                    int nodesFree = Integer.parseInt(network[1]);
+                for (String[] network : gui.getCampaign().getAvailableC3MastersForSlaves()) {
+                    final int nodesFree;
+                    try {
+                        nodesFree = Integer.parseInt(network[1]);
+                    } catch (Exception e) {
+                        LogManager.getLogger().error("", e);
+                        continue;
+                    }
+
                     if (nodesFree >= units.size()) {
                         menuItem = new JMenuItem(network[2] + ": "
                                 + network[1] + " nodes free");
@@ -1122,9 +1153,15 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                 menuItem.setEnabled(true);
                 networkMenu.add(menuItem);
                 availMenu = new JMenu("Slave to");
-                for (String[] network : gui.getCampaign()
-                        .getAvailableC3MastersForMasters()) {
-                    int nodesFree = Integer.parseInt(network[1]);
+                for (String[] network : gui.getCampaign().getAvailableC3MastersForMasters()) {
+                    final int nodesFree;
+                    try {
+                        nodesFree = Integer.parseInt(network[1]);
+                    } catch (Exception e) {
+                        LogManager.getLogger().error("", e);
+                        continue;
+                    }
+
                     if (nodesFree >= units.size()) {
                         menuItem = new JMenuItem(network[2] + ": "
                                 + network[1] + " nodes free");
@@ -1169,9 +1206,15 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                 }
                 if (StaticChecks.areAllUnitsNotNC3Networked(units)) {
                     availMenu = new JMenu("Add to network");
-                    for (String[] network : gui.getCampaign()
-                            .getAvailableNC3Networks()) {
-                        int nodesFree = Integer.parseInt(network[1]);
+                    for (String[] network : gui.getCampaign().getAvailableNC3Networks()) {
+                        final int nodesFree;
+                        try {
+                            nodesFree = Integer.parseInt(network[1]);
+                        } catch (Exception e) {
+                            LogManager.getLogger().error("", e);
+                            continue;
+                        }
+
                         if (nodesFree >= units.size()) {
                             menuItem = new JMenuItem(network[0] + ": "
                                     + network[1] + " nodes free");
@@ -1216,9 +1259,15 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                 }
                 if (StaticChecks.areAllUnitsNotC3iNetworked(units)) {
                     availMenu = new JMenu("Add to network");
-                    for (String[] network : gui.getCampaign()
-                            .getAvailableC3iNetworks()) {
-                        int nodesFree = Integer.parseInt(network[1]);
+                    for (String[] network : gui.getCampaign().getAvailableC3iNetworks()) {
+                        final int nodesFree;
+                        try {
+                            nodesFree = Integer.parseInt(network[1]);
+                        } catch (Exception e) {
+                            LogManager.getLogger().error("", e);
+                            continue;
+                        }
+
                         if (nodesFree >= units.size()) {
                             menuItem = new JMenuItem(network[0] + ": "
                                     + network[1] + " nodes free");
@@ -1261,15 +1310,14 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
             menuItem.setEnabled(!StaticChecks.areAnyUnitsDeployed(units));
             popup.add(menuItem);
             if (StaticChecks.areAllUnitsAvailable(units)) {
-                //Deploy unit to a scenario - includes submenus for scenario selection
+                // Deploy unit to a scenario - includes submenus for scenario selection
                 menu = new JMenu("Deploy Unit");
                 JMenu missionMenu;
-                for (final Mission mission : gui.getCampaign().getActiveMissions()) {
+                for (final Mission mission : gui.getCampaign().getActiveMissions(true)) {
                     missionMenu = new JMenu(mission.getName());
                     for (final Scenario scenario : mission.getCurrentScenarios()) {
-                        if (gui.getCampaign().getCampaignOptions().getUseAtB()
-                                && (scenario instanceof AtBScenario)
-                                && !((AtBScenario) scenario).canDeployUnits(units, gui.getCampaign())) {
+                        if (scenario.isCloaked() ||
+                                !scenario.canDeployUnits(units, gui.getCampaign())) {
                             continue;
                         }
                         menuItem = new JMenuItem(scenario.getName());
@@ -1281,7 +1329,10 @@ public class TOEMouseAdapter extends JPopupMenuAdapter {
                     if (missionMenu.getMenuComponentCount() > 30) {
                         MenuScroller.setScrollerFor(missionMenu, 30);
                     }
-                    menu.add(missionMenu);
+
+                    if (missionMenu.getItemCount() > 0) {
+                        menu.add(missionMenu);
+                    }
                 }
                 // Scroll bar in case the list is too long for one screen
                 if (menu.getMenuComponentCount() > 0 || menu.getItemCount() > 0) {

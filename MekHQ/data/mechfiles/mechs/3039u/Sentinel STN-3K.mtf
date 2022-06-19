@@ -1,6 +1,7 @@
 Version:1.0
 Sentinel
 STN-3K
+mul id:2857
 
 Config:Biped
 TechBase:Inner Sphere
@@ -78,8 +79,8 @@ IS Ammo AC/5
 -Empty-
 
 Right Torso:
-Small Laser
 SRM 2
+Small Laser
 IS Ammo SRM-2
 -Empty-
 -Empty-

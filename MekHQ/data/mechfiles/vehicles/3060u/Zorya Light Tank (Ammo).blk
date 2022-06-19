@@ -15,6 +15,10 @@ Zorya Light Tank
 <Model>
 (Ammo)
 </Model>
+
+<mul id:>
+3652
+</mul id:>
 <Tonnage>
 35
 </Tonnage>
@@ -44,7 +48,7 @@ CLCASE
 Clan Level 2
 </type>
 <year>
-2841
+2842
 </year>
 <internal_type>
 0

@@ -10,24 +10,18 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.personnel;
 
+import megamek.codeUtilities.MathUtility;
 import mekhq.campaign.personnel.enums.ModifierValue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,20 +41,16 @@ public class Modifier {
     public final String type;
     public final Set<String> tags;
 
-    public static int calcTotalModifier(Collection<Modifier> mods, ModifierValue val) {
-        return calcTotalModifier(mods.stream(), val);
-    }
-
     public static int calcTotalModifier(Stream<Modifier> mods, ModifierValue val) {
         final Map<String, Integer> posMods = new HashMap<>();
         final Map<String, Integer> negMods = new HashMap<>();
         final Collection<Integer> untypedMods = new ArrayList<>();
         long result = 0;
         mods.filter(mod -> (mod.value == val)).forEach(mod -> {
-            if(null != mod.type) {
+            if (null != mod.type) {
                 int posMod = Math.max(0, mod.mod);
                 int negMod = Math.min(0, mod.mod);
-                if(posMods.containsKey(mod.type)) {
+                if (posMods.containsKey(mod.type)) {
                     posMods.put(mod.type, Math.max(posMod, posMods.get(mod.type)));
                     negMods.put(mod.type, Math.min(negMod, posMods.get(mod.type)));
                 } else {
@@ -71,20 +61,17 @@ public class Modifier {
                 untypedMods.add(mod.mod);
             }
         });
-        for(String type : posMods.keySet()) {
+
+        for (String type : posMods.keySet()) {
             result += posMods.get(type);
             result += negMods.get(type);
         }
-        for(Integer mod : untypedMods) {
-            result += mod.intValue();
-        }
-        if(result > Integer.MAX_VALUE) {
-            return Integer.MAX_VALUE;
-        }
-        if(result < Integer.MIN_VALUE) {
-            return Integer.MIN_VALUE;
-        }
-        return (int) result;
+
+        result += untypedMods.stream()
+                .mapToLong(mod -> mod)
+                .sum();
+
+        return (int) MathUtility.clamp(result, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     public Modifier(ModifierValue value, int mod) {

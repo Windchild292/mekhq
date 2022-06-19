@@ -10,16 +10,16 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.parts;
 
 import megamek.common.*;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.enums.PartRepairType;
 import org.w3c.dom.Node;
@@ -28,11 +28,9 @@ import org.w3c.dom.NodeList;
 import java.io.PrintWriter;
 
 /**
- * Place holder for an engine that has been destroyed or removed from a support vehicle
+ * Placeholder for an engine that has been destroyed or removed from a support vehicle
  */
 public class MissingSVEngine extends MissingPart {
-    private static final long serialVersionUID = -1388693773192376347L;
-
     private double engineTonnage;
     private int etype;
     private int techRating;
@@ -119,13 +117,13 @@ public class MissingSVEngine extends MissingPart {
     private static final String NODE_TECH_RATING = "techRating";
     private static final String NODE_FUEL_TYPE = "fuelType";
     @Override
-    public void writeToXml(PrintWriter pw, int indent) {
+    public void writeToXML(PrintWriter pw, int indent) {
         writeToXmlBegin(pw, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_ENGINE_TONNAGE, engineTonnage);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_ETYPE, etype);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_TECH_RATING, ITechnology.getRatingName(techRating));
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_ENGINE_TONNAGE, engineTonnage);
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_ETYPE, etype);
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_TECH_RATING, ITechnology.getRatingName(techRating));
         if (etype == Engine.COMBUSTION_ENGINE) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_FUEL_TYPE, fuelType.name());
+            MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_FUEL_TYPE, fuelType.name());
         }
         writeToXmlEnd(pw, indent);
     }
@@ -180,10 +178,10 @@ public class MissingSVEngine extends MissingPart {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit) {
-            if(unit.getEntity() instanceof Tank) {
+        if (null != unit) {
+            if (unit.getEntity() instanceof Tank) {
                 ((Tank) unit.getEntity()).engineHit();
-            } else if(unit.getEntity() instanceof Aero) {
+            } else if (unit.getEntity() instanceof Aero) {
                 ((Aero) unit.getEntity()).setEngineHits(((Aero) unit.getEntity()).getMaxEngineHits());
             }
         }

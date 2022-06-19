@@ -1,7 +1,7 @@
 /*
  * MissingInfantryMotiveType.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,23 +20,21 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.Entity;
+import megamek.common.TechAdvancement;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.enums.PartRepairType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Entity;
-import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
+import java.io.PrintWriter;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissingInfantryArmorPart extends MissingPart {
-    private static final long serialVersionUID = 330450091994252073L;
-
     private double damageDivisor;
     private boolean encumbering = false;
     private boolean spaceSuit = false;
@@ -106,13 +104,13 @@ public class MissingInfantryArmorPart extends MissingPart {
     @Override
     public boolean isAcceptableReplacement(Part part, boolean refit) {
         return part instanceof InfantryArmorPart
-                && damageDivisor == ((InfantryArmorPart)part).getDamageDivisor()
-                && dest == ((InfantryArmorPart)part).isDest()
-                && encumbering == ((InfantryArmorPart)part).isEncumbering()
-                && sneak_camo == ((InfantryArmorPart)part).isSneakCamo()
-                && sneak_ecm == ((InfantryArmorPart)part).isSneakECM()
-                && sneak_ir == ((InfantryArmorPart)part).isSneakIR()
-                && spaceSuit == ((InfantryArmorPart)part).isSpaceSuit();
+                && damageDivisor == ((InfantryArmorPart) part).getDamageDivisor()
+                && dest == ((InfantryArmorPart) part).isDest()
+                && encumbering == ((InfantryArmorPart) part).isEncumbering()
+                && sneak_camo == ((InfantryArmorPart) part).isSneakCamo()
+                && sneak_ecm == ((InfantryArmorPart) part).isSneakECM()
+                && sneak_ir == ((InfantryArmorPart) part).isSneakIR()
+                && spaceSuit == ((InfantryArmorPart) part).isSpaceSuit();
     }
 
     @Override
@@ -121,33 +119,33 @@ public class MissingInfantryArmorPart extends MissingPart {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<damageDivisor>"
                 +damageDivisor
                 +"</damageDivisor>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<dest>"
                 +dest
                 +"</dest>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<encumbering>"
                 +encumbering
                 +"</encumbering>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<sneak_camo>"
                 +sneak_camo
                 +"</sneak_camo>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<sneak_ecm>"
                 +sneak_ecm
                 +"</sneak_ecm>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<sneak_ir>"
                 +sneak_ir
                 +"</sneak_ir>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<spaceSuit>"
                 +spaceSuit
                 +"</spaceSuit>");
@@ -160,20 +158,24 @@ public class MissingInfantryArmorPart extends MissingPart {
 
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
-            if (wn2.getNodeName().equalsIgnoreCase("damageDivisor")) {
-                damageDivisor = Double.parseDouble(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("dest")) {
-                dest = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("encumbering")) {
-                encumbering = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("sneak_camo")) {
-                sneak_camo = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("sneak_ecm")) {
-                sneak_ecm = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("sneak_ir")) {
-                sneak_ir = Boolean.parseBoolean(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("spaceSuit")) {
-                spaceSuit = Boolean.parseBoolean(wn2.getTextContent().trim());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("damageDivisor")) {
+                    damageDivisor = Double.parseDouble(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("dest")) {
+                    dest = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("encumbering")) {
+                    encumbering = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("sneak_camo")) {
+                    sneak_camo = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("sneak_ecm")) {
+                    sneak_ecm = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("sneak_ir")) {
+                    sneak_ir = Boolean.parseBoolean(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("spaceSuit")) {
+                    spaceSuit = Boolean.parseBoolean(wn2.getTextContent().trim());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

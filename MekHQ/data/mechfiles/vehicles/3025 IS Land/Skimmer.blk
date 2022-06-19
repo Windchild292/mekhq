@@ -15,6 +15,10 @@ Skimmer
 <Model>
 (Standard)
 </Model>
+
+<mul id:>
+5065
+</mul id:>
 <Tonnage>
 5
 </Tonnage>
@@ -37,7 +41,7 @@ ISFlamer
 IS Level 2
 </type>
 <year>
-2300
+2100
 </year>
 <internal_type>
 0

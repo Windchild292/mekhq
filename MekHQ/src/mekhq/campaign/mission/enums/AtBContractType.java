@@ -21,8 +21,11 @@ package mekhq.campaign.mission.enums;
 import megamek.common.Compute;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBScenario;
+import mekhq.campaign.universe.enums.EraFlag;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ResourceBundle;
 
@@ -47,13 +50,13 @@ public enum AtBContractType {
     private final String toolTipText;
     private final int constantLength;
     private final double paymentMultiplier;
-
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Mission", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
     AtBContractType(final String name, final String toolTipText, final int constantLength,
                     final double paymentMultiplier) {
+        final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Mission",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         this.name = resources.getString(name);
         this.toolTipText = resources.getString(toolTipText);
         this.constantLength = constantLength;
@@ -148,7 +151,7 @@ public enum AtBContractType {
             case RECON_RAID:
                 return 1;
             case EXTRACTION_RAID:
-                return 3 + contract.getEnemySkill();
+                return 1 + contract.getEnemySkill().ordinal();
             case OBJECTIVE_RAID:
             case PIRATE_HUNTING:
                 return 3 + Compute.randomInt(3);
@@ -345,8 +348,11 @@ public enum AtBContractType {
         }
     }
 
-    public int generateSpecialMissionType() {
-        final int roll = Compute.randomInt(20) + 1;
+    public int generateSpecialMissionType(final Campaign campaign) {
+        // Our roll is era-based. If it is pre-spaceflight, early spaceflight, or Age of War there
+        // cannot be Star League Caches as the Star League hasn't formed
+        final int roll = Compute.randomInt(campaign.getEra().hasFlag(EraFlag.PRE_SPACEFLIGHT,
+                EraFlag.EARLY_SPACEFLIGHT, EraFlag.AGE_OF_WAR) ? 12 : 20) + 1;
         switch (this) {
             case DIVERSIONARY_RAID:
             case OBJECTIVE_RAID:
@@ -544,7 +550,7 @@ public enum AtBContractType {
 
         }
 
-        MekHQ.getLogger().error("Failed to parse text " + text + " into an AtBContractType, returning ACTIVE.");
+        LogManager.getLogger().error("Failed to parse text " + text + " into an AtBContractType, returning GARRISON_DUTY.");
 
         return GARRISON_DUTY;
     }

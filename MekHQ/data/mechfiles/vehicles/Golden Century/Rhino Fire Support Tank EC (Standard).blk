@@ -20,12 +20,16 @@ Rhino Fire Support Tank EC
 
 </Model>
 
+<mul id:>
+7691
+</mul id:>
+
 <year>
-2818
+2824
 </year>
 
 <originalBuildYear>
-2818
+2824
 </originalBuildYear>
 
 <type>

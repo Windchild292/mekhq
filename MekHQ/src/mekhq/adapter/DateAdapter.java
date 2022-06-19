@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2016-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,20 +18,19 @@
  */
 package mekhq.adapter;
 
-import mekhq.MekHqXmlUtil;
-
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+import mekhq.utilities.MHQXMLUtility;
 
 import java.time.LocalDate;
 
 public class DateAdapter extends XmlAdapter<String, LocalDate> {
     @Override
     public LocalDate unmarshal(final String xml) throws Exception {
-        return MekHqXmlUtil.parseDate(xml);
+        return MHQXMLUtility.parseDate(xml);
     }
 
     @Override
     public String marshal(final LocalDate object) throws Exception {
-        return MekHqXmlUtil.saveFormattedDate(object);
+        return MHQXMLUtility.saveFormattedDate(object);
     }
 }

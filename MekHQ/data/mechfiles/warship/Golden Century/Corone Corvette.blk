@@ -13,12 +13,16 @@ Warship
 </UnitType>
 
 <Name>
-Corone
+Corone Destroyer
 </Name>
 
 <Model>
-Warship
+(2915)
 </Model>
+
+<mul id:>
+4007
+</mul id:>
 
 <year>
 2915

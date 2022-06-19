@@ -1,6 +1,7 @@
 Version:1.1
 Thunderbolt
 TDR-10M (Salazar)
+mul id:3234
 
 Config:Biped
 TechBase:Inner Sphere
@@ -134,3 +135,16 @@ Lower Leg Actuator
 Foot Actuator
 Stealth Armor
 Stealth Armor
+
+manufacturer:Earthwerks Incorporated
+primaryfactory:Keystone,
+systemmanufacturer:CHASSIS:Earthwerks
+systemmode:CHASSIS:TDR
+systemmanufacturer:ENGINE:Magna
+systemmode:ENGINE:260
+systemmanufacturer:ARMOR:Ryerson
+systemmode:ARMOR:150
+systemmanufacturer:COMMUNICATIONS:Neil
+systemmode:COMMUNICATIONS:8000
+systemmanufacturer:TARGETING:RCA
+systemmode:TARGETING:Instatrac Mark X

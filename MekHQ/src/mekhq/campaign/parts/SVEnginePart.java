@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -19,11 +19,12 @@
 package mekhq.campaign.parts;
 
 import megamek.common.*;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.enums.PartRepairType;
 import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -35,8 +36,6 @@ import java.io.PrintWriter;
  * ICEs will also have the same fuel type.
  */
 public class SVEnginePart extends Part {
-    private static final long serialVersionUID = -5207004566629089937L;
-
     private double engineTonnage;
     private int etype;
     private int techRating;
@@ -140,13 +139,13 @@ public class SVEnginePart extends Part {
     private static final String NODE_TECH_RATING = "techRating";
     private static final String NODE_FUEL_TYPE = "fuelType";
     @Override
-    public void writeToXml(PrintWriter pw, int indent) {
+    public void writeToXML(PrintWriter pw, int indent) {
         writeToXmlBegin(pw, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_ENGINE_TONNAGE, engineTonnage);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_ETYPE, etype);
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_TECH_RATING, ITechnology.getRatingName(techRating));
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_ENGINE_TONNAGE, engineTonnage);
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_ETYPE, etype);
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_TECH_RATING, ITechnology.getRatingName(techRating));
         if (etype == Engine.COMBUSTION_ENGINE) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, NODE_FUEL_TYPE, fuelType.name());
+            MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, NODE_FUEL_TYPE, fuelType.name());
         }
         writeToXmlEnd(pw, indent);
     }
@@ -156,24 +155,28 @@ public class SVEnginePart extends Part {
         NodeList nl = node.getChildNodes();
         for (int x = 0; x < nl.getLength(); x++) {
             final Node wn = nl.item(x);
-            switch (wn.getNodeName()) {
-                case NODE_ENGINE_TONNAGE:
-                    engineTonnage = Double.parseDouble(wn.getTextContent());
-                    break;
-                case NODE_ETYPE:
-                    etype = Integer.parseInt(wn.getTextContent());
-                    break;
-                case NODE_TECH_RATING:
-                    for (int i = 0; i < ratingNames.length; i++) {
-                        if (ratingNames[i].equals(wn.getTextContent())) {
-                            techRating = i;
-                            break;
+            try {
+                switch (wn.getNodeName()) {
+                    case NODE_ENGINE_TONNAGE:
+                        engineTonnage = Double.parseDouble(wn.getTextContent());
+                        break;
+                    case NODE_ETYPE:
+                        etype = Integer.parseInt(wn.getTextContent());
+                        break;
+                    case NODE_TECH_RATING:
+                        for (int i = 0; i < ratingNames.length; i++) {
+                            if (ratingNames[i].equals(wn.getTextContent())) {
+                                techRating = i;
+                                break;
+                            }
                         }
-                    }
-                    break;
-                case NODE_FUEL_TYPE:
-                    fuelType = FuelType.valueOf(wn.getTextContent());
-                    break;
+                        break;
+                    case NODE_FUEL_TYPE:
+                        fuelType = FuelType.valueOf(wn.getTextContent());
+                        break;
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

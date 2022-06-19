@@ -1,7 +1,7 @@
 /*
  * Ranks.java
  *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
@@ -21,32 +21,21 @@
  */
 package mekhq.campaign.personnel.ranks;
 
+import megamek.Version;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import mekhq.MHQConstants;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.enums.RankSystemType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Ranks keeps track of all data-file loaded rank systems. It does not include the campaign rank
@@ -109,18 +98,18 @@ public class Ranks {
              PrintWriter pw = new PrintWriter(osw)) {
             // Then save it out to that file.
             pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            pw.println("<rankSystems version=\"" + ResourceBundle.getBundle("mekhq.resources.MekHQ").getString("Application.version") + "\">");
+            pw.println("<rankSystems version=\"" + MHQConstants.VERSION + "\">");
             for (final RankSystem rankSystem : rankSystems) {
                 rankSystem.writeToXML(pw, 1, true);
             }
-            MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw, 0, "rankSystems");
+            MHQXMLUtility.writeSimpleXMLCloseIndentedLine(pw, 0, "rankSystems");
         } catch (Exception e) {
-            MekHQ.getLogger().error(e);
+            LogManager.getLogger().error("", e);
         }
     }
 
     public static void initializeRankSystems() {
-        MekHQ.getLogger().info("Starting Rank Systems XML load...");
+        LogManager.getLogger().info("Starting Rank Systems XML load...");
         setRankSystems(new HashMap<>());
         final RankValidator rankValidator = new RankValidator();
         for (final RankSystemType type : RankSystemType.values()) {
@@ -136,12 +125,12 @@ public class Ranks {
         }
 
         if (!getRankSystems().containsKey(DEFAULT_SYSTEM_CODE)) {
-            MekHQ.getLogger().fatal("Ranks MUST load the " + DEFAULT_SYSTEM_CODE
+            LogManager.getLogger().fatal("Ranks MUST load the " + DEFAULT_SYSTEM_CODE
                     + " system. Initialization failure, shutting MekHQ down.");
             System.exit(-1);
         }
 
-        MekHQ.getLogger().info("Completed Rank System XML Load");
+        LogManager.getLogger().info("Completed Rank System XML Load");
     }
 
     public static void reinitializeRankSystems(final Campaign campaign) {
@@ -162,9 +151,9 @@ public class Ranks {
         final Document xmlDoc;
 
         try (InputStream is = new FileInputStream(file)) {
-            xmlDoc = MekHqXmlUtil.newSafeDocumentBuilder().parse(is);
+            xmlDoc = MHQXMLUtility.newSafeDocumentBuilder().parse(is);
         } catch (Exception e) {
-            MekHQ.getLogger().error(e);
+            LogManager.getLogger().error("", e);
             return new ArrayList<>();
         }
 

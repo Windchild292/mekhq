@@ -17,8 +17,12 @@ Thunderbird Battle Armor
 </Name>
 
 <Model>
-(DCMS) [AP Gauss]
+(DCMS)[AP Gauss]
 </Model>
+
+<mul id:>
+3228
+</mul id:>
 
 <year>
 3086

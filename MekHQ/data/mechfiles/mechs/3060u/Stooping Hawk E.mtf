@@ -1,10 +1,11 @@
 Version:1.0
 Stooping Hawk
 E
+mul id:3080
 
 Config:Biped Omnimech
 TechBase:Clan
-Era:3060
+Era:3061
 Source:TRO 3060
 Rules Level:2
 

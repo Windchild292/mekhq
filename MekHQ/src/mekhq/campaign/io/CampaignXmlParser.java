@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2018-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,101 +18,57 @@
  */
 package mekhq.campaign.io;
 
+import megamek.Version;
 import megamek.client.generator.RandomGenderGenerator;
 import megamek.client.generator.RandomNameGenerator;
 import megamek.client.ui.swing.util.PlayerColour;
 import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
-import megamek.common.EquipmentType;
-import megamek.common.Jumpship;
-import megamek.common.Mech;
-import megamek.common.MechSummaryCache;
-import megamek.common.MiscType;
-import megamek.common.Mounted;
-import megamek.common.SmallCraft;
-import megamek.common.Tank;
-import megamek.common.TechConstants;
+import megamek.common.*;
+import megamek.common.annotations.Nullable;
+import megamek.common.icons.AbstractIcon;
 import megamek.common.icons.Camouflage;
-import megamek.common.options.IOption;
-import megamek.common.options.PilotOptions;
 import megamek.common.weapons.bayweapons.BayWeapon;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.MhqFileUtil;
-import mekhq.NullEntityException;
-import mekhq.Utilities;
-import mekhq.Version;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.CampaignOptions;
-import mekhq.campaign.CurrentLocation;
-import mekhq.campaign.Kill;
-import mekhq.campaign.RandomSkillPreferences;
-import mekhq.campaign.Warehouse;
+import mekhq.*;
+import mekhq.campaign.*;
 import mekhq.campaign.againstTheBot.AtBConfiguration;
 import mekhq.campaign.finances.Finances;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
-import mekhq.campaign.io.Migration.CamouflageMigrator;
+import mekhq.campaign.icons.UnitIcon;
 import mekhq.campaign.market.ContractMarket;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.market.ShoppingList;
-import mekhq.campaign.market.UnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.Mission;
 import mekhq.campaign.mission.Scenario;
 import mekhq.campaign.mod.am.InjuryTypes;
-import mekhq.campaign.parts.EnginePart;
-import mekhq.campaign.parts.MekActuator;
-import mekhq.campaign.parts.MekLocation;
-import mekhq.campaign.parts.MissingEnginePart;
-import mekhq.campaign.parts.MissingMekActuator;
-import mekhq.campaign.parts.MissingMekLocation;
-import mekhq.campaign.parts.MissingPart;
-import mekhq.campaign.parts.Part;
-import mekhq.campaign.parts.equipment.AmmoBin;
-import mekhq.campaign.parts.equipment.EquipmentPart;
-import mekhq.campaign.parts.equipment.HeatSink;
-import mekhq.campaign.parts.equipment.LargeCraftAmmoBin;
-import mekhq.campaign.parts.equipment.MASC;
-import mekhq.campaign.parts.equipment.MissingAmmoBin;
-import mekhq.campaign.parts.equipment.MissingEquipmentPart;
-import mekhq.campaign.parts.equipment.MissingLargeCraftAmmoBin;
-import mekhq.campaign.parts.equipment.MissingMASC;
-import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.RetirementDefectionTracker;
-import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.personnel.SpecialAbility;
+import mekhq.campaign.parts.*;
+import mekhq.campaign.parts.equipment.*;
+import mekhq.campaign.personnel.*;
 import mekhq.campaign.personnel.enums.FamilialRelationshipType;
 import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.RankValidator;
 import mekhq.campaign.unit.Unit;
+import mekhq.campaign.unit.cleanup.EquipmentUnscrambler;
+import mekhq.campaign.unit.cleanup.EquipmentUnscramblerResult;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.Planet.PlanetaryEvent;
 import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.Systems;
 import mekhq.io.idReferenceClasses.PersonIdReference;
+import mekhq.io.migration.CamouflageMigrator;
+import mekhq.io.migration.FactionMigrator;
+import mekhq.io.migration.ForceIconMigrator;
+import mekhq.io.migration.PersonMigrator;
 import mekhq.module.atb.AtBEventProcessor;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.io.*;
+import java.util.*;
 
 public class CampaignXmlParser {
     private InputStream is;
@@ -135,7 +91,7 @@ public class CampaignXmlParser {
      * @throws NullEntityException Thrown when an entity is referenced but cannot be loaded or found
      */
     public Campaign parse() throws CampaignXmlParseException, NullEntityException {
-        MekHQ.getLogger().info("Starting load of campaign file from XML...");
+        LogManager.getLogger().info("Starting load of campaign file from XML...");
         // Initialize variables.
         Campaign retVal = new Campaign();
         retVal.setApp(app);
@@ -144,12 +100,12 @@ public class CampaignXmlParser {
 
         try {
             // Using factory get an instance of document builder
-            DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+            DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
             // Parse using builder to get DOM representation of the XML file
             xmlDoc = db.parse(is);
         } catch (Exception ex) {
-            MekHQ.getLogger().error(ex);
+            LogManager.getLogger().error("", ex);
 
             throw new CampaignXmlParseException(ex);
         }
@@ -161,7 +117,7 @@ public class CampaignXmlParser {
         // Stupid weird parsing of XML. At least this cleans it up.
         campaignEle.normalize();
 
-        Version version = new Version(campaignEle.getAttribute("version"));
+        final Version version = new Version(campaignEle.getAttribute("version"));
 
         // Indicates whether or not new units were written to disk while
         // loading the Campaign file. If so, we need to kick back off loading
@@ -264,10 +220,7 @@ public class CampaignXmlParser {
                     retVal.setCampaignOptions(CampaignOptions.generateCampaignOptionsFromXml(wn, version));
                 } else if (xn.equalsIgnoreCase("randomSkillPreferences")) {
                     retVal.setRandomSkillPreferences(RandomSkillPreferences.generateRandomSkillPreferencesFromXml(wn, version));
-                } /* We don't need this since info is processed above in the first iteration...
-                else if (xn.equalsIgnoreCase("info")) {
-                    processInfoNode(retVal, wn, version);
-                }*/ else if (xn.equalsIgnoreCase("parts")) {
+                } else if (xn.equalsIgnoreCase("parts")) {
                     processPartNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("personnel")) {
                     // TODO: Make this depending on campaign options
@@ -291,7 +244,7 @@ public class CampaignXmlParser {
                 } else if (xn.equalsIgnoreCase("specialAbilities")) {
                     processSpecialAbilityNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("gameOptions")) {
-                    processGameOptionNodes(retVal, wn);
+                    retVal.getGameOptions().fillFromXML(wn.getChildNodes());
                 } else if (xn.equalsIgnoreCase("kills")) {
                     processKillNodes(retVal, wn, version);
                 } else if (xn.equalsIgnoreCase("shoppingList")) {
@@ -304,24 +257,25 @@ public class CampaignXmlParser {
                     retVal.setContractMarket(ContractMarket.generateInstanceFromXML(wn, retVal, version));
                     foundContractMarket = true;
                 } else if (xn.equalsIgnoreCase("unitMarket")) {
-                    retVal.setUnitMarket(UnitMarket.generateInstanceFromXML(wn, retVal, version));
+                    // Windchild: implicit DEPENDS ON to the <campaignOptions> nodes
+                    retVal.setUnitMarket(retVal.getCampaignOptions().getUnitMarketMethod().getUnitMarket());
+                    retVal.getUnitMarket().fillFromXML(wn, retVal, version);
                     foundUnitMarket = true;
                 } else if (xn.equalsIgnoreCase("lances")) {
                     processLanceNodes(retVal, wn);
                 } else if (xn.equalsIgnoreCase("retirementDefectionTracker")) {
                     retVal.setRetirementDefectionTracker(RetirementDefectionTracker.generateInstanceFromXML(wn, retVal));
                 } else if (xn.equalsIgnoreCase("shipSearchStart")) {
-                    retVal.setShipSearchStart(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
+                    retVal.setShipSearchStart(MHQXMLUtility.parseDate(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase("shipSearchType")) {
                     retVal.setShipSearchType(Integer.parseInt(wn.getTextContent()));
                 } else if (xn.equalsIgnoreCase("shipSearchResult")) {
                     retVal.setShipSearchResult(wn.getTextContent());
                 } else if (xn.equalsIgnoreCase("shipSearchExpiration")) {
-                    retVal.setShipSearchExpiration(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
+                    retVal.setShipSearchExpiration(MHQXMLUtility.parseDate(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase("customPlanetaryEvents")) {
                     updatePlanetaryEventsFromXML(wn);
                 }
-
             } else {
                 // If it's a text node or attribute or whatever at this level,
                 // it's probably white-space.
@@ -331,9 +285,21 @@ public class CampaignXmlParser {
 
         // Okay, after we've gone through all the nodes and constructed the
         // Campaign object...
+        final CampaignOptions options = retVal.getCampaignOptions();
+
         // Apply Migration
         if (version.isLowerThan("0.49.3")) {
             CamouflageMigrator.migrateCamouflage(version, retVal.getCamouflage());
+        }
+
+        if (version.isLowerThan("0.49.6")) {
+            retVal.setUnitIcon(ForceIconMigrator.migrateForceIconToKailans(retVal.getUnitIcon()));
+        } else if (version.isLowerThan("0.49.7")) {
+            retVal.setUnitIcon(ForceIconMigrator.migrateForceIcon0496To0497(retVal.getUnitIcon()));
+        }
+
+        if (version.isLowerThan("0.49.7")) {
+            FactionMigrator.migrateFactionCode(retVal);
         }
 
         // We need to do a post-process pass to restore a number of references.
@@ -342,6 +308,12 @@ public class CampaignXmlParser {
 
         // Fixup any ghost kills
         cleanupGhostKills(retVal);
+
+        // Update the Personnel Modules
+        retVal.setDeath(options.getRandomDeathMethod().getMethod(options));
+        retVal.setDivorce(options.getRandomDivorceMethod().getMethod(options));
+        retVal.setMarriage(options.getRandomMarriageMethod().getMethod(options));
+        retVal.setProcreation(options.getRandomProcreationMethod().getMethod(options));
 
         long timestamp = System.currentTimeMillis();
 
@@ -366,25 +338,25 @@ public class CampaignXmlParser {
         }
 
         // determine if we've missed any lances and add those back into the campaign
-        if (retVal.getCampaignOptions().getUseAtB()) {
+        if (options.getUseAtB()) {
             Hashtable<Integer, Lance> lances = retVal.getLances();
             for (Force f : retVal.getAllForces()) {
-                if ((f.getUnits().size() > 0) && (null == lances.get(f.getId()))) {
+                if (!f.getUnits().isEmpty() && (null == lances.get(f.getId()))) {
                     lances.put(f.getId(), new Lance(f.getId(), retVal));
-                    MekHQ.getLogger().warning(String.format("Added missing Lance %s to AtB list", f.getName()));
+                    LogManager.getLogger().warn(String.format("Added missing Lance %s to AtB list", f.getName()));
                 }
             }
         }
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Force IDs set in %dms",
-            System.currentTimeMillis() - timestamp));
+        LogManager.getLogger().info(String.format("[Campaign Load] Force IDs set in %dms",
+                System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
         // Process parts...
         postProcessParts(retVal, version);
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Parts processed in %dms",
-            System.currentTimeMillis() - timestamp));
+        LogManager.getLogger().info(String.format("[Campaign Load] Parts processed in %dms",
+                System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
         for (Person psn : retVal.getPersonnel()) {
@@ -392,8 +364,8 @@ public class CampaignXmlParser {
             psn.resetSkillTypes();
         }
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Rank references fixed in %dms",
-            System.currentTimeMillis() - timestamp));
+        LogManager.getLogger().info(String.format("[Campaign Load] Rank references fixed in %dms",
+                System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
         // Okay, Units, need their pilot references fixed.
@@ -409,27 +381,27 @@ public class CampaignXmlParser {
                 unit.getRefit().fixReferences(retVal);
 
                 unit.getRefit().reCalc();
-                if (!unit.getRefit().isCustomJob()
-                        && !unit.getRefit().kitFound()) {
-                    retVal.getShoppingList().addShoppingItemWithoutChecking(unit
-                            .getRefit());
+                if (!unit.getRefit().isCustomJob() && !unit.getRefit().kitFound()) {
+                    retVal.getShoppingList().addShoppingItemWithoutChecking(unit.getRefit());
                 }
             }
 
             // lets make sure the force id set actually corresponds to a force
             // TODO: we have some reports of force id relics - need to fix
-            if (unit.getForceId() > 0
-                    && null == retVal.getForce(unit.getForceId())) {
+            if ((unit.getForceId() > 0) && (retVal.getForce(unit.getForceId()) == null)) {
                 unit.setForceId(-1);
             }
 
-            // Its annoying to have to do this, but this helps to ensure
+            // It's annoying to have to do this, but this helps to ensure
             // that equipment numbers correspond to the right parts - its
             // possible that these might have changed if changes were made to
-            // the
-            // ordering of equipment in the underlying data file for the unit
+            // the ordering of equipment in the underlying data file for the unit.
             // We're not checking for refit here.
-            Utilities.unscrambleEquipmentNumbers(unit, false);
+            final EquipmentUnscrambler unscrambler = EquipmentUnscrambler.create(unit);
+            final EquipmentUnscramblerResult result = unscrambler.unscramble();
+            if (!result.succeeded()) {
+                LogManager.getLogger().warn(result.getMessage());
+            }
 
             // some units might need to be assigned to scenarios
             Scenario s = retVal.getScenario(unit.getScenarioId());
@@ -442,12 +414,13 @@ public class CampaignXmlParser {
             }
         });
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Pilot references fixed in %dms",
-            System.currentTimeMillis() - timestamp));
+        LogManager.getLogger().info(String.format("[Campaign Load] Pilot references fixed in %dms",
+                System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
         retVal.getHangar().forEachUnit(unit -> {
-            // Some units have been incorrectly assigned a null C3UUID as a string. This should correct that by setting a new C3UUID
+            // Some units have been incorrectly assigned a null C3UUID as a string. This should
+            // correct that by setting a new C3UUID
             if ((unit.getEntity().hasC3() || unit.getEntity().hasC3i() || unit.getEntity().hasNavalC3())
                     && (unit.getEntity().getC3UUIDAsString() == null || unit.getEntity().getC3UUIDAsString().equals("null"))) {
                 unit.getEntity().setC3UUID();
@@ -456,8 +429,8 @@ public class CampaignXmlParser {
         });
         retVal.refreshNetworks();
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] C3 networks refreshed in %dms",
-            System.currentTimeMillis() - timestamp));
+        LogManager.getLogger().info(String.format("[Campaign Load] C3 networks refreshed in %dms",
+                System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
         // ok, once we are sure that campaign has been set for all units, we can
@@ -478,11 +451,12 @@ public class CampaignXmlParser {
                 }
             }
         });
+
         for (Unit unit : removeUnits) {
             retVal.removeUnit(unit.getId());
         }
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Units initialized in %dms",
+        LogManager.getLogger().info(String.format("[Campaign Load] Units initialized in %dms",
                 System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
@@ -490,13 +464,13 @@ public class CampaignXmlParser {
             person.fixReferences(retVal);
         }
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Personnel initialized in %dms",
+        LogManager.getLogger().info(String.format("[Campaign Load] Personnel initialized in %dms",
                 System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
         retVal.reloadNews();
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] News loaded in %dms",
+        LogManager.getLogger().info(String.format("[Campaign Load] News loaded in %dms",
                 System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
@@ -504,26 +478,33 @@ public class CampaignXmlParser {
         if (!foundPersonnelMarket) {
             retVal.setPersonnelMarket(new PersonnelMarket(retVal));
         }
+
         if (!foundContractMarket) {
             retVal.setContractMarket(new ContractMarket());
         }
+
         if (!foundUnitMarket) {
-            retVal.setUnitMarket(new UnitMarket());
+            retVal.setUnitMarket(retVal.getCampaignOptions().getUnitMarketMethod().getUnitMarket());
         }
+
         if (null == retVal.getRetirementDefectionTracker()) {
             retVal.setRetirementDefectionTracker(new RetirementDefectionTracker());
         }
+
         if (retVal.getCampaignOptions().getUseAtB()) {
             retVal.setHasActiveContract();
             retVal.setAtBConfig(AtBConfiguration.loadFromXml());
             retVal.setAtBEventProcessor(new AtBEventProcessor(retVal));
         }
 
-        //**EVERYTHING HAS BEEN LOADED. NOW FOR SANITY CHECKS**//
+        // Load Completed. Time for final migration and sanity checks.
+        // Final migration
+        PersonMigrator.finalPersonMigration(version, retVal.getPersonnel());
 
+        // Sanity Checks
         fixupUnitTechProblems(retVal);
 
-        //unload any ammo bins in the warehouse
+        // unload any ammo bins in the warehouse
         List<AmmoBin> binsToUnload = new ArrayList<>();
         retVal.getWarehouse().forEachSparePart(prt -> {
             if (prt instanceof AmmoBin && !prt.isReservedForRefit() && ((AmmoBin) prt).getShotsNeeded() == 0) {
@@ -534,13 +515,13 @@ public class CampaignXmlParser {
             bin.unload();
         }
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Ammo bins cleared in %dms",
+        LogManager.getLogger().info(String.format("[Campaign Load] Ammo bins cleared in %dms",
                 System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
 
-        //Check all parts that are reserved for refit and if the refit id unit
-        //is not refitting or is gone then unreserve
+        // Check all parts that are reserved for refit and if the refit id unit
+        // is not refitting or is gone then unreserve
         for (Part part : retVal.getWarehouse().getParts()) {
             if (part.isReservedForRefit()) {
                 Unit u = part.getRefitUnit();
@@ -550,7 +531,7 @@ public class CampaignXmlParser {
             }
         }
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Reserved refit parts fixed in %dms",
+        LogManager.getLogger().info(String.format("[Campaign Load] Reserved refit parts fixed in %dms",
                 System.currentTimeMillis() - timestamp));
         timestamp = System.currentTimeMillis();
 
@@ -563,12 +544,12 @@ public class CampaignXmlParser {
         // This will have aggregated all of the possible spare parts together
         retVal.setWarehouse(warehouse);
 
-        MekHQ.getLogger().info(String.format("[Campaign Load] Warehouse cleaned up in %dms",
+        LogManager.getLogger().info(String.format("[Campaign Load] Warehouse cleaned up in %dms",
                 System.currentTimeMillis() - timestamp));
 
         retVal.setUnitRating(null);
 
-        MekHQ.getLogger().info("Load of campaign file complete!");
+        LogManager.getLogger().info("Load of campaign file complete!");
 
         return retVal;
     }
@@ -596,15 +577,14 @@ public class CampaignXmlParser {
                     tech.removeTechUnit(u);
                 }
                 if (null != reason) {
-                    MekHQ.getLogger().warning(String.format("Tech %s %s %s (fixed)", tech.getFullName(), reason, unitDesc));
+                    LogManager.getLogger().warn(String.format("Tech %s %s %s (fixed)", tech.getFullName(), reason, unitDesc));
                 }
             }
         }
     }
 
     /**
-     * Pulled out purely for encapsulation. Makes the code neater and easier to
-     * read.
+     * Pulled out purely for encapsulation. Makes the code neater and easier to read.
      *
      * @param retVal The Campaign object that is being populated.
      * @param wni    The XML node we're working from.
@@ -619,15 +599,14 @@ public class CampaignXmlParser {
             int xc = wn.getNodeType();
 
             // If it's not an element, again, we're ignoring it.
-            if (xc == Node.ELEMENT_NODE) {
-                String xn = wn.getNodeName();
+            if (xc != Node.ELEMENT_NODE) {
+                continue;
+            }
+            String xn = wn.getNodeName();
 
-                // Yeah, long if/then clauses suck.
-                // I really couldn't think of a significantly better way to
-                // handle it.
-                // They're all primitives anyway...
+            try {
                 if (xn.equalsIgnoreCase("calendar")) {
-                    retVal.setLocalDate(MekHqXmlUtil.parseDate(wn.getTextContent().trim()));
+                    retVal.setLocalDate(MHQXMLUtility.parseDate(wn.getTextContent().trim()));
                 } else if (xn.equalsIgnoreCase(Camouflage.XML_TAG)) {
                     retVal.setCamouflage(Camouflage.parseFromXML(wn));
                 } else if (xn.equalsIgnoreCase("camoCategory")) {
@@ -650,21 +629,17 @@ public class CampaignXmlParser {
                         retVal.getCamouflage().setCategory(Camouflage.COLOUR_CAMOUFLAGE);
                         retVal.getCamouflage().setFilename(retVal.getColour().name());
                     }
-                } else if (xn.equalsIgnoreCase("iconCategory")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (val.equals("null")) {
-                        retVal.setIconCategory(null);
+                } else if (xn.equalsIgnoreCase(UnitIcon.XML_TAG)) {
+                    retVal.setUnitIcon(UnitIcon.parseFromXML(wn));
+                } else if (xn.equalsIgnoreCase("iconCategory")) { // Legacy - 0.49.6 removal
+                    final String value = wn.getTextContent().trim();
+                    retVal.getUnitIcon().setCategory(value.equals("null") ? null : value);
+                } else if (xn.equalsIgnoreCase("iconFileName")) { // Legacy - 0.49.6 removal
+                    final String value = wn.getTextContent().trim();
+                    if (value.equals("null") || value.equals(AbstractIcon.DEFAULT_ICON_FILENAME)) {
+                        retVal.getUnitIcon().setFilename(null);
                     } else {
-                        retVal.setIconCategory(val);
-                    }
-                } else if (xn.equalsIgnoreCase("iconFileName")) {
-                    String val = wn.getTextContent().trim();
-
-                    if (val.equals("null")) {
-                        retVal.setIconFileName(null);
-                    } else {
-                        retVal.setIconFileName(val);
+                        retVal.getUnitIcon().setFilename(value);
                     }
                 } else if (xn.equalsIgnoreCase("nameGen")) {
                     // First, get all the child nodes;
@@ -703,7 +678,6 @@ public class CampaignXmlParser {
                     }
                 } else if (xn.equalsIgnoreCase("faction")) {
                     retVal.setFactionCode(wn.getTextContent());
-                    retVal.updateTechFactionCode();
                 } else if (xn.equalsIgnoreCase("retainerEmployerCode")) {
                     retVal.setRetainerEmployerCode(wn.getTextContent());
                 } else if (xn.equalsIgnoreCase("rankSystem")) {
@@ -743,6 +717,8 @@ public class CampaignXmlParser {
                 } else if (xn.equalsIgnoreCase("id")) {
                     retVal.setId(UUID.fromString(wn.getTextContent().trim()));
                 }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 
@@ -778,7 +754,7 @@ public class CampaignXmlParser {
             if (!wn2.getNodeName().equalsIgnoreCase("lance")) {
                 // Error condition of sorts!
                 // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Lance nodes: " + wn2.getNodeName());
+                LogManager.getLogger().error("Unknown node type not loaded in Lance nodes: " + wn2.getNodeName());
                 continue;
             }
 
@@ -807,13 +783,13 @@ public class CampaignXmlParser {
     }
 
     private static void processFinances(Campaign retVal, Node wn) {
-        MekHQ.getLogger().info("Loading Finances from XML...");
+        LogManager.getLogger().info("Loading Finances from XML...");
         retVal.setFinances(Finances.generateInstanceFromXML(wn));
-        MekHQ.getLogger().info("Load of Finances complete!");
+        LogManager.getLogger().info("Load of Finances complete!");
     }
 
     private static void processForces(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Force Organization from XML...");
+        LogManager.getLogger().info("Loading Force Organization from XML...");
 
         NodeList wList = wn.getChildNodes();
 
@@ -830,7 +806,7 @@ public class CampaignXmlParser {
             if (!wn2.getNodeName().equalsIgnoreCase("force")) {
                 // Error condition of sorts!
                 // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Forces nodes: " + wn2.getNodeName());
+                LogManager.getLogger().error("Unknown node type not loaded in Forces nodes: " + wn2.getNodeName());
 
                 continue;
             }
@@ -842,15 +818,15 @@ public class CampaignXmlParser {
                     foundForceAlready = true;
                 }
             } else {
-                MekHQ.getLogger().error("More than one type-level force found");
+                LogManager.getLogger().error("More than one type-level force found");
             }
         }
 
-        MekHQ.getLogger().info("Load of Force Organization complete!");
+        LogManager.getLogger().info("Load of Force Organization complete!");
     }
 
     private static void processPersonnelNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Personnel Nodes from XML...");
+        LogManager.getLogger().info("Loading Personnel Nodes from XML...");
 
         NodeList wList = wn.getChildNodes();
 
@@ -866,7 +842,7 @@ public class CampaignXmlParser {
             if (!wn2.getNodeName().equalsIgnoreCase("person")) {
                 // Error condition of sorts!
                 // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
+                LogManager.getLogger().error("Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
 
                 continue;
             }
@@ -878,11 +854,11 @@ public class CampaignXmlParser {
             }
         }
 
-        MekHQ.getLogger().info("Load Personnel Nodes Complete!");
+        LogManager.getLogger().info("Load Personnel Nodes Complete!");
     }
 
     private static void processSkillTypeNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Skill Type Nodes from XML...");
+        LogManager.getLogger().info("Loading Skill Type Nodes from XML...");
 
         NodeList wList = wn.getChildNodes();
 
@@ -900,7 +876,7 @@ public class CampaignXmlParser {
             } else if (!wn2.getNodeName().equalsIgnoreCase("skillType")) {
                 // Error condition of sorts!
                 // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Skill Type nodes: " + wn2.getNodeName());
+                LogManager.getLogger().error("Unknown node type not loaded in Skill Type nodes: " + wn2.getNodeName());
                 continue;
             }
 
@@ -908,13 +884,13 @@ public class CampaignXmlParser {
             SkillType.generateInstanceFromXML(wn2, version);
         }
 
-        MekHQ.getLogger().info("Load Skill Type Nodes Complete!");
+        LogManager.getLogger().info("Load Skill Type Nodes Complete!");
     }
 
     private static void processSpecialAbilityNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Special Ability Nodes from XML...");
+        LogManager.getLogger().info("Loading Special Ability Nodes from XML...");
 
-        PilotOptions options = new PilotOptions();
+        PersonnelOptions options = new PersonnelOptions();
 
         // TODO: make SpecialAbility a Campaign instance
         SpecialAbility.clearSPA();
@@ -933,17 +909,17 @@ public class CampaignXmlParser {
             if (!wn2.getNodeName().equalsIgnoreCase("ability")) {
                 // Error condition of sorts!
                 // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Special Ability nodes: " + wn2.getNodeName());
+                LogManager.getLogger().error("Unknown node type not loaded in Special Ability nodes: " + wn2.getNodeName());
                 continue;
             }
             SpecialAbility.generateInstanceFromXML(wn2, options, version);
         }
 
-        MekHQ.getLogger().info("Load Special Ability Nodes Complete!");
+        LogManager.getLogger().info("Load Special Ability Nodes Complete!");
     }
 
     private static void processKillNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Kill Nodes from XML...");
+        LogManager.getLogger().info("Loading Kill Nodes from XML...");
 
         NodeList wList = wn.getChildNodes();
 
@@ -957,7 +933,7 @@ public class CampaignXmlParser {
             } else if (!wn2.getNodeName().equalsIgnoreCase("kill")) {
                 // Error condition of sorts!
                 // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Kill nodes: " + wn2.getNodeName());
+                LogManager.getLogger().error("Unknown node type not loaded in Kill nodes: " + wn2.getNodeName());
                 continue;
             }
 
@@ -967,72 +943,7 @@ public class CampaignXmlParser {
             }
         }
 
-        MekHQ.getLogger().info("Load Kill Nodes Complete!");
-    }
-
-    private static void processGameOptionNodes(Campaign retVal, Node wn) {
-        MekHQ.getLogger().info("Loading GameOption Nodes from XML...");
-
-        NodeList wList = wn.getChildNodes();
-
-        // Okay, lets iterate through the children, eh?
-        for (int x = 0; x < wList.getLength(); x++) {
-            Node wn2 = wList.item(x);
-
-            // If it's not an element node, we ignore it.
-            if (wn2.getNodeType() != Node.ELEMENT_NODE) {
-                continue;
-            } else if (!wn2.getNodeName().equalsIgnoreCase("gameoption")) {
-                // Error condition of sorts!
-                // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Game Option nodes: " + wn2.getNodeName());
-
-                continue;
-            }
-            NodeList nl = wn2.getChildNodes();
-
-            String name = null;
-            String value = null;
-            for (int y = 0; y < nl.getLength(); y++) {
-                Node wn3 = nl.item(y);
-                if (wn3.getNodeName().equalsIgnoreCase("name")) {
-                    name = wn3.getTextContent();
-                } else if (wn3.getNodeName().equalsIgnoreCase("value")) {
-                    value = wn3.getTextContent();
-                }
-            }
-            if ((null != name) && (null != value)) {
-                IOption option = retVal.getGameOptions().getOption(name);
-                if (null != option) {
-                    if (!option.getValue().toString().equals(value)) {
-                        try {
-                            switch (option.getType()) {
-                                case IOption.STRING:
-                                case IOption.CHOICE:
-                                    option.setValue(value);
-                                    break;
-                                case IOption.BOOLEAN:
-                                    option.setValue(Boolean.valueOf(value));
-                                    break;
-                                case IOption.INTEGER:
-                                    option.setValue(Integer.valueOf(value));
-                                    break;
-                                case IOption.FLOAT:
-                                    option.setValue(Float.valueOf(value));
-                                    break;
-                            }
-                        } catch (IllegalArgumentException iaEx) {
-                            MekHQ.getLogger().error("Error trying to load option '" + name
-                                    + "' with a value of '" + value + "'.");
-                        }
-                    }
-                } else {
-                    MekHQ.getLogger().error("Invalid option '" + name + "' when trying to load options file.");
-                }
-            }
-        }
-
-        MekHQ.getLogger().info(CampaignXmlParser.class, "Load Game Option Nodes Complete!");
+        LogManager.getLogger().info("Load Kill Nodes Complete!");
     }
 
     /**
@@ -1044,15 +955,21 @@ public class CampaignXmlParser {
      */
     private static boolean processCustom(Campaign retVal, Node wn) {
         String sCustomsDir = "data" + File.separator + "mechfiles"
-                + File.separator + "customs";
+                + File.separator + "customs";  // TODO : Remove inline file path
         String sCustomsDirCampaign = sCustomsDir + File.separator + retVal.getName();
         File customsDir = new File(sCustomsDir);
         if (!customsDir.exists()) {
-            customsDir.mkdir();
+            if (!customsDir.mkdir()) {
+                LogManager.getLogger().error("Failed to create directory " + sCustomsDir + ", and therefore cannot save the unit.");
+                return false;
+            }
         }
         File customsDirCampaign = new File(sCustomsDirCampaign);
         if (!customsDirCampaign.exists()) {
-            customsDirCampaign.mkdir();
+            if (!customsDirCampaign.mkdir()) {
+                LogManager.getLogger().error("Failed to create directory " + sCustomsDirCampaign + ", and therefore cannot save the unit.");
+                return false;
+            }
         }
 
         NodeList wList = wn.getChildNodes();
@@ -1094,13 +1011,12 @@ public class CampaignXmlParser {
             }
 
             // If this file already exists then don't overwrite it or we will end up with a bunch of copies
-            String safeName = MhqFileUtil.escapeReservedCharacters(name);
+            String safeName = MHQXMLUtility.escape(name);
             String fileName = sCustomsDir + File.separator + safeName + ext;
             String fileNameCampaign = sCustomsDirCampaign + File.separator + safeName + ext;
 
-            // TODO: get a hash or something to validate and overwrite if we updated this
-            if ((new File(fileName)).exists()
-                    || (new File(fileNameCampaign)).exists()) {
+            // TODO : get a hash or something to validate and overwrite if we updated this
+            if ((new File(fileName)).exists() || (new File(fileNameCampaign)).exists()) {
                 return false;
             }
 
@@ -1114,24 +1030,24 @@ public class CampaignXmlParser {
     }
 
     private static boolean tryWriteCustomToFile(String fileName, String contents) {
-        MekHQ.getLogger().info("Writing custom unit from inline data to " + fileName);
+        LogManager.getLogger().info("Writing custom unit from inline data to " + fileName);
 
         try (OutputStream out = new FileOutputStream(fileName);
             PrintStream p = new PrintStream(out)) {
 
             p.println(contents);
 
-            MekHQ.getLogger().info("Wrote custom unit from inline data to: " + fileName);
+            LogManager.getLogger().info("Wrote custom unit from inline data to: " + fileName);
 
             return true;
         } catch (Exception ex) {
-            MekHQ.getLogger().error("Error writing custom unit from inline data to: " + fileName, ex);
+            LogManager.getLogger().error("Error writing custom unit from inline data to: " + fileName, ex);
             return false;
         }
     }
 
     private static void processMissionNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Mission Nodes from XML...");
+        LogManager.getLogger().info("Loading Mission Nodes from XML...");
 
         NodeList wList = wn.getChildNodes();
 
@@ -1147,7 +1063,7 @@ public class CampaignXmlParser {
             if (!wn2.getNodeName().equalsIgnoreCase("mission")) {
                 // Error condition of sorts!
                 // Errr, what should we do here?
-                MekHQ.getLogger().warning("Unknown node type not loaded in Mission nodes: " + wn2.getNodeName());
+                LogManager.getLogger().warn("Unknown node type not loaded in Mission nodes: " + wn2.getNodeName());
                 continue;
             }
 
@@ -1163,11 +1079,11 @@ public class CampaignXmlParser {
             contract.restore(retVal);
         }
 
-        MekHQ.getLogger().info("Load Mission Nodes Complete!");
+        LogManager.getLogger().info("Load Mission Nodes Complete!");
     }
 
-    private static String checkUnits(Node wn) {
-        MekHQ.getLogger().info("Checking for missing entities...");
+    private static @Nullable String checkUnits(final Node wn) {
+        LogManager.getLogger().info("Checking for missing entities...");
 
         List<String> unitList = new ArrayList<>();
         NodeList wList = wn.getChildNodes();
@@ -1191,20 +1107,20 @@ public class CampaignXmlParser {
                 Node wn3 = nl.item(y);
                 if (wn3.getNodeName().equalsIgnoreCase("entity")) {
                     try {
-                        if (null == MekHqXmlUtil.getEntityFromXmlString(wn3)) {
-                            String name = MekHqXmlUtil.getEntityNameFromXmlString(wn3);
+                        final Entity entity = MHQXMLUtility.parseSingleEntityMul((Element) wn3, null);
+                        if (entity == null) {
+                            String name = MHQXMLUtility.getEntityNameFromXmlString(wn3);
                             if (!unitList.contains(name)) {
                                 unitList.add(name);
                             }
                         }
                     } catch (Exception e) {
-                        MekHQ.getLogger().error(CampaignXmlParser.class, "Could not read entity from XML");
-                        MekHQ.getLogger().error(CampaignXmlParser.class, e);
+                        LogManager.getLogger().error("Could not read entity from XML", e);
                     }
                 }
             }
         }
-        MekHQ.getLogger().info("Finished checking for missing entities!");
+        LogManager.getLogger().info("Finished checking for missing entities!");
 
         if (unitList.isEmpty()) {
             return null;
@@ -1213,13 +1129,13 @@ public class CampaignXmlParser {
             for (String s : unitList) {
                 unitListString.append("\n").append(s);
             }
-            MekHQ.getLogger().error(String.format("Could not load the following units: %s", unitListString.toString()));
+            LogManager.getLogger().error(String.format("Could not load the following units: %s", unitListString.toString()));
             return unitListString.toString();
         }
     }
 
     private static void processUnitNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Unit Nodes from XML...");
+        LogManager.getLogger().info("Loading Unit Nodes from XML...");
 
         NodeList wList = wn.getChildNodes();
 
@@ -1233,25 +1149,22 @@ public class CampaignXmlParser {
             }
 
             if (!wn2.getNodeName().equalsIgnoreCase("unit")) {
-                // Error condition of sorts!
-                // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Unit nodes: " + wn2.getNodeName());
-
+                LogManager.getLogger().error("Unknown node type not loaded in Unit nodes: " + wn2.getNodeName());
                 continue;
             }
 
-            Unit u = Unit.generateInstanceFromXML(wn2, version);
+            Unit u = Unit.generateInstanceFromXML(wn2, version, retVal);
 
             if (u != null) {
                 retVal.importUnit(u);
             }
         }
 
-        MekHQ.getLogger().info("Load Unit Nodes Complete!");
+        LogManager.getLogger().info("Load Unit Nodes Complete!");
     }
 
     private static void processPartNodes(Campaign retVal, Node wn, Version version) {
-        MekHQ.getLogger().info("Loading Part Nodes from XML...");
+        LogManager.getLogger().info("Loading Part Nodes from XML...");
 
         NodeList wList = wn.getChildNodes();
 
@@ -1266,10 +1179,7 @@ public class CampaignXmlParser {
             }
 
             if (!wn2.getNodeName().equalsIgnoreCase("part")) {
-                // Error condition of sorts!
-                // Errr, what should we do here?
-                MekHQ.getLogger().error("Unknown node type not loaded in Part nodes: " + wn2.getNodeName());
-
+                LogManager.getLogger().error("Unknown node type not loaded in Part nodes: " + wn2.getNodeName());
                 continue;
             }
 
@@ -1282,7 +1192,7 @@ public class CampaignXmlParser {
 
         retVal.importParts(parts);
 
-        MekHQ.getLogger().info("Load Part Nodes Complete!");
+        LogManager.getLogger().info("Load Part Nodes Complete!");
     }
 
     private static void postProcessParts(Campaign retVal, Version version) {
@@ -1294,7 +1204,7 @@ public class CampaignXmlParser {
             // Remove fundamentally broken equipment parts
             if (((prt instanceof EquipmentPart) && ((EquipmentPart) prt).getType() == null)
                     || ((prt instanceof MissingEquipmentPart) && ((MissingEquipmentPart) prt).getType() == null)) {
-                MekHQ.getLogger().warning("Could not find matching EquipmentType for part " + prt.getName());
+                LogManager.getLogger().warn("Could not find matching EquipmentType for part " + prt.getName());
                 removeParts.add(prt);
                 continue;
             }
@@ -1319,8 +1229,7 @@ public class CampaignXmlParser {
 
             // Fixup LargeCraftAmmoBins from old versions
             if ((prt.getUnit() != null) && (prt.getUnit().getEntity() != null)
-                    && ((version.getMinorVersion() < 43)
-                            || ((version.getMinorVersion() == 43) && (version.getSnapshot() < 5)))
+                    && version.isLowerThan("0.43.5")
                     && ((prt instanceof AmmoBin) || (prt instanceof MissingAmmoBin))) {
                 if (prt.getUnit().getEntity().usesWeaponBays()) {
                     Mounted ammo;
@@ -1376,9 +1285,16 @@ public class CampaignXmlParser {
 
             Unit u = prt.getUnit();
             if (u != null) {
-                // get rid of any equipmentparts without locations or mounteds
+                // get rid of any equipmentparts without types, locations or mounteds
                 if (prt instanceof EquipmentPart) {
-                    EquipmentPart ePart = (EquipmentPart) prt;
+                    final EquipmentPart ePart = (EquipmentPart) prt;
+
+                    // Null Type... parsing failure
+                    if (ePart.getType() == null) {
+                        removeParts.add(prt);
+                        continue;
+                    }
+
                     Mounted m = u.getEntity().getEquipment(ePart.getEquipmentNum());
 
                     // Remove equipment parts missing mounts
@@ -1387,7 +1303,8 @@ public class CampaignXmlParser {
                         continue;
                     }
 
-                    // Remove equipment parts without a valid location, unless they're an ammo bin as they may not have a location
+                    // Remove equipment parts without a valid location, unless they're an ammo bin
+                    // as they may not have a location
                     if ((m.getLocation() == Entity.LOC_NONE) && !(prt instanceof AmmoBin)) {
                         removeParts.add(prt);
                         continue;
@@ -1467,7 +1384,7 @@ public class CampaignXmlParser {
                 }
             }
 
-            // old versions didnt distinguish tank engines
+            // old versions didn't distinguish tank engines
             if ((prt instanceof EnginePart) && prt.getName().contains("Vehicle")) {
                 boolean isHover = null != u
                         && u.getEntity().getMovementMode() == EntityMovementMode.HOVER && u.getEntity() instanceof Tank;
@@ -1489,9 +1406,7 @@ public class CampaignXmlParser {
                 ((MissingEnginePart) prt).fixClanFlag();
             }
 
-            if ((version.getMajorVersion() == 0)
-                    && ((version.getMinorVersion() < 44)
-                            || ((version.getMinorVersion() == 43) && (version.getSnapshot() < 7)))) {
+            if (version.isLowerThan("0.44.0")) {
                 if ((prt instanceof MekLocation)
                         && (((MekLocation) prt).getStructureType() == EquipmentType.T_STRUCTURE_ENDO_STEEL)) {
                     if (null != u) {
@@ -1513,7 +1428,7 @@ public class CampaignXmlParser {
             }
         }
         for (Part prt : removeParts) {
-            MekHQ.getLogger().debug("Removing part #" + prt.getId() + " " + prt.getName());
+            LogManager.getLogger().debug("Removing part #" + prt.getId() + " " + prt.getName());
             retVal.getWarehouse().removePart(prt);
         }
     }
@@ -1702,21 +1617,21 @@ public class CampaignXmlParser {
                 people.remove();
 
                 if (father == null) {
-                    MekHQ.getLogger().warning("Unknown father does not exist, skipping adding Genealogy for them.");
+                    LogManager.getLogger().warn("Unknown father does not exist, skipping adding Genealogy for them.");
                 } else if (father.getId() != null) {
                     person.getGenealogy().addFamilyMember(FamilialRelationshipType.PARENT, father);
                     father.getGenealogy().addFamilyMember(FamilialRelationshipType.CHILD, person);
                 } else {
-                    MekHQ.getLogger().warning("Person with id " + father.getId() + "does not exist, skipping adding Genealogy for them.");
+                    LogManager.getLogger().warn("Person with id " + father.getId() + "does not exist, skipping adding Genealogy for them.");
                 }
 
                 if (mother == null) {
-                    MekHQ.getLogger().warning("Unknown mother does not exist, skipping adding Genealogy for them.");
+                    LogManager.getLogger().warn("Unknown mother does not exist, skipping adding Genealogy for them.");
                 } else if (mother.getId() != null) {
                     person.getGenealogy().addFamilyMember(FamilialRelationshipType.PARENT, mother);
                     mother.getGenealogy().addFamilyMember(FamilialRelationshipType.CHILD, person);
                 } else {
-                    MekHQ.getLogger().warning("Person with id " + mother.getId() + " does not exist, skipping adding Genealogy for them.");
+                    LogManager.getLogger().warn("Person with id " + mother.getId() + " does not exist, skipping adding Genealogy for them.");
                 }
             }
         }

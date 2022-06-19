@@ -1,7 +1,7 @@
 /*
  * QuirksDialog.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,27 +12,16 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.HashMap;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.DialogOptionComponent;
 import megamek.client.ui.swing.DialogOptionListener;
 import megamek.client.ui.swing.QuirksPanel;
@@ -41,29 +30,28 @@ import megamek.common.Mounted;
 import megamek.common.options.IOption;
 import megamek.common.options.WeaponQuirks;
 import mekhq.MekHQ;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 /**
  * @author Deric Page (dericpage@users.sourceforge.net)
- * @version %I% %G%
  * @since 3/26/2012
  */
 public class QuirksDialog extends JDialog implements DialogOptionListener, ActionListener {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = -5030866602278329622L;
     private QuirksPanel qpanel;
-    private HashMap<Integer, WeaponQuirks> h_wpnQuirks = new HashMap<Integer, WeaponQuirks>();
+    private HashMap<Integer, WeaponQuirks> h_wpnQuirks = new HashMap<>();
     private Entity entity;
 
     private JButton okayButton;
     private JButton cancelButton;
 
     /**
-     * Handles the editing and deteling of Quirks.  Utilizes the QuirksPanel from megamek for the bulk of its work.
+     * Handles the editing and deteling of Quirks. Utilizes the QuirksPanel from megamek for the bulk of its work.
      *
      * @param entity The {@link Entity} being edited.
      * @param parent The {@link JFrame} of the parent panel.
@@ -95,12 +83,16 @@ public class QuirksDialog extends JDialog implements DialogOptionListener, Actio
         add(buildButtonPanel(), BorderLayout.SOUTH);
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(QuirksDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
-    }
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(QuirksDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
+}
 
     private JPanel buildButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));

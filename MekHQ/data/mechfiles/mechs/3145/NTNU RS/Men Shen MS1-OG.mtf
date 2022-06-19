@@ -1,10 +1,11 @@
 Version:1.0
 Men Shen
 MS1-OG
+mul id:6894
 
 Config:Biped Omnimech
 TechBase:Inner Sphere
-Era:3145
+Era:3134
 Source:RS 3145 NT NU
 Rules Level:3
 

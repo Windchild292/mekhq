@@ -20,8 +20,11 @@ package mekhq.campaign.personnel;
 
 import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.event.PersonChangedEvent;
 import mekhq.campaign.log.AwardLogger;
+import mekhq.campaign.log.PersonalLogger;
+import org.apache.logging.log4j.LogManager;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -70,7 +73,7 @@ public class PersonAwardController {
      * @return true if this person has one or more awards.
      */
     public boolean hasAwards() {
-        return awards.size() > 0;
+        return !awards.isEmpty();
     }
 
     /**
@@ -100,21 +103,31 @@ public class PersonAwardController {
      * @param awardName is the name of the award
      * @param date is the date it was awarded
      */
-    public void addAndLogAward(String setName, String awardName, LocalDate date) {
+    public void addAndLogAward(final Campaign campaign, final String setName,
+                               final String awardName, final LocalDate date) {
         final Award award;
         if (hasAward(setName, awardName)) {
             award = getAward(setName, awardName);
         } else {
             award = AwardsFactory.getInstance().generateNew(setName, awardName);
             if (award == null) {
-                MekHQ.getLogger().error("Cannot award a null award, returning.");
+                LogManager.getLogger().error("Cannot award a null award, returning.");
                 return;
             }
             awards.add(award);
         }
-        person.awardXP(award.getXPReward());
-        person.changeEdge(award.getEdgeReward());
-        person.resetCurrentEdge(); //Reset the person's edge points
+
+        if (award.getXPReward() < 0) {
+            person.spendXP(-award.getXPReward());
+        } else {
+            person.awardXP(campaign, award.getXPReward());
+        }
+
+        if (award.getEdgeReward() > 0) {
+            person.changeEdge(award.getEdgeReward());
+            person.changeCurrentEdge(award.getEdgeReward());
+            PersonalLogger.gainedEdge(campaign, person, campaign.getLocalDate());
+        }
 
         award.addDate(date);
         logAward(award, date);

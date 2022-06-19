@@ -1,10 +1,11 @@
 Version:1.0
 Crosscut
 ED-X4K LoggerMech
+mul id:7466
 
 Config:Biped
 techbase:Inner Sphere
-era:3070
+era:2786
 source:Jihad
 rules level:2
 

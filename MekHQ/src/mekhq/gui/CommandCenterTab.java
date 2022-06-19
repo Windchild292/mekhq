@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -22,15 +22,19 @@ import megamek.client.ui.swing.UnitLoadingDialog;
 import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.common.MechSummaryCache;
 import megamek.common.event.Subscribe;
-import megamek.common.icons.AbstractIcon;
 import megamek.common.util.EncodeControl;
-import mekhq.MHQStaticDirectoryManager;
 import mekhq.MekHQ;
+import mekhq.MHQOptionsChangedEvent;
 import mekhq.campaign.event.*;
-import mekhq.campaign.report.*;
+import mekhq.campaign.report.CargoReport;
+import mekhq.campaign.report.HangarReport;
+import mekhq.campaign.report.PersonnelReport;
+import mekhq.campaign.report.TransportReport;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.gui.adapter.ProcurementTableMouseAdapter;
 import mekhq.gui.dialog.*;
+import mekhq.gui.dialog.reportDialogs.*;
+import mekhq.gui.enums.MekHQTabType;
 import mekhq.gui.model.ProcurementTableModel;
 import mekhq.gui.sorter.FormattedNumberSorter;
 import mekhq.gui.sorter.TargetSorter;
@@ -86,7 +90,8 @@ public final class CommandCenterTab extends CampaignGuiTab {
     private JPanel panIcon;
     private JLabel lblIcon;
 
-    private ResourceBundle resourceMap;
+    private static final transient ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     /**
      * @param gui a {@link CampaignGUI} object that this tab is a component of
@@ -97,13 +102,17 @@ public final class CommandCenterTab extends CampaignGuiTab {
         MekHQ.registerHandler(this);
     }
 
+    //region Getters/Setters
+    public DailyReportLogPanel getPanLog() {
+        return panLog;
+    }
+    //endregion Getters/Setters
+
     /**
      * initialize the contents and layout of the tab
      */
     @Override
     public void initTab() {
-        resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI", new EncodeControl());
-
         panCommand = new JPanel(new GridBagLayout());
 
         initInfoPanel();
@@ -114,7 +123,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
         lblIcon = new JLabel();
         lblIcon.getAccessibleContext().setAccessibleName("Player Camouflage");
         panIcon.add(lblIcon, BorderLayout.CENTER);
-        setIcon();
+        lblIcon.setIcon(getCampaign().getUnitIcon().getImageIcon(150));
 
         /* Set overall layout */
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -334,7 +343,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
                     getCampaignGui(), null, MassRepairMassSalvageMode.UNITS);
             dlg.setVisible(true);
         });
-        btnMRMSDialog.setVisible(MekHQ.getMekHQOptions().getCommandCenterMRMS());
+        btnMRMSDialog.setVisible(MekHQ.getMHQOptions().getCommandCenterMRMS());
         panProcurementButtons.add(btnMRMSDialog);
 
         btnMRMSInstant = new JButton(resourceMap.getString("btnMRMSInstant.text"));
@@ -345,7 +354,7 @@ public final class CommandCenterTab extends CampaignGuiTab {
             JOptionPane.showMessageDialog(getCampaignGui().getFrame(), "Mass Repair/Salvage complete.",
                     "Complete", JOptionPane.INFORMATION_MESSAGE);
         });
-        btnMRMSInstant.setVisible(MekHQ.getMekHQOptions().getCommandCenterMRMS());
+        btnMRMSInstant.setVisible(MekHQ.getMHQOptions().getCommandCenterMRMS());
         panProcurementButtons.add(btnMRMSInstant);
 
         /* shopping table */
@@ -373,8 +382,6 @@ public final class CommandCenterTab extends CampaignGuiTab {
         procurementTable.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "REMOVE");
 
         procurementTable.getActionMap().put("ADD", new AbstractAction() {
-            private static final long serialVersionUID = 4958203340754214211L;
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 for (final int row : procurementTable.getSelectedRows()) {
@@ -386,8 +393,6 @@ public final class CommandCenterTab extends CampaignGuiTab {
         });
 
         procurementTable.getActionMap().put("REMOVE", new AbstractAction() {
-            private static final long serialVersionUID = -8377486575329708963L;
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 for (final int rowIndex : procurementTable.getSelectedRows()) {
@@ -431,64 +436,37 @@ public final class CommandCenterTab extends CampaignGuiTab {
         panReports = new JPanel(new GridLayout(5, 1));
 
         JButton btnTransportReport = new JButton(resourceMap.getString("btnTransportReport.text"));
-        btnTransportReport.addActionListener(ev -> getCampaignGui().showReport(new TransportReport(getCampaign())));
+        btnTransportReport.addActionListener(ev -> new TransportReportDialog(getCampaignGui().getFrame(),
+                new TransportReport(getCampaign())).setVisible(true));
         panReports.add(btnTransportReport);
 
         JButton btnHangarOverview = new JButton(resourceMap.getString("btnHangarOverview.text"));
-        btnHangarOverview.addActionListener(evt -> getCampaignGui().showReport(new HangarReport(getCampaign())));
+        btnHangarOverview.addActionListener(evt -> new HangarReportDialog(getCampaignGui().getFrame(),
+                new HangarReport(getCampaign())).setVisible(true));
         panReports.add(btnHangarOverview);
 
         JButton btnPersonnelOverview = new JButton(resourceMap.getString("btnPersonnelOverview.text"));
-        btnPersonnelOverview.addActionListener(evt -> getCampaignGui().showReport(new PersonnelReport(getCampaign())));
+        btnPersonnelOverview.addActionListener(evt -> new PersonnelReportDialog(getCampaignGui().getFrame(),
+                new PersonnelReport(getCampaign())).setVisible(true));
         panReports.add(btnPersonnelOverview);
 
         JButton btnCargoCapacity = new JButton(resourceMap.getString("btnCargoCapacity.text"));
-        btnCargoCapacity.addActionListener(evt -> getCampaignGui().showReport(new CargoReport(getCampaign())));
+        btnCargoCapacity.addActionListener(evt -> new CargoReportDialog(getCampaignGui().getFrame(),
+                new CargoReport(getCampaign())).setVisible(true));
         panReports.add(btnCargoCapacity);
 
         btnUnitRating = new JButton(resourceMap.getString("btnUnitRating.text"));
         btnUnitRating.setVisible(getCampaign().getCampaignOptions().getUnitRatingMethod().isEnabled());
-        btnUnitRating.addActionListener(evt -> getCampaignGui().showReport(new RatingReport(getCampaign())));
+        btnUnitRating.addActionListener(evt -> new UnitRatingReportDialog(getCampaignGui().getFrame(),
+                getCampaign()).setVisible(true));
         panReports.add(btnUnitRating);
 
         panReports.setBorder(BorderFactory.createTitledBorder(resourceMap.getString("panReports.title")));
     }
 
-    /**
-     * set the icon for the unit if it exits in the icon panel
-     */
-    public void setIcon() {
-        // TODO : AbstractIcon : Swap me over
-        lblIcon.setIcon(null);
-
-        String category = getCampaign().getIconCategory();
-        String filename = getCampaign().getIconFileName();
-
-        if (AbstractIcon.ROOT_CATEGORY.equals(category)) {
-            category = "";
-        }
-
-        // Return a null if the player has selected no icon file.
-        if ((null != category) && (null != filename) && !AbstractIcon.DEFAULT_ICON_FILENAME.equals(filename)) {
-            // Try to get the icon file.
-            Image icon;
-            try {
-                icon = (Image) MHQStaticDirectoryManager.getForceIcons().getItem(category, filename);
-                if (null != icon) {
-                    icon = icon.getScaledInstance(150, -1, Image.SCALE_DEFAULT);
-                } else {
-                    return;
-                }
-                lblIcon.setIcon(new ImageIcon(icon));
-            } catch (Exception e) {
-                MekHQ.getLogger().error(e);
-            }
-        }
-    }
-
     @Override
-    public GuiTabType tabType() {
-        return GuiTabType.COMMAND;
+    public MekHQTabType tabType() {
+        return MekHQTabType.COMMAND_CENTER;
     }
 
     /**
@@ -546,10 +524,9 @@ public final class CommandCenterTab extends CampaignGuiTab {
      * the currently selected options
      */
     private void getUnit() {
-        if (MekHQ.getMekHQOptions().getCommandCenterUseUnitMarket()
-                && getCampaign().getCampaignOptions().getUseAtBUnitMarket()) {
-            UnitMarketDialog umd = new UnitMarketDialog(getFrame(), getCampaign());
-            umd.setVisible(true);
+        if (MekHQ.getMHQOptions().getCommandCenterUseUnitMarket()
+                && !getCampaign().getUnitMarket().getMethod().isNone()) {
+            new UnitMarketDialog(getFrame(), getCampaign()).showDialog();
         } else {
             UnitLoadingDialog unitLoadingDialog = new UnitLoadingDialog(getFrame());
             if (!MechSummaryCache.getInstance().isInitialized()) {
@@ -616,19 +593,19 @@ public final class CommandCenterTab extends CampaignGuiTab {
     }
 
     @Subscribe
-    public void handle(OptionsChangedEvent evt) {
+    public void handle(final OptionsChangedEvent evt) {
         lblRatingHead.setVisible(evt.getOptions().getUnitRatingMethod().isEnabled());
         lblRating.setVisible(evt.getOptions().getUnitRatingMethod().isEnabled());
         btnUnitRating.setVisible(evt.getOptions().getUnitRatingMethod().isEnabled());
         basicInfoScheduler.schedule();
         procurementListScheduler.schedule();
-        setIcon();
+        lblIcon.setIcon(getCampaign().getUnitIcon().getImageIcon(150));
     }
 
     @Subscribe
-    public void handle(MekHQOptionsChangedEvent evt) {
-        btnMRMSDialog.setVisible(MekHQ.getMekHQOptions().getCommandCenterMRMS());
-        btnMRMSInstant.setVisible(MekHQ.getMekHQOptions().getCommandCenterMRMS());
+    public void handle(MHQOptionsChangedEvent evt) {
+        btnMRMSDialog.setVisible(MekHQ.getMHQOptions().getCommandCenterMRMS());
+        btnMRMSInstant.setVisible(MekHQ.getMHQOptions().getCommandCenterMRMS());
     }
 
     @Subscribe

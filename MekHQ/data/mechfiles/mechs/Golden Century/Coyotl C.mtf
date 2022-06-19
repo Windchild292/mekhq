@@ -1,11 +1,12 @@
-Version:1.0
+Version:1.1
 Coyotl
 C
+mul id:7607
 
 Config:Biped Omnimech
 techbase:Clan
-era:3070
-source:Jihad
+era:3145
+source:Dark Age
 rules level:2
 
 mass:40

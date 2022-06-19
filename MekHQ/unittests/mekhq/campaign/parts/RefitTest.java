@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 MegaMek team
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -16,42 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
+import megamek.Version;
 import megamek.common.Entity;
 import megamek.common.EquipmentType;
-import megamek.common.IPlayer;
+import megamek.common.Player;
 import megamek.common.loaders.EntityLoadingException;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.CampaignOptions;
-import mekhq.campaign.Hangar;
-import mekhq.campaign.Quartermaster;
-import mekhq.campaign.Warehouse;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.*;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.market.ShoppingList;
 import mekhq.campaign.parts.equipment.AmmoBin;
@@ -60,6 +33,25 @@ import mekhq.campaign.parts.equipment.MissingEquipmentPart;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.unit.UnitTestUtilities;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RefitTest {
     @Test
@@ -75,10 +67,15 @@ public class RefitTest {
         when(mockCampaign.getWarehouse()).thenReturn(mockWarehouse);
         Quartermaster mockQuartermaster = mock(Quartermaster.class);
         when(mockCampaign.getQuartermaster()).thenReturn(mockQuartermaster);
+        CampaignOptions mockOptions = mock(CampaignOptions.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockOptions);
+        when(mockOptions.getCommonPartPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSphereUnitPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSpherePartPriceMultiplier()).thenReturn(1.0);
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getLocustLCT1V();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -110,10 +107,15 @@ public class RefitTest {
         when(mockCampaign.getWarehouse()).thenReturn(mockWarehouse);
         Quartermaster mockQuartermaster = mock(Quartermaster.class);
         when(mockCampaign.getQuartermaster()).thenReturn(mockQuartermaster);
+        CampaignOptions mockOptions = mock(CampaignOptions.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockOptions);
+        when(mockOptions.getCommonPartPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSphereUnitPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSpherePartPriceMultiplier()).thenReturn(1.0);
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getLocustLCT1V();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -192,10 +194,15 @@ public class RefitTest {
         when(mockCampaign.getWarehouse()).thenReturn(mockWarehouse);
         Quartermaster mockQuartermaster = mock(Quartermaster.class);
         when(mockCampaign.getQuartermaster()).thenReturn(mockQuartermaster);
+        CampaignOptions mockOptions = mock(CampaignOptions.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockOptions);
+        when(mockOptions.getCommonPartPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSphereUnitPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSpherePartPriceMultiplier()).thenReturn(1.0);
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getLocustLCT1V();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -219,14 +226,14 @@ public class RefitTest {
         // Write the Refit XML
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        refit.writeToXml(pw, 0);
+        refit.writeToXML(pw, 0);
 
         // Get the Refit XML
         String xml = sw.toString();
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -235,7 +242,7 @@ public class RefitTest {
         assertEquals("refit", refitElt.getNodeName());
 
         // Deserialize the refit
-        Refit deserialized = Refit.generateInstanceFromXML(refitElt, oldUnit, new Version("1.0.0"));
+        Refit deserialized = Refit.generateInstanceFromXML(refitElt, new Version(), mockCampaign, oldUnit);
         assertNotNull(deserialized);
 
         // Spot check the values
@@ -253,24 +260,30 @@ public class RefitTest {
         assertEquals(refit.getTech(), deserialized.getTech());
 
         // Check that we got all the correct old parts in the XML
-        Set<Integer> oldUnitParts = refit.getOldUnitParts().stream().map(p -> p.getId())
+        Set<Integer> oldUnitParts = refit.getOldUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
-        Set<Integer> serializedOldParts = deserialized.getOldUnitParts().stream().map(p -> p.getId())
+        Set<Integer> serializedOldParts = deserialized.getOldUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
         assertEquals(oldUnitParts, serializedOldParts);
 
         // Check that we got all the correct new parts in the XML
-        Set<Integer> newUnitParts = refit.getNewUnitParts().stream().map(p -> p.getId())
+        Set<Integer> newUnitParts = refit.getNewUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
-        Set<Integer> serializedNewParts = deserialized.getNewUnitParts().stream().map(p -> p.getId())
+        Set<Integer> serializedNewParts = deserialized.getNewUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
         assertEquals(newUnitParts, serializedNewParts);
 
         // Check that we got all the shopping list entries (by name, not amazing but
         // reasonable)
-        List<String> shoppingList = refit.getShoppingList().stream().map(p -> p.getName())
+        List<String> shoppingList = refit.getShoppingList().stream()
+                .map(Part::getName)
                 .collect(Collectors.toList());
-        List<String> serializedShoppingList = deserialized.getShoppingList().stream().map(p -> p.getName())
+        List<String> serializedShoppingList = deserialized.getShoppingList().stream()
+                .map(Part::getName)
                 .collect(Collectors.toList());
 
         // Make sure they're the same length first...
@@ -301,8 +314,11 @@ public class RefitTest {
     @Test
     public void javelinJVN10Nto10ATest() {
         Campaign mockCampaign = mock(Campaign.class);
-        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
-        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
+        CampaignOptions mockOptions = mock(CampaignOptions.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockOptions);
+        when(mockOptions.getCommonPartPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSphereUnitPriceMultiplier()).thenReturn(1.0);
+        when(mockOptions.getInnerSpherePartPriceMultiplier()).thenReturn(1.0);
         Warehouse mockWarehouse = mock(Warehouse.class);
         when(mockCampaign.getWarehouse()).thenReturn(mockWarehouse);
         Quartermaster mockQuartermaster = mock(Quartermaster.class);
@@ -310,7 +326,7 @@ public class RefitTest {
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getJavelinJVN10N();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -395,7 +411,7 @@ public class RefitTest {
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getJavelinJVN10N();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -421,14 +437,14 @@ public class RefitTest {
         // Write the Refit XML
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        refit.writeToXml(pw, 0);
+        refit.writeToXML(pw, 0);
 
         // Get the Refit XML
         String xml = sw.toString();
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -437,7 +453,7 @@ public class RefitTest {
         assertEquals("refit", refitElt.getNodeName());
 
         // Deserialize the refit
-        Refit deserialized = Refit.generateInstanceFromXML(refitElt, oldUnit, new Version("1.0.0"));
+        Refit deserialized = Refit.generateInstanceFromXML(refitElt, new Version(), mockCampaign, oldUnit);
         assertNotNull(deserialized);
 
         // Spot check the values
@@ -455,24 +471,30 @@ public class RefitTest {
         assertEquals(refit.getTech().getId(), deserialized.getTech().getId());
 
         // Check that we got all the correct old parts in the XML
-        Set<Integer> oldUnitParts = refit.getOldUnitParts().stream().map(p -> p.getId())
+        Set<Integer> oldUnitParts = refit.getOldUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
-        Set<Integer> serializedOldParts = deserialized.getOldUnitParts().stream().map(p -> p.getId())
+        Set<Integer> serializedOldParts = deserialized.getOldUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
         assertEquals(oldUnitParts, serializedOldParts);
 
         // Check that we got all the correct new parts in the XML
-        Set<Integer> newUnitParts = refit.getNewUnitParts().stream().map(p -> p.getId())
+        Set<Integer> newUnitParts = refit.getNewUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
-        Set<Integer> serializedNewParts = deserialized.getNewUnitParts().stream().map(p -> p.getId())
+        Set<Integer> serializedNewParts = deserialized.getNewUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
         assertEquals(newUnitParts, serializedNewParts);
 
         // Check that we got all the shopping list entries (by name, not amazing but
         // reasonable)
-        List<String> shoppingList = refit.getShoppingList().stream().map(p -> p.getName())
+        List<String> shoppingList = refit.getShoppingList().stream()
+                .map(Part::getName)
                 .collect(Collectors.toList());
-        List<String> serializedShoppingList = deserialized.getShoppingList().stream().map(p -> p.getName())
+        List<String> serializedShoppingList = deserialized.getShoppingList().stream()
+                .map(Part::getName)
                 .collect(Collectors.toList());
 
         // Make sure they're the same length first...
@@ -502,17 +524,23 @@ public class RefitTest {
 
     @Test
     public void fleaFLE4toFLE15Test() {
-        Campaign mockCampaign = mock(Campaign.class);
-        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
-        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
+        CampaignOptions mockOptions = mock(CampaignOptions.class);
+        when(mockOptions.getCommonPartPriceMultiplier()).thenReturn(1d);
+        when(mockOptions.getInnerSphereUnitPriceMultiplier()).thenReturn(1d);
+        when(mockOptions.getInnerSpherePartPriceMultiplier()).thenReturn(1d);
+
         Warehouse mockWarehouse = mock(Warehouse.class);
-        when(mockCampaign.getWarehouse()).thenReturn(mockWarehouse);
+
         Quartermaster mockQuartermaster = mock(Quartermaster.class);
+
+        Campaign mockCampaign = mock(Campaign.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockOptions);
+        when(mockCampaign.getWarehouse()).thenReturn(mockWarehouse);
         when(mockCampaign.getQuartermaster()).thenReturn(mockQuartermaster);
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getFleaFLE4();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -624,7 +652,7 @@ public class RefitTest {
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getFleaFLE4();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -650,14 +678,14 @@ public class RefitTest {
         // Write the Refit XML
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        refit.writeToXml(pw, 0);
+        refit.writeToXML(pw, 0);
 
         // Get the Refit XML
         String xml = sw.toString();
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -666,7 +694,7 @@ public class RefitTest {
         assertEquals("refit", refitElt.getNodeName());
 
         // Deserialize the refit
-        Refit deserialized = Refit.generateInstanceFromXML(refitElt, oldUnit, new Version("1.0.0"));
+        Refit deserialized = Refit.generateInstanceFromXML(refitElt, new Version(), mockCampaign, oldUnit);
         assertNotNull(deserialized);
         deserialized.reCalc();
 
@@ -685,24 +713,30 @@ public class RefitTest {
         assertEquals(refit.getTech().getId(), deserialized.getTech().getId());
 
         // Check that we got all the correct old parts in the XML
-        Set<Integer> oldUnitParts = refit.getOldUnitParts().stream().map(p -> p.getId())
+        Set<Integer> oldUnitParts = refit.getOldUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
-        Set<Integer> serializedOldParts = deserialized.getOldUnitParts().stream().map(p -> p.getId())
+        Set<Integer> serializedOldParts = deserialized.getOldUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
         assertEquals(oldUnitParts, serializedOldParts);
 
         // Check that we got all the correct new parts in the XML
-        Set<Integer> newUnitParts = refit.getNewUnitParts().stream().map(p -> p.getId())
+        Set<Integer> newUnitParts = refit.getNewUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
-        Set<Integer> serializedNewParts = deserialized.getNewUnitParts().stream().map(p -> p.getId())
+        Set<Integer> serializedNewParts = deserialized.getNewUnitParts().stream()
+                .map(Part::getId)
                 .collect(Collectors.toSet());
         assertEquals(newUnitParts, serializedNewParts);
 
         // Check that we got all the shopping list entries (by name, not amazing but
         // reasonable)
-        List<String> shoppingList = refit.getShoppingList().stream().map(p -> p.getName())
+        List<String> shoppingList = refit.getShoppingList().stream()
+                .map(Part::getName)
                 .collect(Collectors.toList());
-        List<String> serializedShoppingList = deserialized.getShoppingList().stream().map(p -> p.getName())
+        List<String> serializedShoppingList = deserialized.getShoppingList().stream()
+                .map(Part::getName)
                 .collect(Collectors.toList());
 
         // Make sure they're the same length first...
@@ -752,7 +786,7 @@ public class RefitTest {
 
         // Create the original entity backing the unit
         Entity oldEntity = UnitTestUtilities.getHeavyTrackedApcMg();
-        IPlayer mockPlayer = mock(IPlayer.class);
+        Player mockPlayer = mock(Player.class);
         when(mockPlayer.getName()).thenReturn("Test Player");
         oldEntity.setOwner(mockPlayer);
 
@@ -772,15 +806,17 @@ public class RefitTest {
         List<Part> removedParts = refit.getOldUnitParts();
         assertEquals(5, removedParts.size());
         assertEquals(4, removedParts.stream()
-                .filter(p -> (p instanceof EquipmentPart) && p.getName().equals("Machine Gun")).count());
+                .filter(p -> (p instanceof EquipmentPart) && p.getName().equals("Machine Gun"))
+                .count());
         assertEquals(1, removedParts.stream()
-                .filter(p -> (p instanceof AmmoBin) && p.getName().equals("Machine Gun Ammo Bin")).count());
+                .filter(p -> (p instanceof AmmoBin) && p.getName().equals("Machine Gun Ammo Bin"))
+                .count());
 
         // All of the new parts (except ammo bins) should be from the old unit
         List<Part> newParts = refit.getNewUnitParts();
         assertTrue(newParts.stream().filter(p -> !(p instanceof AmmoBin)).allMatch(p -> p.getUnit().equals(oldUnit)));
 
-        // We we have nothing we need to buy
+        // We have nothing we need to buy
         List<Part> shoppingCart = refit.getShoppingList();
         assertTrue(shoppingCart.isEmpty());
 

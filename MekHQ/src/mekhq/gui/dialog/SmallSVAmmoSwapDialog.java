@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.gui.dialog;
 
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.AmmoType;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.parts.equipment.InfantryAmmoBin;
 import mekhq.campaign.unit.Unit;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,8 +41,8 @@ public class SmallSVAmmoSwapDialog extends JDialog {
 
     private final List<WeaponRow> rows = new ArrayList<>();
     private boolean canceled = true;
-    private final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.SmallSVAmmoSwapDialog",
-            new EncodeControl());
+    private final transient ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.SmallSVAmmoSwapDialog",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     public SmallSVAmmoSwapDialog(Frame frame, Unit unit) {
         super(frame, true);
@@ -80,11 +80,15 @@ public class SmallSVAmmoSwapDialog extends JDialog {
         setUserPreferences();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(SmallSVAmmoSwapDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(SmallSVAmmoSwapDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     public boolean wasCanceled() {

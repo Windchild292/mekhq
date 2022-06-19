@@ -1,7 +1,7 @@
 /*
  * MissingAmmoBin.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -28,7 +28,7 @@ import megamek.common.AmmoType;
 import megamek.common.Jumpship;
 import megamek.common.SmallCraft;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.Part;
 
@@ -37,11 +37,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissingAmmoBin extends MissingEquipmentPart {
-    private static final long serialVersionUID = 2892728320891712304L;
-
     protected boolean oneShot;
 
     public MissingAmmoBin() {
@@ -148,7 +146,7 @@ public class MissingAmmoBin extends MissingEquipmentPart {
     @Override
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
         if (oneShot) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "oneShot", oneShot);
+            MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "oneShot", oneShot);
         }
 
         super.writeToXmlEnd(pw1, indent);

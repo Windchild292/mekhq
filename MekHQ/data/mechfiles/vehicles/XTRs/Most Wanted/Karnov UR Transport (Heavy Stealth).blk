@@ -20,12 +20,16 @@ Karnov UR Transport
 (Heavy Stealth)
 </Model>
 
+<mul id:>
+5787
+</mul id:>
+
 <year>
-3081
+3080
 </year>
 
 <originalBuildYear>
-3081
+3080
 </originalBuildYear>
 
 <type>

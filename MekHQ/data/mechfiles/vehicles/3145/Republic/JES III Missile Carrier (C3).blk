@@ -3,7 +3,7 @@
 1
 </BlockVersion>
 
-# Write the version number just in case...
+##Write the version number just in case...
 <Version>
 MAM0
 </Version>
@@ -20,9 +20,17 @@ JES III Missile Carrier
 (C3)
 </Model>
 
+<mul id:>
+6700
+</mul id:>
+
 <year>
 3140
 </year>
+
+<originalBuildYear>
+3140
+</originalBuildYear>
 
 <type>
 IS Level 2
@@ -31,6 +39,9 @@ IS Level 2
 <motion_type>
 Wheeled
 </motion_type>
+
+<transporters>
+</transporters>
 
 <cruiseMP>
 3
@@ -44,8 +55,8 @@ Wheeled
 40
 21
 21
-26
 20
+26
 </armor>
 
 <Body Equipment>
@@ -86,3 +97,4 @@ TRO 3145 Republic of the Sphere - Dark Ages
 <tonnage>
 60.0
 </tonnage>
+

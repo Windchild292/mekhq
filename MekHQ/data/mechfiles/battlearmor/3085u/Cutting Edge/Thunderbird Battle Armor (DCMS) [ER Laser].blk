@@ -17,8 +17,12 @@ Thunderbird Battle Armor
 </Name>
 
 <Model>
-[ER Laser]
+(DCMS) [ER Laser]
 </Model>
+
+<mul id:>
+3229
+</mul id:>
 
 <year>
 3086

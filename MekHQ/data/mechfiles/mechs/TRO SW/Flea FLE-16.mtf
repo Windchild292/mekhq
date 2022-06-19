@@ -1,10 +1,11 @@
 Version:1.0
 Flea
 FLE-16
+mul id:7427
 
 Config:Biped
 TechBase:Inner Sphere
-Era:3049
+Era:3032
 Source:TRO Succession Wars - Age of War
 Rules Level:1
 

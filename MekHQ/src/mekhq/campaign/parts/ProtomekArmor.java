@@ -1,7 +1,7 @@
 /*
  * ProtomechArmor.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,11 +12,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package mekhq.campaign.parts;
@@ -32,11 +32,9 @@ import mekhq.campaign.work.IAcquisitionWork;
 
 /**
  *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class ProtomekArmor extends Armor implements IAcquisitionWork {
-    private static final long serialVersionUID = 5275226057484468868L;
-
     public ProtomekArmor() {
         this(0, EquipmentType.T_ARMOR_STANDARD, 0, -1, false, null);
     }
@@ -60,14 +58,17 @@ public class ProtomekArmor extends Armor implements IAcquisitionWork {
     }
 
     @Override
-    public Money getCurrentValue() {
-        return Money.of(amount * EquipmentType.getProtomechArmorCostPerPoint(type));
+    public Money getActualValue() {
+        return adjustCostsForCampaignOptions(
+                Money.of(amount * EquipmentType.getProtomechArmorCostPerPoint(type)));
     }
 
+    @Override
     public double getTonnageNeeded() {
         return amountNeeded / EquipmentType.getProtomechArmorWeightPerPoint(type);
     }
 
+    @Override
     public Money getValueNeeded() {
         return adjustCostsForCampaignOptions(
                 Money.of(amountNeeded * EquipmentType.getProtomechArmorCostPerPoint(type)));
@@ -75,19 +76,19 @@ public class ProtomekArmor extends Armor implements IAcquisitionWork {
 
     @Override
     public Money getStickerPrice() {
-        //always in 5-ton increments
+        // always in 5-ton increments
         return Money.of(5.0 / EquipmentType.getProtomechArmorWeightPerPoint(type) * getArmorPointsPerTon()
                 * EquipmentType.getProtomechArmorCostPerPoint(type));
     }
 
     @Override
     public Money getBuyCost() {
-        return getStickerPrice();
+        return getActualValue();
     }
 
     @Override
     public boolean isSamePartType(Part part) {
-        return getClass().equals(part.getClass())
+        return (getClass() == part.getClass())
                 && getType() == ((ProtomekArmor) part).getType()
                 && isClanTechBase() == part.isClanTechBase()
                 && Objects.equals(getRefitUnit(), part.getRefitUnit());
@@ -98,6 +99,7 @@ public class ProtomekArmor extends Armor implements IAcquisitionWork {
         return clan;
     }
 
+    @Override
     public double getArmorWeight(int points) {
         return points * 50/1000.0;
     }
@@ -108,37 +110,38 @@ public class ProtomekArmor extends Armor implements IAcquisitionWork {
                 -1, clan, campaign);
     }
 
-	@Override
-	public int getDifficulty() {
-		return -2;
-	}
+    @Override
+    public int getDifficulty() {
+        return -2;
+    }
 
+    @Override
     public double getArmorPointsPerTon() {
         return 1.0 / EquipmentType.getProtomechArmorWeightPerPoint(type);
     }
 
+    @Override
     public Part getNewPart() {
         return new ProtomekArmor(0, type, (int) Math.round(5 * getArmorPointsPerTon()),
                 -1, clan, campaign);
     }
 
+    @Override
     public int getAmountAvailable() {
-        ProtomekArmor a = (ProtomekArmor) campaign.getWarehouse().findSparePart(part -> {
-            return part instanceof ProtomekArmor
-                && part.isPresent()
-                && !part.isReservedForRefit()
-                && isClanTechBase() == part.isClanTechBase()
-                && getType() == ((ProtomekArmor)part).getType();
-        });
+        ProtomekArmor a = (ProtomekArmor) campaign.getWarehouse().findSparePart(part ->
+                (part instanceof ProtomekArmor)
+                        && part.isPresent()
+                        && !part.isReservedForRefit()
+                        && isClanTechBase() == part.isClanTechBase()
+                        && (getType() == ((ProtomekArmor) part).getType()));
 
         return a != null ? a.getAmount() : 0;
     }
 
+    @Override
     public void changeAmountAvailable(int amount) {
-        ProtomekArmor a = (ProtomekArmor) campaign.getWarehouse().findSparePart(part -> {
-            return isSamePartType(part)
-                && part.isPresent();
-        });
+        ProtomekArmor a = (ProtomekArmor) campaign.getWarehouse().findSparePart(part ->
+                isSamePartType(part) && part.isPresent());
 
         if (null != a) {
             a.setAmount(a.getAmount() + amount);
@@ -162,5 +165,4 @@ public class ProtomekArmor extends Armor implements IAcquisitionWork {
         // type entry so we can just use the base protomech advancement
         return Protomech.TA_STANDARD_PROTOMECH;
     }
-
 }

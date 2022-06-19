@@ -10,34 +10,31 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.parts.equipment;
-
-import java.io.PrintWriter;
-import java.util.Objects;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import megamek.common.AmmoType;
 import megamek.common.Mounted;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.Part;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
+import java.util.Objects;
 
 /**
  * @author cwspain
  */
 public class MissingLargeCraftAmmoBin extends MissingAmmoBin {
-    private static final long serialVersionUID = 1327103853526962103L;
-
     private int bayEqNum;
 
     private transient Mounted bay;
@@ -77,7 +74,7 @@ public class MissingLargeCraftAmmoBin extends MissingAmmoBin {
             }
         }
 
-        MekHQ.getLogger().warning("Could not find weapon bay for " + typeName + " for " + unit.getName());
+        LogManager.getLogger().warn("Could not find weapon bay for " + typeName + " for " + unit.getName());
         return null;
     }
 
@@ -156,7 +153,7 @@ public class MissingLargeCraftAmmoBin extends MissingAmmoBin {
 
     @Override
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "bayEqNum", bayEqNum);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "bayEqNum", bayEqNum);
         super.writeToXmlEnd(pw1, indent);
     }
 
@@ -165,10 +162,14 @@ public class MissingLargeCraftAmmoBin extends MissingAmmoBin {
         super.loadFieldsFromXmlNode(wn);
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
-            if (wn2.getNodeName().equalsIgnoreCase("bayEqNum")) {
-                bayEqNum = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("bayEqNum")) {
+                    bayEqNum = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

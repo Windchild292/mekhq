@@ -1,7 +1,7 @@
 /*
  * Loot.java
  *
- * Copyright (c) 2011 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2011 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,29 +20,28 @@
  */
 package mekhq.campaign.mission;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-
+import megamek.Version;
 import megamek.common.Entity;
 import megamek.common.MechFileParser;
 import megamek.common.MechSummary;
 import megamek.common.MechSummaryCache;
 import megamek.common.loaders.EntityLoadingException;
-import mekhq.MekHqXmlSerializable;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
-import mekhq.campaign.finances.Transaction;
+import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.parts.Part;
-
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
-public class Loot implements MekHqXmlSerializable {
+public class Loot {
 
     private String name;
     private Money cash;
@@ -109,25 +108,29 @@ public class Loot implements MekHqXmlSerializable {
 
     public String getShortDescription() {
         String desc = getName() + " - ";
-        if(cash.isPositive()) {
+        if (cash.isPositive()) {
             desc += cash.toAmountAndSymbolString();
         }
-        if(units.size() > 0) {
+
+        if (!units.isEmpty()) {
             String s = units.size() + " unit";
-            if(units.size() > 1) {
+            if (units.size() > 1) {
                 s += "s";
             }
-            if(cash.isPositive()) {
+
+            if (cash.isPositive()) {
                 s = ", " + s;
             }
             desc += s;
         }
-        if(parts.size() > 0) {
+
+        if (!parts.isEmpty()) {
             String s = parts.size() + " part";
-            if(parts.size() > 1) {
+            if (parts.size() > 1) {
                 s += "s";
             }
-            if(cash.isPositive() || units.size() > 0) {
+
+            if (cash.isPositive() || !units.isEmpty()) {
                 s = ", " + s;
             }
             desc += s;
@@ -136,42 +139,33 @@ public class Loot implements MekHqXmlSerializable {
     }
 
     public void get(Campaign campaign, Scenario s) {
-        //TODO: put in some reports
-        if(cash.isPositive()) {
-            campaign.getFinances().credit(cash, Transaction.C_MISC,
-                    "Reward for " + getName() + " during " + s.getName(), campaign.getLocalDate());
+        // TODO: put in some reports
+        if (cash.isPositive()) {
+            campaign.getFinances().credit(TransactionType.MISCELLANEOUS, campaign.getLocalDate(), cash,
+                    "Reward for " + getName() + " during " + s.getName());
         }
-        for(Entity e : units) {
+
+        for (Entity e : units) {
             campaign.addNewUnit(e, false, 0);
         }
-        for(Part p : parts) {
+
+        for (Part p : parts) {
             campaign.getQuartermaster().addPart(p, 0);
         }
     }
 
-    @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "<loot>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<name>"
-                +MekHqXmlUtil.escape(name)
-                +"</name>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<cash>"
-                +cash.toXmlString()
-                +"</cash>");
+    public void writeToXML(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "loot");
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "name", name);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "cash", getCash());
         for (Entity e : units) {
-            String lookupName = e.getChassis() + " " + e.getModel();
-            pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                    +"<entityName>"
-                    +lookupName.trim()
-                    +"</entityName>");
-        }
-        for (Part p : parts) {
-            p.writeToXml(pw1, indent+1);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "entityName", e.getChassis() + ' ' + e.getModel());
         }
 
-        pw1.println(MekHqXmlUtil.indentStr(indent) + "</loot>");
+        for (Part p : parts) {
+            p.writeToXML(pw, indent);
+        }
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "loot");
     }
 
     public static Loot generateInstanceFromXML(Node wn, Campaign c, Version version) {
@@ -183,7 +177,7 @@ public class Loot implements MekHqXmlSerializable {
             // Okay, now load specific fields!
             NodeList nl = wn.getChildNodes();
 
-            for (int x=0; x<nl.getLength(); x++) {
+            for (int x = 0; x < nl.getLength(); x++) {
                 Node wn2 = nl.item(x);
 
                 if (wn2.getNodeName().equalsIgnoreCase("name")) {
@@ -192,11 +186,11 @@ public class Loot implements MekHqXmlSerializable {
                     retVal.cash = Money.fromXmlString(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("entityName")) {
                     MechSummary summary = MechSummaryCache.getInstance().getMech(wn2.getTextContent());
-                    if(null == summary) {
+                    if (null == summary) {
                         throw(new EntityLoadingException());
                     }
                     Entity e = new MechFileParser(summary.getSourceFile(), summary.getEntryName()).getEntity();
-                    if(null == e) {
+                    if (null == e) {
                         continue;
                     }
                     retVal.units.add(e);
@@ -207,9 +201,7 @@ public class Loot implements MekHqXmlSerializable {
                 }
             }
         } catch (Exception ex) {
-            // Errrr, apparently either the class name was invalid...
-            // Or the listed name doesn't exist.
-            // Doh!
+            LogManager.getLogger().error("", ex);
         }
 
         return retVal;

@@ -1,7 +1,6 @@
 /*
- * PersonnelReport.java
- *
- * Copyright (c) 2013 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2013 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
+ * Copyright (c) 2021-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,12 +19,6 @@
  */
 package mekhq.campaign.report;
 
-import java.awt.Dimension;
-import java.awt.Font;
-
-import javax.swing.JSplitPane;
-import javax.swing.JTextPane;
-
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.personnel.Person;
@@ -34,45 +27,12 @@ import mekhq.campaign.personnel.enums.PersonnelRole;
 /**
  * @author Jay Lawson
  */
-public class PersonnelReport extends Report {
-
-    public PersonnelReport(Campaign c) {
-        super(c);
+public class PersonnelReport extends AbstractReport {
+    //region Constructors
+    public PersonnelReport(final Campaign campaign) {
+        super(campaign);
     }
-
-    public String getTitle() {
-        return "Personnel Report";
-    }
-
-    public JTextPane getCombatPersonnelReport() {
-    	// Load combat personnel
-        JTextPane txtCombat = new JTextPane();
-        txtCombat.setFont(new Font("Courier New", Font.PLAIN, 12));
-        txtCombat.setText(getCombatPersonnelDetails());
-        return txtCombat;
-    }
-
-    public JTextPane getSupportPersonnelReport() {
-    	// Load support personnel
-        JTextPane txtSupport = new JTextPane();
-        txtSupport.setFont(new Font("Courier New", Font.PLAIN, 12));
-        txtSupport.setText(getSupportPersonnelDetails());
-        return txtSupport;
-    }
-
-    public JTextPane getReport() {
-        // SplitPane them
-        JSplitPane splitOverviewPersonnel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getCombatPersonnelReport(), getSupportPersonnelReport());
-		splitOverviewPersonnel.setName("splitOverviewPersonnel");
-		splitOverviewPersonnel.setOneTouchExpandable(true);
-		splitOverviewPersonnel.setResizeWeight(0.5);
-
-		// Actual report pane
-		JTextPane txtReport = new JTextPane();
-        txtReport.setMinimumSize(new Dimension(800, 500));
-        txtReport.insertComponent(splitOverviewPersonnel);
-        return txtReport;
-    }
+    //endregion Constructors
 
     public String getCombatPersonnelDetails() {
         final PersonnelRole[] personnelRoles = PersonnelRole.values();
@@ -94,12 +54,13 @@ public class PersonnelReport extends Report {
             if (p.getStatus().isActive()) {
                 countPersonByType[p.getPrimaryRole().ordinal()]++;
                 countTotal++;
-                if (getCampaign().getCampaignOptions().useAdvancedMedical() && (p.getInjuries().size() > 0)) {
+                if (getCampaign().getCampaignOptions().useAdvancedMedical()
+                        && !p.getInjuries().isEmpty()) {
                     countInjured++;
                 } else if (p.getHits() > 0) {
                     countInjured++;
                 }
-                salary = salary.plus(p.getSalary());
+                salary = salary.plus(p.getSalary(getCampaign()));
             } else if (p.getStatus().isRetired()) {
                 countRetired++;
             } else if (p.getStatus().isMIA()) {
@@ -155,18 +116,18 @@ public class PersonnelReport extends Report {
             if (primarySupport && p.getPrisonerStatus().isFree() && p.getStatus().isActive()) {
                 countPersonByType[p.getPrimaryRole().ordinal()]++;
                 countTotal++;
-                if ((p.getInjuries().size() > 0) || (p.getHits() > 0)) {
+                if (!p.getInjuries().isEmpty() || (p.getHits() > 0)) {
                     countInjured++;
                 }
-                salary = salary.plus(p.getSalary());
+                salary = salary.plus(p.getSalary(getCampaign()));
             } else if (p.getPrisonerStatus().isPrisoner() && p.getStatus().isActive()) {
                 prisoners++;
-                if (p.getInjuries().size() > 0 || p.getHits() > 0) {
+                if (!p.getInjuries().isEmpty() || (p.getHits() > 0)) {
                     countInjured++;
                 }
             } else if (p.getPrisonerStatus().isBondsman() && p.getStatus().isActive()) {
                 bondsmen++;
-                if (p.getInjuries().size() > 0 || p.getHits() > 0) {
+                if (!p.getInjuries().isEmpty() || (p.getHits() > 0)) {
                     countInjured++;
                 }
             } else if (primarySupport && p.getStatus().isRetired()) {

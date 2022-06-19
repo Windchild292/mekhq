@@ -21,25 +21,21 @@
  */
 package mekhq.campaign.mission;
 
-import megamek.client.generator.RandomSkillsGenerator;
 import megamek.client.generator.RandomUnitGenerator;
 import megamek.client.ui.swing.util.PlayerColour;
-import megamek.common.Compute;
-import megamek.common.Entity;
-import megamek.common.MechFileParser;
-import megamek.common.MechSummary;
-import megamek.common.UnitType;
+import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import megamek.common.icons.Camouflage;
 import megamek.common.loaders.EntityLoadingException;
 import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.event.MissionChangedEvent;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.market.enums.UnitMarketType;
 import mekhq.campaign.mission.atb.AtBScenarioFactory;
 import mekhq.campaign.mission.enums.AtBContractType;
 import mekhq.campaign.mission.enums.AtBMoraleLevel;
-import mekhq.campaign.mission.enums.MissionStatus;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.rating.IUnitRating;
@@ -50,11 +46,11 @@ import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.RandomFactionGenerator;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -67,9 +63,7 @@ import java.util.UUID;
  *
  * @author Neoancient
  */
-public class AtBContract extends Contract implements Serializable {
-    private static final long serialVersionUID = 1491090021356604379L;
-
+public class AtBContract extends Contract {
     public static final int EVT_NOEVENT = -1;
     public static final int EVT_BONUSROLL = 0;
     public static final int EVT_SPECIALMISSION = 1;
@@ -95,9 +89,9 @@ public class AtBContract extends Contract implements Serializable {
     protected String enemyCode;
 
     protected AtBContractType contractType;
-    protected int allySkill;
+    protected SkillLevel allySkill;
     protected int allyQuality;
-    protected int enemySkill;
+    protected SkillLevel enemySkill;
     protected int enemyQuality;
     protected String allyBotName;
     protected String enemyBotName;
@@ -149,9 +143,9 @@ public class AtBContract extends Contract implements Serializable {
         mercSubcontract = false;
 
         setContractType(AtBContractType.GARRISON_DUTY);
-        allySkill = RandomSkillsGenerator.L_REG;
+        setAllySkill(SkillLevel.REGULAR);
         allyQuality = IUnitRating.DRAGOON_C;
-        enemySkill = RandomSkillsGenerator.L_REG;
+        setEnemySkill(SkillLevel.REGULAR);
         enemyQuality = IUnitRating.DRAGOON_C;
         allyBotName = "Ally";
         enemyBotName = "Enemy";
@@ -278,7 +272,7 @@ public class AtBContract extends Contract implements Serializable {
         } else {
             requiredLances = Math.max(getEffectiveNumUnits(campaign) / 6, 1);
             if (requiredLances > maxDeployedLances && campaign.getCampaignOptions().getAdjustPaymentForStrategy()) {
-                multiplier *= (double)maxDeployedLances / (double)requiredLances;
+                multiplier *= (double) maxDeployedLances / (double) requiredLances;
                 requiredLances = maxDeployedLances;
             }
         }
@@ -318,7 +312,7 @@ public class AtBContract extends Contract implements Serializable {
         //
 
         // Enemy skill rating: Green -1, Veteran +1, Elite +2
-        int mod = Math.max(enemySkill - 2, -1);
+        int mod = Math.max(getEnemySkill().ordinal() - 3, -1);
 
         // Player Dragoon/MRBC rating: F +2, D +1, B -1, A -2
         mod -= dragoonRating - IUnitRating.DRAGOON_C;
@@ -372,9 +366,9 @@ public class AtBContract extends Contract implements Serializable {
         } else if (roll <= 5) {
             setMoraleLevel(moraleLevels[Math.max(getMoraleLevel().ordinal() - 1, 0)]);
         } else if ((roll >= 9) && (roll <= 12)) {
-            setMoraleLevel(moraleLevels[Math.max(getMoraleLevel().ordinal() + 1, moraleLevels.length - 1)]);
+            setMoraleLevel(moraleLevels[Math.min(getMoraleLevel().ordinal() + 1, moraleLevels.length - 1)]);
         } else if (roll >= 13) {
-            setMoraleLevel(moraleLevels[Math.max(getMoraleLevel().ordinal() + 2, moraleLevels.length - 1)]);
+            setMoraleLevel(moraleLevels[Math.min(getMoraleLevel().ordinal() + 2, moraleLevels.length - 1)]);
         }
 
         // Enemy defeated, retreats or do not offer opposition to the player
@@ -487,46 +481,48 @@ public class AtBContract extends Contract implements Serializable {
         String rat = null;
         int roll = Compute.d6();
         switch (roll) {
-        case 1: /* 1d6 dependents */
-            if (c.getCampaignOptions().canAtBAddDependents()) {
-                number = Compute.d6();
-                c.addReport("Bonus: " + number + " dependent" + ((number > 1) ? "s" : ""));
-                for (int i = 0; i < number; i++) {
-                    Person p = c.newDependent(false);
-                    c.recruitPerson(p);
+            case 1: /* 1d6 dependents */
+                if (c.getCampaignOptions().getRandomDependentMethod().isAtB()
+                        && c.getCampaignOptions().isUseRandomDependentAddition()) {
+                    number = Compute.d6();
+                    c.addReport("Bonus: " + number + " dependent" + ((number > 1) ? "s" : ""));
+                    for (int i = 0; i < number; i++) {
+                        Person p = c.newDependent(false);
+                        c.recruitPerson(p);
+                    }
                 }
-            }
-            break;
-        case 2: /* Recruit (choose) */
-            c.addReport("Bonus: hire one recruit of your choice.");
-            break;
-        case 3: /* 1d6 parts */
-            number = Compute.d6();
-            numBonusParts += number;
-            c.addReport("Bonus: " + number + " part" + ((number>1)?"s":""));
-            break;
-        case 4: /* civilian vehicle */
-            rat = "CivilianUnits_CivVeh";
-            c.addReport("Bonus: civilian vehicle");
-            break;
-        case 5: /* APC */
-            rat = "CivilianUnits_APC";
-            c.addReport("Bonus: civilian APC");
-            break;
-        case 6: /* civilian 'Mech */
-            rat = "CivilianUnits_PrimMech";
-            c.addReport("Bonus: civilian Mek");
-            break;
+                break;
+            case 2: /* Recruit (choose) */
+                c.addReport("Bonus: hire one recruit of your choice.");
+                break;
+            case 3: /* 1d6 parts */
+                number = Compute.d6();
+                numBonusParts += number;
+                c.addReport("Bonus: " + number + " part" + ((number>1)?"s":""));
+                break;
+            case 4: /* civilian vehicle */
+                rat = "CivilianUnits_CivVeh";
+                c.addReport("Bonus: civilian vehicle");
+                break;
+            case 5: /* APC */
+                rat = "CivilianUnits_APC";
+                c.addReport("Bonus: civilian APC");
+                break;
+            case 6: /* civilian 'Mech */
+                rat = "CivilianUnits_PrimMech";
+                c.addReport("Bonus: civilian Mek");
+                break;
         }
+
         if (null != rat) {
             Entity en = null;
             RandomUnitGenerator.getInstance().setChosenRAT(rat);
             ArrayList<MechSummary> msl = RandomUnitGenerator.getInstance().generate(1);
-            if ((msl.size() > 0) && (msl.get(0) != null)) {
+            if (!msl.isEmpty() && (msl.get(0) != null)) {
                 try {
                     en = new MechFileParser(msl.get(0).getSourceFile(), msl.get(0).getEntryName()).getEntity();
                 } catch (EntityLoadingException ex) {
-                    MekHQ.getLogger().error("Unable to load entity: " + msl.get(0).getSourceFile()
+                    LogManager.getLogger().error("Unable to load entity: " + msl.get(0).getSourceFile()
                             + ": " + msl.get(0).getEntryName() + ": " + ex.getMessage(), ex);
                 }
             }
@@ -578,7 +574,7 @@ public class AtBContract extends Contract implements Serializable {
                 case EVT_SPECIALMISSION:
                     c.addReport("<b>Special Event:</b> Special mission this month");
                     specialEventScenarioDate = getRandomDayOfMonth(c.getLocalDate());
-                    specialEventScenarioType = getContractType().generateSpecialMissionType();
+                    specialEventScenarioType = getContractType().generateSpecialMissionType(c);
                     break;
                 case EVT_CIVILDISTURBANCE:
                     c.addReport("<b>Special Event:</b> Civil disturbance<br />Next enemy morale roll gets +1 modifier");
@@ -660,10 +656,11 @@ public class AtBContract extends Contract implements Serializable {
                             partsAvailabilityLevel++;
                             break;
                         case 6:
-                            String unit = c.getUnitMarket().addSingleUnit(c, UnitMarketType.EMPLOYER,
-                                UnitType.MEK, getEmployerCode(), IUnitRating.DRAGOON_F, 50);
-                            if (unit != null) {
-                                text += String.format("Surplus Sale: %s offered by employer on the <a href='UNIT_MARKET'>unit market</a>", unit);
+                            final String unitName = c.getUnitMarket().addSingleUnit(c,
+                                    UnitMarketType.EMPLOYER, UnitType.MEK, getEmployerFaction(),
+                                    IUnitRating.DRAGOON_F, 50);
+                            if (unitName != null) {
+                                text += String.format("Surplus Sale: %s offered by employer on the <a href='UNIT_MARKET'>unit market</a>", unitName);
                             }
                             break;
                     }
@@ -705,31 +702,34 @@ public class AtBContract extends Contract implements Serializable {
         return LocalDate.of(today.getYear(), today.getMonth(), Compute.randomInt(today.getMonth().length(today.isLeapYear())) + 1);
     }
 
-    public boolean contractExtended (Campaign campaign) {
-        if (!getContractType().isPirateHunting() && !getContractType().isRiotDuty()) {
-            String warName = RandomFactionGenerator.getInstance()
-                    .getFactionHints().getCurrentWar(Factions.getInstance().getFaction(getEmployerCode()),
-                    Factions.getInstance().getFaction(getEnemyCode()), campaign.getLocalDate());
-            if (null != warName) {
-                int extension = 0;
-                int roll = Compute.d6();
-                if (roll == 1) {
-                    extension = Math.max(1, getLength() / 2);
-                }
-                if (roll == 2) {
-                    extension = 1;
-                }
-                if (extension > 0) {
-                    campaign.addReport("Due to the " + warName +
-                            " crisis your employer has invoked the emergency clause and extended the contract " +
-                            extension + ((extension == 1) ? " month" : " months"));
-                    setEndDate(getEndingDate().plusMonths(extension));
-                    extensionLength += extension;
-                    return true;
-                }
-            }
+    public boolean contractExtended(final Campaign campaign) {
+        if (getContractType().isPirateHunting() || getContractType().isRiotDuty()) {
+            return false;
         }
-        return false;
+
+        final String warName = RandomFactionGenerator.getInstance().getFactionHints().getCurrentWar(
+                getEmployerFaction(), getEnemy(), campaign.getLocalDate());
+        if (warName == null) {
+            return false;
+        }
+
+        final int extension;
+        final int roll = Compute.d6();
+        if (roll == 1) {
+            extension = Math.max(1, getLength() / 2);
+        } else if (roll == 2) {
+            extension = 1;
+        } else {
+            return false;
+        }
+
+        campaign.addReport(String.format(
+                "Due to the %s crisis your employer has invoked the emergency clause and extended the contract %d %s",
+                warName, extension, ((extension == 1) ? " month" : " months")));
+        setEndDate(getEndingDate().plusMonths(extension));
+        extensionLength += extension;
+        MekHQ.triggerEvent(new MissionChangedEvent(this));
+        return true;
     }
 
     @Override
@@ -765,116 +765,61 @@ public class AtBContract extends Contract implements Serializable {
         }
     }
 
-    protected void writeToXmlBegin(PrintWriter pw1, int indent) {
-        super.writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<employerCode>"
-                +employerCode
-                +"</employerCode>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyCode>"
-                +enemyCode
-                +"</enemyCode>");
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "contractType", getContractType().name());
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allySkill>"
-                +allySkill
-                +"</allySkill>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyQuality>"
-                +allyQuality
-                +"</allyQuality>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemySkill>"
-                +enemySkill
-                +"</enemySkill>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyQuality>"
-                +enemyQuality
-                +"</enemyQuality>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<allyBotName>"
-                +allyBotName
-                +"</allyBotName>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<enemyBotName>"
-                +enemyBotName
-                +"</enemyBotName>");
+    @Override
+    protected void writeToXMLBegin(final PrintWriter pw, int indent) {
+        super.writeToXMLBegin(pw, indent++);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "employerCode", getEmployerCode());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "enemyCode", getEnemyCode());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "contractType", getContractType().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "allySkill", getAllySkill().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "allyQuality", getAllyQuality());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "enemySkill", getEnemySkill().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "enemyQuality", getEnemyQuality());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "allyBotName", getAllyBotName());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "enemyBotName", getEnemyBotName());
         if (!getAllyCamouflage().hasDefaultCategory()) {
-           MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "allyCamoCategory", getAllyCamouflage().getCategory());
+           MHQXMLUtility.writeSimpleXMLTag(pw, indent, "allyCamoCategory", getAllyCamouflage().getCategory());
         }
+
         if (!getAllyCamouflage().hasDefaultFilename()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "allyCamoFileName", getAllyCamouflage().getFilename());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "allyCamoFileName", getAllyCamouflage().getFilename());
         }
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "allyColour", getAllyColour().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "allyColour", getAllyColour().name());
         if (!getEnemyCamouflage().hasDefaultCategory()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enemyCamoCategory", getEnemyCamouflage().getCategory());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "enemyCamoCategory", getEnemyCamouflage().getCategory());
         }
+
         if (!getEnemyCamouflage().hasDefaultFilename()) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enemyCamoFileName", getEnemyCamouflage().getFilename());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "enemyCamoFileName", getEnemyCamouflage().getFilename());
         }
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "enemyColour", getEnemyColour().name());
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<requiredLances>"
-                +requiredLances
-                +"</requiredLances>");
-        MekHqXmlUtil.writeSimpleXMLTag(pw1, indent + 1, "moraleLevel", getMoraleLevel().name());
-        if (null != routEnd) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "routEnd",
-                    MekHqXmlUtil.saveFormattedDate(routEnd));
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "enemyColour", getEnemyColour().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "requiredLances", getRequiredLances());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "moraleLevel", getMoraleLevel().name());
+        if (routEnd != null) {
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "routEnd", routEnd);
         }
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<numBonusParts>"
-                +numBonusParts
-                +"</numBonusParts>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<partsAvailabilityLevel>"
-                +partsAvailabilityLevel
-                +"</partsAvailabilityLevel>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<extensionLength>"
-                +extensionLength
-                +"</extensionLength>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<sharesPct>"
-                +sharesPct
-                +"</sharesPct>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<playerMinorBreaches>"
-                +playerMinorBreaches
-                +"</playerMinorBreaches>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<employerMinorBreaches>"
-                +employerMinorBreaches
-                +"</employerMinorBreaches>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<contractScoreArbitraryModifier>"
-                +contractScoreArbitraryModifier
-                +"</contractScoreArbitraryModifier>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<priorLogisticsFailure>"
-                +priorLogisticsFailure
-                +"</priorLogisticsFailure>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<battleTypeMod>"
-                +battleTypeMod
-                +"</battleTypeMod>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
-                +"<nextWeekBattleTypeMod>"
-                +nextWeekBattleTypeMod
-                +"</nextWeekBattleTypeMod>");
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "numBonusParts", getNumBonusParts());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "partsAvailabilityLevel", getPartsAvailabilityLevel());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "extensionLength", extensionLength);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "sharesPct", sharesPct);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "playerMinorBreaches", playerMinorBreaches);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "employerMinorBreaches", employerMinorBreaches);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "contractScoreArbitraryModifier", contractScoreArbitraryModifier);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "priorLogisticsFailure", priorLogisticsFailure);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "battleTypeMod", battleTypeMod);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "nextWeekBattleTypeMod", nextWeekBattleTypeMod);
+
         if (parentContract != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "parentContractId", parentContract.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "parentContractId", parentContract.getId());
         }
 
-        if (null != specialEventScenarioDate) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "specialEventScenarioDate",
-                    MekHqXmlUtil.saveFormattedDate(specialEventScenarioDate));
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "specialEventScenarioType", specialEventScenarioType);
+        if (specialEventScenarioDate != null) {
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "specialEventScenarioDate", specialEventScenarioDate);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "specialEventScenarioType", specialEventScenarioType);
         }
 
-        if(stratconCampaignState != null) {
-            stratconCampaignState.Serialize(pw1);
+        if (stratconCampaignState != null) {
+            stratconCampaignState.Serialize(pw);
         }
     }
 
@@ -886,85 +831,89 @@ public class AtBContract extends Contract implements Serializable {
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("employerCode")) {
-                employerCode = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("enemyCode")) {
-                enemyCode = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("contractType")
-                    || wn2.getNodeName().equalsIgnoreCase("missionType")) { // Mission Type is Legacy - 0.49.2 removal
-                setContractType(AtBContractType.parseFromString(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("allySkill")) {
-                allySkill = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("allyQuality")) {
-                allyQuality = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("enemySkill")) {
-                enemySkill = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("enemyQuality")) {
-                enemyQuality = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("allyBotName")) {
-                allyBotName = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("enemyBotName")) {
-                enemyBotName = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("allyCamoCategory")) {
-                getAllyCamouflage().setCategory(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("allyCamoFileName")) {
-                getAllyCamouflage().setFilename(wn2.getTextContent().trim());
-            } else if (wn2.getTextContent().equalsIgnoreCase("allyColour")) {
-                setAllyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("allyColorIndex")) { // Legacy - 0.47.15 removal
-                setAllyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
-                if (Camouflage.NO_CAMOUFLAGE.equals(getAllyCamouflage().getCategory())) {
-                    getAllyCamouflage().setCategory(Camouflage.COLOUR_CAMOUFLAGE);
-                    getAllyCamouflage().setFilename(getAllyColour().name());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("employerCode")) {
+                    employerCode = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("enemyCode")) {
+                    enemyCode = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("contractType")
+                        || wn2.getNodeName().equalsIgnoreCase("missionType")) { // Mission Type is Legacy - 0.49.2 removal
+                    setContractType(AtBContractType.parseFromString(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("allySkill")) {
+                    setAllySkill(SkillLevel.parseFromString(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("allyQuality")) {
+                    allyQuality = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("enemySkill")) {
+                    setEnemySkill(SkillLevel.parseFromString(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("enemyQuality")) {
+                    enemyQuality = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("allyBotName")) {
+                    allyBotName = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("enemyBotName")) {
+                    enemyBotName = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("allyCamoCategory")) {
+                    getAllyCamouflage().setCategory(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("allyCamoFileName")) {
+                    getAllyCamouflage().setFilename(wn2.getTextContent().trim());
+                } else if (wn2.getTextContent().equalsIgnoreCase("allyColour")) {
+                    setAllyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("allyColorIndex")) { // Legacy - 0.47.15 removal
+                    setAllyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
+                    if (Camouflage.NO_CAMOUFLAGE.equals(getAllyCamouflage().getCategory())) {
+                        getAllyCamouflage().setCategory(Camouflage.COLOUR_CAMOUFLAGE);
+                        getAllyCamouflage().setFilename(getAllyColour().name());
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("enemyCamoCategory")) {
+                    getEnemyCamouflage().setCategory(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("enemyCamoFileName")) {
+                    getEnemyCamouflage().setFilename(wn2.getTextContent().trim());
+                } else if (wn2.getTextContent().equalsIgnoreCase("enemyColour")) {
+                    setEnemyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("enemyColorIndex")) { // Legacy - 0.47.15 removal
+                    setEnemyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
+                    if (Camouflage.NO_CAMOUFLAGE.equals(getEnemyCamouflage().getCategory())) {
+                        getEnemyCamouflage().setCategory(Camouflage.COLOUR_CAMOUFLAGE);
+                        getEnemyCamouflage().setFilename(getEnemyColour().name());
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("requiredLances")) {
+                    requiredLances = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("moraleLevel")) {
+                    setMoraleLevel(AtBMoraleLevel.parseFromString(wn2.getTextContent().trim()));
+                } else if (wn2.getNodeName().equalsIgnoreCase("routEnd")) {
+                    routEnd = MHQXMLUtility.parseDate(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("partsAvailabilityLevel")) {
+                    partsAvailabilityLevel = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("extensionLength")) {
+                    extensionLength = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("sharesPct")) {
+                    sharesPct = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("numBonusParts")) {
+                    numBonusParts = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("playerMinorBreaches")) {
+                    playerMinorBreaches = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("employerMinorBreaches")) {
+                    employerMinorBreaches = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("contractScoreArbitraryModifier")) {
+                    contractScoreArbitraryModifier = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("priorLogisticsFailure")) {
+                    priorLogisticsFailure = Boolean.parseBoolean(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("battleTypeMod")) {
+                    battleTypeMod = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("nextWeekBattleTypeMod")) {
+                    nextWeekBattleTypeMod = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("specialEventScenarioDate")) {
+                    specialEventScenarioDate = MHQXMLUtility.parseDate(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("specialEventScenarioType")) {
+                    specialEventScenarioType = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase(StratconCampaignState.ROOT_XML_ELEMENT_NAME)) {
+                    stratconCampaignState = StratconCampaignState.Deserialize(wn2);
+                    stratconCampaignState.setContract(this);
+                    this.setStratconCampaignState(stratconCampaignState);
+                } else if (wn2.getNodeName().equalsIgnoreCase("parentContractId")) {
+                    parentContract = new AtBContractRef(Integer.parseInt(wn2.getTextContent()));
                 }
-            } else if (wn2.getNodeName().equalsIgnoreCase("enemyCamoCategory")) {
-                getEnemyCamouflage().setCategory(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("enemyCamoFileName")) {
-                getEnemyCamouflage().setFilename(wn2.getTextContent().trim());
-            } else if (wn2.getTextContent().equalsIgnoreCase("enemyColour")) {
-                setEnemyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("enemyColorIndex")) { // Legacy - 0.47.15 removal
-                setEnemyColour(PlayerColour.parseFromString(wn2.getTextContent().trim()));
-                if (Camouflage.NO_CAMOUFLAGE.equals(getEnemyCamouflage().getCategory())) {
-                    getEnemyCamouflage().setCategory(Camouflage.COLOUR_CAMOUFLAGE);
-                    getEnemyCamouflage().setFilename(getEnemyColour().name());
-                }
-            } else if (wn2.getNodeName().equalsIgnoreCase("requiredLances")) {
-                requiredLances = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("moraleLevel")) {
-                setMoraleLevel(AtBMoraleLevel.parseFromString(wn2.getTextContent().trim()));
-            } else if (wn2.getNodeName().equalsIgnoreCase("routEnd")) {
-                routEnd = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("partsAvailabilityLevel")) {
-                partsAvailabilityLevel = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("extensionLength")) {
-                extensionLength = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("sharesPct")) {
-                sharesPct = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("numBonusParts")) {
-                numBonusParts = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("playerMinorBreaches")) {
-                playerMinorBreaches = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("employerMinorBreaches")) {
-                employerMinorBreaches = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("contractScoreArbitraryModifier")) {
-                contractScoreArbitraryModifier = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("priorLogisticsFailure")) {
-                priorLogisticsFailure = Boolean.parseBoolean(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("battleTypeMod")) {
-                battleTypeMod = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("nextWeekBattleTypeMod")) {
-                nextWeekBattleTypeMod = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("specialEventScenarioDate")) {
-                specialEventScenarioDate = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
-            } else if (wn2.getNodeName().equalsIgnoreCase("specialEventScenarioType")) {
-                specialEventScenarioType = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase(StratconCampaignState.ROOT_XML_ELEMENT_NAME)) {
-                stratconCampaignState = StratconCampaignState.Deserialize(wn2);
-                stratconCampaignState.setContract(this);
-                this.setStratconCampaignState(stratconCampaignState);
-            } else if (wn2.getNodeName().equalsIgnoreCase("parentContractId")) {
-                parentContract = new AtBContractRef(Integer.parseInt(wn2.getTextContent()));
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }
@@ -980,20 +929,29 @@ public class AtBContract extends Contract implements Serializable {
                 if (m instanceof AtBContract) {
                     setParentContract((AtBContract) m);
                 } else {
-                    MekHQ.getLogger().warning(String.format("Parent Contract reference #%d is not an AtBContract for contract %s",
+                    LogManager.getLogger().warn(String.format("Parent Contract reference #%d is not an AtBContract for contract %s",
                             parentContract.getId(), getName()));
                     setParentContract(null);
                 }
             } else {
-                MekHQ.getLogger().warning(String.format("Parent Contract #%d reference was not found for contract %s",
+                LogManager.getLogger().warn(String.format("Parent Contract #%d reference was not found for contract %s",
                         parentContract.getId(), getName()));
                 setParentContract(null);
             }
         }
     }
 
+    public Faction getEmployerFaction() {
+        return Factions.getInstance().getFaction(getEmployerCode());
+    }
+
     public String getEmployerCode() {
         return employerCode;
+    }
+
+    public void setEmployerCode(final String code, final LocalDate date) {
+        employerCode = code;
+        setEmployer(getEmployerName(date.getYear()));
     }
 
     public void setEmployerCode(String code, int year) {
@@ -1002,11 +960,8 @@ public class AtBContract extends Contract implements Serializable {
     }
 
     public String getEmployerName(int year) {
-        if (mercSubcontract) {
-            return "Mercenary (" +
-                    Factions.getInstance().getFaction(employerCode).getFullName(year) + ")";
-        }
-        return Factions.getInstance().getFaction(employerCode).getFullName(year);
+        return isMercSubcontract() ? "Mercenary (" + getEmployerFaction().getFullName(year) + ")"
+                : getEmployerFaction().getFullName(year);
     }
 
     public Faction getEnemy() {
@@ -1034,19 +989,19 @@ public class AtBContract extends Contract implements Serializable {
         setType(contractType.toString());
     }
 
-    public int getAllySkill() {
+    public SkillLevel getAllySkill() {
         return allySkill;
     }
 
-    public void setAllySkill(int allySkill) {
+    public void setAllySkill(final SkillLevel allySkill) {
         this.allySkill = allySkill;
     }
 
-    public int getEnemySkill() {
+    public SkillLevel getEnemySkill() {
         return enemySkill;
     }
 
-    public void setEnemySkill(int enemySkill) {
+    public void setEnemySkill(final SkillLevel enemySkill) {
         this.enemySkill = enemySkill;
     }
 
@@ -1275,48 +1230,10 @@ public class AtBContract extends Contract implements Serializable {
         enemyBotName = getEnemyName(campaign.getGameYear());
     }
 
-    public static AtBContract getContractExtension(AtBContract c, int length, Campaign campaign) {
-        AtBContract retVal = new AtBContract(c.getName() + " (Ext)");
-        retVal.setType(c.getType());
-        retVal.setSystemId(c.getSystemId());
-        retVal.setDesc(c.getDescription());
-        retVal.setStatus(MissionStatus.ACTIVE);
-        retVal.setLength(length);
-        retVal.setStartDate(campaign.getLocalDate());
-        /*Set ending date; the other calculated values will be replaced
-         * from the original contract */
-        retVal.calculateContract(campaign);
-        retVal.setMultiplier(c.getMultiplier() * 1.5);
-        retVal.setTransportComp(c.getTransportComp());
-        retVal.setStraightSupport(c.getStraightSupport());
-        retVal.setOverheadComp(c.getOverheadComp());
-        retVal.setCommandRights(c.getCommandRights());
-        retVal.setBattleLossComp(c.getBattleLossComp());
-        retVal.setSalvagePct(c.getSalvagePct());
-        retVal.setSalvageExchange(c.isSalvageExchange());
-        retVal.setSalvagedByUnit(c.getSalvagedByUnit());
-        retVal.setSalvagedByEmployer(c.getSalvagedByEmployer());
-        retVal.setSigningBonusPct(c.getSigningBonusPct());
-        retVal.setAdvancePct(c.getAdvancePct());
-        retVal.setMRBCFee(c.payMRBCFee());
-
-        retVal.setContractType(c.getContractType());
-        retVal.setEmployerCode(c.getEmployerCode(), campaign.getGameYear());
-        retVal.setEnemyCode(c.getEnemyCode());
-        retVal.requiredLances = c.getRequiredLances();
-        retVal.setPartsAvailabilityLevel(retVal.getContractType().calculatePartsAvailabilityLevel());
-        retVal.setAllyBotName(c.getAllyBotName());
-        retVal.setEnemyBotName(c.getEnemyBotName());
-
-        return retVal;
-    }
-
     /**
      * Represents a reference to another AtBContract.
      */
     protected static class AtBContractRef extends AtBContract {
-        private static final long serialVersionUID = 1L;
-
         public AtBContractRef(int id) {
             setId(id);
         }

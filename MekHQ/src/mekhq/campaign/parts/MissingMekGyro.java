@@ -1,7 +1,7 @@
 /*
  * MissingMekGyro.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,24 +20,23 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
 import megamek.common.CriticalSlot;
 import megamek.common.EquipmentType;
 import megamek.common.Mech;
 import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
-
 import mekhq.campaign.parts.enums.PartRepairType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.PrintWriter;
+
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MissingMekGyro extends MissingPart {
-    private static final long serialVersionUID = 3420475726506139139L;
     protected int type;
     protected double gyroTonnage;
     protected boolean isClan;
@@ -74,13 +73,13 @@ public class MissingMekGyro extends MissingPart {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<type>"
                 +type
                 +"</type>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<gyroTonnage>"
                 +gyroTonnage
                 +"</gyroTonnage>");
@@ -95,16 +94,20 @@ public class MissingMekGyro extends MissingPart {
             Node wn2 = nl.item(x);
 
             int walkMP = -1;
-            if (wn2.getNodeName().equalsIgnoreCase("type")) {
-                type = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("gyroTonnage")) {
-                gyroTonnage = Double.parseDouble(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("walkMP")) {
-                walkMP = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("type")) {
+                    type = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("gyroTonnage")) {
+                    gyroTonnage = Double.parseDouble(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("walkMP")) {
+                    walkMP = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
 
             if (walkMP > -1) {
-                //need to calculate gyroTonnage for reverse compatability
+                //need to calculate gyroTonnage for reverse compatibility
                 gyroTonnage = MekGyro.getGyroTonnage(walkMP, type, getUnitTonnage());
             }
         }
@@ -125,7 +128,7 @@ public class MissingMekGyro extends MissingPart {
     @Override
     public boolean isAcceptableReplacement(Part part, boolean refit) {
         if (part instanceof MekGyro) {
-            MekGyro gyro = (MekGyro)part;
+            MekGyro gyro = (MekGyro) part;
             return getType() == gyro.getType() && getTonnage() == gyro.getTonnage();
         }
         return false;

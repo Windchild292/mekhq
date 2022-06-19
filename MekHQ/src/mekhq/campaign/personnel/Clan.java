@@ -17,19 +17,17 @@
  */
 package mekhq.campaign.personnel;
 
+import megamek.codeUtilities.StringUtility;
 import megamek.common.Compute;
-import megamek.common.util.StringUtil;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
@@ -106,7 +104,7 @@ public class Clan {
      * @return the code that the Clan uses to generate Bloodnames
      */
     public String getGenerationCode() {
-        if (!StringUtil.isNullOrEmpty(generationCode)) {
+        if (!StringUtility.isNullOrBlank(generationCode)) {
             return generationCode;
         } else {
             return code;
@@ -217,23 +215,14 @@ public class Clan {
 
     public static void loadClanData() {
         allClans = new HashMap<>();
-        File f = new File("data/names/bloodnames/clans.xml");
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream(f);
-        } catch (FileNotFoundException e) {
-            MekHQ.getLogger().error(Bloodname.class, "Cannot find file clans.xml");
-            return;
-        }
 
         Document doc;
 
-        try {
-            DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        try (FileInputStream fis = new FileInputStream("data/names/bloodnames/clans.xml")) { // TODO : Remove inline file path
+            DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
             doc = db.parse(fis);
-            fis.close();
         } catch (Exception ex) {
-            MekHQ.getLogger().error("Could not parse clans.xml", ex);
+            LogManager.getLogger().error("Could not parse clans.xml", ex);
             return;
         }
 
@@ -264,37 +253,41 @@ public class Clan {
         for (int i = 0; i < nl.getLength(); i++) {
             Node wn = nl.item(i);
 
-            if (wn.getNodeName().equalsIgnoreCase("fullName")) {
-                retVal.fullName = wn.getTextContent().trim();
-            } else if (wn.getNodeName().equalsIgnoreCase("abjured")) {
-                retVal.abjurationDate = Integer.parseInt(wn.getTextContent().trim());
-            } else if (wn.getNodeName().equalsIgnoreCase("nameChange")) {
-                int start = retVal.startDate;
-                int end = retVal.endDate;
-                if (null != wn.getAttributes().getNamedItem("start")) {
-                    start = Integer.parseInt(wn.getAttributes().getNamedItem("start").getTextContent().trim());
+            try {
+                if (wn.getNodeName().equalsIgnoreCase("fullName")) {
+                    retVal.fullName = wn.getTextContent().trim();
+                } else if (wn.getNodeName().equalsIgnoreCase("abjured")) {
+                    retVal.abjurationDate = Integer.parseInt(wn.getTextContent().trim());
+                } else if (wn.getNodeName().equalsIgnoreCase("nameChange")) {
+                    int start = retVal.startDate;
+                    int end = retVal.endDate;
+                    if (null != wn.getAttributes().getNamedItem("start")) {
+                        start = Integer.parseInt(wn.getAttributes().getNamedItem("start").getTextContent().trim());
+                    }
+                    if (null != wn.getAttributes().getNamedItem("end")) {
+                        end = Integer.parseInt(wn.getAttributes().getNamedItem("end").getTextContent().trim());
+                    }
+                    retVal.nameChanges.add(new DatedRecord(start, end, wn.getTextContent().trim()));
+                } else if (wn.getNodeName().equalsIgnoreCase("rivals")) {
+                    int start = retVal.startDate;
+                    int end = retVal.endDate;
+                    if (null != wn.getAttributes().getNamedItem("start")) {
+                        start = Integer.parseInt(wn.getAttributes().getNamedItem("start").getTextContent().trim());
+                    }
+                    if (null != wn.getAttributes().getNamedItem("end")) {
+                        end = Integer.parseInt(wn.getAttributes().getNamedItem("end").getTextContent().trim());
+                    }
+                    String[] rivals = wn.getTextContent().trim().split(",");
+                    for (String r : rivals) {
+                        retVal.rivals.add(new DatedRecord(start, end, r));
+                    }
+                } else if (wn.getNodeName().equalsIgnoreCase("homeClan")) {
+                    retVal.homeClan = true;
+                } else if (wn.getNodeName().equalsIgnoreCase("generateAsIf")) {
+                    retVal.generationCode = wn.getTextContent().trim();
                 }
-                if (null != wn.getAttributes().getNamedItem("end")) {
-                    end = Integer.parseInt(wn.getAttributes().getNamedItem("end").getTextContent().trim());
-                }
-                retVal.nameChanges.add(new DatedRecord(start, end, wn.getTextContent().trim()));
-            } else if (wn.getNodeName().equalsIgnoreCase("rivals")) {
-                int start = retVal.startDate;
-                int end = retVal.endDate;
-                if (null != wn.getAttributes().getNamedItem("start")) {
-                    start = Integer.parseInt(wn.getAttributes().getNamedItem("start").getTextContent().trim());
-                }
-                if (null != wn.getAttributes().getNamedItem("end")) {
-                    end = Integer.parseInt(wn.getAttributes().getNamedItem("end").getTextContent().trim());
-                }
-                String[] rivals = wn.getTextContent().trim().split(",");
-                for (String r : rivals) {
-                    retVal.rivals.add(new DatedRecord(start, end, r));
-                }
-            } else if (wn.getNodeName().equalsIgnoreCase("homeClan")) {
-                retVal.homeClan = true;
-            } else if (wn.getNodeName().equalsIgnoreCase("generateAsIf")) {
-                retVal.generationCode = wn.getTextContent().trim();
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 

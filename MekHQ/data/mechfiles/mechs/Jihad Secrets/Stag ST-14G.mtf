@@ -1,10 +1,11 @@
 Version:1.0
 Stag
 ST-14G
+mul id:3033
 
 Config:Biped
 TechBase:Inner Sphere
-Era:2923
+Era:2823
 Rules Level:2
 
 Mass:45

@@ -20,41 +20,28 @@
  */
 package mekhq.gui.view;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import megamek.common.util.sorter.NaturalOrderComparator;
+import mekhq.MekHQ;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.force.Force;
+import mekhq.campaign.force.Lance;
+import mekhq.campaign.mission.AtBContract;
+import mekhq.campaign.mission.enums.AtBLanceRole;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.gui.model.DataTableModel;
+import megamek.client.ui.models.XTableColumnModel;
+import mekhq.gui.utilities.MekHqTableCellRenderer;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
-
-import mekhq.MekHQ;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.mission.enums.AtBLanceRole;
-import mekhq.campaign.force.Force;
-import mekhq.campaign.force.Lance;
-import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.personnel.SkillType;
-import mekhq.gui.model.DataTableModel;
-import mekhq.gui.model.UnitMarketTableModel;
-import mekhq.gui.model.XTableColumnModel;
-import mekhq.gui.utilities.MekHqTableCellRenderer;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Against the Bot
@@ -64,8 +51,6 @@ import mekhq.gui.utilities.MekHqTableCellRenderer;
  * @author Neoancient
  */
 public class LanceAssignmentView extends JPanel {
-    private static final long serialVersionUID = 7280552346074838142L;
-
     private final Campaign campaign;
 
     private JTable tblRequiredLances;
@@ -113,7 +98,7 @@ public class LanceAssignmentView extends JPanel {
         tblRequiredLances.createDefaultColumnsFromModel();
         tblRequiredLances.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         TableColumn column;
-        for (int i = 0; i < UnitMarketTableModel.COL_NUM; i++) {
+        for (int i = 0; i < RequiredLancesTableModel.COL_NUM; i++) {
             column = ((XTableColumnModel) tblRequiredLances.getColumnModel()).getColumnByModelIndex(i);
             column.setPreferredWidth(rlModel.getColumnWidth(i));
             column.setCellRenderer(new MekHqTableCellRenderer() {
@@ -126,7 +111,7 @@ public class LanceAssignmentView extends JPanel {
                             getAlignment(table.convertColumnIndexToModel(column)));
                     if (table.convertColumnIndexToModel(column) > RequiredLancesTableModel.COL_CONTRACT) {
                         if (((String) value).indexOf('/') >= 0) {
-                            setForeground(MekHQ.getMekHQOptions().getBelowContractMinimumForeground());
+                            setForeground(MekHQ.getMHQOptions().getBelowContractMinimumForeground());
                         }
                     }
                     return this;
@@ -171,26 +156,33 @@ public class LanceAssignmentView extends JPanel {
                     return this;
                 }
             });
+
             if (i == LanceAssignmentTableModel.COL_CONTRACT) {
                 column.setCellEditor(new DefaultCellEditor(cbContract));
             }
+
             if (i == LanceAssignmentTableModel.COL_ROLE) {
                 column.setCellEditor(new DefaultCellEditor(cbRole));
             }
         }
-        RowFilter<LanceAssignmentTableModel, Integer> laFilter;
-        laFilter = new RowFilter<LanceAssignmentTableModel, Integer>() {
+
+        RowFilter<LanceAssignmentTableModel, Integer> laFilter = new RowFilter<>() {
             @Override
             public boolean include(Entry<? extends LanceAssignmentTableModel, ? extends Integer> entry) {
                 Lance l = entry.getModel().getRow(entry.getIdentifier());
                 return l.isEligible(campaign);
             }
         };
+        final NaturalOrderComparator noc = new NaturalOrderComparator();
         TableRowSorter<LanceAssignmentTableModel>laSorter = new TableRowSorter<>(laModel);
         laSorter.setRowFilter(laFilter);
         laSorter.setComparator(LanceAssignmentTableModel.COL_FORCE, forceComparator);
-        List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(LanceAssignmentTableModel.COL_FORCE, SortOrder.ASCENDING));
+        laSorter.setComparator(LanceAssignmentTableModel.COL_CONTRACT, (c1, c2) ->
+                noc.compare(((AtBContract) c1).getName(), ((AtBContract) c2).getName()));
+        laSorter.setComparator(LanceAssignmentTableModel.COL_ROLE, (r1, r2) ->
+                noc.compare(r1.toString(), r2.toString()));
+        List<SortKey> sortKeys = new ArrayList<>();
+        sortKeys.add(new SortKey(LanceAssignmentTableModel.COL_FORCE, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
         tblAssignments.setRowSorter(laSorter);
 
@@ -250,7 +242,7 @@ public class LanceAssignmentView extends JPanel {
     };
 
     /**
-     * Sorts Force objects according to where they appear on the TO&E
+     * Sorts Force objects according to where they appear on the TO&amp;E
      */
     public Comparator<Force> forceComparator = (f1, f2) -> {
         /* Check whether they are the same or one is an ancestor of the other */
@@ -264,8 +256,8 @@ public class LanceAssignmentView extends JPanel {
             return 1;
         }
 
-        /* Find closest common ancestor. They must be or descend from
-         * different subforces of this one. */
+        // Find the closest common ancestor. They must be either from the same force or descend from
+        // different subforces of this one.
         Force f = f1;
         while (!f.isAncestorOf(f2)) {
             f = f.getParentForce();
@@ -274,6 +266,7 @@ public class LanceAssignmentView extends JPanel {
             if (sf.isAncestorOf(f1) || sf.getId() == f1.getId()) {
                 return -1;
             }
+
             if (sf.isAncestorOf(f2) || sf.getId() == f2.getId()) {
                 return 1;
             }
@@ -284,8 +277,6 @@ public class LanceAssignmentView extends JPanel {
 }
 
 class RequiredLancesTableModel extends DataTableModel {
-    private static final long serialVersionUID = -5007787884549927503L;
-
     public static final int COL_CONTRACT = 0;
     public static final int COL_TOTAL = 1;
     public static final int COL_FIGHT = 2;
@@ -294,13 +285,12 @@ class RequiredLancesTableModel extends DataTableModel {
     public static final int COL_TRAINING = 5;
     public static final int COL_NUM = 6;
 
-    protected String[] columnNames = {"Contract", "Total", "Fight", "Defend", "Scout", "Training"};
-
     private Campaign campaign;
 
-    public RequiredLancesTableModel(Campaign campaign) {
+    public RequiredLancesTableModel(final Campaign campaign) {
         this.campaign = campaign;
         data = new ArrayList<AtBContract>();
+        columnNames = new String[]{"Contract", "Total", "Fight", "Defend", "Scout", "Training"};
     }
 
     @Override
@@ -320,7 +310,6 @@ class RequiredLancesTableModel extends DataTableModel {
             return 20;
         }
     }
-
 
     public int getAlignment(int col) {
         if (col == COL_CONTRACT) {
@@ -388,20 +377,18 @@ class RequiredLancesTableModel extends DataTableModel {
 }
 
 class LanceAssignmentTableModel extends DataTableModel {
-    private static final long serialVersionUID = -2688617737510762878L;
-
     public static final int COL_FORCE = 0;
     public static final int COL_WEIGHT_CLASS = 1;
     public static final int COL_CONTRACT = 2;
     public static final int COL_ROLE = 3;
     public static final int COL_NUM = 4;
 
-    protected String[] columnNames = {"Force", "Wt", "Mission", "Role"};
     private Campaign campaign;
 
     public LanceAssignmentTableModel(Campaign campaign) {
         this.campaign = campaign;
         data = new ArrayList<>();
+        columnNames = new String[]{"Force", "Wt", "Mission", "Role"};
     }
 
     @Override
@@ -434,6 +421,7 @@ class LanceAssignmentTableModel extends DataTableModel {
             case COL_CONTRACT:
                 return AtBContract.class;
             case COL_ROLE:
+                return AtBLanceRole.class;
             default:
                 return String.class;
         }

@@ -1,7 +1,7 @@
 /*
  * EditKillLogDialog.java
  *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,26 +20,25 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.util.ResourceBundle;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.gui.control.EditKillLogControl;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.Objects;
+import java.util.ResourceBundle;
 
 /**
- * @author  Taharqa
+ * @author Taharqa
  */
-public class EditKillLogDialog extends javax.swing.JDialog {
-	private static final long serialVersionUID = 6995319032267472795L;
-
-	private JFrame frame;
+public class EditKillLogDialog extends JDialog {
+    private JFrame frame;
     private Campaign campaign;
     private Person person;
 
@@ -48,8 +47,8 @@ public class EditKillLogDialog extends javax.swing.JDialog {
 
     public EditKillLogDialog(JFrame parent, boolean modal, Campaign campaign, Person person) {
         super(parent, modal);
-        assert campaign != null;
-        assert person != null;
+        Objects.requireNonNull(campaign);
+        Objects.requireNonNull(person);
 
         this.frame = parent;
         this.campaign = campaign;
@@ -61,10 +60,11 @@ public class EditKillLogDialog extends javax.swing.JDialog {
     }
 
     private void initComponents() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.EditKillLogDialog", new EncodeControl()); //$NON-NLS-1$
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.EditKillLogDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setName(resourceMap.getString("dialog.name")); // NOI18N
+        setName(resourceMap.getString("dialog.name"));
         setTitle(resourceMap.getString("dialog.title") + " " + person.getFullName());
         getContentPane().setLayout(new java.awt.BorderLayout());
 
@@ -72,18 +72,22 @@ public class EditKillLogDialog extends javax.swing.JDialog {
         getContentPane().add(editKillLogControl, BorderLayout.CENTER);
 
         btnOK = new JButton();
-        btnOK.setText(resourceMap.getString("btnOK.text")); // NOI18N
-        btnOK.setName("btnOK"); // NOI18N
+        btnOK.setText(resourceMap.getString("btnOK.text"));
+        btnOK.setName("btnOK");
         btnOK.addActionListener(x -> this.setVisible(false));
         getContentPane().add(btnOK, BorderLayout.PAGE_END);
 
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(EditKillLogDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(EditKillLogDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 }

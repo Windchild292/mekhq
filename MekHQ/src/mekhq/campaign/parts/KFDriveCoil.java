@@ -1,7 +1,7 @@
 /*
  * KFDriveCoil.java
  *
- * Copyright (c) 2019, The MegaMek Team
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,55 +12,47 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
-
-import java.io.PrintWriter;
-import java.util.StringJoiner;
-
-import mekhq.campaign.finances.Money;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import megamek.common.Compute;
 import megamek.common.Jumpship;
 import megamek.common.SimpleTechLevel;
 import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.finances.Money;
 import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
+import java.util.StringJoiner;
 
 /**
- *
  * @author MKerensky
  */
 public class KFDriveCoil extends Part {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = 4515211961051281110L;
-
     public static final TechAdvancement TA_DRIVE_COIL = new TechAdvancement(TECH_BASE_ALL)
             .setAdvancement(2107, 2120, 2300).setPrototypeFactions(F_TA)
             .setProductionFactions(F_TA).setTechRating(RATING_D)
             .setAvailability(RATING_D, RATING_E, RATING_D, RATING_D)
             .setStaticTechLevel(SimpleTechLevel.ADVANCED);
 
-    //Standard, primitive, compact, subcompact...
+    // Standard, primitive, compact, subcompact...
     private int coreType;
 
     public int getCoreType() {
         return coreType;
     }
 
-    //How many docking collars does this drive support?
+    // How many docking collars does this drive support?
     private int docks;
 
     public int getDocks() {
@@ -78,6 +70,7 @@ public class KFDriveCoil extends Part {
         this.name = "K-F Drive Coil";
     }
 
+    @Override
     public KFDriveCoil clone() {
         KFDriveCoil clone = new KFDriveCoil(0, coreType, docks, campaign);
         clone.copyBaseData(this);
@@ -87,15 +80,15 @@ public class KFDriveCoil extends Part {
     @Override
     public void updateConditionFromEntity(boolean checkForDestruction) {
         int priorHits = hits;
-        if(null != unit) {
+        if (null != unit) {
             if (unit.getEntity() instanceof Jumpship) {
-                if(((Jumpship)unit.getEntity()).getKFDriveCoilHit()) {
+                if (((Jumpship) unit.getEntity()).getKFDriveCoilHit()) {
                     hits = 1;
                 } else {
                     hits = 0;
                 }
             }
-            if(checkForDestruction
+            if (checkForDestruction
                     && hits > priorHits
                     && Compute.d6(2) < campaign.getCampaignOptions().getDestroyPartTarget()) {
                 remove(false);
@@ -106,7 +99,7 @@ public class KFDriveCoil extends Part {
     @Override
     public int getBaseTime() {
         int time;
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             //SO KF Drive times, p184-5
             time = 28800;
         } else {
@@ -118,7 +111,7 @@ public class KFDriveCoil extends Part {
     @Override
     public int getDifficulty() {
         //SO Difficulty Mods
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 2;
         }
         return 5;
@@ -126,8 +119,8 @@ public class KFDriveCoil extends Part {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit && unit.getEntity() instanceof Jumpship) {
-                ((Jumpship)unit.getEntity()).setKFDriveCoilHit(needsFixing());
+        if (null != unit && unit.getEntity() instanceof Jumpship) {
+                ((Jumpship) unit.getEntity()).setKFDriveCoilHit(needsFixing());
         }
     }
 
@@ -135,10 +128,10 @@ public class KFDriveCoil extends Part {
     public void fix() {
         super.fix();
         if (null != unit && unit.getEntity() instanceof Jumpship) {
-            Jumpship js = ((Jumpship)unit.getEntity());
+            Jumpship js = ((Jumpship) unit.getEntity());
             js.setKFDriveCoilHit(false);
-            //Also repair your KF Drive integrity - +1 point if you have other components to fix
-            //Otherwise, fix it all.
+            // Also repair your KF Drive integrity - +1 point if you have other components to fix
+            // Otherwise, fix it all.
             if (js.isKFDriveDamaged()) {
                 js.setKFIntegrity(Math.min((js.getKFIntegrity() + 1), js.getOKFIntegrity()));
             } else {
@@ -149,15 +142,15 @@ public class KFDriveCoil extends Part {
 
     @Override
     public void remove(boolean salvage) {
-        if(null != unit) {
+        if (null != unit) {
             if (unit.getEntity() instanceof Jumpship) {
-                Jumpship js = ((Jumpship)unit.getEntity());
+                Jumpship js = ((Jumpship) unit.getEntity());
                 js.setKFIntegrity(Math.max(0, js.getKFIntegrity() - 1));
-                ((Jumpship)unit.getEntity()).setKFDriveCoilHit(true);
+                ((Jumpship) unit.getEntity()).setKFDriveCoilHit(true);
             }
-            //All the BT lore says you can't jump while carrying around another KF Drive, therefore
-            //you can't salvage and keep this in the warehouse, just remove/scrap and replace it
-            //See SO p130 for reference
+            // All the BT lore says you can't jump while carrying around another KF Drive, therefore
+            // you can't salvage and keep this in the warehouse, just remove/scrap and replace it
+            // See SO p130 for reference
             campaign.getWarehouse().removePart(this);
             unit.removePart(this);
             Part missing = getMissingPart();
@@ -191,12 +184,12 @@ public class KFDriveCoil extends Part {
     public Money getStickerPrice() {
         if (unit != null) {
             int cost = (60000000 + (75000000 * unit.getEntity().getDocks()));
-            if (((Jumpship)unit.getEntity()).getDriveCoreType() == Jumpship.DRIVE_CORE_COMPACT
-                    && ((Jumpship)unit.getEntity()).hasLF()) {
+            if (((Jumpship) unit.getEntity()).getDriveCoreType() == Jumpship.DRIVE_CORE_COMPACT
+                    && ((Jumpship) unit.getEntity()).hasLF()) {
                 cost *= 15;
-            } else if (((Jumpship)unit.getEntity()).hasLF()) {
+            } else if (((Jumpship) unit.getEntity()).hasLF()) {
                 cost *= 3;
-            } else if (((Jumpship)unit.getEntity()).getDriveCoreType() == Jumpship.DRIVE_CORE_COMPACT) {
+            } else if (((Jumpship) unit.getEntity()).getDriveCoreType() == Jumpship.DRIVE_CORE_COMPACT) {
                 cost *= 5;
             }
             return Money.of(cost);
@@ -212,18 +205,18 @@ public class KFDriveCoil extends Part {
     @Override
     public boolean isSamePartType(Part part) {
         return part instanceof KFDriveCoil
-                && coreType == ((KFDriveCoil)part).getCoreType()
-                && docks == ((KFDriveCoil)part).getDocks();
+                && coreType == ((KFDriveCoil) part).getCoreType()
+                && docks == ((KFDriveCoil) part).getDocks();
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<coreType>"
                 +coreType
                 +"</coreType>");
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<docks>"
                 +docks
                 +"</docks>");
@@ -233,13 +226,17 @@ public class KFDriveCoil extends Part {
     @Override
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("coreType")) {
-                coreType = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("docks")) {
-                docks = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("coreType")) {
+                    coreType = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("docks")) {
+                    docks = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }

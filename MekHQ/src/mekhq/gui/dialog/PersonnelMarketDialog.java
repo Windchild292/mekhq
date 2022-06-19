@@ -18,26 +18,17 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.ResourceBundle;
-import java.util.UUID;
-
-import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
-
+import megamek.client.ui.models.XTableColumnModel;
+import megamek.client.ui.preferences.*;
 import megamek.client.ui.swing.MechViewPanel;
+import megamek.codeUtilities.StringUtility;
 import megamek.common.Compute;
 import megamek.common.Entity;
 import megamek.common.util.EncodeControl;
-import megamek.common.util.StringUtil;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
-import mekhq.campaign.finances.Transaction;
+import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.market.PersonnelMarket;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.PersonnelRole;
@@ -45,26 +36,26 @@ import mekhq.campaign.unit.Unit;
 import mekhq.campaign.unit.actions.HirePersonnelUnitAction;
 import mekhq.gui.CampaignGUI;
 import mekhq.gui.enums.PersonnelFilter;
-import mekhq.gui.enums.PersonnelTabView;
+import mekhq.gui.enums.PersonnelTableModelColumn;
 import mekhq.gui.model.PersonnelTableModel;
-import mekhq.gui.model.XTableColumnModel;
-import megamek.client.ui.preferences.JComboBoxPreference;
-import megamek.client.ui.preferences.JTablePreference;
-import megamek.client.ui.preferences.JToggleButtonPreference;
-import megamek.client.ui.preferences.JWindowPreference;
-import mekhq.gui.sorter.FormattedNumberSorter;
-import mekhq.gui.sorter.LevelSorter;
 import mekhq.gui.view.PersonViewPanel;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.*;
 
 /**
- * @author  Jay Lawson <jaylawson39 at yahoo.com>
+ * @author  Jay Lawson (jaylawson39 at yahoo.com)
  * (code borrowed heavily from MegaMekLab UnitSelectorDialog
  */
 public class PersonnelMarketDialog extends JDialog {
     //region Variable Declarations
-    private static final long serialVersionUID = 707579637170575313L;
-
     private PersonnelTableModel personnelModel;
     private Campaign campaign;
     private CampaignGUI hqView;
@@ -85,10 +76,20 @@ public class PersonnelMarketDialog extends JDialog {
     private JScrollPane scrollTablePersonnel;
     private JScrollPane scrollPersonnelView;
     private TableRowSorter<PersonnelTableModel> sorter;
-    private ArrayList<RowSorter.SortKey> sortKeys;
     private JSplitPane splitMain;
 
-    ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.PersonnelMarketDialog", new EncodeControl());
+    private final List<PersonnelTableModelColumn> personnelMarketColumns = List.of(
+            PersonnelTableModelColumn.FIRST_NAME,
+            PersonnelTableModelColumn.LAST_NAME,
+            PersonnelTableModelColumn.AGE,
+            PersonnelTableModelColumn.GENDER,
+            PersonnelTableModelColumn.SKILL_LEVEL,
+            PersonnelTableModelColumn.PERSONNEL_ROLE,
+            PersonnelTableModelColumn.UNIT_ASSIGNMENT
+    );
+
+    private final transient ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.PersonnelMarketDialog",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
     //endregion Variable Declarations
 
     /** Creates new form PersonnelMarketDialog */
@@ -140,7 +141,7 @@ public class PersonnelMarketDialog extends JDialog {
         panelFilterBtns.add(lblPersonChoice, gridBagConstraints);
 
         DefaultComboBoxModel<PersonnelFilter> personTypeModel = new DefaultComboBoxModel<>();
-        for (PersonnelFilter filter : MekHQ.getMekHQOptions().getPersonnelFilterStyle().getFilters(true)) {
+        for (PersonnelFilter filter : MekHQ.getMHQOptions().getPersonnelFilterStyle().getFilters(true)) {
             personTypeModel.addElement(filter);
         }
         comboPersonType.setSelectedItem(0);
@@ -208,38 +209,42 @@ public class PersonnelMarketDialog extends JDialog {
         scrollTablePersonnel.setPreferredSize(new Dimension(500, 400));
 
         tablePersonnel.setModel(personnelModel);
-        tablePersonnel.setName("tablePersonnel"); // NOI18N
-        tablePersonnel.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tablePersonnel.setName("tablePersonnel");
+        tablePersonnel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablePersonnel.setColumnModel(new XTableColumnModel());
         tablePersonnel.createDefaultColumnsFromModel();
-        sorter = new TableRowSorter<>(personnelModel);
-        sorter.setComparator(PersonnelTableModel.COL_SKILL, new LevelSorter());
-        sorter.setComparator(PersonnelTableModel.COL_SALARY, new FormattedNumberSorter());
-        tablePersonnel.setRowSorter(sorter);
-        sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(PersonnelTableModel.COL_SKILL, SortOrder.DESCENDING));
-        sorter.setSortKeys(sortKeys);
         tablePersonnel.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         tablePersonnel.getSelectionModel().addListSelectionListener(this::personChanged);
-        TableColumn column = null;
-        for (int i = 0; i < PersonnelTableModel.N_COL; i++) {
-            column = ((XTableColumnModel) tablePersonnel.getColumnModel()).getColumnByModelIndex(i);
-            column.setPreferredWidth(personnelModel.getColumnWidth(i));
-            column.setCellRenderer(personnelModel.getRenderer(PersonnelTabView.GENERAL));
 
-            if (i != PersonnelTableModel.COL_GIVEN_NAME
-                    && ((!campaign.getFaction().isClan() && i != PersonnelTableModel.COL_SURNAME)
-                        || (campaign.getFaction().isClan() && i != PersonnelTableModel.COL_BLOODNAME))
-                    && i != PersonnelTableModel.COL_TYPE && i != PersonnelTableModel.COL_SKILL
-                    && i != PersonnelTableModel.COL_AGE && i != PersonnelTableModel.COL_GENDER
-                    && i != PersonnelTableModel.COL_ASSIGN) {
-                ((XTableColumnModel) tablePersonnel.getColumnModel()).setColumnVisible(column, false);
+        sorter = new TableRowSorter<>(personnelModel);
+
+        final XTableColumnModel columnModel = (XTableColumnModel) tablePersonnel.getColumnModel();
+        final ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
+        for (final PersonnelTableModelColumn column : PersonnelTableModel.PERSONNEL_COLUMNS) {
+            final TableColumn tableColumn = columnModel.getColumnByModelIndex(column.ordinal());
+            if (!personnelMarketColumns.contains(column)) {
+                columnModel.setColumnVisible(tableColumn, false);
+                continue;
+            }
+
+            tableColumn.setPreferredWidth(column.getWidth());
+            tableColumn.setCellRenderer(getRenderer());
+            columnModel.setColumnVisible(tableColumn, true);
+
+            final Comparator<?> comparator = column.getComparator(campaign);
+            if (comparator != null) {
+                sorter.setComparator(column.ordinal(), comparator);
+            }
+            final SortOrder sortOrder = column.getDefaultSortOrder();
+            if (sortOrder != null) {
+                sortKeys.add(new RowSorter.SortKey(column.ordinal(), sortOrder));
             }
         }
+        sorter.setSortKeys(sortKeys);
+        tablePersonnel.setRowSorter(sorter);
 
         tablePersonnel.setIntercellSpacing(new Dimension(0, 0));
         tablePersonnel.setShowGrid(false);
-        column.setCellRenderer(getRenderer());
         scrollTablePersonnel.setViewportView(tablePersonnel);
 
         scrollPersonnelView.setMinimumSize(new java.awt.Dimension(500, 600));
@@ -268,7 +273,7 @@ public class PersonnelMarketDialog extends JDialog {
         panelOKBtns.add(btnAdvDay, new GridBagConstraints());
 
         JButton btnHire = new JButton("Hire");
-        btnHire.setName("btnHire"); // NOI18N
+        btnHire.setName("btnHire");
         btnHire.addActionListener(this::hirePerson);
         panelOKBtns.add(btnHire, new java.awt.GridBagConstraints());
 
@@ -277,8 +282,8 @@ public class PersonnelMarketDialog extends JDialog {
         btnAdd.setEnabled(campaign.isGM());
         panelOKBtns.add(btnAdd, new java.awt.GridBagConstraints());
 
-        JButton btnClose = new JButton(resourceMap.getString("btnClose.text")); // NOI18N
-        btnClose.setName("btnClose"); // NOI18N
+        JButton btnClose = new JButton(resourceMap.getString("btnClose.text"));
+        btnClose.setName("btnClose");
         btnClose.addActionListener(this::btnCloseActionPerformed);
         panelOKBtns.add(btnClose, new java.awt.GridBagConstraints());
 
@@ -293,26 +298,31 @@ public class PersonnelMarketDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(PersonnelMarketDialog.class);
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(PersonnelMarketDialog.class);
 
-        comboPersonType.setName("personType");
-        preferences.manage(new JComboBoxPreference(comboPersonType));
+            comboPersonType.setName("personType");
+            preferences.manage(new JComboBoxPreference(comboPersonType));
 
-        radioNormalRoll.setName("normalRoll");
-        preferences.manage(new JToggleButtonPreference(radioNormalRoll));
+            radioNormalRoll.setName("normalRoll");
+            preferences.manage(new JToggleButtonPreference(radioNormalRoll));
 
-        radioPaidRecruitment.setName("paidRecruitment");
-        preferences.manage(new JToggleButtonPreference(radioPaidRecruitment));
+            radioPaidRecruitment.setName("paidRecruitment");
+            preferences.manage(new JToggleButtonPreference(radioPaidRecruitment));
 
-        comboRecruitRole.setName("recruitRole");
-        preferences.manage(new JComboBoxPreference(comboRecruitRole));
+            comboRecruitRole.setName("recruitRole");
+            preferences.manage(new JComboBoxPreference(comboRecruitRole));
 
-        tablePersonnel.setName("unitsTable");
-        preferences.manage(new JTablePreference(tablePersonnel));
+            tablePersonnel.setName("unitsTable");
+            preferences.manage(new JTablePreference(tablePersonnel));
 
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     public Person getPerson() {
@@ -322,7 +332,7 @@ public class PersonnelMarketDialog extends JDialog {
     private void hirePerson(ActionEvent evt) {
         if (null != selectedPerson) {
             if (campaign.getFunds().isLessThan((campaign.getCampaignOptions().payForRecruitment()
-                            ? selectedPerson.getSalary().multipliedBy(2)
+                            ? selectedPerson.getSalary(campaign).multipliedBy(2)
                             : Money.zero()).plus(unitCost))) {
                  campaign.addReport("<font color='red'><b>Insufficient funds. Transaction cancelled</b>.</font>");
             } else {
@@ -363,9 +373,9 @@ public class PersonnelMarketDialog extends JDialog {
         if (null == en) {
             return;
         }
-        if (pay && !campaign.getFinances().debit(unitCost, Transaction.C_UNIT,
-                "Purchased " + en.getShortName(),
-                campaign.getLocalDate())) {
+
+        if (pay && !campaign.getFinances().debit(TransactionType.UNIT_PURCHASE, campaign.getLocalDate(),
+                unitCost, "Purchased " + en.getShortName())) {
             return;
         }
         Unit unit = campaign.addNewUnit(en, false, 0);
@@ -406,7 +416,7 @@ public class PersonnelMarketDialog extends JDialog {
         PersonnelFilter nGroup = (comboPersonType.getSelectedItem() != null)
                 ? (PersonnelFilter) comboPersonType.getSelectedItem()
                 : PersonnelFilter.ACTIVE;
-        sorter.setRowFilter(new RowFilter<PersonnelTableModel, Integer>() {
+        sorter.setRowFilter(new RowFilter<>() {
             @Override
             public boolean include(Entry<? extends PersonnelTableModel, ? extends Integer> entry) {
                 return nGroup.getFilteredInformation(entry.getModel().getPerson(entry.getIdentifier()));
@@ -456,7 +466,7 @@ public class PersonnelMarketDialog extends JDialog {
          }
 
          if (null != en) {
-             if (StringUtil.isNullOrEmpty(unitText)) {
+             if (StringUtility.isNullOrBlank(unitText)) {
                  unitText = "Unit: ";
              } else {
                  unitText += " - ";
@@ -481,22 +491,18 @@ public class PersonnelMarketDialog extends JDialog {
          } else {
              scrollPersonnelView.setViewportView(new PersonViewPanel(selectedPerson, campaign, hqView));
          }
-         //This odd code is to make sure that the scrollbar stays at the top
-         //I cant just call it here, because it ends up getting reset somewhere later
+         // This odd code is to make sure that the scrollbar stays at the top
+         // I can't just call it here, because it ends up getting reset somewhere later
          javax.swing.SwingUtilities.invokeLater(() -> scrollPersonnelView.getVerticalScrollBar().setValue(0));
     }
 
     @Override
     public void setVisible(boolean visible) {
         filterPersonnel();
-        //changePersonnelView();
         super.setVisible(visible);
     }
 
     public TableCellRenderer getRenderer() {
-        //if(choicePersonView.getSelectedIndex() == CampaignGUI.PV_GRAPHIC) {
-            //return personnelModel.new VisualRenderer(hqView.getCamos(), portraits, hqView.getMechTiles());
-       // }
         return personnelModel.new Renderer();
     }
 }

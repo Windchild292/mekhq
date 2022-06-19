@@ -1,10 +1,11 @@
 Version:1.0
 Rampage
 RMP-4G (Benboudaoud)
+mul id:6974
 
 Config:Biped
 TechBase:Inner Sphere
-Era:2750
+Era:2766
 Source:HTP New Dallas
 Rules Level:2
 

@@ -1,11 +1,12 @@
-Version:1.0
+Version:1.1
 Spartan
 C
+mul id:7646
 
 
 Config:Biped
 techbase:Clan
-era:2861
+era:2865
 source:Succession Wars
 rules level:2
 

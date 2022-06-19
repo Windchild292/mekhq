@@ -1,10 +1,11 @@
 Version:1.0
 Dragoon
 AEM-05C
+mul id:7399
 
 Config:Biped
 TechBase:Mixed (IS Chassis)
-Era:3130
+Era:3136
 Source:TP Epsilon Eridani - Dark Age
 Rules Level:3
 

@@ -20,6 +20,10 @@ Clan Mechanized Wheeled Point
 (SRM)
 </Model>
 
+<mul id:>
+634
+</mul id:>
+
 <year>
 2815
 </year>
@@ -40,11 +44,11 @@ Total Warfare - Succession Wars
 </source>
 
 <squad_size>
-4
+5
 </squad_size>
 
 <squadn>
-5
+4
 </squadn>
 
 <secondn>

@@ -23,9 +23,9 @@ import megamek.common.Entity;
 import megamek.common.Jumpship;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
-import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ResourceBundle;
 
@@ -50,14 +50,15 @@ public enum ROMDesignation {
 
     //region Variable Declarations
     private final String designation;
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel", new EncodeControl());
     //endregion Variable Declarations
 
     ROMDesignation(String designation) {
+        final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         this.designation = resources.getString(designation);
     }
 
-    public static String getComStarBranchDesignation(Person person, Campaign campaign) {
+    public static String getComStarBranchDesignation(Person person) {
         StringBuilder sb = new StringBuilder(" ");
 
         // Primary
@@ -68,7 +69,7 @@ public enum ROMDesignation {
         } else if (person.getPrimaryRole().isAdministrator()) {
             sb.append(CHI);
         } else {
-            sb.append(determineDesignationFromRole(person.getPrimaryRole(), person, campaign));
+            sb.append(determineDesignationFromRole(person.getPrimaryRole(), person));
         }
 
         // Secondary
@@ -79,13 +80,13 @@ public enum ROMDesignation {
         } else if (person.getSecondaryRole().isAdministrator()) {
             sb.append(" ").append(CHI);
         } else if (!person.getSecondaryRole().isNone()) {
-            sb.append(" ").append(determineDesignationFromRole(person.getSecondaryRole(), person, campaign));
+            sb.append(" ").append(determineDesignationFromRole(person.getSecondaryRole(), person));
         }
 
         return sb.toString();
     }
 
-    private static String determineDesignationFromRole(PersonnelRole role, Person person, Campaign campaign) {
+    private static String determineDesignationFromRole(PersonnelRole role, Person person) {
         switch (role) {
             case MECHWARRIOR:
                 return EPSILON.toString();
@@ -150,7 +151,7 @@ public enum ROMDesignation {
         }
 
         // Could not parse based on either method, so return NONE
-        MekHQ.getLogger().error("Unable to parse " + information + " into a ROMDesignation. Returning NONE");
+        LogManager.getLogger().error("Unable to parse " + information + " into a ROMDesignation. Returning NONE");
 
         return ROMDesignation.NONE;
     }

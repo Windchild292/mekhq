@@ -20,8 +20,12 @@ Red Kite Attack VTOL
 (Standard)
 </Model>
 
+<mul id:>
+6488
+</mul id:>
+
 <year>
-3121
+3093
 </year>
 
 <type>

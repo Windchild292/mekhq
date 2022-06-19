@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,12 +20,11 @@ package mekhq.campaign.personnel.familyTree;
 
 import megamek.common.enums.Gender;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.FamilialRelationshipType;
 import mekhq.campaign.personnel.enums.FormerSpouseReason;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 
 import java.time.LocalDate;
@@ -34,35 +33,33 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class GenealogyTest {
-    private Campaign mockCampaign;
-    private Person alpha;
-    private Person beta;
-    private Person gamma;
-    private Person delta;
-    private Person epsilon;
-    private Person zeta;
-    private Person eta;
-    private Person theta;
-    private Person iota;
-    private Person kappa;
-    private Person lambda;
-    private Person mu;
-    private Person nu;
-    private Person xi;
-    private Person omicron;
-    private Person pi;
-    private Person rho;
-    private Person sigma;
-    private Person tau;
+    private static Person alpha;
+    private static Person beta;
+    private static Person gamma;
+    private static Person delta;
+    private static Person epsilon;
+    private static Person zeta;
+    private static Person eta;
+    private static Person theta;
+    private static Person iota;
+    private static Person kappa;
+    private static Person lambda;
+    private static Person mu;
+    private static Person nu;
+    private static Person xi;
+    private static Person omicron;
+    private static Person pi;
+    private static Person rho;
+    private static Person sigma;
+    private static Person tau;
 
     @Test
     public void testOrigin() {
@@ -97,52 +94,41 @@ public class GenealogyTest {
 
     @Test
     public void testCheckMutualAncestors() {
-        // Setup the options
-        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
-        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
-        when(mockCampaignOptions.checkMutualAncestorsDepth()).thenReturn(4);
-
         // Same person test
-        assertTrue(alpha.getGenealogy().checkMutualAncestors(alpha, mockCampaign));
+        assertTrue(alpha.getGenealogy().checkMutualAncestors(alpha, 4));
 
         // Option disabled test
-        when(mockCampaignOptions.checkMutualAncestorsDepth()).thenReturn(0);
-        assertFalse(alpha.getGenealogy().checkMutualAncestors(beta, mockCampaign));
+        assertFalse(alpha.getGenealogy().checkMutualAncestors(beta, 0));
 
         // No relationship Test
-        when(mockCampaignOptions.checkMutualAncestorsDepth()).thenReturn(4);
-        assertFalse(alpha.getGenealogy().checkMutualAncestors(lambda, mockCampaign));
-        assertFalse(lambda.getGenealogy().checkMutualAncestors(alpha, mockCampaign));
+        assertFalse(alpha.getGenealogy().checkMutualAncestors(lambda, 4));
+        assertFalse(lambda.getGenealogy().checkMutualAncestors(alpha, 4));
 
         // One level of Ancestry Testing
-        when(mockCampaignOptions.checkMutualAncestorsDepth()).thenReturn(1);
-        assertTrue(alpha.getGenealogy().checkMutualAncestors(beta, mockCampaign));
-        assertTrue(beta.getGenealogy().checkMutualAncestors(alpha, mockCampaign));
-        assertFalse(gamma.getGenealogy().checkMutualAncestors(zeta, mockCampaign));
-        assertFalse(kappa.getGenealogy().checkMutualAncestors(theta, mockCampaign));
+        assertTrue(alpha.getGenealogy().checkMutualAncestors(beta, 1));
+        assertTrue(beta.getGenealogy().checkMutualAncestors(alpha, 1));
+        assertFalse(gamma.getGenealogy().checkMutualAncestors(zeta, 1));
+        assertFalse(kappa.getGenealogy().checkMutualAncestors(theta, 1));
 
         // Two levels of Ancestry Testing
-        when(mockCampaignOptions.checkMutualAncestorsDepth()).thenReturn(2);
-        assertTrue(delta.getGenealogy().checkMutualAncestors(iota, mockCampaign));
-        assertTrue(iota.getGenealogy().checkMutualAncestors(delta, mockCampaign));
-        assertTrue(iota.getGenealogy().checkMutualAncestors(kappa, mockCampaign));
-        assertFalse(delta.getGenealogy().checkMutualAncestors(kappa, mockCampaign));
+        assertTrue(delta.getGenealogy().checkMutualAncestors(iota, 2));
+        assertTrue(iota.getGenealogy().checkMutualAncestors(delta, 2));
+        assertTrue(iota.getGenealogy().checkMutualAncestors(kappa, 2));
+        assertFalse(delta.getGenealogy().checkMutualAncestors(kappa, 2));
 
         // Three levels of Ancestry Testing
-        when(mockCampaignOptions.checkMutualAncestorsDepth()).thenReturn(3);
-        assertTrue(delta.getGenealogy().checkMutualAncestors(zeta, mockCampaign));
-        assertTrue(delta.getGenealogy().checkMutualAncestors(kappa, mockCampaign));
-        assertFalse(delta.getGenealogy().checkMutualAncestors(theta, mockCampaign));
-        assertFalse(mu.getGenealogy().checkMutualAncestors(kappa, mockCampaign));
+        assertTrue(delta.getGenealogy().checkMutualAncestors(zeta, 3));
+        assertTrue(delta.getGenealogy().checkMutualAncestors(kappa, 3));
+        assertFalse(delta.getGenealogy().checkMutualAncestors(theta, 3));
+        assertFalse(mu.getGenealogy().checkMutualAncestors(kappa, 3));
 
         // Four levels of Ancestry Testing
-        when(mockCampaignOptions.checkMutualAncestorsDepth()).thenReturn(4);
-        assertTrue(mu.getGenealogy().checkMutualAncestors(kappa, mockCampaign));
-        assertTrue(mu.getGenealogy().checkMutualAncestors(eta, mockCampaign));
-        assertFalse(delta.getGenealogy().checkMutualAncestors(epsilon, mockCampaign));
-        assertTrue(nu.getGenealogy().checkMutualAncestors(alpha, mockCampaign));
-        assertFalse(nu.getGenealogy().checkMutualAncestors(eta, mockCampaign));
-        assertFalse(nu.getGenealogy().checkMutualAncestors(zeta, mockCampaign));
+        assertTrue(mu.getGenealogy().checkMutualAncestors(kappa, 4));
+        assertTrue(mu.getGenealogy().checkMutualAncestors(eta, 4));
+        assertFalse(delta.getGenealogy().checkMutualAncestors(epsilon, 4));
+        assertTrue(nu.getGenealogy().checkMutualAncestors(alpha, 4));
+        assertFalse(nu.getGenealogy().checkMutualAncestors(eta, 4));
+        assertFalse(nu.getGenealogy().checkMutualAncestors(zeta, 4));
     }
     //endregion Boolean Checks
 
@@ -285,9 +271,9 @@ public class GenealogyTest {
     }
     //endregion Basic Family Getters
 
-    @Before
-    public void createFamilyTree() {
-        mockCampaign = mock(Campaign.class);
+    @BeforeAll
+    public static void createFamilyTree() {
+        final Campaign mockCampaign = mock(Campaign.class);
 
         // Create a bunch of people
         alpha = new Person("Alpha", "Alpha", mockCampaign, "MERC");
@@ -403,7 +389,7 @@ public class GenealogyTest {
                 LocalDate.ofYearDay(3026, 1), FormerSpouseReason.WIDOWED));
     }
 
-    private ArgumentMatcher<UUID> matchPersonUUID(final UUID target) {
+    private static ArgumentMatcher<UUID> matchPersonUUID(final UUID target) {
         return target::equals;
     }
 }

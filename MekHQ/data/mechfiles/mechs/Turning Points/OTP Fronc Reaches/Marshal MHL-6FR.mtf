@@ -1,10 +1,11 @@
 Version:1.0
 Marshal
 MHL-6FR
+mul id:7698
 
 Config:Biped
 TechBase:Inner Sphere
-Era:3087
+Era:3086
 Source:Fronc Reachs
 Rules Level:4
 

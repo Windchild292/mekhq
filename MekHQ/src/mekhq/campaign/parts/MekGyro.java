@@ -1,7 +1,7 @@
 /*
  * MekGyro.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,26 +20,25 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
-import mekhq.campaign.finances.Money;
-import mekhq.campaign.parts.enums.PartRepairType;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import megamek.common.Compute;
 import megamek.common.CriticalSlot;
 import megamek.common.Mech;
 import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.finances.Money;
+import mekhq.campaign.parts.enums.PartRepairType;
 import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class MekGyro extends Part {
-    private static final long serialVersionUID = 3420475726506139139L;
     protected int type;
     protected double gyroTonnage;
     protected boolean isClan;
@@ -60,6 +59,7 @@ public class MekGyro extends Part {
         this.isClan = isClan;
     }
 
+    @Override
     public MekGyro clone() {
         MekGyro clone = new MekGyro(getUnitTonnage(), type, gyroTonnage, isClan, campaign);
         clone.copyBaseData(this);
@@ -108,14 +108,14 @@ public class MekGyro extends Part {
     @Override
     public boolean isSamePartType(Part part) {
         return part instanceof MekGyro && getType() == ((MekGyro) part).getType()
-                && getTonnage() == ((MekGyro) part).getTonnage();
+                && getTonnage() == part.getTonnage();
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<type>" + type + "</type>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<gyroTonnage>" + gyroTonnage + "</gyroTonnage>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<type>" + type + "</type>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<gyroTonnage>" + gyroTonnage + "</gyroTonnage>");
         writeToXmlEnd(pw1, indent);
     }
 
@@ -128,14 +128,18 @@ public class MekGyro extends Part {
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("type")) {
-                type = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("gyroTonnage")) {
-                gyroTonnage = Double.parseDouble(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("walkMP")) {
-                walkMP = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("unitTonnage")) {
-                uTonnage = Integer.parseInt(wn2.getTextContent());
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("type")) {
+                    type = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("gyroTonnage")) {
+                    gyroTonnage = Double.parseDouble(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("walkMP")) {
+                    walkMP = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("unitTonnage")) {
+                    uTonnage = Integer.parseInt(wn2.getTextContent());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
         if (gyroTonnage == 0) {

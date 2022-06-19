@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - The MegaMek Team. All rights reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -18,17 +18,19 @@
  */
 package mekhq.gui.dialog;
 
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.log.LogEntry;
 import mekhq.campaign.log.ServiceLogEntry;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -63,8 +65,7 @@ public class AddOrEditMissionEntryDialog extends JDialog {
 
     private AddOrEditMissionEntryDialog(JFrame parent, boolean modal, int operationType, LogEntry entry) {
         super(parent, modal);
-
-        assert entry != null;
+        Objects.requireNonNull(entry);
 
         this.frame = parent;
         this.operationType = operationType;
@@ -84,7 +85,8 @@ public class AddOrEditMissionEntryDialog extends JDialog {
     }
 
     private void initComponents() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.AddOrEditMissionEntryDialog", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.AddOrEditMissionEntryDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         GridBagConstraints gridBagConstraints;
 
         panMain = new JPanel();
@@ -107,7 +109,7 @@ public class AddOrEditMissionEntryDialog extends JDialog {
         panBtn.setLayout(new GridLayout(0,2));
 
         btnDate = new JButton();
-        btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(newDate));
+        btnDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(newDate));
         btnDate.addActionListener(evt -> changeDate());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -135,13 +137,13 @@ public class AddOrEditMissionEntryDialog extends JDialog {
         gridBagConstraints.insets = new Insets(5, 5, 5, 5);
         panMain.add(txtDesc, gridBagConstraints);
 
-        btnOK.setText(resourceMap.getString("btnOkay.text")); // NOI18N
-        btnOK.setName("btnOK"); // NOI18N
+        btnOK.setText(resourceMap.getString("btnOkay.text"));
+        btnOK.setName("btnOK");
         btnOK.addActionListener(this::btnOKActionPerformed);
         panBtn.add(btnOK);
 
-        btnClose.setText(resourceMap.getString("btnCancel.text")); // NOI18N
-        btnClose.setName("btnClose"); // NOI18N
+        btnClose.setText(resourceMap.getString("btnCancel.text"));
+        btnClose.setName("btnClose");
         btnClose.addActionListener(this::btnCloseActionPerformed);
         panBtn.add(btnClose);
 
@@ -150,18 +152,22 @@ public class AddOrEditMissionEntryDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(AddOrEditMissionEntryDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(AddOrEditMissionEntryDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void changeDate() {
         DateChooser dc = new DateChooser(frame, newDate);
         if (dc.showDateChooser() == DateChooser.OK_OPTION) {
             newDate = dc.getDate();
-            btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(newDate));
+            btnDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(newDate));
         }
     }
 

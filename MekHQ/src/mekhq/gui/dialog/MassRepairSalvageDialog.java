@@ -18,26 +18,9 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-
-import javax.swing.*;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
-
+import megamek.client.ui.models.XTableColumnModel;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.CampaignOptions;
@@ -49,27 +32,32 @@ import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.work.IPartWork;
 import mekhq.gui.CampaignGUI;
-import mekhq.service.MassRepairConfiguredOptions;
-import mekhq.service.MassRepairMassSalvageMode;
 import mekhq.gui.model.PartsTableModel;
 import mekhq.gui.model.UnitTableModel;
-import mekhq.gui.model.XTableColumnModel;
-import megamek.client.ui.preferences.JWindowPreference;
 import mekhq.gui.sorter.PartsDetailSorter;
 import mekhq.gui.sorter.UnitStatusSorter;
 import mekhq.gui.sorter.UnitTypeSorter;
-import megamek.client.ui.preferences.PreferencesNode;
+import mekhq.service.MassRepairConfiguredOptions;
+import mekhq.service.MassRepairMassSalvageMode;
 import mekhq.service.MassRepairOption;
 import mekhq.service.MassRepairService;
 import mekhq.service.MassRepairService.MassRepairPartSet;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.*;
 
 /**
  * @author Kipsta
  */
 public class MassRepairSalvageDialog extends JDialog {
     //region Variable Declarations
-    private static final long serialVersionUID = -7859207613578378162L;
-
     private CampaignGUI campaignGUI;
     private CampaignOptions campaignOptions;
 
@@ -107,7 +95,8 @@ public class MassRepairSalvageDialog extends JDialog {
     private List<Part> completePartsList = null;
     private List<Part> filteredPartsList = null;
 
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.MassRepair", new EncodeControl());
+    private final transient ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.MassRepair",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
@@ -345,8 +334,8 @@ public class MassRepairSalvageDialog extends JDialog {
             column.setPreferredWidth(unitTableModel.getColumnWidth(i));
             column.setCellRenderer(unitTableModel.getRenderer(false));
 
-            if ((i != UnitTableModel.COL_NAME) && (i != UnitTableModel.COL_STATUS)
-                    && (i != UnitTableModel.COL_TYPE) && (i != UnitTableModel.COL_RSTATUS)) {
+            if ((i != UnitTableModel.COL_NAME) && (i != UnitTableModel.COL_TYPE)
+                    && (i != UnitTableModel.COL_STATUS) && (i != UnitTableModel.COL_RSTATUS)) {
                 ((XTableColumnModel) unitTable.getColumnModel()).setColumnVisible(column, false);
             }
         }
@@ -1057,11 +1046,15 @@ public class MassRepairSalvageDialog extends JDialog {
     }
     //endregion Campaign Options
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(MassRepairSalvageDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(MassRepairSalvageDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     public JCheckBox getUseRepairBox() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 The Megamek Team. All rights reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,47 +10,32 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.gui.dialog;
-
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.List;
-
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
-import javax.swing.border.LineBorder;
 
 import megamek.common.OffBoardDirection;
 import mekhq.campaign.mission.ObjectiveEffect;
-import mekhq.campaign.mission.ObjectiveEffect.*;
+import mekhq.campaign.mission.ObjectiveEffect.EffectScalingType;
+import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectConditionType;
+import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
 import mekhq.campaign.mission.ScenarioForceTemplate;
 import mekhq.campaign.mission.ScenarioObjective;
 import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
 import mekhq.campaign.mission.ScenarioObjective.TimeLimitType;
 import mekhq.campaign.mission.ScenarioTemplate;
 
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.util.List;
+
 /**
  * UI for creating or editing a single scenario objective
- *
  */
 public class ObjectiveEditPanel extends JDialog {
     private JLabel lblShortDescription;
@@ -117,10 +102,10 @@ public class ObjectiveEditPanel extends JDialog {
         cboTimeScaling.setSelectedItem(objective.getTimeLimitType());
         updateTimeLimitUI();
         cboTimeLimitDirection.setSelectedIndex(objective.isTimeLimitAtMost() ? 0 : 1);
-        if(objective.getTimeLimitType() == TimeLimitType.ScaledToPrimaryUnitCount) {
+        if (objective.getTimeLimitType() == TimeLimitType.ScaledToPrimaryUnitCount) {
             txtTimeLimit.setText(objective.getTimeLimitScaleFactor().toString());
         } else {
-            if(objective.getTimeLimit() != null) {
+            if (objective.getTimeLimit() != null) {
                 txtTimeLimit.setText(objective.getTimeLimit().toString());
             }
         }
@@ -215,7 +200,7 @@ public class ObjectiveEditPanel extends JDialog {
         JButton btnAddDetail = new JButton("Add");
         JButton btnRemoveDetail = new JButton("Remove");
 
-        lstDetails.addListSelectionListener(e -> btnRemoveDetail.setEnabled(lstDetails.getSelectedValuesList().size() > 0));
+        lstDetails.addListSelectionListener(e -> btnRemoveDetail.setEnabled(!lstDetails.getSelectedValuesList().isEmpty()));
         lstDetails.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         btnRemoveDetail.addActionListener(e -> this.removeDetails());
         btnAddDetail.addActionListener(e -> this.addDetail(txtDetail));
@@ -253,7 +238,7 @@ public class ObjectiveEditPanel extends JDialog {
 
         lblObjectiveType = new JLabel("Objective Type:");
         cboObjectiveType = new JComboBox<>();
-        for(ObjectiveCriterion objectiveType : ObjectiveCriterion.values()) {
+        for (ObjectiveCriterion objectiveType : ObjectiveCriterion.values()) {
             cboObjectiveType.addItem(objectiveType);
         }
         cboObjectiveType.addActionListener(e -> this.setDirectionDropdownVisibility());
@@ -268,7 +253,7 @@ public class ObjectiveEditPanel extends JDialog {
 
         cboDirection = new JComboBox<>();
         cboDirection.addItem("Force Destination Edge");
-        for(int x = 1; x < OffBoardDirection.values().length; x++) {
+        for (int x = 1; x < OffBoardDirection.values().length; x++) {
             cboDirection.addItem(OffBoardDirection.values()[x].toString());
         }
         cboDirection.setVisible(false);
@@ -304,9 +289,9 @@ public class ObjectiveEditPanel extends JDialog {
         JLabel lblFailureEffects = new JLabel("Effects on failure:");
 
         successEffects = new JList<>();
-        successEffects.addListSelectionListener(e -> btnRemoveSuccess.setEnabled(successEffects.getSelectedValuesList().size() > 0));
+        successEffects.addListSelectionListener(e -> btnRemoveSuccess.setEnabled(!successEffects.getSelectedValuesList().isEmpty()));
         failureEffects = new JList<>();
-        failureEffects.addListSelectionListener(e -> btnRemoveFailure.setEnabled(failureEffects.getSelectedValuesList().size() > 0));
+        failureEffects.addListSelectionListener(e -> btnRemoveFailure.setEnabled(!failureEffects.getSelectedValuesList().isEmpty()));
 
         btnRemoveSuccess = new JButton("Remove");
         btnRemoveSuccess.addActionListener(e -> this.removeEffect(ObjectiveEffectConditionType.ObjectiveSuccess));
@@ -345,14 +330,14 @@ public class ObjectiveEditPanel extends JDialog {
 
         JLabel forcesLabel = new JLabel("Force Names:");
 
-        cboForceName = new JComboBox<String>();
-        for(ScenarioForceTemplate forceTemplate : currentScenarioTemplate.getAllScenarioForces()) {
+        cboForceName = new JComboBox<>();
+        for (ScenarioForceTemplate forceTemplate : currentScenarioTemplate.getAllScenarioForces()) {
             cboForceName.addItem(forceTemplate.getForceName());
         }
 
-        forceNames = new JList<String>();
+        forceNames = new JList<>();
         forceNames.setVisibleRowCount(5);
-        forceNames.addListSelectionListener(e -> btnRemove.setEnabled(forceNames.getSelectedValuesList().size() > 0));
+        forceNames.addListSelectionListener(e -> btnRemove.setEnabled(!forceNames.getSelectedValuesList().isEmpty()));
 
         JButton btnAdd = new JButton("Add");
         btnAdd.addActionListener(e -> this.addForce());
@@ -384,14 +369,12 @@ public class ObjectiveEditPanel extends JDialog {
     private void addTimeLimitUI(GridBagConstraints gbc) {
         JPanel timeLimitPanel = new JPanel();
 
-        JLabel timeLimitLabel = new JLabel("Time Limit:");
-
         cboTimeLimitDirection = new JComboBox<>();
         cboTimeLimitDirection.addItem("at most");
         cboTimeLimitDirection.addItem("at least");
 
         cboTimeScaling = new JComboBox<>();
-        for(TimeLimitType timeLimitType : TimeLimitType.values()) {
+        for (TimeLimitType timeLimitType : TimeLimitType.values()) {
             cboTimeScaling.addItem(timeLimitType);
         }
         cboTimeScaling.addActionListener(e -> this.updateTimeLimitUI());
@@ -426,13 +409,13 @@ public class ObjectiveEditPanel extends JDialog {
 
         JLabel lblScaling = new JLabel("Effect Scaling:");
         cboScalingType = new JComboBox<>();
-        for(EffectScalingType scalingType : EffectScalingType.values()) {
+        for (EffectScalingType scalingType : EffectScalingType.values()) {
             cboScalingType.addItem(scalingType);
         }
 
         JLabel lblEffectType = new JLabel("Effect Type:");
         cboEffectType = new JComboBox<>();
-        for(ObjectiveEffectType scalingType : ObjectiveEffectType.values()) {
+        for (ObjectiveEffectType scalingType : ObjectiveEffectType.values()) {
             cboEffectType.addItem(scalingType);
         }
 
@@ -479,7 +462,7 @@ public class ObjectiveEditPanel extends JDialog {
         try {
             amount = Integer.parseInt(txtAmount.getText());
             lblMagnitude.setForeground(UIManager.getColor("text"));
-        } catch(Exception e) {
+        } catch (Exception e) {
             lblMagnitude.setForeground(Color.red);
             return;
         }
@@ -489,7 +472,7 @@ public class ObjectiveEditPanel extends JDialog {
         effect.effectScaling = (EffectScalingType) cboScalingType.getSelectedItem();
         effect.effectType = (ObjectiveEffectType) cboEffectType.getSelectedItem();
 
-        if(cboEffectCondition.getSelectedItem() == ObjectiveEffectConditionType.ObjectiveSuccess) {
+        if (cboEffectCondition.getSelectedItem() == ObjectiveEffectConditionType.ObjectiveSuccess) {
             objective.addSuccessEffect(effect);
 
             updateEffectList(successEffects, objective.getSuccessEffects());
@@ -507,7 +490,7 @@ public class ObjectiveEditPanel extends JDialog {
      */
     private void updateEffectList(JList<ObjectiveEffect> listToUpdate, List<ObjectiveEffect> objectiveEffects) {
         DefaultListModel<ObjectiveEffect> effectModel = new DefaultListModel<>();
-        for(ObjectiveEffect currentEffect : objectiveEffects) {
+        for (ObjectiveEffect currentEffect : objectiveEffects) {
             effectModel.addElement(currentEffect);
         }
 
@@ -518,7 +501,7 @@ public class ObjectiveEditPanel extends JDialog {
         JList<ObjectiveEffect> listToUpdate;
         List<ObjectiveEffect> objectiveEffects;
 
-        if(conditionType == ObjectiveEffectConditionType.ObjectiveSuccess) {
+        if (conditionType == ObjectiveEffectConditionType.ObjectiveSuccess) {
             listToUpdate = successEffects;
             objectiveEffects = objective.getSuccessEffects();
             btnRemoveSuccess.setEnabled(false);
@@ -528,7 +511,7 @@ public class ObjectiveEditPanel extends JDialog {
             btnRemoveFailure.setEnabled(false);
         }
 
-        for(ObjectiveEffect effectToRemove : listToUpdate.getSelectedValuesList()) {
+        for (ObjectiveEffect effectToRemove : listToUpdate.getSelectedValuesList()) {
             objectiveEffects.remove(effectToRemove);
         }
 
@@ -543,7 +526,7 @@ public class ObjectiveEditPanel extends JDialog {
     }
 
     private void removeForce() {
-        for(String forceName : forceNames.getSelectedValuesList()) {
+        for (String forceName : forceNames.getSelectedValuesList()) {
             objective.removeForce(forceName);
         }
 
@@ -558,7 +541,7 @@ public class ObjectiveEditPanel extends JDialog {
     }
 
     private void removeDetails() {
-        for(int index : lstDetails.getSelectedIndices()) {
+        for (int index : lstDetails.getSelectedIndices()) {
             objective.getDetails().remove(index);
         }
         updateDetailList();
@@ -566,7 +549,7 @@ public class ObjectiveEditPanel extends JDialog {
 
     private void updateDetailList() {
         DefaultListModel<String> detailModel = new DefaultListModel<>();
-        for(String detail : objective.getDetails()) {
+        for (String detail : objective.getDetails()) {
             detailModel.addElement(detail);
         }
 
@@ -575,7 +558,7 @@ public class ObjectiveEditPanel extends JDialog {
 
     private void updateForceList() {
         DefaultListModel<String> forceModel = new DefaultListModel<>();
-        for(String forceName : objective.getAssociatedForceNames()) {
+        for (String forceName : objective.getAssociatedForceNames()) {
             forceModel.addElement(forceName);
         }
 
@@ -583,14 +566,14 @@ public class ObjectiveEditPanel extends JDialog {
     }
 
     private void setDirectionDropdownVisibility() {
-        switch((ObjectiveCriterion) cboObjectiveType.getSelectedItem()) {
-        case PreventReachMapEdge:
-        case ReachMapEdge:
-            cboDirection.setVisible(true);
-            break;
-        default:
-            cboDirection.setVisible(false);
-            break;
+        switch ((ObjectiveCriterion) cboObjectiveType.getSelectedItem()) {
+            case PreventReachMapEdge:
+            case ReachMapEdge:
+                cboDirection.setVisible(true);
+                break;
+            default:
+                cboDirection.setVisible(false);
+                break;
         }
     }
 
@@ -608,49 +591,49 @@ public class ObjectiveEditPanel extends JDialog {
         try {
             number = Integer.parseInt(txtPercentage.getText());
             txtPercentage.setBorder(null);
-        } catch(Exception e) {
+        } catch (Exception e) {
             txtPercentage.setBorder(new LineBorder(Color.red));
             return;
         }
 
         try {
-            if(txtTimeLimit.isEnabled()) {
+            if (txtTimeLimit.isEnabled()) {
                 timeLimit = Integer.parseInt(txtTimeLimit.getText());
                 txtTimeLimit.setBorder(null);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             txtTimeLimit.setBorder(new LineBorder(Color.red));
             return;
         }
 
         objective.setObjectiveCriterion((ObjectiveCriterion) cboObjectiveType.getSelectedItem());
         objective.setDescription(txtShortDescription.getText());
-        if(this.cboCountType.getSelectedIndex() == 0) {
+        if (this.cboCountType.getSelectedIndex() == 0) {
             objective.setPercentage(number);
         } else {
             objective.setFixedAmount(number);
         }
 
-        if(cboDirection.isVisible() && cboDirection.getSelectedIndex() > 0) {
+        if (cboDirection.isVisible() && cboDirection.getSelectedIndex() > 0) {
             objective.setDestinationEdge(OffBoardDirection.getDirection(cboDirection.getSelectedIndex() - 1));
         } else {
             objective.setDestinationEdge(OffBoardDirection.NONE);
         }
 
         objective.setTimeLimitType((TimeLimitType) cboTimeScaling.getSelectedItem());
-        if(txtTimeLimit.isEnabled()) {
-            if(objective.getTimeLimitType() == TimeLimitType.ScaledToPrimaryUnitCount) {
+        if (txtTimeLimit.isEnabled()) {
+            if (objective.getTimeLimitType() == TimeLimitType.ScaledToPrimaryUnitCount) {
                 objective.setTimeLimitScaleFactor(timeLimit);
             } else {
                 objective.setTimeLimit(timeLimit);
             }
         }
 
-        if(cboTimeLimitDirection.isEnabled()) {
+        if (cboTimeLimitDirection.isEnabled()) {
             objective.setTimeLimitAtMost(cboTimeLimitDirection.getSelectedIndex() == 0);
         }
 
-        if(!currentScenarioTemplate.scenarioObjectives.contains(objective)) {
+        if (!currentScenarioTemplate.scenarioObjectives.contains(objective)) {
             currentScenarioTemplate.scenarioObjectives.add(objective);
         }
 

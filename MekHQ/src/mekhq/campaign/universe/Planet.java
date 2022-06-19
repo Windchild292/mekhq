@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2011-2020 - The MegaMek Team. All Rights Reserved.
- * Copyright (c) 2011 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2011 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
+ * Copyright (c) 2011-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -19,59 +19,33 @@
  */
 package mekhq.campaign.universe;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import megamek.codeUtilities.ObjectUtility;
 import megamek.common.EquipmentType;
 import megamek.common.ITechnology;
 import megamek.common.PlanetaryConditions;
 import megamek.common.TargetRoll;
-import mekhq.MekHQ;
 import mekhq.Utilities;
-import mekhq.adapter.AtmosphereAdapter;
-import mekhq.adapter.BooleanValueAdapter;
-import mekhq.adapter.ClimateAdapter;
-import mekhq.adapter.DateAdapter;
-import mekhq.adapter.HPGRatingAdapter;
-import mekhq.adapter.LifeFormAdapter;
-import mekhq.adapter.PressureAdapter;
-import mekhq.adapter.SocioIndustrialDataAdapter;
-import mekhq.adapter.StringListAdapter;
+import mekhq.adapter.*;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.universe.Faction.Tag;
+import org.apache.logging.log4j.LogManager;
+
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * This is the start of a planet object that will keep lots of information about
  * planets that can be displayed on the interstellar map.
  *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
-@XmlRootElement(name="planet")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class Planet implements Serializable {
-    private static final long serialVersionUID = -8699502165157515100L;
-
+@XmlRootElement(name = "planet")
+@XmlAccessorType(value = XmlAccessType.FIELD)
+public class Planet {
     @XmlElement(name = "xcood")
     private Double x;
     @XmlElement(name = "ycood")
@@ -91,7 +65,7 @@ public class Planet implements Serializable {
     private Double orbitRadius;
 
     // Stellar neighbourhood
-  //for reading in because lists are easier
+    //for reading in because lists are easier
     @XmlElement(name = "satellite")
     private List<Satellite> satellites;
     @XmlElement(name = "smallMoons")
@@ -133,7 +107,7 @@ public class Planet implements Serializable {
     private Integer temperature;
 
     // Ecosphere
-    @XmlElement(name="lifeForm")
+    @XmlElement(name = "lifeForm")
     @XmlJavaTypeAdapter(LifeFormAdapter.class)
     private LifeForm life;
 
@@ -336,7 +310,7 @@ public class Planet implements Serializable {
     }
 
     public String getGravityText() {
-        return null != gravity ? gravity.toString() + "g" : "unknown"; //$NON-NLS-1$
+        return null != gravity ? gravity + "g" : "unknown";
     }
 
     public Double getOrbitRadius() {
@@ -357,30 +331,30 @@ public class Planet implements Serializable {
     }
 
     public String getSatelliteDescription() {
-    	String desc = "";
-    	if (null != satellites) {
-    		List<String> satNames = new ArrayList<>();
-    		for (Satellite satellite : satellites) {
-    			satNames.add(satellite.getDescription());
-    		}
-    		desc = Utilities.combineString(satNames, ", "); //$NON-NLS-1$ //$NON-NLS-2$
-    	}
-    	if (smallMoons > 0) {
-    		String smallDesc = smallMoons + " small moons"; //$NON-NLS-1$ //$NON-NLS-2$
-    		if (desc.length()==0) {
+        String desc = "";
+        if (null != satellites) {
+            List<String> satNames = new ArrayList<>();
+            for (Satellite satellite : satellites) {
+                satNames.add(satellite.getDescription());
+            }
+            desc = Utilities.combineString(satNames, ", ");
+        }
+        if (smallMoons > 0) {
+            String smallDesc = smallMoons + " small moons";
+            if (desc.isBlank()) {
                 desc = smallDesc;
             } else {
                 desc = desc + ", " + smallDesc;
             }
-    	}
-    	if (hasRing()) {
-    		desc = desc + ", and a dust ring"; //$NON-NLS-1$ //$NON-NLS-2$
-    	}
-    	return desc;
+        }
+        if (hasRing()) {
+            desc = desc + ", and a dust ring";
+        }
+        return desc;
     }
 
     public boolean hasRing() {
-    	return ring;
+        return ring;
     }
 
 
@@ -389,7 +363,7 @@ public class Planet implements Serializable {
     }
 
     public String getLandMassDescription() {
-        return null != landMasses ? Utilities.combineString(landMasses, ", ") : ""; //$NON-NLS-1$ //$NON-NLS-2$
+        return null != landMasses ? Utilities.combineString(landMasses, ", ") : "";
     }
 
     public Integer getVolcanicActivity() {
@@ -401,7 +375,7 @@ public class Planet implements Serializable {
     }
 
     public Double getDayLength(LocalDate when) {
-    	//yes day length can change because Venus
+        //yes day length can change because Venus
         return getEventData(when, dayLength, e -> e.dayLength);
     }
 
@@ -423,19 +397,19 @@ public class Planet implements Serializable {
      * @return String of system position after removing asteroid belts
      */
     public String getDisplayableSystemPosition() {
-    	//We won't give the actual system position here, because we don't want asteroid belts to count
-    	//for system position
-    	if ((null == getParentSystem()) || (null == sysPos)) {
-    		return "?";
-    	}
-    	int pos = 0;
-    	for (int i = 1; i <= sysPos; i++) {
-    		if (getParentSystem().getPlanet(i).getPlanetType().equals("Asteroid Belt")) {
-    			continue;
-    		}
-    		pos++;
-    	}
-        return Integer.toString(pos); //$NON-NLS-1$
+        //We won't give the actual system position here, because we don't want asteroid belts to count
+        //for system position
+        if ((null == getParentSystem()) || (null == sysPos)) {
+            return "?";
+        }
+        int pos = 0;
+        for (int i = 1; i <= sysPos; i++) {
+            if (getParentSystem().getPlanet(i).getPlanetType().equals("Asteroid Belt")) {
+                continue;
+            }
+            pos++;
+        }
+        return Integer.toString(pos);
     }
 
     public String getDescription() {
@@ -514,7 +488,7 @@ public class Planet implements Serializable {
 
         T result = getter.get(event);
 
-        return Utilities.nonNull(result, defaultValue);
+        return ObjectUtility.nonNull(result, defaultValue);
     }
 
     private synchronized PlanetaryEvent getCurrentEvent(LocalDate now) {
@@ -629,7 +603,7 @@ public class Planet implements Serializable {
         if (null == result) {
             result = getName(when);
         }
-        return null != result ? result : "unnamed"; //$NON-NLS-1$
+        return null != result ? result : "unnamed";
     }
 
     public SocioIndustrialData getSocioIndustrial(LocalDate when) {
@@ -638,7 +612,7 @@ public class Planet implements Serializable {
 
     public String getSocioIndustrialText(LocalDate when) {
         SocioIndustrialData sid = getSocioIndustrial(when);
-        return null != sid ? sid.toString() : ""; //$NON-NLS-1$
+        return null != sid ? sid.toString() : "";
     }
 
     public Integer getHPG(LocalDate when) {
@@ -717,14 +691,14 @@ public class Planet implements Serializable {
     }
 
     public String getShortDesc(LocalDate when) {
-        return getShortName(when) + " (" + getFactionDesc(when) + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+        return getShortName(when) + " (" + getFactionDesc(when) + ")";
     }
 
     public String getFactionDesc(LocalDate when) {
-    	String toReturn = Faction.getFactionNames(getFactionSet(when), when.getYear());
-    	if (toReturn.isEmpty()) {
-    		toReturn = "Uncolonized"; //$NON-NLS-1$ $NON-NLS-2$
-    	}
+        String toReturn = Faction.getFactionNames(getFactionSet(when), when.getYear());
+        if (toReturn.isEmpty()) {
+            toReturn = "Uncolonized";
+        }
         return toReturn;
     }
 
@@ -749,8 +723,7 @@ public class Planet implements Serializable {
     /** @return the average distance to the system's jump point in km */
     public double getDistanceToJumpPoint() {
         if (null == parentSystem) {
-        	MekHQ.getLogger().error(Planet.class, "getDistanceToJumpPoint",
-        			"reference to planet with no parent system");
+            LogManager.getLogger().error("reference to planet with no parent system");
             return 0;
         }
         return Math.sqrt(Math.pow(getOrbitRadiusKm(), 2) + Math.pow(parentSystem.getStarDistanceToJumpPoint(), 2));
@@ -945,11 +918,10 @@ public class Planet implements Serializable {
             // if the other planet has an 'ownership change' event with a non-"U" faction
             // check that this planet does not have an existing non-"U" faction already owning it at the event date
             // and does not acquire such a faction between this and the next event
-            // Then we will add an the ownership change event
-
-            if ((event.faction != null) && (event.faction.size() > 0)) {
-                // the purpose of this code is to evaluate whether the current "other planet" event is
-                // a faction change to an active, valid faction.
+            // Then we will add the ownership change event
+            if ((event.faction != null) && !event.faction.isEmpty()) {
+                // the purpose of this code is to evaluate whether the current "other planet" event
+                // is a faction change to an active, valid faction.
                 Faction eventFaction = Factions.getInstance().getFaction(event.faction.get(0));
                 boolean eventHasActualFaction = eventFaction != null && (!eventFaction.is(Tag.INACTIVE) && !eventFaction.is(Tag.ABANDONED));
 
@@ -961,7 +933,6 @@ public class Planet implements Serializable {
                     if ((currentFactions.size() == 1)
                             && Factions.getInstance().getFaction(currentFactions.get(0)).is(Tag.INACTIVE)
                             && Factions.getInstance().getFaction(currentFactions.get(0)).is(Tag.ABANDONED)) {
-
                         // now we travel into the future, to the next "other" event, and if this planet has acquired a faction
                         // before the next "other" event, then we
                         int nextEventIndex = eventIndex + 1;
@@ -1009,29 +980,29 @@ public class Planet implements Serializable {
     public void copyDataFrom(Planet other) {
         if (null != other) {
             // We don't change the ID
-            name = Utilities.nonNull(other.name, name);
-            shortName = Utilities.nonNull(other.shortName, shortName);
-            x = Utilities.nonNull(other.x, x);
-            y = Utilities.nonNull(other.y, y);
-            desc = Utilities.nonNull(other.desc, desc);
-            factions = Utilities.nonNull(other.factions, factions);
-            gravity = Utilities.nonNull(other.gravity, gravity);
-            hpg = Utilities.nonNull(other.hpg, hpg);
-            landMasses = Utilities.nonNull(other.landMasses, landMasses);
-            life = Utilities.nonNull(other.life, life);
-            percentWater = Utilities.nonNull(other.percentWater, percentWater);
-            pressure = Utilities.nonNull(other.pressure, pressure);
-            atmosphere = Utilities.nonNull(other.atmosphere, atmosphere);
-            volcanicActivity = Utilities.nonNull(other.volcanicActivity, volcanicActivity);
-            tectonicActivity = Utilities.nonNull(other.tectonicActivity, tectonicActivity);
-            population = Utilities.nonNull(other.population, population);
-            dayLength = Utilities.nonNull(other.dayLength, dayLength);
-            smallMoons = Utilities.nonNull(other.smallMoons, smallMoons);
-            satellites = Utilities.nonNull(other.satellites, satellites);
-            sysPos = Utilities.nonNull(other.sysPos, sysPos);
-            temperature = Utilities.nonNull(other.temperature, temperature);
-            socioIndustrial = Utilities.nonNull(other.socioIndustrial, socioIndustrial);
-            icon = Utilities.nonNull(other.icon, icon);
+            name = ObjectUtility.nonNull(other.name, name);
+            shortName = ObjectUtility.nonNull(other.shortName, shortName);
+            x = ObjectUtility.nonNull(other.x, x);
+            y = ObjectUtility.nonNull(other.y, y);
+            desc = ObjectUtility.nonNull(other.desc, desc);
+            factions = ObjectUtility.nonNull(other.factions, factions);
+            gravity = ObjectUtility.nonNull(other.gravity, gravity);
+            hpg = ObjectUtility.nonNull(other.hpg, hpg);
+            landMasses = ObjectUtility.nonNull(other.landMasses, landMasses);
+            life = ObjectUtility.nonNull(other.life, life);
+            percentWater = ObjectUtility.nonNull(other.percentWater, percentWater);
+            pressure = ObjectUtility.nonNull(other.pressure, pressure);
+            atmosphere = ObjectUtility.nonNull(other.atmosphere, atmosphere);
+            volcanicActivity = ObjectUtility.nonNull(other.volcanicActivity, volcanicActivity);
+            tectonicActivity = ObjectUtility.nonNull(other.tectonicActivity, tectonicActivity);
+            population = ObjectUtility.nonNull(other.population, population);
+            dayLength = ObjectUtility.nonNull(other.dayLength, dayLength);
+            smallMoons = ObjectUtility.nonNull(other.smallMoons, smallMoons);
+            satellites = ObjectUtility.nonNull(other.satellites, satellites);
+            sysPos = ObjectUtility.nonNull(other.sysPos, sysPos);
+            temperature = ObjectUtility.nonNull(other.temperature, temperature);
+            socioIndustrial = ObjectUtility.nonNull(other.socioIndustrial, socioIndustrial);
+            icon = ObjectUtility.nonNull(other.icon, icon);
             // Merge (not replace!) events
             if (null != other.events) {
                 for (PlanetaryEvent event : other.getEvents()) {
@@ -1063,17 +1034,17 @@ public class Planet implements Serializable {
     }
 
     public static int convertRatingToCode(String rating) {
-        if (rating.equalsIgnoreCase("A")) { //$NON-NLS-1$
+        if (rating.equalsIgnoreCase("A")) {
             return EquipmentType.RATING_A;
-        } else if (rating.equalsIgnoreCase("B")) { //$NON-NLS-1$
+        } else if (rating.equalsIgnoreCase("B")) {
             return EquipmentType.RATING_B;
-        } else if (rating.equalsIgnoreCase("C")) { //$NON-NLS-1$
+        } else if (rating.equalsIgnoreCase("C")) {
             return EquipmentType.RATING_C;
-        } else if (rating.equalsIgnoreCase("D")) { //$NON-NLS-1$
+        } else if (rating.equalsIgnoreCase("D")) {
             return EquipmentType.RATING_D;
-        } else if (rating.equalsIgnoreCase("E")) { //$NON-NLS-1$
+        } else if (rating.equalsIgnoreCase("E")) {
             return EquipmentType.RATING_E;
-        } else if (rating.equalsIgnoreCase("F")) { //$NON-NLS-1$
+        } else if (rating.equalsIgnoreCase("F")) {
             return EquipmentType.RATING_F;
         } else {
             return EquipmentType.RATING_C;
@@ -1114,22 +1085,22 @@ public class Planet implements Serializable {
         public transient boolean custom = false;
 
         public void copyDataFrom(PlanetaryEvent other) {
-            climate = Utilities.nonNull(other.climate, climate);
-            faction = Utilities.nonNull(other.faction, faction);
+            climate = ObjectUtility.nonNull(other.climate, climate);
+            faction = ObjectUtility.nonNull(other.faction, faction);
             factions = updateFactions(factions, faction, other.faction);
-            hpg = Utilities.nonNull(other.hpg, hpg);
-            lifeForm = Utilities.nonNull(other.lifeForm, lifeForm);
-            message = Utilities.nonNull(other.message, message);
-            name = Utilities.nonNull(other.name, name);
-            percentWater = Utilities.nonNull(other.percentWater, percentWater);
-            shortName = Utilities.nonNull(other.shortName, shortName);
-            socioIndustrial = Utilities.nonNull(other.socioIndustrial, socioIndustrial);
-            temperature = Utilities.nonNull(other.temperature, temperature);
-            pressure = Utilities.nonNull(other.pressure, pressure);
-            atmosphere = Utilities.nonNull(other.atmosphere, atmosphere);
-            composition = Utilities.nonNull(other.composition, composition);
-            population = Utilities.nonNull(other.population, population);
-            dayLength = Utilities.nonNull(other.dayLength, dayLength);
+            hpg = ObjectUtility.nonNull(other.hpg, hpg);
+            lifeForm = ObjectUtility.nonNull(other.lifeForm, lifeForm);
+            message = ObjectUtility.nonNull(other.message, message);
+            name = ObjectUtility.nonNull(other.name, name);
+            percentWater = ObjectUtility.nonNull(other.percentWater, percentWater);
+            shortName = ObjectUtility.nonNull(other.shortName, shortName);
+            socioIndustrial = ObjectUtility.nonNull(other.socioIndustrial, socioIndustrial);
+            temperature = ObjectUtility.nonNull(other.temperature, temperature);
+            pressure = ObjectUtility.nonNull(other.pressure, pressure);
+            atmosphere = ObjectUtility.nonNull(other.atmosphere, atmosphere);
+            composition = ObjectUtility.nonNull(other.composition, composition);
+            population = ObjectUtility.nonNull(other.population, population);
+            dayLength = ObjectUtility.nonNull(other.dayLength, dayLength);
             custom = (other.custom || custom);
         }
 

@@ -1,7 +1,7 @@
 /*
  * NewsItem.java
  *
- * Copyright (c) 2011 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2011 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,45 +20,37 @@
  */
 package mekhq.campaign.universe;
 
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.*;
+import megamek.codeUtilities.ObjectUtility;
+import megamek.common.Compute;
+import mekhq.MekHQ;
+import mekhq.utilities.MHQXMLUtility;
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
-import megamek.common.Compute;
-
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.Utilities;
-
 /**
- * NewsItem
- *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
-@XmlRootElement(name="newsItem")
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "newsItem")
+@XmlAccessorType(value = XmlAccessType.FIELD)
 public class NewsItem {
     @XmlTransient
     private LocalDate date;
     @XmlTransient
     private Precision datePrecision;
     private String headline;
-    @XmlElement(name="desc")
+    @XmlElement(name = "desc")
     private String description;
     private String service;
     private String location;
 
-    @XmlElement(name="date")
+    @XmlElement(name = "date")
     private String dateString;
 
-    //ids will only be assigned when news is read in for the year
+    // ids will only be assigned when news is read in for the year
     transient private int id;
 
     public NewsItem() {
@@ -74,7 +66,7 @@ public class NewsItem {
     }
 
     public void setHeadline(String headline) {
-        this.headline = Utilities.nonNull(headline, this.headline);
+        this.headline = ObjectUtility.nonNull(headline, this.headline);
     }
 
     public void setLocation(String location) {
@@ -181,7 +173,7 @@ public class NewsItem {
 
     public String getFullDescription() {
         return "<html><h1>" + getHeadline() + "</h1>("
-                + MekHQ.getMekHQOptions().getDisplayFormattedDate(date)
+                + MekHQ.getMHQOptions().getDisplayFormattedDate(date)
                 + ")<br><p>" + getPrefix() + description + "</p></html>";
     }
 
@@ -193,16 +185,16 @@ public class NewsItem {
             dateString = dateString.trim().toUpperCase(Locale.ROOT);
             // Try to parse and set proper precision
             if (dateString.matches("^\\d\\d\\dX$")) {
-                date = MekHqXmlUtil.parseDate(dateString.substring(0, 3));
+                date = MHQXMLUtility.parseDate(dateString.substring(0, 3));
                 datePrecision = Precision.DECADE;
             } else if (dateString.matches("^\\d\\d\\d\\d$")) {
-                date = MekHqXmlUtil.parseDate(dateString);
+                date = MHQXMLUtility.parseDate(dateString);
                 datePrecision = Precision.YEAR;
             } else if (dateString.matches("^\\d\\d\\d\\d-\\d\\d$")) {
-                date = MekHqXmlUtil.parseDate(dateString);
+                date = MHQXMLUtility.parseDate(dateString);
                 datePrecision = Precision.MONTH;
             } else {
-                date = MekHqXmlUtil.parseDate(dateString);
+                date = MHQXMLUtility.parseDate(dateString);
                 datePrecision = Precision.DAY;
             }
         }

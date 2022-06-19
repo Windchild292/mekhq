@@ -1,7 +1,7 @@
 /*
  * ResolveWizardChooseFilesDialog.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,32 +12,30 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.gui.dialog;
 
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
+import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
+import mekhq.campaign.ResolveScenarioTracker;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
 
-import javax.swing.*;
-
-import megamek.common.util.EncodeControl;
-import mekhq.MekHQ;
-import mekhq.campaign.ResolveScenarioTracker;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
-
 /**
- * @author  Taharqa
+ * @author Taharqa
  */
 public class ChooseMulFilesDialog extends JDialog {
-    private static final long serialVersionUID = -8038099101234445018L;
-
     private ResolveScenarioTracker tracker;
 
     private JTextField txtUnitFile;
@@ -60,7 +58,8 @@ public class ChooseMulFilesDialog extends JDialog {
     private void initComponents() {
         GridBagConstraints gridBagConstraints;
 
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ChooseMulFilesDialog", new EncodeControl()); //$NON-NLS-1$
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ChooseMulFilesDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         // Adding Escape Mnemonic
@@ -68,7 +67,7 @@ public class ChooseMulFilesDialog extends JDialog {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-        setName("Form"); // NOI18N
+        setName("Form");
 
         getContentPane().setLayout(new GridBagLayout());
         setTitle(resourceMap.getString("title"));
@@ -93,8 +92,8 @@ public class ChooseMulFilesDialog extends JDialog {
         gridBagConstraints.insets = new Insets(5, 5, 0, 0);
         getContentPane().add(txtInstructions, gridBagConstraints);
 
-        JButton btnUnitFile = new JButton(resourceMap.getString("btnUnitFile.text")); // NOI18N
-        btnUnitFile.setName("btnUnitFile"); // NOI18N
+        JButton btnUnitFile = new JButton(resourceMap.getString("btnUnitFile.text"));
+        btnUnitFile.setName("btnUnitFile");
         btnUnitFile.setMnemonic(KeyEvent.VK_B);
         btnUnitFile.addActionListener(e -> {
             tracker.findUnitFile();
@@ -127,8 +126,8 @@ public class ChooseMulFilesDialog extends JDialog {
         panButtons.setName("panButtons");
         panButtons.setLayout(new GridBagLayout());
 
-        JButton btnCancel = new JButton(resourceMap.getString("btnCancel.text")); // NOI18N
-        btnCancel.setName("btnClose"); // NOI18N
+        JButton btnCancel = new JButton(resourceMap.getString("btnCancel.text"));
+        btnCancel.setName("btnClose");
         btnCancel.setMnemonic(KeyEvent.VK_C);
         btnCancel.addActionListener(e -> btnCancelActionPerformed());
         gridBagConstraints = new GridBagConstraints();
@@ -140,8 +139,8 @@ public class ChooseMulFilesDialog extends JDialog {
         gridBagConstraints.insets = new Insets(5, 5, 0, 0);
         panButtons.add(btnCancel, gridBagConstraints);
 
-        JButton btnNext = new JButton(resourceMap.getString("btnNext.text")); // NOI18N
-        btnNext.setName("btnNext"); // NOI18N
+        JButton btnNext = new JButton(resourceMap.getString("btnNext.text"));
+        btnNext.setName("btnNext");
         btnNext.setMnemonic(KeyEvent.VK_O);
         btnNext.addActionListener(e -> btnNextActionPerformed());
         gridBagConstraints = new GridBagConstraints();
@@ -166,11 +165,15 @@ public class ChooseMulFilesDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(ChooseMulFilesDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(ChooseMulFilesDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void btnNextActionPerformed() {

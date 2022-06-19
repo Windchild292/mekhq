@@ -1,7 +1,7 @@
 /*
  * ChooseRefitDialog.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,29 +20,9 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ResourceBundle;
-
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
-
-import megamek.common.Entity;
-import megamek.common.MechFileParser;
-import megamek.common.MechSummary;
-import megamek.common.MechSummaryCache;
-import megamek.common.MechView;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
+import megamek.common.*;
 import megamek.common.loaders.EntityLoadingException;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
@@ -50,15 +30,26 @@ import mekhq.Utilities;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.parts.Refit;
 import mekhq.campaign.unit.Unit;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
- * @author  Taharqa
+ * @author Taharqa
  */
 public class ChooseRefitDialog extends JDialog {
     //region Variable Declarations
-    private static final long serialVersionUID = -8038099101234445018L;
     private Campaign campaign;
     private Unit unit;
     private RefitTableModel refitModel;
@@ -93,7 +84,8 @@ public class ChooseRefitDialog extends JDialog {
     //region Initialization
     private void initComponents() {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ChooseRefitDialog", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.ChooseRefitDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
         setTitle(resourceMap.getString("title.text") + " " + unit.getName());
 
@@ -217,11 +209,15 @@ public class ChooseRefitDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(ChooseRefitDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(ChooseRefitDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
     //endregion Initialization
 
@@ -279,7 +275,7 @@ public class ChooseRefitDialog extends JDialog {
                     }
                 }
             } catch (EntityLoadingException ex) {
-                MekHQ.getLogger().error(ex);
+                LogManager.getLogger().error("", ex);
             }
         }
         refitModel = new RefitTableModel(refits);
@@ -289,8 +285,6 @@ public class ChooseRefitDialog extends JDialog {
      * A table model for displaying parts - similar to the one in CampaignGUI, but not exactly
      */
     public class RefitTableModel extends AbstractTableModel {
-        private static final long serialVersionUID = 534443424190075264L;
-
         protected String[] columnNames;
         protected List<Refit> data;
 
@@ -359,7 +353,7 @@ public class ChooseRefitDialog extends JDialog {
             } else if (col == COL_COST) {
                 return r.getCost().toAmountAndSymbolString();
             } else if (col == COL_TARGET) {
-                return campaign.getTargetForAcquisition(r, campaign.getLogisticsPerson(), false).getValueAsString();
+                return campaign.getTargetForAcquisition(r).getValueAsString();
             } else {
                 return "?";
             }
@@ -411,7 +405,7 @@ public class ChooseRefitDialog extends JDialog {
             }
             switch (col) {
                 case COL_TARGET:
-                    return campaign.getTargetForAcquisition(r, campaign.getLogisticsPerson(), false).getDesc();
+                    return campaign.getTargetForAcquisition(r).getDesc();
                 default:
                     return null;
             }
@@ -423,13 +417,11 @@ public class ChooseRefitDialog extends JDialog {
             fireTableDataChanged();
         }
 
-        public RefitTableModel.Renderer getRenderer() {
-            return new RefitTableModel.Renderer();
+        public Renderer getRenderer() {
+            return new Renderer();
         }
 
         public class Renderer extends DefaultTableCellRenderer {
-           private static final long serialVersionUID = -6655108546652975061L;
-
            @Override
            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                                                           boolean hasFocus, int row, int column) {
@@ -449,9 +441,7 @@ public class ChooseRefitDialog extends JDialog {
      * A comparator for numbers that have been formatted with DecimalFormat
      * @author Jay Lawson
      */
-    public static class FormattedNumberSorter implements Comparator<String>, Serializable {
-        private static final long serialVersionUID = -4601820227474345024L;
-
+    public static class FormattedNumberSorter implements Comparator<String> {
         @Override
         public int compare(String s0, String s1) {
             //lets find the weight class integer for each name
@@ -460,13 +450,13 @@ public class ChooseRefitDialog extends JDialog {
             try {
                 l0 = format.parse(s0).intValue();
             } catch (ParseException e) {
-                MekHQ.getLogger().error(e);
+                LogManager.getLogger().error("", e);
             }
             int l1 = 0;
             try {
                 l1 = format.parse(s1).intValue();
             } catch (ParseException e) {
-                MekHQ.getLogger().error(e);
+                LogManager.getLogger().error("", e);
             }
             return ((Comparable<Integer>) l0).compareTo(l1);
         }
@@ -476,9 +466,7 @@ public class ChooseRefitDialog extends JDialog {
      * A comparator for refit classes
      * @author Jay Lawson
      */
-    public static class ClassSorter implements Comparator<String>, Serializable {
-        private static final long serialVersionUID = 2167705123391527024L;
-
+    public static class ClassSorter implements Comparator<String> {
         @Override
         public int compare(String s0, String s1) {
             int r0 = Refit.NO_CHANGE;

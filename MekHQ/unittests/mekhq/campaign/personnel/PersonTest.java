@@ -1,20 +1,24 @@
 package mekhq.campaign.personnel;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import megamek.common.Entity;
+import megamek.common.EntityWeightClass;
+import megamek.common.TechConstants;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.personnel.enums.PrisonerStatus;
 import mekhq.campaign.unit.Unit;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.LocalDate;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class PersonTest {
     private Person mockPerson;
@@ -24,9 +28,15 @@ public class PersonTest {
         initPerson();
         initAwards();
 
-        mockPerson.getAwardController().addAndLogAward("TestSet", "Test Award 1", LocalDate.parse("3000-01-01"));
-        mockPerson.getAwardController().addAndLogAward("TestSet", "Test Award 1", LocalDate.parse("3000-01-02"));
-        mockPerson.getAwardController().addAndLogAward("TestSet", "Test Award 2", LocalDate.parse("3000-01-01"));
+        CampaignOptions mockCampaignOpts = Mockito.mock(CampaignOptions.class);
+        Mockito.when(mockCampaignOpts.isTrackTotalXPEarnings()).thenReturn(false);
+
+        Campaign mockCampaign = Mockito.mock(Campaign.class);
+        Mockito.when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOpts);
+
+        mockPerson.getAwardController().addAndLogAward(mockCampaign, "TestSet", "Test Award 1", LocalDate.parse("3000-01-01"));
+        mockPerson.getAwardController().addAndLogAward(mockCampaign, "TestSet", "Test Award 1", LocalDate.parse("3000-01-02"));
+        mockPerson.getAwardController().addAndLogAward(mockCampaign, "TestSet", "Test Award 2", LocalDate.parse("3000-01-01"));
 
         mockPerson.getAwardController().removeAward("TestSet", "Test Award 1", LocalDate.parse("3000-01-01"), LocalDate.parse("3000-01-02"));
 
@@ -49,9 +59,15 @@ public class PersonTest {
         initPerson();
         initAwards();
 
-        mockPerson.getAwardController().addAndLogAward("TestSet", "Test Award 1", LocalDate.parse("3000-01-01"));
-        mockPerson.getAwardController().addAndLogAward("TestSet", "Test Award 1", LocalDate.parse("3000-01-02"));
-        mockPerson.getAwardController().addAndLogAward("TestSet", "Test Award 2", LocalDate.parse("3000-01-01"));
+        CampaignOptions mockCampaignOpts = Mockito.mock(CampaignOptions.class);
+        Mockito.when(mockCampaignOpts.isTrackTotalXPEarnings()).thenReturn(false);
+
+        Campaign mockCampaign = Mockito.mock(Campaign.class);
+        Mockito.when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOpts);
+
+        mockPerson.getAwardController().addAndLogAward(mockCampaign, "TestSet", "Test Award 1", LocalDate.parse("3000-01-01"));
+        mockPerson.getAwardController().addAndLogAward(mockCampaign, "TestSet", "Test Award 1", LocalDate.parse("3000-01-02"));
+        mockPerson.getAwardController().addAndLogAward(mockCampaign, "TestSet", "Test Award 2", LocalDate.parse("3000-01-01"));
 
         assertEquals( 2, mockPerson.getAwardController().getNumberOfAwards(PersonnelTestUtilities.getTestAward1()));
 
@@ -69,14 +85,14 @@ public class PersonTest {
         initPerson();
 
         UUID is1Id = UUID.randomUUID();
-        int is1WeightClass = megamek.common.EntityWeightClass.WEIGHT_LIGHT;
+        int is1WeightClass = EntityWeightClass.WEIGHT_LIGHT;
 
         Unit is1 = Mockito.mock(Unit.class);
         Mockito.when(is1.getId()).thenReturn(is1Id);
 
         Entity is1Entity = Mockito.mock(Entity.class);
         Mockito.when(is1Entity.isClan()).thenReturn(false);
-        Mockito.when(is1Entity.getTechLevel()).thenReturn(megamek.common.TechConstants.T_INTRO_BOXSET);
+        Mockito.when(is1Entity.getTechLevel()).thenReturn(TechConstants.T_INTRO_BOXSET);
         Mockito.when(is1Entity.getWeightClass()).thenReturn(is1WeightClass);
         Mockito.when(is1.getEntity()).thenReturn(is1Entity);
 
@@ -86,15 +102,15 @@ public class PersonTest {
         assertEquals(is1Id, mockPerson.getOriginalUnitId());
 
         int[] is2Techs = new int[] {
-            megamek.common.TechConstants.T_IS_TW_NON_BOX,
-            megamek.common.TechConstants.T_IS_TW_ALL,
-            megamek.common.TechConstants.T_IS_ADVANCED,
-            megamek.common.TechConstants.T_IS_EXPERIMENTAL,
-            megamek.common.TechConstants.T_IS_UNOFFICIAL,
+            TechConstants.T_IS_TW_NON_BOX,
+            TechConstants.T_IS_TW_ALL,
+            TechConstants.T_IS_ADVANCED,
+            TechConstants.T_IS_EXPERIMENTAL,
+            TechConstants.T_IS_UNOFFICIAL,
         };
         for (int is2TechLevel : is2Techs) {
             UUID is2Id = UUID.randomUUID();
-            int is2WeightClass = megamek.common.EntityWeightClass.WEIGHT_HEAVY;
+            int is2WeightClass = EntityWeightClass.WEIGHT_HEAVY;
 
             Unit is2 = Mockito.mock(Unit.class);
             Mockito.when(is2.getId()).thenReturn(is2Id);
@@ -112,14 +128,14 @@ public class PersonTest {
         }
 
         int[] clanTechs = new int[] {
-            megamek.common.TechConstants.T_CLAN_TW,
-            megamek.common.TechConstants.T_CLAN_ADVANCED,
-            megamek.common.TechConstants.T_CLAN_EXPERIMENTAL,
-            megamek.common.TechConstants.T_CLAN_UNOFFICIAL,
+            TechConstants.T_CLAN_TW,
+            TechConstants.T_CLAN_ADVANCED,
+            TechConstants.T_CLAN_EXPERIMENTAL,
+            TechConstants.T_CLAN_UNOFFICIAL,
         };
         for (int clanTech : clanTechs) {
             UUID clanId = UUID.randomUUID();
-            int clanWeightClass = megamek.common.EntityWeightClass.WEIGHT_MEDIUM;
+            int clanWeightClass = EntityWeightClass.WEIGHT_MEDIUM;
 
             Unit clan = Mockito.mock(Unit.class);
             Mockito.when(clan.getId()).thenReturn(clanId);
@@ -236,8 +252,6 @@ public class PersonTest {
         Mockito.when(mockCampaign.getName()).thenReturn("Campaign");
         Mockito.when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOpts);
 
-        Mockito.when(mockPerson.getCampaign()).thenReturn(mockCampaign);
-
         // Add a unit to the person
         UUID id0 = UUID.randomUUID();
         Unit unit0 = Mockito.mock(Unit.class);
@@ -245,7 +259,7 @@ public class PersonTest {
 
         mockPerson.setUnit(unit0);
 
-        mockPerson.setPrisonerStatus(PrisonerStatus.PRISONER, true);
+        mockPerson.setPrisonerStatus(mockCampaign, PrisonerStatus.PRISONER, true);
 
         // Ensure the unit removes the person
         verify(unit0, Mockito.times(1)).remove(Mockito.eq(mockPerson), Mockito.anyBoolean());
@@ -262,8 +276,6 @@ public class PersonTest {
         Mockito.when(mockCampaign.getName()).thenReturn("Campaign");
         Mockito.when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOpts);
 
-        Mockito.when(mockPerson.getCampaign()).thenReturn(mockCampaign);
-
         // Add a unit to the person
         UUID id0 = UUID.randomUUID();
         Unit unit0 = Mockito.mock(Unit.class);
@@ -271,7 +283,7 @@ public class PersonTest {
 
         mockPerson.setUnit(unit0);
 
-        mockPerson.setPrisonerStatus(PrisonerStatus.PRISONER_DEFECTOR, true);
+        mockPerson.setPrisonerStatus(mockCampaign, PrisonerStatus.PRISONER_DEFECTOR, true);
 
         // Ensure the unit removes the person
         verify(unit0, Mockito.times(1)).remove(Mockito.eq(mockPerson), Mockito.anyBoolean());
@@ -288,8 +300,6 @@ public class PersonTest {
         Mockito.when(mockCampaign.getName()).thenReturn("Campaign");
         Mockito.when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOpts);
 
-        Mockito.when(mockPerson.getCampaign()).thenReturn(mockCampaign);
-
         // Add a unit to the person
         UUID id0 = UUID.randomUUID();
         Unit unit0 = Mockito.mock(Unit.class);
@@ -297,7 +307,7 @@ public class PersonTest {
 
         mockPerson.setUnit(unit0);
 
-        mockPerson.setPrisonerStatus(PrisonerStatus.BONDSMAN, true);
+        mockPerson.setPrisonerStatus(mockCampaign, PrisonerStatus.BONDSMAN, true);
 
         // Ensure the unit removes the person
         verify(unit0, Mockito.times(1)).remove(Mockito.eq(mockPerson), Mockito.anyBoolean());
@@ -314,8 +324,6 @@ public class PersonTest {
         Mockito.when(mockCampaign.getName()).thenReturn("Campaign");
         Mockito.when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOpts);
 
-        Mockito.when(mockPerson.getCampaign()).thenReturn(mockCampaign);
-
         // Add a unit to the person
         UUID id0 = UUID.randomUUID();
         Unit unit0 = Mockito.mock(Unit.class);
@@ -323,17 +331,17 @@ public class PersonTest {
 
         mockPerson.setUnit(unit0);
 
-        mockPerson.setPrisonerStatus(PrisonerStatus.FREE, true);
+        mockPerson.setPrisonerStatus(mockCampaign, PrisonerStatus.FREE, true);
 
         // Ensure the unit DOES NOT remove the person
         verify(unit0, Mockito.times(0)).remove(Mockito.eq(mockPerson), Mockito.anyBoolean());
     }
 
-    private void initPerson(){
+    private void initPerson() {
         mockPerson = spy(new Person("TestGivenName", "TestSurname", null, "MERC"));
     }
 
-    private void initAwards(){
+    private void initAwards() {
         AwardsFactory.getInstance().loadAwardsFromStream(PersonnelTestUtilities.getTestAwardSet(),"TestSet");
     }
 }

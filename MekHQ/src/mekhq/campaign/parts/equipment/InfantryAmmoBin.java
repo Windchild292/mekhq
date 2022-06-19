@@ -22,7 +22,7 @@ package mekhq.campaign.parts.equipment;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.weapons.infantry.InfantryWeapon;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.*;
@@ -36,9 +36,6 @@ import java.util.Objects;
  * Ammo bin for infantry weapons used by small support vehicles
  */
 public class InfantryAmmoBin extends AmmoBin {
-
-    private static final long serialVersionUID = 2694897334041633188L;
-
     private InfantryWeapon weaponType;
 
     // Used in deserialization
@@ -210,7 +207,7 @@ public class InfantryAmmoBin extends AmmoBin {
 
     @Override
     public void writeToXmlEnd(PrintWriter pw, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, "weaponType", getWeaponType().getInternalName());
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, "weaponType", getWeaponType().getInternalName());
 
         super.writeToXmlEnd(pw, indent);
     }
@@ -250,7 +247,7 @@ public class InfantryAmmoBin extends AmmoBin {
 
     @Override
     public boolean isSamePartType(Part part) {
-        return getClass().equals(part.getClass())
+        return (getClass() == part.getClass())
                 && getType().equals(((InfantryAmmoBin) part).getType())
                 && Objects.equals(getWeaponType(), ((InfantryAmmoBin) part).getWeaponType())
                 && getClips() == ((InfantryAmmoBin) part).getClips();

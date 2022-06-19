@@ -10,11 +10,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.gui;
 
@@ -41,18 +41,15 @@ import mekhq.campaign.event.NewDayEvent;
 import mekhq.campaign.event.OptionsChangedEvent;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.PlanetarySystem;
+import mekhq.gui.enums.MekHQTabType;
 import mekhq.gui.utilities.JSuggestField;
 import mekhq.gui.view.JumpPathViewPanel;
 import mekhq.gui.view.PlanetViewPanel;
 
 /**
  * Displays interstellar map and contains transit controls.
- *
  */
 public final class MapTab extends CampaignGuiTab implements ActionListener {
-
-    private static final long serialVersionUID = 31953140144022679L;
-
     private JViewport mapView;
     private JPanel panMapView;
     private InterstellarMapPanel panMap;
@@ -61,14 +58,16 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
     private JScrollPane scrollPlanetView;
     JSuggestField suggestPlanet;
 
-    MapTab(CampaignGUI gui, String tabName) {
+    //region Constructors
+    public MapTab(CampaignGUI gui, String tabName) {
         super(gui, tabName);
         MekHQ.registerHandler(this);
     }
+    //endregion Constructors
 
     @Override
-    public GuiTabType tabType() {
-        return GuiTabType.MAP;
+    public MekHQTabType tabType() {
+        return MekHQTabType.INTERSTELLAR_MAP;
     }
 
     /*
@@ -78,8 +77,8 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
      */
     @Override
     public void initTab() {
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI", //$NON-NLS-1$ ;
-                new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
         panMapView = new JPanel(new BorderLayout());
 
@@ -90,7 +89,7 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
         gridBagConstraints.weightx = 0.0;
         gridBagConstraints.weighty = 0.0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        panTopButtons.add(new JLabel(resourceMap.getString("lblFindPlanet.text")), //$NON-NLS-1$ ;
+        panTopButtons.add(new JLabel(resourceMap.getString("lblFindPlanet.text")),
                 gridBagConstraints);
 
         suggestPlanet = new JSuggestField(getFrame(), getCampaign().getSystemNames());
@@ -110,8 +109,8 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
         gridBagConstraints.weighty = 0.0;
         panTopButtons.add(suggestPlanet, gridBagConstraints);
 
-        JButton btnCalculateJumpPath = new JButton(resourceMap.getString("btnCalculateJumpPath.text")); // NOI18N
-        btnCalculateJumpPath.setToolTipText(resourceMap.getString("btnCalculateJumpPath.toolTipText")); // NOI18N
+        JButton btnCalculateJumpPath = new JButton(resourceMap.getString("btnCalculateJumpPath.text"));
+        btnCalculateJumpPath.setToolTipText(resourceMap.getString("btnCalculateJumpPath.toolTipText"));
         btnCalculateJumpPath.addActionListener(ev -> calculateJumpPath());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -122,8 +121,8 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
         gridBagConstraints.weighty = 0.0;
         panTopButtons.add(btnCalculateJumpPath, gridBagConstraints);
 
-        JButton btnBeginTransit = new JButton(resourceMap.getString("btnBeginTransit.text")); // NOI18N
-        btnBeginTransit.setToolTipText(resourceMap.getString("btnBeginTransit.toolTipText")); // NOI18N
+        JButton btnBeginTransit = new JButton(resourceMap.getString("btnBeginTransit.text"));
+        btnBeginTransit.setToolTipText(resourceMap.getString("btnBeginTransit.toolTipText"));
         btnBeginTransit.addActionListener(ev -> beginTransit());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -277,7 +276,7 @@ public final class MapTab extends CampaignGuiTab implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == panMap) {
             refreshSystemView();
-        } else if(e.getSource() == panSystem) {
+        } else if (e.getSource() == panSystem) {
             refreshPlanetView();
         }
     }

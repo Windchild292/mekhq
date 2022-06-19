@@ -1,7 +1,7 @@
 /*
  * EquipmentPart.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  * Copyright (C) 2020 MegaMek team
  *
  * This file is part of MekHQ.
@@ -21,27 +21,19 @@
  */
 package mekhq.campaign.parts.equipment;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import megamek.common.annotations.Nullable;
+import megamek.common.weapons.bayweapons.BayWeapon;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
+import mekhq.campaign.parts.Part;
+import mekhq.campaign.unit.Unit;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Compute;
-import megamek.common.CriticalSlot;
-import megamek.common.Entity;
-import megamek.common.EquipmentType;
-import megamek.common.MiscType;
-import megamek.common.Mounted;
-import megamek.common.TechAdvancement;
-import megamek.common.WeaponType;
-import megamek.common.annotations.Nullable;
-import megamek.common.weapons.bayweapons.BayWeapon;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.parts.Part;
-import mekhq.campaign.unit.Unit;
+import java.io.PrintWriter;
 
 /**
  * This part covers most of the equipment types in WeaponType, AmmoType, and
@@ -52,17 +44,15 @@ import mekhq.campaign.unit.Unit;
  * subclasses: - MASC (depends on engine rating) - AES (depends on location and
  * cost is by unit tonnage)
  *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class EquipmentPart extends Part {
-    private static final long serialVersionUID = 2892728320891712304L;
-
     // crap EquipmentType is not serialized!
     protected transient EquipmentType type;
     protected String typeName;
     protected int equipmentNum;
     protected double equipTonnage;
-    protected double size = 1.0;
+    protected double size;
 
     public EquipmentType getType() {
         return type;
@@ -99,7 +89,7 @@ public class EquipmentPart extends Part {
             try {
                 equipTonnage = type.getTonnage(null, size);
             } catch (NullPointerException ex) {
-                MekHQ.getLogger().error(ex);
+                LogManager.getLogger().error("", ex);
             }
         }
     }
@@ -116,6 +106,7 @@ public class EquipmentPart extends Part {
         equipTonnage = ton;
     }
 
+    @Override
     public EquipmentPart clone() {
         EquipmentPart clone = new EquipmentPart(getUnitTonnage(), type, equipmentNum, size, omniPodded, campaign);
         clone.copyBaseData(this);
@@ -139,7 +130,7 @@ public class EquipmentPart extends Part {
         }
 
         if (type == null) {
-            MekHQ.getLogger().error("Mounted.restore: could not restore equipment type \"" + typeName + "\"");
+            LogManager.getLogger().error("Mounted.restore: could not restore equipment type \"" + typeName + "\"");
         }
     }
 
@@ -149,7 +140,7 @@ public class EquipmentPart extends Part {
         // they are not acceptable substitutes, so we need to check for that as
         // well
         // http://bg.battletech.com/forums/strategic-operations/(answered)-can-a-lance-for-a-35-ton-mech-be-used-on-a-40-ton-mech-and-so-on/
-        return getClass().equals(part.getClass())
+        return (getClass() == part.getClass())
                 && getType().equals(((EquipmentPart) part).getType())
                 && getTonnage() == part.getTonnage() && getStickerPrice().equals(part.getStickerPrice())
                 && getSize() == ((EquipmentPart) part).getSize()
@@ -157,12 +148,12 @@ public class EquipmentPart extends Part {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "equipmentNum", equipmentNum);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "typeName", type.getInternalName());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "size", size);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "equipTonnage", equipTonnage);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "equipmentNum", equipmentNum);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "typeName", type.getInternalName());
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "size", size);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "equipTonnage", equipTonnage);
         writeToXmlEnd(pw1, indent);
     }
 
@@ -342,7 +333,7 @@ public class EquipmentPart extends Part {
                 return mounted;
             }
 
-            MekHQ.getLogger().warning("Missing valid equipment for " + getName() + " on unit " + getUnit().getName());
+            LogManager.getLogger().warn("Missing valid equipment for " + getName() + " on unit " + getUnit().getName());
         }
 
         return null;
@@ -456,11 +447,10 @@ public class EquipmentPart extends Part {
      */
     @Override
     public Money getStickerPrice() {
-        // OK, we cant use the resolveVariableCost methods from megamek, because they
+        // Ok, we can't use the resolveVariableCost methods from MegaMek, because they
         // rely on entity which may be null if this is a spare part. So we use our
         // own resolveVariableCost method
-        // TODO: we need a static method that returns whether this equipment type
-        // depends upon
+        // TODO : we need a static method that returns whether this equipment type depends upon
         // - unit tonnage
         // - item tonnage
         // - engine
@@ -474,6 +464,7 @@ public class EquipmentPart extends Part {
         if (itemCost.getAmount().intValue() == EquipmentType.COST_VARIABLE) {
             itemCost = resolveVariableCost(isArmored);
         }
+
         if (unit != null) {
             en = unit.getEntity();
             Mounted mounted = unit.getEntity().getEquipment(equipmentNum);
@@ -482,9 +473,11 @@ public class EquipmentPart extends Part {
             }
             itemCost = Money.of(type.getCost(en, isArmored, getLocation(), getSize()));
         }
+
         if (isOmniPodded()) {
             itemCost = itemCost.multipliedBy(1.25);
         }
+
         if (isArmored) {
             // need a getCriticals command - but how does this work?
             // finalCost += 150000 * getCriticals(entity);
@@ -563,7 +556,7 @@ public class EquipmentPart extends Part {
         }
         if (varCost.isZero()) {
             // if we don't know what it is...
-            MekHQ.getLogger().debug("I don't know how much " + name + " costs.");
+            LogManager.getLogger().debug("I don't know how much " + name + " costs.");
         }
         return varCost;
     }
@@ -573,7 +566,7 @@ public class EquipmentPart extends Part {
      * variable weight equipment. If the type returns true to hasVariableTonnage
      * then the parts store will use a for loop to create equipment of the given
      * tonnage using the other helper functions. Note that this should not be used
-     * for supclassed equipment parts whose "uniqueness" depends on more than the
+     * for subclassed equipment parts whose "uniqueness" depends on more than the
      * item tonnage
      */
     public static boolean hasVariableTonnage(EquipmentType type) {
@@ -598,8 +591,7 @@ public class EquipmentPart extends Part {
         } else if (type.hasFlag(MiscType.F_CLUB) && type.hasSubType(MiscType.S_RETRACTABLE_BLADE)) {
             return 5.5;
         } else if (type.hasFlag(MiscType.F_TARGCOMP)) {
-            // direct fire weapon weight divided by 4 - what is reasonably the highest - 15
-            // tons?
+            // direct fire weapon weight divided by 4 - what is reasonably the highest - 15 tons?
             return 15;
         }
         return 1;

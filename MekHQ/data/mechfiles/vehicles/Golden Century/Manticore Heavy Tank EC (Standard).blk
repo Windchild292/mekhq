@@ -19,12 +19,16 @@ Manticore Heavy Tank EC
 <Model>
 </Model>
 
+<mul id:>
+7675
+</mul id:>
+
 <year>
-2818
+2823
 </year>
 
 <originalBuildYear>
-2818
+2823
 </originalBuildYear>
 
 <type>

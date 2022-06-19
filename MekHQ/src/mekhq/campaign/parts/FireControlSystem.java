@@ -1,7 +1,7 @@
 /*
  * FireControlSystem.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,13 +12,12 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
 import java.io.PrintWriter;
@@ -34,21 +33,14 @@ import megamek.common.Entity;
 import megamek.common.Jumpship;
 import megamek.common.SmallCraft;
 import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.SkillType;
 
 /**
- *
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class FireControlSystem extends Part {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = -717866644605314883L;
-
     private Money cost;
 
     public FireControlSystem() {
@@ -61,6 +53,7 @@ public class FireControlSystem extends Part {
         this.name = "Fire Control System";
     }
 
+    @Override
     public FireControlSystem clone() {
         FireControlSystem clone = new FireControlSystem(0, cost, campaign);
         clone.copyBaseData(this);
@@ -70,9 +63,9 @@ public class FireControlSystem extends Part {
     @Override
     public void updateConditionFromEntity(boolean checkForDestruction) {
         int priorHits = hits;
-        if(null != unit && unit.getEntity() instanceof Aero) {
-            hits = ((Aero)unit.getEntity()).getFCSHits();
-            if(checkForDestruction
+        if (null != unit && unit.getEntity() instanceof Aero) {
+            hits = ((Aero) unit.getEntity()).getFCSHits();
+            if (checkForDestruction
                     && hits > priorHits
                     && (hits < 3 && !campaign.getCampaignOptions().useAeroSystemHits())
                     && Compute.d6(2) < campaign.getCampaignOptions().getDestroyPartTarget()) {
@@ -85,7 +78,7 @@ public class FireControlSystem extends Part {
 
     @Override
     public int getBaseTime() {
-        int time = 0;
+        int time;
         if (campaign.getCampaignOptions().useAeroSystemHits()) {
             //Test of proposed errata for repair times
             if (null != unit && (unit.getEntity() instanceof Dropship || unit.getEntity() instanceof Jumpship))  {
@@ -105,7 +98,7 @@ public class FireControlSystem extends Part {
             }
             return time;
         }
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             time = 4320;
         } else {
             time = 120;
@@ -117,7 +110,7 @@ public class FireControlSystem extends Part {
     public int getDifficulty() {
         if (campaign.getCampaignOptions().useAeroSystemHits()) {
             //Test of proposed errata for repair time and difficulty
-            if(isSalvaging()) {
+            if (isSalvaging()) {
                 return 0;
             }
             if (hits == 1) {
@@ -127,7 +120,7 @@ public class FireControlSystem extends Part {
                 return 2;
             }
         }
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return 0;
         }
         return 1;
@@ -135,8 +128,8 @@ public class FireControlSystem extends Part {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit && unit.getEntity() instanceof Aero) {
-            ((Aero)unit.getEntity()).setFCSHits(hits);
+        if (null != unit && unit.getEntity() instanceof Aero) {
+            ((Aero) unit.getEntity()).setFCSHits(hits);
         }
 
     }
@@ -144,19 +137,19 @@ public class FireControlSystem extends Part {
     @Override
     public void fix() {
         super.fix();
-        if(null != unit && unit.getEntity() instanceof Aero) {
-            ((Aero)unit.getEntity()).setFCSHits(0);
+        if (null != unit && unit.getEntity() instanceof Aero) {
+            ((Aero) unit.getEntity()).setFCSHits(0);
         }
     }
 
     @Override
     public void remove(boolean salvage) {
-        if(null != unit && unit.getEntity() instanceof Aero) {
-            ((Aero)unit.getEntity()).setFCSHits(3);
+        if (null != unit && unit.getEntity() instanceof Aero) {
+            ((Aero) unit.getEntity()).setFCSHits(3);
             Part spare = campaign.getWarehouse().checkForExistingSparePart(this);
-            if(!salvage) {
+            if (!salvage) {
                 campaign.getWarehouse().removePart(this);
-            } else if(null != spare) {
+            } else if (null != spare) {
                 spare.incrementQuantity();
                 campaign.getWarehouse().removePart(this);
             }
@@ -197,12 +190,11 @@ public class FireControlSystem extends Part {
     }
 
     public void calculateCost() {
-        if(null != unit) {
-            if(unit.getEntity() instanceof SmallCraft) {
-                cost = Money.of(100000 + 10000 * ((SmallCraft)unit.getEntity()).getArcswGuns());
-            }
-            else if(unit.getEntity() instanceof Jumpship) {
-                cost = Money.of(100000 + 10000 * ((Jumpship)unit.getEntity()).getArcswGuns());
+        if (null != unit) {
+            if (unit.getEntity() instanceof SmallCraft) {
+                cost = Money.of(100000 + 10000 * ((SmallCraft) unit.getEntity()).getArcswGuns());
+            } else if (unit.getEntity() instanceof Jumpship) {
+                cost = Money.of(100000 + 10000 * ((Jumpship) unit.getEntity()).getArcswGuns());
             }
         }
     }
@@ -224,9 +216,9 @@ public class FireControlSystem extends Part {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent+1)
+        pw1.println(MHQXMLUtility.indentStr(indent+1)
                 +"<cost>"
                 +cost.toXmlString()
                 +"</cost>");
@@ -237,7 +229,7 @@ public class FireControlSystem extends Part {
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
             if (wn2.getNodeName().equalsIgnoreCase("cost")) {
                 cost = Money.fromXmlString(wn2.getTextContent().trim());

@@ -10,28 +10,26 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.gui.dialog;
 
+import megamek.common.util.EncodeControl;
+import mekhq.MekHQ;
+
+import javax.swing.*;
+import javax.swing.text.DefaultFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.text.DefaultFormatter;
-
-import megamek.common.util.EncodeControl;
-
 /**
- *
  * @author natit
  */
 public class PopupValueChoiceDialog extends JDialog implements WindowListener {
@@ -41,24 +39,22 @@ public class PopupValueChoiceDialog extends JDialog implements WindowListener {
     private SpinnerNumberModel model;
 
     /**
-	 * This was originally set up as a text entry dialog, but there is
-	 * really no reason to use it instead of the pre-fab inputdialog that
-	 * comes with java and it was actually causing problems because it uses
-	 * a textpane instead of a textfield. Since it is currently only called by
-	 * the set xp command in MekHQView, I am going to refactor it into a
-	 * numeric value setter using a spinner.
-	 */
-	private static final long serialVersionUID = 8376874926997734492L;
-	/** Creates new form */
-	public PopupValueChoiceDialog(Frame parent, boolean modal, String title, int current, int min) {
-		super(parent, modal);
+     * This was originally set up as a text entry dialog, but there is
+     * really no reason to use it instead of the pre-fab inputdialog that
+     * comes with java and it was actually causing problems because it uses
+     * a textpane instead of a textfield. Since it is currently only called by
+     * the set xp command in MekHQView, I am going to refactor it into a
+     * numeric value setter using a spinner.
+     */
+    public PopupValueChoiceDialog(Frame parent, boolean modal, String title, int current, int min) {
+        super(parent, modal);
         model = new SpinnerNumberModel(current, min, null, 1);
         setTitle(title);
         initComponents();
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(this);
-	}
+    }
 
     public PopupValueChoiceDialog(Frame parent, boolean modal, String title, int current, int min, int max) {
         super(parent, modal);
@@ -80,23 +76,24 @@ public class PopupValueChoiceDialog extends JDialog implements WindowListener {
         DefaultFormatter df = (DefaultFormatter) jtf.getFormatter();
         df.setCommitsOnValidEdit(true);
 
-		ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.PopupValueChoiceDialog", new EncodeControl()); //$NON-NLS-1$
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.PopupValueChoiceDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Form"); // NOI18N
+        setName("Form");
 
-        btnDone.setText(resourceMap.getString("btnDone.text")); // NOI18N
-        btnDone.setName("btnDone"); // NOI18N
+        btnDone.setText(resourceMap.getString("btnDone.text"));
+        btnDone.setName("btnDone");
         btnDone.addActionListener(this::btnDoneActionPerformed);
 
-        btnCancel.setText(resourceMap.getString("btnCancel.text")); // NOI18N
-        btnCancel.setName("btnCancel"); // NOI18N
+        btnCancel.setText(resourceMap.getString("btnCancel.text"));
+        btnCancel.setName("btnCancel");
         btnCancel.addActionListener(this::btnCancelActionPerformed);
 
         pnlButton.setLayout(new GridLayout(0,2));
         pnlButton.add(btnDone);
         pnlButton.add(btnCancel);
 
-        value.setName("value"); // NOI18N
+        value.setName("value");
 
         getContentPane().setLayout(new BorderLayout());
 
@@ -111,7 +108,7 @@ public class PopupValueChoiceDialog extends JDialog implements WindowListener {
 
     private void btnCancelActionPerformed(ActionEvent evt) {
         value.getModel().setValue(-1);
-    	this.setVisible(false);
+        this.setVisible(false);
     }
 
     /**
@@ -121,6 +118,7 @@ public class PopupValueChoiceDialog extends JDialog implements WindowListener {
         java.awt.EventQueue.invokeLater(() -> {
             PopupValueChoiceDialog dialog = new PopupValueChoiceDialog(new JFrame(), true, "Label", 0, 0, 1);
             dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
                 public void windowClosing(WindowEvent e) {
                     System.exit(0);
                 }
@@ -130,38 +128,44 @@ public class PopupValueChoiceDialog extends JDialog implements WindowListener {
     }
 
     public int getValue() {
-    	return (Integer)value.getValue();
+        return (Integer) value.getValue();
     }
 
     @Override
-    public void windowActivated(WindowEvent arg0) {
+    public void windowActivated(WindowEvent evt) {
+
     }
 
     @Override
-    public void windowClosed(WindowEvent arg0) {
+    public void windowClosed(WindowEvent evt) {
+
     }
 
     @Override
-    public void windowClosing(WindowEvent arg0) {
-        if (arg0.getComponent() != this.btnDone) {
+    public void windowClosing(WindowEvent evt) {
+        if (evt.getComponent() != this.btnDone) {
             value.getModel().setValue(-1);
             this.setVisible(false);
         }
     }
 
     @Override
-    public void windowDeactivated(WindowEvent arg0) {
+    public void windowDeactivated(WindowEvent evt) {
+
     }
 
     @Override
-    public void windowDeiconified(WindowEvent arg0) {
+    public void windowDeiconified(WindowEvent evt) {
+
     }
 
     @Override
-    public void windowIconified(WindowEvent arg0) {
+    public void windowIconified(WindowEvent evt) {
+
     }
 
     @Override
-    public void windowOpened(WindowEvent arg0) {
+    public void windowOpened(WindowEvent evt) {
+
     }
 }

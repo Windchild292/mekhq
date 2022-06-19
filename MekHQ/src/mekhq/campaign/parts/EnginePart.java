@@ -1,7 +1,7 @@
 /*
  * EnginePart.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,34 +20,24 @@
  */
 package mekhq.campaign.parts;
 
-import java.io.PrintWriter;
-
+import megamek.common.*;
+import megamek.common.verifier.TestEntity;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.enums.PartRepairType;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.unit.Unit;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import megamek.common.Aero;
-import megamek.common.CriticalSlot;
-import megamek.common.Engine;
-import megamek.common.Entity;
-import megamek.common.EntityMovementMode;
-import megamek.common.IArmorState;
-import megamek.common.Mech;
-import megamek.common.Protomech;
-import megamek.common.Tank;
-import megamek.common.TechAdvancement;
-import megamek.common.verifier.TestEntity;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.unit.Unit;
+import java.io.PrintWriter;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class EnginePart extends Part {
-    private static final long serialVersionUID = -6961398614705924172L;
     protected Engine engine;
     protected boolean forHover;
 
@@ -62,6 +52,7 @@ public class EnginePart extends Part {
         this.name = engine.getEngineName() + " Engine";
     }
 
+    @Override
     public EnginePart clone() {
         EnginePart clone = new EnginePart(getUnitTonnage(),
                 new Engine(engine.getRating(), engine.getEngineType(), engine.getFlags()), campaign, forHover);
@@ -77,32 +68,32 @@ public class EnginePart extends Part {
     public double getTonnage() {
         double weight = Engine.ENGINE_RATINGS[(int) Math.ceil(engine.getRating() / 5.0)];
         switch (engine.getEngineType()) {
-        case Engine.COMBUSTION_ENGINE:
-            weight *= 2.0f;
-            break;
-        case Engine.NORMAL_ENGINE:
-            break;
-        case Engine.XL_ENGINE:
-            weight *= 0.5f;
-            break;
-        case Engine.LIGHT_ENGINE:
-            weight *= 0.75f;
-            break;
-        case Engine.XXL_ENGINE:
-            weight /= 3f;
-            break;
-        case Engine.COMPACT_ENGINE:
-            weight *= 1.5f;
-            break;
-        case Engine.FISSION:
-            weight *= 1.75;
-            weight = Math.max(5, weight);
-            break;
-        case Engine.FUEL_CELL:
-            weight *= 1.2;
-            break;
-        case Engine.NONE:
-            return 0;
+            case Engine.COMBUSTION_ENGINE:
+                weight *= 2.0f;
+                break;
+            case Engine.NORMAL_ENGINE:
+                break;
+            case Engine.XL_ENGINE:
+                weight *= 0.5f;
+                break;
+            case Engine.LIGHT_ENGINE:
+                weight *= 0.75f;
+                break;
+            case Engine.XXL_ENGINE:
+                weight /= 3f;
+                break;
+            case Engine.COMPACT_ENGINE:
+                weight *= 1.5f;
+                break;
+            case Engine.FISSION:
+                weight *= 1.75;
+                weight = Math.max(5, weight);
+                break;
+            case Engine.FUEL_CELL:
+                weight *= 1.2;
+                break;
+            case Engine.NONE:
+                return 0;
         }
         weight = TestEntity.ceilMaxHalf(weight, TestEntity.Ceil.HALFTON);
 
@@ -163,15 +154,15 @@ public class EnginePart extends Part {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
         // The engine is a MM object...
         // And doesn't support XML serialization...
         // But it's defined by 3 ints. So we'll save those here.
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<engineType>" + engine.getEngineType() + "</engineType>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<engineRating>" + engine.getRating() + "</engineRating>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<engineFlags>" + engine.getFlags() + "</engineFlags>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<forHover>" + forHover + "</forHover>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<engineType>" + engine.getEngineType() + "</engineType>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<engineRating>" + engine.getRating() + "</engineRating>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<engineFlags>" + engine.getFlags() + "</engineFlags>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<forHover>" + forHover + "</forHover>");
         writeToXmlEnd(pw1, indent);
     }
 
@@ -185,14 +176,18 @@ public class EnginePart extends Part {
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("engineType")) {
-                engineType = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("engineRating")) {
-                engineRating = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("engineFlags")) {
-                engineFlags = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("forHover")) {
-                forHover = wn2.getTextContent().equalsIgnoreCase("true");
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("engineType")) {
+                    engineType = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("engineRating")) {
+                    engineRating = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("engineFlags")) {
+                    engineFlags = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("forHover")) {
+                    forHover = wn2.getTextContent().equalsIgnoreCase("true");
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 
@@ -267,7 +262,7 @@ public class EnginePart extends Part {
                 }
             }
             if (unit.getEntity() instanceof Aero) {
-                engineHits = ((Aero) unit.getEntity()).getEngineHits();
+                engineHits = unit.getEntity().getEngineHits();
                 engineCrits = 3;
             }
             if (unit.getEntity() instanceof Tank) {
@@ -281,7 +276,7 @@ public class EnginePart extends Part {
                 if (unit.getEntity().getInternal(Protomech.LOC_TORSO) == IArmorState.ARMOR_DESTROYED) {
                     engineHits = 1;
                 } else {
-                    engineHits = ((Protomech) unit.getEntity()).getEngineHits();
+                    engineHits = unit.getEntity().getEngineHits();
                 }
             }
             if (engineHits >= engineCrits) {

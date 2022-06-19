@@ -18,17 +18,13 @@
  */
 package mekhq.campaign.universe;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-
 import megamek.client.generator.RandomUnitGenerator;
 import megamek.common.MechSummary;
-import mekhq.MekHQ;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.rating.IUnitRating;
+import org.apache.logging.log4j.LogManager;
+
+import java.util.*;
 
 /**
  * Base class for unit generators containing common functionality.
@@ -66,7 +62,7 @@ public abstract class AbstractUnitGenerator implements IUnitGenerator {
      * @return List of turrets
      */
     @Override
-    public List<MechSummary> generateTurrets(int num, int skill, int quality, int currentYear) {
+    public List<MechSummary> generateTurrets(int num, SkillLevel skill, int quality, int currentYear) {
         int ratYear;
 
         // less dirty hack
@@ -98,10 +94,10 @@ public abstract class AbstractUnitGenerator implements IUnitGenerator {
         // RAT for the current or previous year, use the earliest available.
         // If there are no turret RATs, return an empty list
         if (turretRatYears.isEmpty()) {
-            MekHQ.getLogger().warning("No turret RATs found.");
+            LogManager.getLogger().warn("No turret RATs found.");
             return Collections.emptyList();
         } else if (currentYear < turretRatYears.first()) {
-            MekHQ.getLogger().warning("Earliest turret RAT is later than campaign year.");
+            LogManager.getLogger().warn("Earliest turret RAT is later than campaign year.");
             ratYear = turretRatYears.first();
         } else {
             ratYear = turretRatYears.floor(currentYear);

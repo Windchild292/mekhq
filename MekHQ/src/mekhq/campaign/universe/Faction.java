@@ -1,7 +1,7 @@
 /*
  * Faction.java
  *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All Rights Reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
  * Copyright (c) 2009-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
@@ -21,34 +21,27 @@
  */
 package mekhq.campaign.universe;
 
-import java.awt.Color;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
-
 import megamek.common.annotations.Nullable;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.Utilities;
+import mekhq.campaign.Campaign;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.Utilities;
+import java.awt.*;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.*;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class Faction {
     //region Variable Declarations
+    public static final String DEFAULT_CODE = "???";
+
     private String shortName;
     private String fullName;
     private NavigableMap<Integer, String> nameChanges = new TreeMap<>();
@@ -60,6 +53,10 @@ public class Faction {
     private int[] eraMods;
     private Color color;
     private String currencyCode = ""; // Currency of the faction, if any
+    private String layeredForceIconBackgroundCategory;
+    private String layeredForceIconBackgroundFilename;
+    private String layeredForceIconLogoCategory;
+    private String layeredForceIconLogoFilename;
     private Set<Tag> tags;
     private int start; // Start year (inclusive)
     private int end; // End year (inclusive)
@@ -67,7 +64,7 @@ public class Faction {
 
     //region Constructors
     public Faction() {
-        this("???", "Unknown");
+        this(DEFAULT_CODE, "Unknown");
     }
 
     public Faction(final String shortName, final String fullName) {
@@ -77,7 +74,11 @@ public class Faction {
         color = Color.LIGHT_GRAY;
         startingPlanet = "Terra";
         eraMods = null;
-        tags = EnumSet.noneOf(Faction.Tag.class);
+        setLayeredForceIconBackgroundCategory("");
+        setLayeredForceIconBackgroundFilename(null);
+        setLayeredForceIconLogoCategory("");
+        setLayeredForceIconLogoFilename(null);
+        tags = EnumSet.noneOf(Tag.class);
         start = 0;
         end = 9999;
     }
@@ -112,8 +113,12 @@ public class Faction {
         return nameGenerator;
     }
 
-    public String getStartingPlanet(final LocalDate year) {
-        final Map.Entry<LocalDate, String> change = planetChanges.floorEntry(year);
+    public @Nullable PlanetarySystem getStartingPlanet(final Campaign campaign, final LocalDate date) {
+        return campaign.getSystemById(getStartingPlanet(date));
+    }
+
+    public String getStartingPlanet(final LocalDate date) {
+        final Map.Entry<LocalDate, String> change = planetChanges.floorEntry(date);
         return (change == null) ? startingPlanet : change.getValue();
     }
 
@@ -180,6 +185,38 @@ public class Faction {
         return currencyCode;
     }
 
+    public String getLayeredForceIconBackgroundCategory() {
+        return layeredForceIconBackgroundCategory;
+    }
+
+    public void setLayeredForceIconBackgroundCategory(final String layeredForceIconBackgroundCategory) {
+        this.layeredForceIconBackgroundCategory = layeredForceIconBackgroundCategory;
+    }
+
+    public @Nullable String getLayeredForceIconBackgroundFilename() {
+        return layeredForceIconBackgroundFilename;
+    }
+
+    public void setLayeredForceIconBackgroundFilename(final @Nullable String layeredForceIconBackgroundFilename) {
+        this.layeredForceIconBackgroundFilename = layeredForceIconBackgroundFilename;
+    }
+
+    public String getLayeredForceIconLogoCategory() {
+        return layeredForceIconLogoCategory;
+    }
+
+    public void setLayeredForceIconLogoCategory(final String layeredForceIconLogoCategory) {
+        this.layeredForceIconLogoCategory = layeredForceIconLogoCategory;
+    }
+
+    public @Nullable String getLayeredForceIconLogoFilename() {
+        return layeredForceIconLogoFilename;
+    }
+
+    public void setLayeredForceIconLogoFilename(final @Nullable String layeredForceIconLogoFilename) {
+        this.layeredForceIconLogoFilename = layeredForceIconLogoFilename;
+    }
+
     //region Checks
     public boolean isPlayable() {
         return is(Tag.PLAYABLE);
@@ -213,6 +250,10 @@ public class Faction {
         return isComStar() || isWoB();
     }
 
+    public boolean isMarianHegemony() {
+        return "MH".equals(getShortName());
+    }
+
     public boolean isClan() {
         return is(Tag.CLAN);
     }
@@ -230,7 +271,7 @@ public class Faction {
     }
 
     public boolean isIndependent() {
-        return "IND".equals(getShortName()) || "PIND".equals(getShortName());
+        return "IND".equals(getShortName());
     }
 
     //region Power Checks
@@ -266,53 +307,65 @@ public class Faction {
 
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
-            if (wn2.getNodeName().equalsIgnoreCase("shortname")) {
-                retVal.shortName = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("fullname")) {
-                retVal.fullName = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("altNamesByYear")) {
-                int year = Integer.parseInt(wn2.getAttributes().getNamedItem("year").getTextContent());
-                retVal.nameChanges.put(year, wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("altNames")) {
-                retVal.altNames = wn2.getTextContent().split(",", 0);
-            } else if (wn2.getNodeName().equalsIgnoreCase("alternativeFactionCodes")) {
-                retVal.setAlternativeFactionCodes(wn2.getTextContent().trim().split(","));
-            } else if (wn2.getNodeName().equalsIgnoreCase("startingPlanet")) {
-                retVal.startingPlanet = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("changePlanet")) {
-                retVal.planetChanges.put(
-                        MekHqXmlUtil.parseDate(wn2.getAttributes().getNamedItem("year").getTextContent().trim()),
-                        wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("eraMods")) {
-                retVal.eraMods = new int[] {0,0,0,0,0,0,0,0,0};
-                String[] values = wn2.getTextContent().split(",", -2);
-                for (int i = 0; i < values.length; i++) {
-                    retVal.eraMods[i] = Integer.parseInt(values[i]);
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("shortname")) {
+                    retVal.shortName = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("fullname")) {
+                    retVal.fullName = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("altNamesByYear")) {
+                    int year = Integer.parseInt(wn2.getAttributes().getNamedItem("year").getTextContent());
+                    retVal.nameChanges.put(year, wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("altNames")) {
+                    retVal.altNames = wn2.getTextContent().split(",", 0);
+                } else if (wn2.getNodeName().equalsIgnoreCase("alternativeFactionCodes")) {
+                    retVal.setAlternativeFactionCodes(wn2.getTextContent().trim().split(","));
+                } else if (wn2.getNodeName().equalsIgnoreCase("startingPlanet")) {
+                    retVal.startingPlanet = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("changePlanet")) {
+                    retVal.planetChanges.put(
+                            MHQXMLUtility.parseDate(wn2.getAttributes().getNamedItem("year").getTextContent().trim()),
+                            wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("eraMods")) {
+                    retVal.eraMods = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    String[] values = wn2.getTextContent().split(",", -2);
+                    for (int i = 0; i < values.length; i++) {
+                        retVal.eraMods[i] = Integer.parseInt(values[i]);
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("nameGenerator")) {
+                    retVal.nameGenerator = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("colorRGB")) {
+                    String[] values = wn2.getTextContent().split(",");
+                    if (values.length == 3) {
+                        int colorRed = Integer.parseInt(values[0]);
+                        int colorGreen = Integer.parseInt(values[1]);
+                        int colorBlue = Integer.parseInt(values[2]);
+                        retVal.color = new Color(colorRed, colorGreen, colorBlue);
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("currencyCode")) {
+                    retVal.currencyCode = wn2.getTextContent();
+                } else if (wn2.getNodeName().equalsIgnoreCase("layeredForceIconBackgroundCategory")) {
+                    retVal.setLayeredForceIconBackgroundCategory(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("layeredForceIconBackgroundFilename")) {
+                    retVal.setLayeredForceIconBackgroundFilename(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("layeredForceIconLogoCategory")) {
+                    retVal.setLayeredForceIconLogoCategory(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("layeredForceIconLogoFilename")) {
+                    retVal.setLayeredForceIconLogoFilename(wn2.getTextContent().trim());
+                } else if (wn2.getNodeName().equalsIgnoreCase("tags")) {
+                    Arrays.stream(wn2.getTextContent().split(",")).map(tag -> tag.toUpperCase(Locale.ROOT))
+                            .map(Tag::valueOf).forEach(tag -> retVal.tags.add(tag));
+                } else if (wn2.getNodeName().equalsIgnoreCase("start")) {
+                    retVal.start = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("end")) {
+                    retVal.end = Integer.parseInt(wn2.getTextContent());
                 }
-            } else if (wn2.getNodeName().equalsIgnoreCase("nameGenerator")) {
-                retVal.nameGenerator = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("colorRGB")) {
-                String[] values = wn2.getTextContent().split(",");
-                if (values.length == 3) {
-                    int colorRed = Integer.parseInt(values[0]);
-                    int colorGreen = Integer.parseInt(values[1]);
-                    int colorBlue = Integer.parseInt(values[2]);
-                    retVal.color = new Color(colorRed, colorGreen, colorBlue);
-                }
-            } else if (wn2.getNodeName().equalsIgnoreCase("currencyCode")) {
-                retVal.currencyCode = wn2.getTextContent();
-            } else if (wn2.getNodeName().equalsIgnoreCase("tags")) {
-                Arrays.stream(wn2.getTextContent().split(",")).map(tag -> tag.toUpperCase(Locale.ROOT))
-                        .map(Tag::valueOf).forEach(tag -> retVal.tags.add(tag));
-            } else if (wn2.getNodeName().equalsIgnoreCase("start")) {
-                retVal.start = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("end")) {
-                retVal.end = Integer.parseInt(wn2.getTextContent());
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 
         if ((retVal.eraMods != null) && (retVal.eraMods.length < 9)) {
-            MekHQ.getLogger().warning(retVal.fullName + " faction did not have a long enough eraMods vector");
+            LogManager.getLogger().warn(retVal.fullName + " faction did not have a long enough eraMods vector");
         }
 
         return retVal;

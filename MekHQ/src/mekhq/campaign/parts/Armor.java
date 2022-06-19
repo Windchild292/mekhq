@@ -1,7 +1,7 @@
 /*
  * Armor.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,33 +20,26 @@
  */
 package mekhq.campaign.parts;
 
+import megamek.common.*;
+import mekhq.utilities.MHQXMLUtility;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.finances.Money;
+import mekhq.campaign.parts.enums.PartRepairType;
+import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.work.IAcquisitionWork;
+import mekhq.campaign.work.WorkTime;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Objects;
 
-import mekhq.campaign.finances.Money;
-import mekhq.campaign.parts.enums.PartRepairType;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import megamek.common.Entity;
-import megamek.common.EquipmentType;
-import megamek.common.IArmorState;
-import megamek.common.ITechnology;
-import megamek.common.Tank;
-import megamek.common.TargetRoll;
-import megamek.common.TechAdvancement;
-import mekhq.MekHqXmlUtil;
-import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.work.IAcquisitionWork;
-import mekhq.campaign.work.WorkTime;
-
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class Armor extends Part implements IAcquisitionWork {
-    private static final long serialVersionUID = 5275226057484468868L;
     protected int type;
     protected int amount;
     protected int amountNeeded;
@@ -67,11 +60,12 @@ public class Armor extends Part implements IAcquisitionWork {
         this.rear = r;
         this.clan = clan;
         this.name = "Armor";
-        if(type > -1) {
+        if (type > -1) {
             this.name += " (" + EquipmentType.armorNames[type] + ")";
         }
     }
 
+    @Override
     public Armor clone() {
         Armor clone = new Armor(0, type, amount, -1, false, clan, campaign);
         clone.copyBaseData(this);
@@ -84,8 +78,8 @@ public class Armor extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public Money getCurrentValue() {
-        return Money.of(getTonnage() * EquipmentType.getArmorCost(type));
+    public Money getActualValue() {
+        return adjustCostsForCampaignOptions(Money.of(getTonnage() * EquipmentType.getArmorCost(type)));
     }
 
     public double getTonnageNeeded() {
@@ -108,11 +102,12 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public Money getBuyCost() {
-        return getStickerPrice();
+        return getActualValue();
     }
 
+    @Override
     public String getDesc() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return super.getDesc();
         }
         String bonus = getAllMods(null).getValueAsString();
@@ -130,9 +125,9 @@ public class Armor extends Part implements IAcquisitionWork {
         toReturn += ">";
         toReturn += "<b>Replace " + getName() + "</b><br/>";
         toReturn += getDetails() + "<br/>";
-        if(getAmountAvailable() > 0) {
+        if (getAmountAvailable() > 0) {
             toReturn += "" + getTimeLeft() + " minutes" + scheduled;
-            if(!getCampaign().getCampaignOptions().isDestroyByMargin()) {
+            if (!getCampaign().getCampaignOptions().isDestroyByMargin()) {
                 toReturn += ", " + SkillType.getExperienceLevelName(getSkillMin());
             }
             toReturn += " " + bonus;
@@ -151,21 +146,21 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public String getDetails(boolean includeRepairDetails) {
-        if(null != unit) {
+        if (null != unit) {
             String rearMount = "";
-            if(rear) {
+            if (rear) {
                 rearMount = " (R)";
             }
-            if(!isSalvaging()) {
+            if (!isSalvaging()) {
                 String availability;
                 int amountAvailable = getAmountAvailable();
                 PartInventory inventories = campaign.getPartInventory(getNewPart());
 
                 String orderTransitString = getOrderTransitStringForDetails(inventories);
 
-                if(amountAvailable == 0) {
+                if (amountAvailable == 0) {
                     availability = "<br><font color='red'>No armor " + orderTransitString + "</font>";
-                } else if(amountAvailable < amountNeeded) {
+                } else if (amountAvailable < amountNeeded) {
                     availability = "<br><font color='red'>Only " + amountAvailable + " available " + orderTransitString + "</font>";
                 } else {
                     availability = "<br><font color='green'>" + amountAvailable + " available " + orderTransitString + "</font>";
@@ -184,6 +179,10 @@ public class Armor extends Part implements IAcquisitionWork {
 
     public int getAmount() {
         return amount;
+    }
+
+    public void addAmount(final int amount) {
+        this.amount += amount;
     }
 
     public int getAmountNeeded() {
@@ -217,7 +216,7 @@ public class Armor extends Part implements IAcquisitionWork {
     }
 
     public boolean isSameType(Armor armor) {
-        if(getType() == EquipmentType.T_ARMOR_STANDARD
+        if (getType() == EquipmentType.T_ARMOR_STANDARD
                 && armor.getType() == EquipmentType.T_ARMOR_STANDARD) {
             //standard armor is compatible between clan and IS
             return true;
@@ -227,9 +226,9 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public boolean isSamePartType(Part part) {
-        return getClass().equals(part.getClass())
+        return (getClass() == part.getClass())
                 && Objects.equals(getRefitUnit(), part.getRefitUnit())
-                && isSameType((Armor)part);
+                && isSameType((Armor) part);
     }
 
     @Override
@@ -259,9 +258,9 @@ public class Armor extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        String level1 = MekHqXmlUtil.indentStr(indent+1);
+        String level1 = MHQXMLUtility.indentStr(indent+1);
         StringBuilder builder = new StringBuilder(128);
         builder.append(level1)
             .append("<amount>")
@@ -312,21 +311,25 @@ public class Armor extends Part implements IAcquisitionWork {
     protected void loadFieldsFromXmlNode(Node wn) {
         NodeList nl = wn.getChildNodes();
 
-        for (int x=0; x<nl.getLength(); x++) {
+        for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
 
-            if (wn2.getNodeName().equalsIgnoreCase("amount")) {
-                amount = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("type")) {
-                type = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("location")) {
-                location = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("amountNeeded")) {
-                amountNeeded = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("rear")) {
-                rear = wn2.getTextContent().equalsIgnoreCase("true");
-            } else if (wn2.getNodeName().equalsIgnoreCase("clan")) {
-                clan = wn2.getTextContent().equalsIgnoreCase("true");
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("amount")) {
+                    amount = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("type")) {
+                    type = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("location")) {
+                    location = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("amountNeeded")) {
+                    amountNeeded = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("rear")) {
+                    rear = wn2.getTextContent().equalsIgnoreCase("true");
+                } else if (wn2.getNodeName().equalsIgnoreCase("clan")) {
+                    clan = wn2.getTextContent().equalsIgnoreCase("true");
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
     }
@@ -352,7 +355,7 @@ public class Armor extends Part implements IAcquisitionWork {
         Part newPart = getNewPart();
         newPart.setBrandNew(true);
         newPart.setDaysToArrival(transitDays);
-        if(campaign.getQuartermaster().buyPart(newPart, transitDays)) {
+        if (campaign.getQuartermaster().buyPart(newPart, transitDays)) {
             return "<font color='green'><b> part found</b>.</font> It will be delivered in " + transitDays + " days.";
         } else {
             return "<font color='red'><b> You cannot afford this part. Transaction cancelled</b>.</font>";
@@ -377,13 +380,13 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public IAcquisitionWork getAcquisitionWork() {
-        return new Armor(0, type, (int)Math.round(5 * getArmorPointsPerTon()), -1, false, clan, campaign);
+        return new Armor(0, type, (int) Math.round(5 * getArmorPointsPerTon()), -1, false, clan, campaign);
     }
 
     @Override
     public void remove(boolean salvage) {
         unit.getEntity().setArmor(IArmorState.ARMOR_DESTROYED, location, rear);
-        if(salvage) {
+        if (salvage) {
             // Account for capital-scale units when warehouse armor is stored at standard scale.
             if (unit.getEntity().isCapitalScale()) {
                 amount *= 10;
@@ -409,14 +412,14 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public void updateConditionFromEntity(boolean checkForDestruction) {
-        if(isReservedForRefit()) {
+        if (isReservedForRefit()) {
             return;
         }
-        if(null == unit) {
+        if (null == unit) {
             return;
         }
         amount = unit.getEntity().getArmorForReal(location, rear);
-        if(amount < 0) {
+        if (amount < 0) {
             amount = 0;
         }
         amountNeeded = unit.getEntity().getOArmor(location, rear) - amount;
@@ -448,9 +451,9 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public void updateConditionFromPart() {
-        if(null != unit) {
+        if (null != unit) {
             int armor = Math.min(amount, unit.getEntity().getOArmor(location, rear));
-            if(armor == 0) {
+            if (armor == 0) {
                 armor = IArmorState.ARMOR_DESTROYED;
             }
             unit.getEntity().setArmor(armor, location, rear);
@@ -459,10 +462,10 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public String checkFixable() {
-        if(isSalvaging()) {
+        if (isSalvaging()) {
             return null;
         }
-        if(getAmountAvailable() == 0) {
+        if (getAmountAvailable() == 0) {
             return "No spare armor available";
         }
         if (isMountedOnDestroyedLocation()) {
@@ -502,7 +505,7 @@ public class Armor extends Part implements IAcquisitionWork {
 
     @Override
     public String getAcquisitionExtraDesc() {
-        return ((int)Math.round(getArmorPointsPerTon())) * 5 + " points (5 tons)";
+        return ((int) Math.round(getArmorPointsPerTon())) * 5 + " points (5 tons)";
     }
 
     @Override
@@ -513,7 +516,7 @@ public class Armor extends Part implements IAcquisitionWork {
     @Override
     public String getAcquisitionBonus() {
         String bonus = getAllAcquisitionMods().getValueAsString();
-        if(getAllAcquisitionMods().getValue() > -1) {
+        if (getAllAcquisitionMods().getValue() > -1) {
             bonus = "+" + bonus;
         }
 
@@ -529,10 +532,10 @@ public class Armor extends Part implements IAcquisitionWork {
     public TargetRoll getAllAcquisitionMods() {
         TargetRoll target = new TargetRoll();
         // Faction and Tech mod
-        if(isClanTechBase() && campaign.getCampaignOptions().getClanAcquisitionPenalty() > 0) {
+        if (isClanTechBase() && campaign.getCampaignOptions().getClanAcquisitionPenalty() > 0) {
             target.addModifier(campaign.getCampaignOptions().getClanAcquisitionPenalty(), "clan-tech");
         }
-        else if(campaign.getCampaignOptions().getIsAcquisitionPenalty() > 0) {
+        else if (campaign.getCampaignOptions().getIsAcquisitionPenalty() > 0) {
             target.addModifier(campaign.getCampaignOptions().getIsAcquisitionPenalty(), "Inner Sphere tech");
         }
         //availability mod
@@ -543,7 +546,7 @@ public class Armor extends Part implements IAcquisitionWork {
     }
 
     public double getArmorPointsPerTon() {
-        //if(null != unit) {
+        //if (null != unit) {
             // armor is checked for in 5-ton increments
             //int armorType = unit.getEntity().getArmorType(location);
         double armorPerTon = 16.0 * EquipmentType.getArmorPointMultiplier(type, clan);
@@ -556,7 +559,7 @@ public class Armor extends Part implements IAcquisitionWork {
     }
 
     public Part getNewPart() {
-        return new Armor(0, type, (int)Math.round(5 * getArmorPointsPerTon()), -1, false, clan, campaign);
+        return new Armor(0, type, (int) Math.round(5 * getArmorPointsPerTon()), -1, false, clan, campaign);
     }
 
     public boolean isEnoughSpareArmorAvailable() {
@@ -564,23 +567,19 @@ public class Armor extends Part implements IAcquisitionWork {
     }
 
     public int getAmountAvailable() {
-        Armor a = (Armor) campaign.getWarehouse().findSparePart(part -> {
-            return part instanceof Armor
+        Armor a = (Armor) campaign.getWarehouse().findSparePart(part -> (part instanceof Armor)
                 && part.isPresent()
                 && !part.isReservedForRefit()
-                && isSameType((Armor)part);
-        });
+                && isSameType((Armor) part));
 
-        return a != null ? a.getAmount() : 0;
+        return (a == null) ? 0 : a.getAmount();
     }
 
     public void changeAmountAvailable(int amount) {
-        Armor a = (Armor) campaign.getWarehouse().findSparePart(part -> {
-            return (part instanceof Armor)
-                && part.isPresent()
-                && Objects.equals(getRefitUnit(), part.getRefitUnit())
-                && isSameType((Armor)part);
-        });
+        Armor a = (Armor) campaign.getWarehouse().findSparePart(part -> (part instanceof Armor)
+            && part.isPresent()
+            && Objects.equals(getRefitUnit(), part.getRefitUnit())
+            && isSameType((Armor) part));
 
         if (null != a) {
             a.setAmount(a.getAmount() + amount);
@@ -600,9 +599,9 @@ public class Armor extends Part implements IAcquisitionWork {
         //if we are impossible to fix now, we should scrap this amount of armor
         //from spares and start over
         String scrap = "";
-        if(skillMin > SkillType.EXP_ELITE) {
+        if (skillMin > SkillType.EXP_ELITE) {
             scrap = " Armor supplies lost!";
-            if(isSalvaging()) {
+            if (isSalvaging()) {
                 remove(false);
             } else {
                 skillMin = SkillType.EXP_GREEN;
@@ -631,7 +630,7 @@ public class Armor extends Part implements IAcquisitionWork {
     public String getQuantityName(int quan) {
         double totalTon = quan * getTonnage();
         String report = "" + DecimalFormat.getInstance().format(totalTon) + " tons of " + getName();
-        if(totalTon == 1.0) {
+        if (totalTon == 1.0) {
             report = "" + DecimalFormat.getInstance().format(totalTon) + " ton of " + getName();
         }
         return report;
@@ -641,7 +640,7 @@ public class Armor extends Part implements IAcquisitionWork {
     public String getArrivalReport() {
         double totalTon = quantity * getTonnage();
         String report = getQuantityName(quantity);
-        if(totalTon == 1.0) {
+        if (totalTon == 1.0) {
             report += " has arrived";
         } else {
             report += " have arrived";
@@ -652,7 +651,7 @@ public class Armor extends Part implements IAcquisitionWork {
     @Override
     public void doMaintenanceDamage(int d) {
         int current = unit.getEntity().getArmor(location, rear);
-        if(d >= current) {
+        if (d >= current) {
             unit.getEntity().setArmor(IArmorState.ARMOR_DESTROYED, location, rear);
         } else {
             unit.getEntity().setArmor(current - d, location, rear);
@@ -670,7 +669,7 @@ public class Armor extends Part implements IAcquisitionWork {
         this.type = ty;
         this.clan = cl;
         this.name = "Armor";
-        if(type > -1) {
+        if (type > -1) {
             this.name += " (" + EquipmentType.armorNames[type] + ")";
         }
     }

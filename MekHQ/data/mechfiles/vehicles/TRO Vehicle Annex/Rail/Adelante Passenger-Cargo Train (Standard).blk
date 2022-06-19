@@ -20,12 +20,16 @@ Adelante Passenger/Cargo Train
 (Standard)
 </Model>
 
+<mul id:>
+3669
+</mul id:>
+
 <year>
-2899
+2919
 </year>
 
 <originalBuildYear>
-2899
+2919
 </originalBuildYear>
 
 <type>

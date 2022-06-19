@@ -1,7 +1,7 @@
 /*
  * CurrencyManager.java
  *
- * Copyright (c) 2019 Vicente Cartas Espinel <vicente.cartas at outlook.com>. All rights reserved.
+ * Copyright (c) 2019 Vicente Cartas Espinel (vicente.cartas at outlook.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,15 +20,14 @@
  */
 package mekhq.campaign.finances;
 
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.Contract;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.PlanetarySystem;
-
+import org.apache.logging.log4j.LogManager;
 import org.joda.money.CurrencyUnitDataProvider;
 import org.joda.money.format.MoneyFormatter;
 import org.joda.money.format.MoneyFormatterBuilder;
@@ -40,12 +39,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import java.io.FileInputStream;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Main class used to handle all money and currency information.
@@ -53,8 +47,7 @@ import java.util.Set;
  *
  * There should be only one instance of this class.
  *
- * @author Vicente Cartas Espinel <vicente.cartas at outlook.com>
- *
+ * @author Vicente Cartas Espinel (vicente.cartas at outlook.com)
  */
 public class CurrencyManager extends CurrencyUnitDataProvider {
     private static final CurrencyManager instance = new CurrencyManager();
@@ -115,8 +108,7 @@ public class CurrencyManager extends CurrencyUnitDataProvider {
     }
 
     public void setCampaign(Campaign campaign) {
-        assert campaign != null;
-        this.campaign = campaign;
+        this.campaign = Objects.requireNonNull(campaign);
     }
 
     MoneyFormatter getXmlMoneyFormatter() {
@@ -171,7 +163,7 @@ public class CurrencyManager extends CurrencyUnitDataProvider {
             for (Contract contract : this.campaign.getActiveContracts()) {
                 if (contract instanceof AtBContract) {
                     Currency currency = possibleCurrencies.getOrDefault(
-                            Factions.getInstance().getFaction(((AtBContract)contract).getEmployerCode()).getCurrencyCode(),
+                            Factions.getInstance().getFaction(((AtBContract) contract).getEmployerCode()).getCurrencyCode(),
                             null);
 
                     if (currency != null) {
@@ -197,20 +189,19 @@ public class CurrencyManager extends CurrencyUnitDataProvider {
 
     @Override
     protected void registerCurrencies() {
-        MekHQ.getLogger().info(CurrencyManager.class, "Starting load currency information from XML...");
+        LogManager.getLogger().info("Starting load currency information from XML...");
 
         try {
             // Using factory get an instance of document builder
-            DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+            DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
             // Parse using builder to get DOM representation of the XML file
-            try (FileInputStream xmlFile = new FileInputStream("data/universe/currencies.xml")){
+            try (FileInputStream xmlFile = new FileInputStream("data/universe/currencies.xml")) { // TODO : Remove inline file path
                 Document xmlDoc = db.parse(xmlFile);
 
                 Element root = xmlDoc.getDocumentElement();
                 root.normalize();
                 NodeList currencies = root.getElementsByTagName("currency");
-
 
                 for (int i = 0; i < currencies.getLength(); i++) {
                     String name = "", code = "", symbol = "";
@@ -292,9 +283,9 @@ public class CurrencyManager extends CurrencyUnitDataProvider {
                 }
             }
 
-            MekHQ.getLogger().info(CurrencyManager.class, "Load of currency information complete!");
+            LogManager.getLogger().info("Load of currency information complete!");
         } catch (Exception ex) {
-            MekHQ.getLogger().error(CurrencyManager.class, ex);
+            LogManager.getLogger().error("", ex);
         }
     }
 

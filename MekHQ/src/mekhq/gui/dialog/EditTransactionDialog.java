@@ -18,40 +18,22 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ResourceBundle;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-
+import megamek.client.ui.baseComponents.MMComboBox;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.finances.Transaction;
-import megamek.client.ui.preferences.JWindowPreference;
+import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.gui.utilities.JMoneyTextField;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ResourceBundle;
 
 public class EditTransactionDialog extends JDialog implements ActionListener, FocusListener, MouseListener {
-    private static final long serialVersionUID = -8742160448355293487L;
-
-    private ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.EditTransactionDialog", new EncodeControl());
-
     private Transaction oldTransaction;
     private Transaction newTransaction;
     private JFrame parent;
@@ -59,10 +41,13 @@ public class EditTransactionDialog extends JDialog implements ActionListener, Fo
     private JMoneyTextField amountField;
     private JTextField descriptionField;
     private JButton dateButton;
-    private JComboBox<String> categoryCombo;
+    private MMComboBox<TransactionType> categoryCombo;
 
     private JButton saveButton;
     private JButton cancelButton;
+
+    private final transient ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.EditTransactionDialog",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     public EditTransactionDialog(JFrame parent, Transaction transaction, boolean modal) {
         super(parent, modal);
@@ -84,11 +69,15 @@ public class EditTransactionDialog extends JDialog implements ActionListener, Fo
         add(buildButtonPanel(), BorderLayout.SOUTH);
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(EditTransactionDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(EditTransactionDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private JPanel buildMainPanel() {
@@ -139,14 +128,14 @@ public class EditTransactionDialog extends JDialog implements ActionListener, Fo
         panel.add(amountField);
 
         c.gridx++;
-        dateButton = new JButton(MekHQ.getMekHQOptions().getDisplayFormattedDate(newTransaction.getDate()));
+        dateButton = new JButton(MekHQ.getMHQOptions().getDisplayFormattedDate(newTransaction.getDate()));
         dateButton.addActionListener(this);
         l.setConstraints(dateButton, c);
         panel.add(dateButton);
 
         c.gridx++;
-        categoryCombo = new JComboBox<>(Transaction.getCategoryList());
-        categoryCombo.setSelectedItem(Transaction.getCategoryName(newTransaction.getCategory()));
+        categoryCombo = new MMComboBox<>("categoryCombo", TransactionType.values());
+        categoryCombo.setSelectedItem(newTransaction.getType());
         categoryCombo.setToolTipText("Category of the transaction");
         categoryCombo.setName("categoryCombo");
         l.setConstraints(categoryCombo, c);
@@ -192,16 +181,16 @@ public class EditTransactionDialog extends JDialog implements ActionListener, Fo
     public void actionPerformed(ActionEvent e) {
         if (saveButton.equals(e.getSource())) {
             newTransaction.setAmount(amountField.getMoney());
-            newTransaction.setCategory(Transaction.getCategoryIndex((String) categoryCombo.getSelectedItem()));
+            newTransaction.setType(categoryCombo.getSelectedItem());
             newTransaction.setDescription(descriptionField.getText());
-            newTransaction.setDate(MekHQ.getMekHQOptions().parseDisplayFormattedDate(dateButton.getText()));
+            newTransaction.setDate(MekHQ.getMHQOptions().parseDisplayFormattedDate(dateButton.getText()));
             setVisible(false);
         } else if (cancelButton.equals(e.getSource())) {
             setVisible(false);
         } else if (dateButton.equals(e.getSource())) {
             DateChooser chooser = new DateChooser(parent, newTransaction.getDate());
             if (chooser.showDateChooser() == DateChooser.OK_OPTION) {
-                dateButton.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(chooser.getDate()));
+                dateButton.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(chooser.getDate()));
             }
         }
     }

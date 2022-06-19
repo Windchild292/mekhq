@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - The Megamek Team. All rights reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,22 +10,24 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 package mekhq.campaign.mission.atb.scenario;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import megamek.client.generator.RandomSkillsGenerator;
 import megamek.common.Board;
 import megamek.common.Entity;
+import megamek.common.EntityWeightClass;
 import megamek.common.UnitType;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.market.UnitMarket;
+import mekhq.campaign.market.unitMarket.AtBMonthlyUnitMarket;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBScenario;
 import mekhq.campaign.mission.BotForce;
@@ -33,11 +35,11 @@ import mekhq.campaign.mission.CommonObjectiveFactory;
 import mekhq.campaign.mission.ScenarioObjective;
 import mekhq.campaign.mission.atb.AtBScenarioEnabled;
 import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.universe.Faction;
+import mekhq.campaign.universe.Factions;
 
 @AtBScenarioEnabled
 public class PirateFreeForAllBuiltInScenario extends AtBScenario {
-    private static final long serialVersionUID = 6410090692095923096L;
-
     private static final String PIRATE_FORCE_ID = "Pirates";
 
     @Override
@@ -77,35 +79,38 @@ public class PirateFreeForAllBuiltInScenario extends AtBScenario {
 
     @Override
     public void setExtraMissionForces(Campaign campaign, ArrayList<Entity> allyEntities,
-            ArrayList<Entity> enemyEntities) {
+                                      ArrayList<Entity> enemyEntities) {
         setStart(Board.START_CENTER);
 
+        final AtBContract contract = getContract(campaign);
+
         for (int i = 0; i < 4; i++) {
-            getAlliesPlayer()
-                    .add(getEntity(getContract(campaign).getEmployerCode(), getContract(campaign).getAllySkill(),
-                            getContract(campaign).getAllyQuality(), UnitType.MEK, UnitMarket.getRandomAeroWeight(), // max
-                                                                                                                    // heavy
-                            campaign));
+            int weightClass;
+            do {
+                weightClass = AtBMonthlyUnitMarket.getRandomWeight(campaign, UnitType.MEK, contract.getEmployerFaction());
+            } while (weightClass >= EntityWeightClass.WEIGHT_ASSAULT);
+            getAlliesPlayer().add(getEntity(contract.getEmployerCode(), contract.getAllySkill(),
+                    contract.getAllyQuality(), UnitType.MEK, weightClass, campaign));
         }
 
         for (int i = 0; i < 12; i++) {
-            enemyEntities.add(getEntity(getContract(campaign).getEnemyCode(), getContract(campaign).getEnemySkill(),
-                    getContract(campaign).getEnemyQuality(), UnitType.MEK,
-                    UnitMarket.getRandomWeight(UnitType.MEK, getContract(campaign).getEnemyCode(),
-                            campaign.getCampaignOptions().getRegionalMechVariations()),
+            enemyEntities.add(getEntity(contract.getEnemyCode(), contract.getEnemySkill(),
+                    contract.getEnemyQuality(), UnitType.MEK,
+                    AtBMonthlyUnitMarket.getRandomWeight(campaign, UnitType.MEK, contract.getEnemy()),
                     campaign));
         }
 
-        addBotForce(getEnemyBotForce(getContract(campaign), Board.START_N, enemyEntities));
+        addBotForce(getEnemyBotForce(contract, Board.START_N, enemyEntities), campaign);
 
-        ArrayList<Entity> otherForce = new ArrayList<>();
-
+        final List<Entity> otherForce = new ArrayList<>();
+        final Faction faction = Factions.getInstance().getFaction("PIR");
         for (int i = 0; i < 12; i++) {
-            otherForce.add(getEntity("PIR", RandomSkillsGenerator.L_REG, IUnitRating.DRAGOON_C, UnitType.MEK,
-                    UnitMarket.getRandomMechWeight(), campaign));
+            otherForce.add(getEntity(faction.getShortName(), SkillLevel.REGULAR,
+                    IUnitRating.DRAGOON_C, UnitType.MEK,
+                    AtBMonthlyUnitMarket.getRandomWeight(campaign, UnitType.MEK, faction), campaign));
         }
 
-        addBotForce(new BotForce(PIRATE_FORCE_ID, 3, Board.START_S, otherForce));
+        addBotForce(new BotForce(PIRATE_FORCE_ID, 3, Board.START_S, otherForce), campaign);
     }
 
     @Override

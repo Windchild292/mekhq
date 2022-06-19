@@ -1,10 +1,11 @@
 Version:1.0
 Raider Mk II
 JL-2
+mul id:6956
 
 Config:Biped
 TechBase:Inner Sphere
-Era:3145
+Era:3134
 Source:ED: Dark Age
 Rules Level:4
 

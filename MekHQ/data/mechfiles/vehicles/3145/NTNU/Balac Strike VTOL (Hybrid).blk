@@ -20,8 +20,12 @@ Balac Strike VTOL
 (Hybrid)
 </Model>
 
+<mul id:>
+6750
+</mul id:>
+
 <year>
-3079
+3090
 </year>
 
 <type>

@@ -1,7 +1,7 @@
 /*
  * AmmoBin.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,42 +20,30 @@
  */
 package mekhq.campaign.parts.equipment;
 
-import java.io.PrintWriter;
-import java.util.Objects;
-
-import mekhq.campaign.finances.Money;
-import mekhq.campaign.parts.enums.PartRepairType;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import megamek.common.Aero;
-import megamek.common.AmmoType;
-import megamek.common.CriticalSlot;
-import megamek.common.EquipmentType;
-import megamek.common.ITechnology;
-import megamek.common.Jumpship;
-import megamek.common.Mounted;
-import megamek.common.Protomech;
-import megamek.common.SmallCraft;
-import megamek.common.TargetRoll;
-import megamek.common.TechAdvancement;
+import megamek.common.*;
 import megamek.common.annotations.Nullable;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.AmmoStorage;
 import mekhq.campaign.parts.Availability;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.parts.PartInventory;
+import mekhq.campaign.parts.enums.PartRepairType;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.unit.Unit;
 import mekhq.campaign.work.IAcquisitionWork;
+import org.apache.logging.log4j.LogManager;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
+import java.util.Objects;
 
 /**
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
-    private static final long serialVersionUID = 2892728320891712304L;
-
     protected int shotsNeeded;
     protected boolean oneShot;
 
@@ -73,6 +61,7 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
         }
     }
 
+    @Override
     public AmmoBin clone() {
         AmmoBin clone = new AmmoBin(getUnitTonnage(), getType(), getEquipmentNum(), shotsNeeded, oneShot,
                 omniPodded, campaign);
@@ -184,14 +173,19 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
 
     @Override
     public Money getBuyCost() {
-        return getNewPart().getStickerPrice();
+        return getNewPart().getActualValue();
     }
 
     public int getShotsNeeded() {
         return ammoTypeChanged() ? getFullShots() : shotsNeeded;
     }
 
-    public void changeMunition(AmmoType type) {
+    public boolean canChangeMunitions(final AmmoType type) {
+        return getType().equalsAmmoTypeOnly(type)
+                && (getType().getRackSize() == type.getRackSize());
+    }
+
+    public void changeMunition(final AmmoType type) {
         this.type = type;
         this.name = type.getName();
         this.typeName = type.getInternalName();
@@ -208,11 +202,11 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
     protected void writeToXmlEnd(PrintWriter pw1, int indent) {
         // CAW: InfantryAmmoBin may have negative shots needed
         if (shotsNeeded != 0) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "shotsNeeded", shotsNeeded);
+            MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "shotsNeeded", shotsNeeded);
         }
 
         if (oneShot) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "oneShot", oneShot);
+            MHQXMLUtility.writeSimpleXmlTag(pw1, indent + 1, "oneShot", true);
         }
 
         super.writeToXmlEnd(pw1, indent);
@@ -224,10 +218,15 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
 
         for (int x = 0; x < nl.getLength(); x++) {
             Node wn2 = nl.item(x);
-            if (wn2.getNodeName().equalsIgnoreCase("shotsNeeded")) {
-                shotsNeeded = Integer.parseInt(wn2.getTextContent());
-            } else if (wn2.getNodeName().equalsIgnoreCase("oneShot")) {
-                oneShot = Boolean.parseBoolean(wn2.getTextContent().trim());
+
+            try {
+                if (wn2.getNodeName().equalsIgnoreCase("shotsNeeded")) {
+                    shotsNeeded = Integer.parseInt(wn2.getTextContent());
+                } else if (wn2.getNodeName().equalsIgnoreCase("oneShot")) {
+                    oneShot = Boolean.parseBoolean(wn2.getTextContent().trim());
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
         }
 
@@ -294,7 +293,7 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
                 return mounted;
             }
 
-            MekHQ.getLogger().warning("Missing valid equipment for " + getName() + " to manage ammo on unit " + getUnit().getName());
+            LogManager.getLogger().warn("Missing valid equipment for " + getName() + " to manage ammo on unit " + getUnit().getName());
         }
 
         return null;
@@ -459,9 +458,9 @@ public class AmmoBin extends EquipmentPart implements IAcquisitionWork {
         // AmmoBins are the same type of part if they can hold the same
         // AmmoType and number of rounds of ammo (i.e. they are the same
         // irrespective of "munition type" or "bomb type").
-        return getClass().equals(part.getClass())
+        return (getClass() == part.getClass())
                 && getType().isCompatibleWith(((AmmoBin) part).getType())
-                && ((AmmoBin) part).getFullShots() == getFullShots();
+                && (((AmmoBin) part).getFullShots() == getFullShots());
     }
 
     @Override

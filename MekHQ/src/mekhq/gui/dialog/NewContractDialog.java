@@ -1,7 +1,7 @@
 /*
  * NewContractDialog.java
  *
- * Copyright (c) 2009 - Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,39 +20,35 @@
  */
 package mekhq.gui.dialog;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.ItemListener;
-import java.util.ResourceBundle;
-
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
-
 import megamek.client.ui.baseComponents.MMComboBox;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.finances.Transaction;
+import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.mission.Contract;
 import mekhq.campaign.mission.Mission;
 import mekhq.campaign.mission.enums.ContractCommandRights;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
-import megamek.client.ui.preferences.JWindowPreference;
+import mekhq.campaign.universe.PlanetarySystem;
 import mekhq.campaign.universe.Systems;
 import mekhq.gui.utilities.JSuggestField;
 import mekhq.gui.utilities.MarkdownEditorPanel;
 import mekhq.gui.view.ContractPaymentBreakdown;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ResourceBundle;
 
 /**
  * @author Taharqa
  */
 public class NewContractDialog extends JDialog {
-    private static final long serialVersionUID = -8038099101234445018L;
     protected JFrame frame;
     protected Contract contract;
     protected Campaign campaign;
@@ -99,11 +95,12 @@ public class NewContractDialog extends JDialog {
     }
 
     protected void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+        GridBagConstraints gridBagConstraints;
 
-        ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.NewContractDialog", new EncodeControl());
+        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.NewContractDialog",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setName("Form"); // NOI18N
+        setName("Form");
         setTitle(resourceMap.getString("Form.title"));
 
         JPanel newContractPanel = new JPanel(new java.awt.GridBagLayout());
@@ -157,8 +154,8 @@ public class NewContractDialog extends JDialog {
 
         initContractPanel(resourceMap, contractPanel);
 
-        btnOK.setText(resourceMap.getString("btnOkay.text")); // NOI18N
-        btnOK.setName("btnOK"); // NOI18N
+        btnOK.setText(resourceMap.getString("btnOkay.text"));
+        btnOK.setName("btnOK");
         btnOK.addActionListener(this::btnOKActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -168,8 +165,8 @@ public class NewContractDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         newContractPanel.add(btnOK, gridBagConstraints);
 
-        btnClose.setText(resourceMap.getString("btnCancel.text")); // NOI18N
-        btnClose.setName("btnClose"); // NOI18N
+        btnClose.setText(resourceMap.getString("btnCancel.text"));
+        btnClose.setName("btnClose");
         btnClose.addActionListener(this::btnCloseActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -186,11 +183,15 @@ public class NewContractDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getPreferences().forClass(NewContractDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(NewContractDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     protected void initDescPanel(ResourceBundle resourceMap, JPanel descPanel) {
@@ -207,8 +208,8 @@ public class NewContractDialog extends JDialog {
         txtDesc = new MarkdownEditorPanel("Contract Description");
         JLabel lblPlanetName = new JLabel();
 
-        lblName.setText(resourceMap.getString("lblName.text")); // NOI18N
-        lblName.setName("lblName"); // NOI18N
+        lblName.setText(resourceMap.getString("lblName.text"));
+        lblName.setName("lblName");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -218,7 +219,7 @@ public class NewContractDialog extends JDialog {
         descPanel.add(lblName, gridBagConstraints);
 
         txtName.setText(contract.getName());
-        txtName.setName("txtName"); // NOI18N
+        txtName.setName("txtName");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -228,8 +229,8 @@ public class NewContractDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         descPanel.add(txtName, gridBagConstraints);
 
-        lblPlanetName.setText(resourceMap.getString("lblPlanetName.text")); // NOI18N
-        lblPlanetName.setName("lblPlanetName"); // NOI18N
+        lblPlanetName.setText(resourceMap.getString("lblPlanetName.text"));
+        lblPlanetName.setName("lblPlanetName");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -262,8 +263,8 @@ public class NewContractDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         descPanel.add(suggestPlanet, gridBagConstraints);
 
-        lblType.setText(resourceMap.getString("lblType.text")); // NOI18N
-        lblType.setName("lblType"); // NOI18N
+        lblType.setText(resourceMap.getString("lblType.text"));
+        lblType.setName("lblType");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -273,7 +274,7 @@ public class NewContractDialog extends JDialog {
         descPanel.add(lblType, gridBagConstraints);
 
         txtType.setText(contract.getType());
-        txtType.setName("txtType"); // NOI18N
+        txtType.setName("txtType");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -283,8 +284,8 @@ public class NewContractDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         descPanel.add(txtType, gridBagConstraints);
 
-        lblEmployer.setText(resourceMap.getString("lblEmployer.text")); // NOI18N
-        lblEmployer.setName("lblEmployer"); // NOI18N
+        lblEmployer.setText(resourceMap.getString("lblEmployer.text"));
+        lblEmployer.setName("lblEmployer");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -294,7 +295,7 @@ public class NewContractDialog extends JDialog {
         descPanel.add(lblEmployer, gridBagConstraints);
 
         txtEmployer.setText(contract.getEmployer());
-        txtEmployer.setName("txtEmployer"); // NOI18N
+        txtEmployer.setName("txtEmployer");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -364,7 +365,7 @@ public class NewContractDialog extends JDialog {
         JLabel lblAdvance = new JLabel(resourceMap.getString("lblAdvance.text"));
 
 
-        btnDate = new JButton(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getStartDate()));
+        btnDate = new JButton(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getStartDate()));
         btnDate.setName("btnDate");
         btnDate.addActionListener(evt -> changeStartDate());
 
@@ -684,15 +685,15 @@ public class NewContractDialog extends JDialog {
         contract.setType(txtType.getText());
         contract.setDesc(txtDesc.getText());
         contract.setCommandRights(choiceCommand.getSelectedItem());
-        campaign.getFinances().credit(contract.getTotalAdvanceAmount(), Transaction.C_CONTRACT,
-                "Advance monies for " + contract.getName(), campaign.getLocalDate());
+        campaign.getFinances().credit(TransactionType.CONTRACT_PAYMENT, campaign.getLocalDate(),
+                contract.getTotalAdvanceAmount(), "Advance funds for " + contract.getName());
 
         campaign.addMission(contract);
 
         // Negotiator XP
         Person negotiator = (Person) cboNegotiator.getSelectedItem();
         if ((negotiator != null) && (campaign.getCampaignOptions().getContractNegotiationXP() > 0)) {
-            negotiator.awardXP(campaign.getCampaignOptions().getContractNegotiationXP());
+            negotiator.awardXP(campaign, campaign.getCampaignOptions().getContractNegotiationXP());
         }
 
         this.setVisible(false);
@@ -712,7 +713,7 @@ public class NewContractDialog extends JDialog {
             }
             contract.setStartDate(dc.getDate());
             contract.calculateContract(campaign);
-            btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getStartDate()));
+            btnDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getStartDate()));
         }
     }
 
@@ -743,10 +744,14 @@ public class NewContractDialog extends JDialog {
 
     protected void doUpdateContract(Object source) {
         if (suggestPlanet.equals(source)) {
-            contract.setSystemId((Systems.getInstance().getSystemByName(suggestPlanet.getText(),
-                    campaign.getLocalDate())).getId());
-            //reset the start date as null so we recalculate travel time
-            contract.setStartDate(null);
+            PlanetarySystem system = Systems.getInstance().getSystemByName(suggestPlanet.getText(),
+                    campaign.getLocalDate());
+            
+            if (system != null) {
+                contract.setSystemId(system.getId());
+                // reset the start date as null so we recalculate travel time
+                contract.setStartDate(null);
+            }
         } else if (choiceOverhead.equals(source)) {
             contract.setOverheadComp(choiceOverhead.getSelectedIndex());
         } else if (choiceCommand.equals(source)) {
@@ -756,25 +761,25 @@ public class NewContractDialog extends JDialog {
         } else if (checkSalvageExchange.equals(source)) {
             contract.setSalvageExchange(checkSalvageExchange.isSelected());
         } else if (spnLength.equals(source)) {
-            contract.setLength((Integer)spnLength.getModel().getValue());
+            contract.setLength((Integer) spnLength.getModel().getValue());
         } else if (spnMultiplier.equals(source)) {
-            contract.setMultiplier((Double)spnMultiplier.getModel().getValue());
+            contract.setMultiplier((Double) spnMultiplier.getModel().getValue());
         } else if (spnTransport.equals(source)) {
-            contract.setTransportComp((Integer)spnTransport.getModel().getValue());
+            contract.setTransportComp((Integer) spnTransport.getModel().getValue());
         } else if (spnSalvageRights.equals(source)) {
-            contract.setSalvagePct((Integer)spnSalvageRights.getModel().getValue());
+            contract.setSalvagePct((Integer) spnSalvageRights.getModel().getValue());
         } else if (spnStraightSupport.equals(source)) {
-            contract.setStraightSupport((Integer)spnStraightSupport.getModel().getValue());
+            contract.setStraightSupport((Integer) spnStraightSupport.getModel().getValue());
         } else if (spnBattleLossComp.equals(source)) {
-            contract.setBattleLossComp((Integer)spnBattleLossComp.getModel().getValue());
+            contract.setBattleLossComp((Integer) spnBattleLossComp.getModel().getValue());
         } else if (spnSignBonus.equals(source)) {
-            contract.setSigningBonusPct((Integer)spnSignBonus.getModel().getValue());
+            contract.setSigningBonusPct((Integer) spnSignBonus.getModel().getValue());
         } else if (spnAdvance.equals(source)) {
-            contract.setAdvancePct((Integer)spnAdvance.getModel().getValue());
+            contract.setAdvancePct((Integer) spnAdvance.getModel().getValue());
         }
 
         contract.calculateContract(campaign);
         contractPaymentBreakdown.refresh();
-        btnDate.setText(MekHQ.getMekHQOptions().getDisplayFormattedDate(contract.getStartDate()));
+        btnDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(contract.getStartDate()));
     }
 }

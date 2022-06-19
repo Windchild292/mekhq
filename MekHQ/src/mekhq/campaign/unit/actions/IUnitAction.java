@@ -12,11 +12,11 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package mekhq.campaign.unit.actions;
@@ -34,5 +34,5 @@ public interface IUnitAction {
      * @param campaign The campaign object this action is executed against.
      * @param unit The unit object this action is executed against.
      */
-    public void execute(Campaign campaign, Unit unit);
+    void execute(Campaign campaign, Unit unit);
 }

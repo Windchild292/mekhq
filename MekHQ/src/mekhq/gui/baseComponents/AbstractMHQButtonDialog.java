@@ -33,10 +33,10 @@ import java.util.ResourceBundle;
  * Inheriting classes must call initialize() in their constructors and override createCenterPane()
  *
  * The resources associated with this dialog need to contain at least the following keys:
- * - "Ok.text" -> text for the ok button
- * - "Ok.toolTipText" -> toolTipText for the ok button
- * - "Cancel.text" -> text for the cancel button
- * - "Cancel.toolTipText" -> toolTipText for the cancel button
+ * - "Ok.text" - text for the ok button
+ * - "Ok.toolTipText" - toolTipText for the ok button
+ * - "Cancel.text" - text for the cancel button
+ * - "Cancel.toolTipText" - toolTipText for the cancel button
  */
 public abstract class AbstractMHQButtonDialog extends AbstractButtonDialog {
     //region Constructors
@@ -54,7 +54,8 @@ public abstract class AbstractMHQButtonDialog extends AbstractButtonDialog {
      */
     protected AbstractMHQButtonDialog(final JFrame frame, final boolean modal, final String name,
                                       final String title) {
-        this(frame, modal, ResourceBundle.getBundle("mekhq.resources.GUI", new EncodeControl()), name, title);
+        this(frame, modal, ResourceBundle.getBundle("mekhq.resources.GUI",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl()), name, title);
     }
 
     /**
@@ -68,10 +69,12 @@ public abstract class AbstractMHQButtonDialog extends AbstractButtonDialog {
     //endregion Constructors
 
     /**
-     * This override forces the preferences for this class to be tracked in MekHQ instead of MegaMek
+     * This override forces the preferences for this class to be tracked in MekHQ instead of MegaMek.
+     * @throws Exception if there's an issue initializing the preferences. Normally this means
+     * a component has <strong>not</strong> had its name value set.
      */
     @Override
-    protected void setPreferences() {
-        setPreferences(MekHQ.getPreferences().forClass(getClass()));
+    protected void setPreferences() throws Exception {
+        setPreferences(MekHQ.getMHQPreferences().forClass(getClass()));
     }
 }

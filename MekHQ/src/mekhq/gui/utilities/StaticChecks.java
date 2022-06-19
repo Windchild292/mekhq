@@ -18,12 +18,14 @@
  */
 package mekhq.gui.utilities;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.Vector;
 import java.util.stream.Stream;
 
 import megamek.common.UnitType;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.Profession;
@@ -31,8 +33,10 @@ import mekhq.campaign.unit.Unit;
 
 public class StaticChecks {
 
-    public static boolean areAllForcesUndeployed(Vector<Force> forces) {
-        return forces.stream().noneMatch(Force::isDeployed);
+    public static boolean areAllForcesUndeployed(final Campaign campaign, final List<Force> forces) {
+        return forces.stream().noneMatch(Force::isDeployed)
+                && forces.stream().flatMap(force -> force.getAllUnits(true).stream())
+                        .map(campaign::getUnit).noneMatch(unit -> (unit != null) && unit.isDeployed());
     }
 
     public static boolean areAllCombatForces(Vector<Force> forces) {
@@ -284,41 +288,12 @@ public class StaticChecks {
                 && (!isTank || (u.getEntity().getWeightClass() == weightClass))));
     }
 
-    public static boolean areAllSoldiers(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getPrimaryRole().isSoldier());
-    }
-
-    public static boolean areAllBattleArmor(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getPrimaryRole().isBattleArmour());
-    }
-
-    public static boolean areAllVehicleGunners(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getPrimaryRole().isVehicleGunner());
-    }
-
-    public static boolean areAllVesselGunners(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getPrimaryRole().isVesselGunner());
-    }
-
-    public static boolean areAllVesselCrew(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getPrimaryRole().isVesselCrew()
-                || p.getPrimaryRole().isVehicleCrew());
-    }
-
-    public static boolean areAllVesselPilots(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getPrimaryRole().isVesselPilot());
-    }
-
-    public static boolean areAllVesselNavigators(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getPrimaryRole().isVesselNavigator());
-    }
-
     public static boolean areAllActive(Person... people) {
         return Stream.of(people).allMatch(p -> p.getStatus().isActive());
     }
 
     public static boolean areAllClanEligible(Person... people) {
-        return Stream.of(people).allMatch(Person::isClanner) && areAllEligible(people);
+        return Stream.of(people).allMatch(Person::isClanPersonnel) && areAllEligible(people);
     }
 
     public static boolean areAllEligible(Person... people) {
@@ -347,38 +322,6 @@ public class StaticChecks {
 
     public static boolean areAllPrisoners(Person... people) {
         return Stream.of(people).allMatch(p -> p.getPrisonerStatus().isPrisoner());
-    }
-
-    /**
-     * @param people an array of people
-     * @return true if all of the people are female, otherwise false
-     */
-    public static boolean areAllFemale(Person... people) {
-        return Stream.of(people).allMatch(p -> p.getGender().isFemale());
-    }
-
-    /**
-     * @param people an array of people
-     * @return true if they are either all trying to conceive or all not, otherwise false
-     */
-    public static boolean areEitherAllTryingToConceiveOrNot(Person... people) {
-        return Stream.of(people).allMatch(p -> p.isTryingToConceive() == people[0].isTryingToConceive());
-    }
-
-    /**
-     * @param people an array of people
-     * @return true if they are either all trying to marry or all not, otherwise false
-     */
-    public static boolean areEitherAllTryingToMarryOrNot(Person... people) {
-        return Stream.of(people).allMatch(p -> p.isTryingToMarry() == people[0].isTryingToMarry());
-    }
-
-    /**
-     * @param people an array of people
-     * @return true if they are either all founders or all not, otherwise false
-     */
-    public static boolean areEitherAllFoundersOrNot(Person... people) {
-        return Stream.of(people).allMatch(p -> p.isFounder() == people[0].isFounder());
     }
 
     public static boolean areAnyWillingToDefect(Person... people) {

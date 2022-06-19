@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2020-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -20,6 +20,7 @@ package mekhq.campaign.finances.enums;
 
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
+import org.apache.logging.log4j.LogManager;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -40,12 +41,12 @@ public enum FinancialYearDuration {
     //region Variable Declarations
     private final String name;
     private final String toolTipText;
-
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Finances", new EncodeControl());
     //endregion Variable Declarations
 
     //region Constructors
     FinancialYearDuration(final String name, final String toolTipText) {
+        final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Finances",
+                MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         this.name = resources.getString(name);
         this.toolTipText = resources.getString(toolTipText);
     }
@@ -124,7 +125,7 @@ public enum FinancialYearDuration {
             return BIENNIAL;
         }
 
-        MekHQ.getLogger().error("Failed to parse the FinancialYearDuration from text " + text + ", returning ANNUAL.");
+        LogManager.getLogger().error("Failed to parse the FinancialYearDuration from text " + text + ", returning ANNUAL.");
 
         return ANNUAL;
     }

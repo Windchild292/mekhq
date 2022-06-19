@@ -1,6 +1,7 @@
 Version:1.0
 Raven
 RVN-1X
+mul id:2662
 
 Config:Biped
 TechBase:Inner Sphere
@@ -64,11 +65,11 @@ Medium Laser
 -Empty-
 
 Left Torso:
+ISElectronicWarfareEquipment
+ISElectronicWarfareEquipment
+ISElectronicWarfareEquipment
+ISElectronicWarfareEquipment
 IS Ammo SRM-6
-ISElectronicWarfareEquipment
-ISElectronicWarfareEquipment
-ISElectronicWarfareEquipment
-ISElectronicWarfareEquipment
 -Empty-
 -Empty-
 -Empty-

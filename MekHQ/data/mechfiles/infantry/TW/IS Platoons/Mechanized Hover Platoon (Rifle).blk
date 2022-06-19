@@ -20,8 +20,12 @@ Mechanized Hover Platoon
 (Rifle)
 </Model>
 
+<mul id:>
+2136
+</mul id:>
+
 <year>
-2050
+1950
 </year>
 
 <type>

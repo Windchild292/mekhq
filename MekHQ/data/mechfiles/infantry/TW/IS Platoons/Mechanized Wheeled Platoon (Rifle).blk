@@ -20,8 +20,12 @@ Mechanized Wheeled Platoon
 (Rifle)
 </Model>
 
+<mul id:>
+2148
+</mul id:>
+
 <year>
-2050
+1950
 </year>
 
 <type>

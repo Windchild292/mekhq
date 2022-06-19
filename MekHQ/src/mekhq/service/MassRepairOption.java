@@ -18,11 +18,11 @@
  */
 package mekhq.service;
 
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
-import mekhq.Version;
+import megamek.Version;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.parts.enums.PartRepairType;
 import mekhq.campaign.personnel.SkillType;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -107,16 +107,16 @@ public class MassRepairOption {
     }
     //endregion Getters/Setters
 
-    //region File IO
+    //region File I/O
     public void writeToXML(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent++, "massRepairOption");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "type", getType().name());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "active", isActive() ? 1 : 0);
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "skillMin", getSkillMin());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "skillMax", getSkillMax());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "btnMin", getBthMin());
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent, "btnMax", getBthMax());
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, --indent, "massRepairOption");
+        MHQXMLUtility.writeSimpleXMLOpenIndentedLine(pw1, indent++, "massRepairOption");
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "type", getType().name());
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "active", isActive() ? 1 : 0);
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "skillMin", getSkillMin());
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "skillMax", getSkillMax());
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "btnMin", getBthMin());
+        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "btnMax", getBthMax());
+        MHQXMLUtility.writeSimpleXMLCloseIndentedLine(pw1, --indent, "massRepairOption");
     }
 
     public static List<MassRepairOption> parseListFromXML(Node wn2, Version version) {
@@ -140,12 +140,12 @@ public class MassRepairOption {
                 }
 
                 if ((mro.getType() == PartRepairType.UNKNOWN_LOCATION) || !partRepairTypes.contains(mro.getType())) {
-                    MekHQ.getLogger().error("Attempted to load MassRepairOption with illegal type id of " + mro.getType());
+                    LogManager.getLogger().error("Attempted to load MassRepairOption with illegal type id of " + mro.getType());
                 } else {
                     massRepairOptions.add(mro);
                 }
             } catch (Exception e) {
-                MekHQ.getLogger().error("Failed to parse MassRepairOption from XML", e);
+                LogManager.getLogger().error("Failed to parse MassRepairOption from XML", e);
             }
         }
 
@@ -163,25 +163,26 @@ public class MassRepairOption {
                 continue;
             }
 
-            if (mroItemNode.getNodeName().equalsIgnoreCase("type")) {
-                mro.setType(PartRepairType.parseFromString(mroItemNode.getTextContent().trim()));
-            } else if (mroItemNode.getNodeName().equalsIgnoreCase("active")) {
-                mro.setActive(Integer.parseInt(mroItemNode.getTextContent().trim()) == 1);
-            } else if (mroItemNode.getNodeName().equalsIgnoreCase("skillMin")) {
-                mro.setSkillMin(Integer.parseInt(mroItemNode.getTextContent().trim()));
-            } else if (mroItemNode.getNodeName().equalsIgnoreCase("skillMax")) {
-                mro.setSkillMax(Integer.parseInt(mroItemNode.getTextContent().trim()));
-            } else if (mroItemNode.getNodeName().equalsIgnoreCase("btnMin")) {
-                mro.setBthMin(Integer.parseInt(mroItemNode.getTextContent().trim()));
-            } else if (mroItemNode.getNodeName().equalsIgnoreCase("btnMax")) {
-                mro.setBthMax(Integer.parseInt(mroItemNode.getTextContent().trim()));
+            try {
+                if (mroItemNode.getNodeName().equalsIgnoreCase("type")) {
+                    mro.setType(PartRepairType.parseFromString(mroItemNode.getTextContent().trim()));
+                } else if (mroItemNode.getNodeName().equalsIgnoreCase("active")) {
+                    mro.setActive(Integer.parseInt(mroItemNode.getTextContent().trim()) == 1);
+                } else if (mroItemNode.getNodeName().equalsIgnoreCase("skillMin")) {
+                    mro.setSkillMin(Integer.parseInt(mroItemNode.getTextContent().trim()));
+                } else if (mroItemNode.getNodeName().equalsIgnoreCase("skillMax")) {
+                    mro.setSkillMax(Integer.parseInt(mroItemNode.getTextContent().trim()));
+                } else if (mroItemNode.getNodeName().equalsIgnoreCase("btnMin")) {
+                    mro.setBthMin(Integer.parseInt(mroItemNode.getTextContent().trim()));
+                } else if (mroItemNode.getNodeName().equalsIgnoreCase("btnMax")) {
+                    mro.setBthMax(Integer.parseInt(mroItemNode.getTextContent().trim()));
+                }
+            } catch (Exception e) {
+                LogManager.getLogger().error("", e);
             }
-
-            MekHQ.getLogger().debug(String.format("massRepairOption %s.%s\n\t%s",
-                    mro.getType(), mroItemNode.getNodeName(), mroItemNode.getTextContent()));
         }
 
         return mro;
     }
-    //endregion File IO
+    //endregion File I/O
 }

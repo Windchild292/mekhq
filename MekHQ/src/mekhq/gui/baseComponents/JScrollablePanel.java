@@ -23,15 +23,13 @@ import java.awt.*;
 import javax.swing.*;
 
 /**
- * JScrollablePanel is an an extension of JPanel that implements scrollable, so that it can be
+ * JScrollablePanel is an extension of JPanel that implements scrollable, so that it can be
  * properly used within a JScrollPane.
  *
  * @author aarong original author
  */
 public class JScrollablePanel extends JPanel implements Scrollable {
     //region Variable Declarations
-    private static final long serialVersionUID = -1422419969984249050L;
-
     // by default, track the width, and re-size as needed.
     private boolean trackViewportWidth = true;
     //endregion Variable Declarations

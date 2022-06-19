@@ -18,13 +18,15 @@
  */
 package mekhq.campaign.parts;
 
-import megamek.common.*;
+import megamek.common.AmmoType;
+import megamek.common.EquipmentType;
+import megamek.common.TechAdvancement;
 import megamek.common.annotations.Nullable;
 import megamek.common.weapons.infantry.InfantryWeapon;
-import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -36,9 +38,6 @@ import java.util.Objects;
  * standard and inferno munitions, but does not distinguish the type of weapon.
  */
 public class InfantryAmmoStorage extends AmmoStorage {
-
-    private static final long serialVersionUID = 930316771091252049L;
-
     private InfantryWeapon weaponType;
 
     @SuppressWarnings("unused")
@@ -62,7 +61,7 @@ public class InfantryAmmoStorage extends AmmoStorage {
                 this.name = weaponType.getShortName() + " Ammo";
             }
         } else {
-            MekHQ.getLogger().error("InfantryAmmoStorage does not have a weapon type!");
+            LogManager.getLogger().error("InfantryAmmoStorage does not have a weapon type!");
         }
     }
 
@@ -73,6 +72,7 @@ public class InfantryAmmoStorage extends AmmoStorage {
         return weaponType;
     }
 
+    @Override
     public InfantryAmmoStorage clone() {
         InfantryAmmoStorage storage = new InfantryAmmoStorage(0, getType(), getShots(), getWeaponType(), getCampaign());
         storage.copyBaseData(this);
@@ -91,13 +91,13 @@ public class InfantryAmmoStorage extends AmmoStorage {
     }
 
     @Override
-    public Money getCurrentValue() {
-        return getStickerPrice();
+    public Money getActualValue() {
+        return adjustCostsForCampaignOptions(getStickerPrice());
     }
 
     @Override
     public boolean isSamePartType(Part part) {
-        return getClass().equals(part.getClass())
+        return (getClass() == part.getClass())
                 && isSameAmmoType(((InfantryAmmoStorage) part).getType(), ((InfantryAmmoStorage) part).getWeaponType());
     }
 
@@ -120,7 +120,7 @@ public class InfantryAmmoStorage extends AmmoStorage {
 
     @Override
     public void writeToXmlEnd(PrintWriter pw, int indent) {
-        MekHqXmlUtil.writeSimpleXmlTag(pw, indent + 1, "weaponType", weaponType.getInternalName());
+        MHQXMLUtility.writeSimpleXmlTag(pw, indent + 1, "weaponType", weaponType.getInternalName());
         super.writeToXmlEnd(pw, indent);
     }
 

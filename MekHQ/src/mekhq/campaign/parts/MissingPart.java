@@ -1,7 +1,7 @@
 /*
  * MissingPart.java
  *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
+ * Copyright (c) 2009 Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
  *
  * This file is part of MekHQ.
  *
@@ -12,13 +12,12 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.parts;
 
 import java.io.PrintWriter;
@@ -35,15 +34,9 @@ import mekhq.campaign.work.WorkTime;
 /**
  * A missing part is a placeholder on a unit to indicate that a replacement
  * task needs to be performed
- * @author Jay Lawson <jaylawson39 at yahoo.com>
+ * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public abstract class MissingPart extends Part implements IAcquisitionWork {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = 300672661487966982L;
-
     public MissingPart(int tonnage, Campaign c) {
         super(tonnage, false, c);
     }
@@ -52,6 +45,7 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
         super(tonnage, isOmniPodded, c);
     }
 
+    @Override
     public MissingPart clone() {
         //should never be called
         return null;
@@ -59,13 +53,13 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
 
     @Override
     public Money getStickerPrice() {
-        //missing parts aren't worth a thing
+        // missing parts aren't worth a thing
         return Money.zero();
     }
 
     @Override
     public Money getBuyCost() {
-        return getNewPart().getStickerPrice();
+        return getNewPart().getActualValue();
     }
 
     @Override
@@ -84,6 +78,7 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
         return false;
     }
 
+    @Override
     public String getDesc() {
         String bonus = getAllMods(null).getValueAsString();
         if (getAllMods(null).getValue() > -1) {
@@ -96,18 +91,14 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
             scheduled = " (scheduled) ";
         }
 
-        //if (this instanceof ReplacementItem
-        //		&& !((ReplacementItem) this).hasPart()) {
-        //	toReturn += " color='white'";
-        //}
         toReturn += ">";
         toReturn += "<b>Replace " + getName() + "</b><br/>";
         toReturn += getDetails() + "<br/>";
-        if(getSkillMin() > SkillType.EXP_ELITE) {
+        if (getSkillMin() > SkillType.EXP_ELITE) {
             toReturn += "<font color='red'>Impossible</font>";
         } else {
             toReturn += "" + getTimeLeft() + " minutes" + scheduled;
-            if(!getCampaign().getCampaignOptions().isDestroyByMargin()) {
+            if (!getCampaign().getCampaignOptions().isDestroyByMargin()) {
                 toReturn += ", " + SkillType.getExperienceLevelName(getSkillMin());
             }
             toReturn += " " + bonus;
@@ -209,7 +200,7 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
 
     @Override
     public String getDetails(boolean includeRepairDetails) {
-        if(isReplacementAvailable()) {
+        if (isReplacementAvailable()) {
             return "Replacement part available";
         } else {
             PartInventory inventories = campaign.getPartInventory(getNewPart());
@@ -220,7 +211,7 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
     @Override
     public boolean needsFixing() {
         //missing parts always need fixing
-        if(null != unit) {
+        if (null != unit) {
             return (!unit.isSalvage() || null != getTech()) && unit.isRepairable();
         }
         return false;
@@ -242,9 +233,9 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
         skillMin = ++rating;
         timeSpent = 0;
         shorthandedMod = 0;
-        if(skillMin > SkillType.EXP_ELITE) {
+        if (skillMin > SkillType.EXP_ELITE) {
             Part part = findReplacement(false);
-            if(null != part) {
+            if (null != part) {
                 part.decrementQuantity();
                 skillMin = SkillType.EXP_GREEN;
             }
@@ -262,15 +253,13 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
     @Override
     public TargetRoll getAllAcquisitionMods() {
         TargetRoll target = new TargetRoll();
-        if(getTechBase() == T_CLAN && campaign.getCampaignOptions().getClanAcquisitionPenalty() > 0) {
+        if (getTechBase() == T_CLAN && campaign.getCampaignOptions().getClanAcquisitionPenalty() > 0) {
             target.addModifier(campaign.getCampaignOptions().getClanAcquisitionPenalty(), "clan-tech");
-        }
-        else if(getTechBase() == T_IS && campaign.getCampaignOptions().getIsAcquisitionPenalty() > 0) {
+        } else if (getTechBase() == T_IS && campaign.getCampaignOptions().getIsAcquisitionPenalty() > 0) {
             target.addModifier(campaign.getCampaignOptions().getIsAcquisitionPenalty(), "Inner Sphere tech");
-        }
-        else if(getTechBase() == T_BOTH) {
+        } else if (getTechBase() == T_BOTH) {
             int penalty = Math.min(campaign.getCampaignOptions().getClanAcquisitionPenalty(), campaign.getCampaignOptions().getIsAcquisitionPenalty());
-            if(penalty > 0) {
+            if (penalty > 0) {
                 target.addModifier(penalty, "tech limit");
             }
         }
@@ -317,7 +306,7 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
     @Override
     public String getAcquisitionBonus() {
         String bonus = getAllAcquisitionMods().getValueAsString();
-        if(getAllAcquisitionMods().getValue() > -1) {
+        if (getAllAcquisitionMods().getValue() > -1) {
             bonus = "+" + bonus;
         }
 
@@ -334,7 +323,7 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
         Part newPart = getNewPart();
         newPart.setBrandNew(true);
         newPart.setDaysToArrival(transitDays);
-        if(campaign.getQuartermaster().buyPart(newPart, transitDays)) {
+        if (campaign.getQuartermaster().buyPart(newPart, transitDays)) {
             return "<font color='green'><b> part found</b>.</font> It will be delivered in " + transitDays + " days.";
         } else {
             return "<font color='red'><b> You cannot afford this part. Transaction cancelled</b>.</font>";
@@ -354,14 +343,14 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public void writeToXml(PrintWriter pw1, int indent) {
+    public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
         writeToXmlEnd(pw1, indent);
     }
 
     @Override
     public String checkScrappable() {
-        if(!isReplacementAvailable()) {
+        if (!isReplacementAvailable()) {
             return "Nothing to scrap";
         }
         return null;
@@ -370,7 +359,7 @@ public abstract class MissingPart extends Part implements IAcquisitionWork {
     @Override
     public String scrap() {
         Part replace = findReplacement(false);
-        if(null != replace) {
+        if (null != replace) {
             replace.decrementQuantity();
             return replace.getName() + " scrapped.";
         }

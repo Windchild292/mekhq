@@ -1,8 +1,6 @@
 /*
- * Utilities.java
- *
- * Copyright (c) 2009 Jay Lawson <jaylawson39 at yahoo.com>. All rights reserved.
- * Copyright (c) 2019 The MekHQ Team.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -23,18 +21,17 @@ package mekhq;
 
 import megamek.client.Client;
 import megamek.client.generator.RandomNameGenerator;
+import megamek.codeUtilities.ObjectUtility;
+import megamek.codeUtilities.StringUtility;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.enums.Gender;
 import megamek.common.options.IOption;
 import megamek.common.options.OptionsConstants;
 import megamek.common.util.EncodeControl;
-import megamek.common.util.StringUtil;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.finances.Money;
-import mekhq.campaign.parts.Part;
-import mekhq.campaign.parts.equipment.*;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
@@ -44,6 +41,7 @@ import mekhq.campaign.unit.Unit;
 import mekhq.campaign.unit.UnitTechProgression;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 
 import javax.swing.*;
@@ -56,10 +54,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class Utilities {
-    private static ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.Utilities", new EncodeControl());
+    private static final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.Utilities",
+            MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     // A couple of arrays for use in the getLevelName() method
     private static final int[] arabicNumbers = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
@@ -74,7 +72,7 @@ public class Utilities {
         return (rolls.elementAt(0) + rolls.elementAt(1));
     }
 
-    /*
+    /**
      * Roll a certain number of dice with a certain number of faces
      */
     public static int dice(int num, int faces) {
@@ -88,129 +86,22 @@ public class Utilities {
         return result;
     }
 
-    /**
-     * Get a random element out of a collection, with equal probability.
-     * <p>
-     * This is the same as calling the following code, only plays nicely with
-     * all collections (including ones like Set which don't implement RandomAccess)
-     * and deals gracefully with empty collections.
-     * <pre>
-     * collection.get(Compute.randomInt(collection.size());
-     * </pre>
-     *
-     * @return <i>null</i> if the collection itself is null or empty;
-     * can return <i>null</i> if the collection contains <i>null</i> items.
-     */
-    public static @Nullable <T> T getRandomItem(final @Nullable Collection<? extends T> collection) {
-        if ((collection == null) || collection.isEmpty()) {
-            return null;
-        }
-        int index = Compute.randomInt(collection.size());
-        Iterator<? extends T> iterator = collection.iterator();
-        for (int i = 0; i < index; ++ i) {
-            iterator.next();
-        }
-        return iterator.next();
-    }
-
-    /**
-     * Get a random element out of a list, with equal probability.
-     * <p>
-     * This is the same as calling the following code,
-     * only deals gracefully with empty lists.
-     * <pre>
-     * list.get(Compute.randomInt(list.size());
-     * </pre>
-     *
-     * @return <i>null</i> if the list itself is null or empty;
-     * can return <i>null</i> if the list contains <i>null</i> items.
-     *
-     */
-    public static <T> T getRandomItem(List<? extends T> list) {
-        if ((null == list) || list.isEmpty() ) {
-            return null;
-        }
-        int index = Compute.randomInt(list.size());
-        return list.get(index);
-    }
-
-    /**
-     * @return linear interpolation value between min and max
-     */
-    public static double lerp(double min, double max, double f) {
-        // The order of operations is important here, to not lose precision
-        return min * (1.0 - f) + max * f;
-    }
-
-    /**
-     * @return linear interpolation value between min and max, rounded to the nearest integer
-     */
-    public static int lerp(int min, int max, double f) {
-        // The order of operations is important here, to not lose precision
-        return (int) Math.round(min * (1.0 - f) + max * f);
-    }
-
-    /**
-     * The method is returns the same as a call to the following code:
-     * <pre>T result = (null != getFirst()) ? getFirst() : getSecond();</pre>
-     * ... with the major difference that getFirst() and getSecond() get evaluated exactly once.
-     * <p>
-     * This means that it doesn't matter if getFirst() is relatively expensive to evaluate
-     * or has side effects. It also means that getSecond() gets evaluated <i>regardless</i> if
-     * it is needed or not. Since Java guarantees the order of evaluation for arguments to be
-     * the same as the order in which they appear (JSR 15.7.4), this makes it more suitable
-     * for re-playable procedural generation and similar method calls with side effects.
-     *
-     * @return the first argument if it's not <i>null</i>, else the second argument
-     */
-    public static <T> T nonNull(T first, T second) {
-        return (null != first) ? first : second;
-    }
-
-    /**
-     * For details and caveats, see the two-argument method.
-     *
-     * @return the first non-<i>null</i> argument, else <i>null</i> if all are <i>null</i>
-     */
-    @SafeVarargs
-    public static <T> T nonNull(T first, T second, T ... others) {
-        if (null != first) {
-            return first;
-        }
-        if (null != second) {
-            return second;
-        }
-        T result = others[0];
-        int index = 1;
-        while ((null == result) && (index < others.length)) {
-            result = others[index];
-            ++ index;
-        }
-        return result;
-    }
-
-    public static <T> int compareNullable(final @Nullable T a, final @Nullable T b,
-                                          final Comparator<? super T> comparator) {
-        if (a == b) { // Strict comparison is desired, to handle both null too
-            return 0;
-        } else if (a == null) {
-            return 1;
-        } else if (b == null) {
-            return -1;
-        } else {
-            return comparator.compare(a, b);
-        }
-    }
-
     public static List<AmmoType> getMunitionsFor(Entity entity, AmmoType currentAmmoType, int techLvl) {
         if (currentAmmoType == null) {
             return Collections.emptyList();
         }
 
+        final Vector<AmmoType> munitions = AmmoType.getMunitionsFor(currentAmmoType.getAmmoType());
+        if (munitions == null) {
+            LogManager.getLogger().error(String.format("Cannot getMunitions for %s because of a null munitions list for ammo type %d",
+                    entity.getDisplayName(), currentAmmoType.getAmmoType()));
+            return Collections.emptyList();
+        }
+
         List<AmmoType> ammoTypes = new ArrayList<>();
-        for (AmmoType ammoType : AmmoType.getMunitionsFor(currentAmmoType.getAmmoType())) {
-            //this is an abbreviated version of setupMunitions in the CustomMechDialog
-            //TODO: clan/IS limitations?
+        for (AmmoType ammoType : munitions) {
+            // this is an abbreviated version of setupMunitions in the CustomMechDialog
+            // TODO : clan/IS limitations?
 
             if ((entity instanceof Aero)
                     && !ammoType.canAeroUse(entity.getGame().getOptions().booleanOption(OptionsConstants.ADVAERORULES_AERO_ARTILLERY_MUNITIONS))) {
@@ -258,16 +149,6 @@ public class Utilities {
         return ammoTypes;
     }
 
-    public static boolean compareMounted(Mounted a, Mounted b) {
-        if (!a.getType().equals(b.getType()))
-            return false;
-        if (!a.getClass().equals(b.getClass()))
-            return false;
-        if (!a.getName().equals(b.getName()))
-            return false;
-        return a.getLocation() == b.getLocation();
-    }
-
     /**
      * Returns the last file modified in a directory and all subdirectories
      * that conforms to a FilenameFilter
@@ -275,13 +156,13 @@ public class Utilities {
      * @param filter    filter for the file's name
      * @return          the last file modified in that dir that fits the filter
      */
-    public static File lastFileModified(String dir, FilenameFilter filter) {
+    public static @Nullable File lastFileModified(String dir, FilenameFilter filter) {
         File fl = new File(dir);
         long lastMod = Long.MIN_VALUE;
         File choice = null;
 
         File[] files = fl.listFiles(filter);
-        if (null == files) {
+        if (files == null) {
             return null;
         }
 
@@ -291,8 +172,9 @@ public class Utilities {
                 lastMod = file.lastModified();
             }
         }
-        //ok now we need to recursively search any subdirectories,
-        //so see if they contain more recent files
+
+        // ok now we need to recursively search any subdirectories, so see if they contain more
+        // recent files
         files = fl.listFiles();
         if (files != null) {
             for (File file : files) {
@@ -301,7 +183,7 @@ public class Utilities {
                 }
 
                 File subFile = lastFileModified(file.getPath(), filter);
-                if (null != subFile && subFile.lastModified() > lastMod) {
+                if ((subFile != null) && (subFile.lastModified() > lastMod)) {
                     choice = subFile;
                     lastMod = subFile.lastModified();
                 }
@@ -319,7 +201,7 @@ public class Utilities {
     public static ArrayList<String> getAllVariants(Entity en, Campaign campaign) {
         CampaignOptions options = campaign.getCampaignOptions();
         ArrayList<String> variants = new ArrayList<>();
-        for(MechSummary summary : MechSummaryCache.getInstance().getAllMechs()) {
+        for (MechSummary summary : MechSummaryCache.getInstance().getAllMechs()) {
             // If this isn't the same chassis, is our current unit, we continue
             if (!en.getChassis().equalsIgnoreCase(summary.getChassis())
                     || en.getModel().equalsIgnoreCase(summary.getModel())
@@ -327,8 +209,8 @@ public class Utilities {
                 continue;
             }
 
-            // Weight of the two units must match or we continue, but BA weight gets
-            // checked differently
+            // Weight of the two units must match or we continue, but BA weight gets checked
+            // differently
             if (en instanceof BattleArmor) {
                 if (((BattleArmor) en).getTroopers() != (int) summary.getTWweight()) {
                     continue;
@@ -346,11 +228,11 @@ public class Utilities {
 
             // If the unit doesn't meet the tech filter criteria we continue
             ITechnology techProg = UnitTechProgression.getProgression(summary, campaign.getTechFaction(), true);
-            if (null == techProg) {
+            if (techProg == null) {
                 // This should never happen unless there was an exception thrown when calculating the progression.
                 // In such a case we will log it and take the least restrictive action, which is to let it through.
-                MekHQ.getLogger().warning(Utilities.class, "Could not determine tech progression for " + summary.getName()
-                                + ", including among available refits.");
+                LogManager.getLogger().warn("Could not determine tech progression for " + summary.getName()
+                        + ", including among available refits.");
             } else if (!campaign.isLegal(techProg)) {
                 continue;
             }
@@ -367,18 +249,18 @@ public class Utilities {
             return false;
         } else if (entity1.getClass() != entity2.getClass()) {
             return false;
-        } else if (entity1.getEngine().getRating() != entity2.getEngine().getRating()
-                || entity1.getEngine().getEngineType() != entity2.getEngine().getEngineType()
-                || entity1.getEngine().getFlags() != entity2.getEngine().getFlags()) {
+        } else if ((entity1.getEngine().getRating() != entity2.getEngine().getRating())
+                || (entity1.getEngine().getEngineType() != entity2.getEngine().getEngineType())
+                || (entity1.getEngine().getFlags() != entity2.getEngine().getFlags())) {
             return false;
         } else if (entity1.getStructureType() != entity2.getStructureType()) {
             return false;
         }
+
         if (entity1 instanceof Mech) {
             if (((Mech) entity1).getCockpitType() != ((Mech) entity2).getCockpitType()) {
                 return false;
-            }
-            if (entity1.getGyroType() != entity2.getGyroType()) {
+            } else if (entity1.getGyroType() != entity2.getGyroType()) {
                 return false;
             }
         } else if (entity1 instanceof Aero) {
@@ -392,15 +274,15 @@ public class Utilities {
         }
         List<EquipmentType> fixedEquipment = new ArrayList<>();
         for (int loc = 0; loc < entity1.locations(); loc++) {
-            if (entity1.getArmorType(loc) != entity2.getArmorType(loc)
-                    || entity1.getOArmor(loc) != entity2.getOArmor(loc)) {
+            if ((entity1.getArmorType(loc) != entity2.getArmorType(loc))
+                    || (entity1.getOArmor(loc) != entity2.getOArmor(loc))) {
                 return false;
             }
-            fixedEquipment.clear();
-            //Go through the base entity and make a list of all fixed equipment in this location.
+            // Go through the base entity and make a list of all fixed equipment in this location.
             for (int slot = 0; slot < entity1.getNumberOfCriticals(loc); slot++) {
                 CriticalSlot crit = entity1.getCritical(loc, slot);
-                if ((null != crit) && (crit.getType() == CriticalSlot.TYPE_EQUIPMENT) && (null != crit.getMount())) {
+                if ((null != crit) && (crit.getType() == CriticalSlot.TYPE_EQUIPMENT)
+                        && (null != crit.getMount())) {
                     if (!crit.getMount().isOmniPodMounted()) {
                         fixedEquipment.add(crit.getMount().getType());
                         if (null != crit.getMount2()) {
@@ -409,21 +291,24 @@ public class Utilities {
                     }
                 }
             }
-            //Go through the critical slots in this location for the second entity and remove all fixed
-            //equipment from the list. If not found or something is left over, there is a fixed equipment difference.
+            // Go through the critical slots in this location for the second entity and remove all
+            // fixed equipment from the list. If not found or something is left over, there is a
+            // fixed equipment difference.
             for (int slot = 0; slot < entity2.getNumberOfCriticals(loc); slot++) {
                 CriticalSlot crit = entity1.getCritical(loc, slot);
-                if (null != crit && crit.getType() == CriticalSlot.TYPE_EQUIPMENT && null != crit.getMount()) {
+                if ((crit != null) && (crit.getType() == CriticalSlot.TYPE_EQUIPMENT)
+                        && (crit.getMount() != null)) {
                     if (!crit.getMount().isOmniPodMounted()) {
                         if (!fixedEquipment.remove(crit.getMount().getType())) {
                             return false;
-                        }
-                        if (null != crit.getMount2() && !fixedEquipment.remove(crit.getMount2().getType())) {
+                        } else if ((crit.getMount2() != null)
+                                && !fixedEquipment.remove(crit.getMount2().getType())) {
                             return false;
                         }
                     }
                 }
             }
+
             if (!fixedEquipment.isEmpty()) {
                 return false;
             }
@@ -433,53 +318,20 @@ public class Utilities {
 
     public static int generateExpLevel(int bonus) {
         int roll = Compute.d6(2) + bonus;
-        if (roll < 2) {
+        if (roll <= 2) {
             return SkillType.EXP_ULTRA_GREEN;
         } else if (roll < 6) {
             return SkillType.EXP_GREEN;
-        } else if(roll < 10) {
+        } else if (roll < 10) {
             return SkillType.EXP_REGULAR;
-        } else if(roll < 12) {
+        } else if (roll < 12) {
             return SkillType.EXP_VETERAN;
         } else {
             return SkillType.EXP_ELITE;
         }
     }
 
-    public static Person findCommander(Entity entity, ArrayList<Person> vesselCrew, ArrayList<Person> gunners, ArrayList<Person> drivers, Person navigator) {
-        //take first by rank
-        //if rank is tied, take gunners over drivers
-        //if two of the same type are tie rank, take the first one
-        int bestRank = -1;
-        Person commander = null;
-        for(Person p : vesselCrew) {
-            if(null != p && p.getRankNumeric() > bestRank) {
-                commander = p;
-                bestRank = p.getRankNumeric();
-            }
-        }
-        for(Person p : gunners) {
-            if(p.getRankNumeric() > bestRank) {
-                commander = p;
-                bestRank = p.getRankNumeric();
-            }
-        }
-        for(Person p : drivers) {
-            if(null != p && p.getRankNumeric() > bestRank) {
-                commander = p;
-                bestRank = p.getRankNumeric();
-            }
-        }
-        if(navigator != null) {
-            if(navigator.getRankNumeric() > bestRank) {
-                commander = navigator;
-                bestRank = navigator.getRankNumeric();
-            }
-        }
-        return commander;
-    }
-
-    /*
+    /**
      * Simple utility function to take a specified number and randomize it a little bit
      * roll 1d6 results in:
      * 1: target - 2
@@ -502,49 +354,20 @@ public class Utilities {
         return Math.max(target, 0);
     }
 
-    /*
-     * If an infantry platoon or vehicle crew took damage, perform the personnel injuries
-     */
-    public static ArrayList<Person> doCrewInjuries(Entity e, Campaign c, ArrayList<Person> newCrew) {
-        int casualties;
-        if(e instanceof Infantry) {
-            e.applyDamage();
-            casualties = newCrew.size() - ((Infantry)e).getShootingStrength();
-            for (Person p : newCrew) {
-                for (int i = 0; i < casualties; i++) {
-                    if(Compute.d6(2) >= 7) {
-                        int hits = c.getCampaignOptions().getMinimumHitsForVehicles();
-                        if (c.getCampaignOptions().useAdvancedMedical() || c.getCampaignOptions().useRandomHitsForVehicles()) {
-                            int range = 6 - hits;
-                            hits = hits + Compute.randomInt(range);
-                        }
-                        p.setHits(hits);
-                    } else {
-                        p.setHits(6);
-                    }
-                }
-            }
-        }
-
-        return newCrew;
-    }
-
-    public static Map<CrewType, Collection<Person>> genRandomCrewWithCombinedSkill(Campaign c, Unit u, String factionCode) {
+    public static Map<CrewType, Collection<Person>> genRandomCrewWithCombinedSkill(Campaign c,
+                                                                                   Unit u,
+                                                                                   String factionCode) {
         Objects.requireNonNull(c);
         Objects.requireNonNull(u);
         Objects.requireNonNull(u.getEntity(), "Unit needs to have a valid Entity attached");
         Crew oldCrew = u.getEntity().getCrew();
 
-        int averageGunnery;
-        int averagePiloting;
         int numberPeopleGenerated = 0;
         List<Person> drivers = new ArrayList<>();
         List<Person> gunners = new ArrayList<>();
         List<Person> vesselCrew = new ArrayList<>();
         Person navigator = null;
         Person consoleCmdr = null;
-        int totalGunnery = 0;
-        int totalPiloting = 0;
 
         // If the entire crew is dead, we still want to generate them. This is because they might
         // not be truly dead - this will be the case for BA for example
@@ -659,23 +482,20 @@ public class Utilities {
                                 SkillType.getType(SkillType.S_PILOT_SPACE).getTarget()
                                         - oldCrew.getPiloting()),
                                 0);
-                        totalPiloting += p.getSkill(SkillType.S_PILOT_SPACE).getFinalSkillValue();
-                    } else if(u.getEntity() instanceof BattleArmor) {
+                    } else if (u.getEntity() instanceof BattleArmor) {
                         p = c.newPerson(PersonnelRole.BATTLE_ARMOUR, factionCode,
                                 oldCrew.getGender(numberPeopleGenerated));
                         p.addSkill(SkillType.S_GUN_BA, randomSkillFromTarget(
                                 SkillType.getType(SkillType.S_GUN_BA).getTarget()
                                         - oldCrew.getGunnery()),
                                 0);
-                        totalGunnery += p.getSkill(SkillType.S_GUN_BA).getFinalSkillValue();
-                    } else if(u.getEntity() instanceof Infantry) {
+                    } else if (u.getEntity() instanceof Infantry) {
                         p = c.newPerson(PersonnelRole.SOLDIER, factionCode,
                                 oldCrew.getGender(numberPeopleGenerated));
                         p.addSkill(SkillType.S_SMALL_ARMS, randomSkillFromTarget(
                                 SkillType.getType(SkillType.S_SMALL_ARMS).getTarget() - oldCrew.getGunnery()),
                                 0);
-                        totalGunnery += p.getSkill(SkillType.S_SMALL_ARMS).getFinalSkillValue();
-                    } else if(u.getEntity() instanceof VTOL) {
+                    } else if (u.getEntity() instanceof VTOL) {
                         p = c.newPerson(PersonnelRole.VTOL_PILOT, factionCode,
                                 oldCrew.getGender(numberPeopleGenerated));
                         p.addSkill(SkillType.S_PILOT_VTOL, SkillType.getType(
@@ -709,46 +529,14 @@ public class Utilities {
                     drivers.add(p);
                 }
 
-                // Regenerate as needed to balance
-                if (drivers.size() != 0) {
-                    averageGunnery = (int) Math.round(((double) totalGunnery) / drivers.size());
-                    averagePiloting = (int) Math.round(((double) totalPiloting) / drivers.size());
+                // Rebalance as needed to balance
+                if (!drivers.isEmpty()) {
                     if (u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship) {
-                        while (averagePiloting != oldCrew.getPiloting()) {
-                            totalPiloting = 0;
-                            for (Person p : drivers) {
-                                p.addSkill(SkillType.S_PILOT_SPACE, randomSkillFromTarget(
-                                        SkillType.getType(SkillType.S_PILOT_SPACE).getTarget()
-                                                - oldCrew.getPiloting()),
-                                        0);
-                                totalPiloting += p.getSkill(SkillType.S_PILOT_SPACE).getFinalSkillValue();
-                            }
-                            averagePiloting = (int) Math.round(((double) totalPiloting) / drivers.size());
-                        }
+                        rebalanceCrew(oldCrew.getPiloting(), drivers, SkillType.S_PILOT_SPACE);
                     } else if (u.getEntity() instanceof BattleArmor) {
-                        while (averageGunnery != oldCrew.getGunnery()) {
-                            totalGunnery = 0;
-                            for (Person p : drivers) {
-                                p.addSkill(SkillType.S_GUN_BA, randomSkillFromTarget(
-                                        SkillType.getType(SkillType.S_GUN_BA).getTarget()
-                                                - oldCrew.getGunnery()),
-                                        0);
-                                totalGunnery += p.getSkill(SkillType.S_GUN_BA).getFinalSkillValue();
-                            }
-                            averageGunnery = (int) Math.round(((double) totalGunnery) / drivers.size());
-                        }
+                        rebalanceCrew(oldCrew.getGunnery(), drivers, SkillType.S_GUN_BA);
                     } else if (u.getEntity() instanceof Infantry) {
-                        while (averageGunnery != oldCrew.getGunnery()) {
-                            totalGunnery = 0;
-                            for (Person p : drivers) {
-                                p.addSkill(SkillType.S_SMALL_ARMS, randomSkillFromTarget(
-                                        SkillType.getType(SkillType.S_SMALL_ARMS).getTarget()
-                                                - oldCrew.getGunnery()),
-                                        0);
-                                totalGunnery += p.getSkill(SkillType.S_SMALL_ARMS).getFinalSkillValue();
-                            }
-                            averageGunnery = (int) Math.round(((double) totalGunnery) / drivers.size());
-                        }
+                        rebalanceCrew(oldCrew.getGunnery(), drivers, SkillType.S_SMALL_ARMS);
                     }
                 }
 
@@ -763,7 +551,6 @@ public class Utilities {
                                     SkillType.getType(SkillType.S_GUN_SPACE).getTarget()
                                             - oldCrew.getGunnery()),
                                     0);
-                            totalGunnery += p.getSkill(SkillType.S_GUN_SPACE).getFinalSkillValue();
                         } else if (u.getEntity() instanceof Mech) {
                             p = c.newPerson(PersonnelRole.MECHWARRIOR, factionCode,
                                     oldCrew.getGender(numberPeopleGenerated));
@@ -775,7 +562,6 @@ public class Utilities {
                                     SkillType.getType(SkillType.S_GUN_MECH).getTarget()
                                             - oldCrew.getGunnery(),
                                     0);
-                            totalGunnery += p.getSkill(SkillType.S_GUN_MECH).getFinalSkillValue();
                         } else {
                             //assume tanker if we got here
                             p = c.newPerson(PersonnelRole.VEHICLE_GUNNER, factionCode,
@@ -783,7 +569,6 @@ public class Utilities {
                             p.addSkill(SkillType.S_GUN_VEE, randomSkillFromTarget(
                                     SkillType.getType(SkillType.S_GUN_VEE).getTarget()
                                             - oldCrew.getGunnery()), 0);
-                            totalGunnery += p.getSkill(SkillType.S_GUN_VEE).getFinalSkillValue();
                         }
 
                         migrateCrewData(p, oldCrew, numberPeopleGenerated++, true);
@@ -791,30 +576,11 @@ public class Utilities {
                     }
 
                     // Regenerate gunners as needed to balance
-                    if (gunners.size() != 0) {
-                        averageGunnery = (int) Math.round(((double) totalGunnery) / gunners.size());
+                    if (!gunners.isEmpty()) {
                         if (u.getEntity() instanceof Tank) {
-                            while (averageGunnery != oldCrew.getGunnery()) {
-                                totalGunnery = 0;
-                                for (Person p : gunners) {
-                                    p.addSkill(SkillType.S_GUN_VEE, randomSkillFromTarget(
-                                            SkillType.getType(SkillType.S_GUN_VEE).getTarget()
-                                                    - oldCrew.getGunnery()), 0);
-                                    totalGunnery += p.getSkill(SkillType.S_GUN_VEE).getFinalSkillValue();
-                                }
-                                averageGunnery = (int) Math.round(((double) totalGunnery) / gunners.size());
-                            }
+                            rebalanceCrew(oldCrew.getGunnery(), gunners, SkillType.S_GUN_VEE);
                         } else if (u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship) {
-                            while (averageGunnery != oldCrew.getGunnery()) {
-                                totalGunnery = 0;
-                                for (Person p : gunners) {
-                                    p.addSkill(SkillType.S_GUN_SPACE, randomSkillFromTarget(
-                                            SkillType.getType(SkillType.S_GUN_SPACE).getTarget()
-                                                    - oldCrew.getGunnery()), 0);
-                                    totalGunnery += p.getSkill(SkillType.S_GUN_SPACE).getFinalSkillValue();
-                                }
-                                averageGunnery = (int) Math.round(((double) totalGunnery) / gunners.size());
-                            }
+                            rebalanceCrew(oldCrew.getGunnery(), gunners, SkillType.S_GUN_SPACE);
                         }
                     }
                 }
@@ -870,6 +636,58 @@ public class Utilities {
     }
 
     /**
+     * Adjusts the skill levels of the given list of people in the given skill
+     * until the average skill level matches the given desired skill level (desiredSkill)
+     */
+    private static void rebalanceCrew(int desiredSkill, List<Person> people, String skillType) {
+        int totalGunnery = 0;
+        int targetNum = SkillType.getType(skillType).getTarget();
+
+        for (Person person : people) {
+            totalGunnery += (targetNum - person.getSkill(skillType).getLevel());
+        }
+
+        int averageGunnery = (int) Math.round(((double) totalGunnery) / people.size());
+        int skillIncrement = averageGunnery > desiredSkill ? 1 : -1;
+
+        List<Person> eligiblePeople = new ArrayList<>(people);
+
+        // instead of using a monte carlo method:
+        // pick a random person from the crew, update their desired skill one point in
+        // the direction we want to go. Eventually we will reach the desired skill we want.
+        while (averageGunnery != desiredSkill) {
+            Person person = ObjectUtility.getRandomItem(eligiblePeople);
+            int skillLevel = person.getSkill(skillType).getLevel();
+
+            // this is put in place to prevent skills from going below minimum or above maximum
+            // we eliminate people from the group of that can have their skills changed
+            // if they would do so.
+            boolean skillCannotChange = true;
+            while (skillCannotChange) {
+                if ((skillLevel < 0) && (skillIncrement == -1) ||
+                        (skillLevel >= SkillType.NUM_LEVELS) && (skillIncrement == 1)) {
+                    eligiblePeople.remove(person);
+                    person = ObjectUtility.getRandomItem(eligiblePeople);
+
+                    // if we can't drop anyone's skill any lower or raise it any higher then forget it
+                    if (person == null) {
+                        return;
+                    }
+
+                    skillLevel = person.getSkill(skillType).getLevel();
+                } else {
+                    skillCannotChange = false;
+                }
+            }
+
+            // this is counter-intuitive, but skills go from 0 (best) to 8 (worst)
+            person.getSkill(skillType).setLevel(skillLevel + skillIncrement);
+            totalGunnery -= skillIncrement;
+            averageGunnery = (int) Math.round(((double) totalGunnery) / people.size());
+        }
+    }
+
+    /**
      * Function that determines what name should be used by a person that is created through crew
      * And then assigns them a pre-selected portrait, provided one is to their index
      * Additionally, any extraData parameters should be migrated here
@@ -889,7 +707,7 @@ public class Utilities {
         if (oldCrew.getGender(crewIndex) != Gender.RANDOMIZE) {
             String givenName = oldCrew.getExtraDataValue(crewIndex, Crew.MAP_GIVEN_NAME);
 
-            if (StringUtil.isNullOrEmpty(givenName)) {
+            if (StringUtility.isNullOrBlank(givenName)) {
                 String name = oldCrew.getName(crewIndex);
 
                 if (!(name.equalsIgnoreCase(RandomNameGenerator.UNNAMED) || name.equalsIgnoreCase(RandomNameGenerator.UNNAMED_FULL_NAME))) {
@@ -918,7 +736,9 @@ public class Utilities {
     }
 
     /**
-     * Worker function that takes the PilotOptions (SPAs, in other words) from the given "old crew" and sets them for a person.
+     * Worker function that takes the PersonnelOptions (SPAs, in other words) from the given
+     * "old crew" and sets them for a person.
+     *
      * @param p The person whose SPAs to populate
      * @param oldCrew The entity the SPAs of whose crew we're importing
      */
@@ -963,25 +783,28 @@ public class Utilities {
     public static int getAgeByExpLevel(int expLevel, boolean clan) {
         int baseage = 19;
         int ndice = 1;
-        switch(expLevel) {
-            case(SkillType.EXP_REGULAR):
+        switch (expLevel) {
+            case SkillType.EXP_REGULAR:
                 ndice = 2;
                 break;
-            case(SkillType.EXP_VETERAN):
+            case SkillType.EXP_VETERAN:
                 ndice = 3;
                 break;
-            case(SkillType.EXP_ELITE):
+            case SkillType.EXP_ELITE:
                 ndice = 4;
+                break;
+            default:
                 break;
         }
 
         int age = baseage;
         while (ndice > 0) {
             int roll = Compute.d6();
-            //reroll all sixes once
+            // reroll all sixes once
             if (roll == 6) {
                 roll += (Compute.d6() - 1);
             }
+
             if (clan) {
                 roll = (int) Math.ceil(roll / 2.0);
             }
@@ -993,9 +816,9 @@ public class Utilities {
 
     public static String getOptionDisplayName(IOption option) {
         String name = option.getDisplayableNameWithValue();
-        name = name.replaceAll("\\(.+?\\)", ""); //$NON-NLS-1$ //$NON-NLS-2$
-        if(option.getType() == IOption.CHOICE) {
-            name += " - " + option.getValue(); //$NON-NLS-1$
+        name = name.replaceAll("\\(.+?\\)", "");
+        if (option.getType() == IOption.CHOICE) {
+            name += " - " + option.getValue();
         }
         return name;
     }
@@ -1028,7 +851,7 @@ public class Utilities {
     }
 
     public static int getSimpleTechLevel(int level) {
-        switch(level) {
+        switch (level) {
             case TechConstants.T_IS_TW_NON_BOX:
             case TechConstants.T_CLAN_TW:
             case TechConstants.T_IS_TW_ALL:
@@ -1052,308 +875,25 @@ public class Utilities {
         }
     }
 
-    //copied from http://www.roseindia.net/java/beginners/copyfile.shtml
-    public static void copyfile(File inFile, File outFile) {
-        try {
-            InputStream in = new FileInputStream(inFile);
-
-            //For Append the file.
-            //  OutputStream out = new FileOutputStream(f2,true);
-
-            //For Overwrite the file.
-            OutputStream out = new FileOutputStream(outFile);
-
+    /**
+     * Copied an existing file into a new file
+     * @param inFile the existing input file
+     * @param outFile the new file to copy into
+     * @see <a href="http://www.roseindia.net/java/beginners/copyfile.shtml">Rose India's tutorial</a>
+     * for the original code source
+     */
+    public static void copyfile(final File inFile, final File outFile) {
+        try (FileInputStream fis = new FileInputStream(inFile);
+             FileOutputStream fos = new FileOutputStream(outFile)) {
             byte[] buf = new byte[1024];
             int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
+            while ((len = fis.read(buf)) > 0) {
+                fos.write(buf, 0, len);
             }
-            in.close();
-            out.close();
-            MekHQ.getLogger().info(Utilities.class, "File copied.");
-        } catch (FileNotFoundException e) {
-            MekHQ.getLogger().error(Utilities.class, e.getMessage() + " in the specified directory.");
-        } catch (IOException e) {
-            MekHQ.getLogger().error(Utilities.class, e.getMessage());
+            LogManager.getLogger().info(String.format("Copied file %s to file %s", inFile.getPath(), outFile.getPath()));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("", ex);
         }
-    }
-
-    public static void unscrambleEquipmentNumbers(Unit unit, boolean refit) {
-        //BA has one part per equipment entry per suit and may need to have trooper fields set following
-        //a refit
-        if (unit.getEntity() instanceof BattleArmor) {
-            assignTroopersAndEquipmentNums(unit);
-            return;
-        }
-
-        Map<Integer, Part> partMap = new HashMap<>();
-        List<Integer> equipNums = new ArrayList<>();
-        for (Mounted m : unit.getEntity().getEquipment()) {
-            equipNums.add(unit.getEntity().getEquipmentNum(m));
-        }
-
-        // Handle exact matches first
-        List<Part> remaining = new ArrayList<>();
-        for (Part part : unit.getParts()) {
-            int eqnum = -1;
-            EquipmentType etype = null;
-            if (part instanceof EquipmentPart) {
-                eqnum = ((EquipmentPart) part).getEquipmentNum();
-                etype = ((EquipmentPart) part).getType();
-            } else if (part instanceof MissingEquipmentPart) {
-                eqnum = ((MissingEquipmentPart) part).getEquipmentNum();
-                etype = ((MissingEquipmentPart) part).getType();
-            }
-
-            if (etype != null) {
-                Mounted mounted = unit.getEntity().getEquipment(eqnum);
-                if (equipNums.contains(eqnum)
-                        && (mounted != null)
-                        && etype.equals(mounted.getType())) {
-                    equipNums.remove((Integer) eqnum);
-                    partMap.put(eqnum, part);
-                } else {
-                    remaining.add(part);
-                }
-            }
-        }
-
-        // Handle approximate matches (AmmoBins with munition or bomb type changes)
-        List<Part> notFound = new ArrayList<>();
-        for (Part part : remaining) {
-            int eqnum = -1;
-            EquipmentType etype = null;
-            if (part instanceof EquipmentPart) {
-                eqnum = ((EquipmentPart) part).getEquipmentNum();
-                etype = ((EquipmentPart) part).getType();
-            } else if (part instanceof MissingEquipmentPart) {
-                eqnum = ((MissingEquipmentPart) part).getEquipmentNum();
-                etype = ((MissingEquipmentPart) part).getType();
-            } else {
-                continue;
-            }
-
-            // Invalid equipment or already found
-            if ((etype == null) || partMap.containsKey(eqnum)) {
-                notFound.add(part);
-                continue;
-            }
-
-            Mounted mounted = unit.getEntity().getEquipment(eqnum);
-            if ((part instanceof AmmoBin)
-                    && (etype instanceof AmmoType)
-                    && (mounted != null)
-                    && (mounted.getType() instanceof AmmoType)) {
-                // Handle AmmoBins which had their AmmoType changed but did not get reloaded yet.
-                AmmoBin ammoBin = (AmmoBin) part;
-                AmmoType mountedType = (AmmoType) mounted.getType();
-                if (mountedType.equalsAmmoTypeOnly(ammoBin.getType())
-                        && (mountedType.getRackSize() == ammoBin.getType().getRackSize())) {
-                    equipNums.remove((Integer) eqnum);
-                    partMap.put(eqnum, part);
-                    continue;
-                }
-            }
-
-            notFound.add(part);
-        }
-
-        remaining = new ArrayList<>(notFound);
-        notFound.clear();
-
-        // For ammo types we want to match the same munition type if possible to avoid
-        // imposing unnecessary ammo swaps.
-        // However, if we've just done a refit we may very well have changed ammo types,
-        // so we need to set the equipment numbers in this case.
-        for (Part part : remaining) {
-            boolean found = false;
-            int i = -1;
-
-            if (part instanceof EquipmentPart) {
-                EquipmentPart epart = (EquipmentPart) part;
-                for (int equipNum : equipNums) {
-                    i++;
-                    Mounted m = unit.getEntity().getEquipment(equipNum);
-                    if (part instanceof AmmoBin) {
-                        if (!(m.getType() instanceof AmmoType)) {
-                            continue;
-                        }
-
-                        AmmoBin ammoBin = (AmmoBin) part;
-                        AmmoType ammoType = (AmmoType) m.getType();
-
-                        // If this is a refit, we want to update our ammo bin parts to match
-                        // the munitions specified in the refit, then reassign the equip number
-                        if (refit) {
-                            if (ammoBin.getType().equalsAmmoTypeOnly(ammoType)
-                                    && (ammoType.getRackSize() == ammoBin.getType().getRackSize())
-                                    && !m.isDestroyed()) {
-                                ammoBin.setEquipmentNum(equipNum);
-                                // Ensure Entity is synch'd with part
-                                ammoBin.updateConditionFromPart();
-                                // Unload bin before munition change
-                                ammoBin.unload();
-                                ammoBin.changeMunition(ammoType);
-                                partMap.put(equipNum, part);
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (m.getType().equals(epart.getType()) && !m.isDestroyed()) {
-                        epart.setEquipmentNum(equipNum);
-                        partMap.put(equipNum, part);
-                        found = true;
-                        break;
-                    }
-                }
-            } else if (part instanceof MissingEquipmentPart) {
-                MissingEquipmentPart epart = (MissingEquipmentPart)part;
-                for (int equipNum : equipNums) {
-                    i++;
-                    Mounted m = unit.getEntity().getEquipment(equipNum);
-                    if (part instanceof MissingAmmoBin
-                            && !(m.getType() instanceof AmmoType)) {
-                        continue;
-                    }
-                    if (m.getType().equals(epart.getType()) && !m.isDestroyed()) {
-                        epart.setEquipmentNum(equipNum);
-                        partMap.put(equipNum, part);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-
-            if (found) {
-                equipNums.remove(i);
-            } else {
-                notFound.add(part);
-            }
-        }
-
-        remaining = new ArrayList<>(notFound);
-        notFound.clear();
-
-        if (remaining.size() > 0) {
-            StringBuilder builder = new StringBuilder();
-            builder.append(String.format("Could not unscramble equipment for %s (%s)\r\n\r\n", unit.getName(), unit.getId()));
-            for (Part part : remaining) {
-                builder.append(" - ").append(part.getPartName()).append(" equipmentNum: ");
-                if (part instanceof EquipmentPart) {
-                    builder.append(((EquipmentPart) part).getEquipmentNum()).append("\r\n");
-                }
-                else if (part instanceof MissingEquipmentPart) {
-                    builder.append(((MissingEquipmentPart) part).getEquipmentNum()).append("\r\n");
-                }
-            }
-
-            builder.append("\r\nEquipment Parts:\r\n");
-            for (Part p : unit.getParts()) {
-                if (!(p instanceof EquipmentPart) &&
-                        (!(p instanceof MissingEquipmentPart))) {
-                    continue;
-                }
-                int equipNum;
-                if (p instanceof EquipmentPart) {
-                    EquipmentPart ePart = (EquipmentPart) p;
-                    equipNum = ePart.getEquipmentNum();
-                } else {
-                    MissingEquipmentPart mePart = (MissingEquipmentPart) p;
-                    equipNum = mePart.getEquipmentNum();
-                }
-                boolean isMissing = remaining.contains(p);
-                String eName = equipNum >= 0 ? unit.getEntity().getEquipment(equipNum).getName() : "<None>";
-                if (isMissing) {
-                    eName = "<Incorrect>";
-
-                    // Break the incorrect equipment number linkage if there is already a valid part at the location.
-                    // This ensures only one part is mapped to each equipment number, avoiding crashes and other
-                    // problems when these parts get out of sync.
-                    if ((equipNum >= 0) && partMap.containsKey(equipNum)) {
-                        if (p instanceof EquipmentPart) {
-                            EquipmentPart ePart = (EquipmentPart) p;
-                            ePart.setEquipmentNum(-1);
-                        } else {
-                            MissingEquipmentPart mePart = (MissingEquipmentPart) p;
-                            mePart.setEquipmentNum(-1);
-                        }
-                    }
-                }
-                builder.append(String.format(" %d: %s %s %s %s\r\n", equipNum, p.getName(), p.getLocationName(), eName, isMissing ? " (Missing)" : ""));
-            }
-
-            builder.append("\r\nEquipment:\r\n");
-            for (Mounted m : unit.getEntity().getEquipment()) {
-                int equipNum = unit.getEntity().getEquipmentNum(m);
-                EquipmentType mType = m.getType();
-                boolean isAvailable = equipNums.contains(equipNum);
-                builder.append(String.format(" %d: %s %s%s\r\n", equipNum, m.getName(), mType.getName(), isAvailable ? " (Available)" : ""));
-            }
-            MekHQ.getLogger().warning(builder.toString());
-        }
-    }
-
-    public static void assignTroopersAndEquipmentNums(Unit unit) {
-        if (!(unit.getEntity() instanceof BattleArmor)) {
-            throw new IllegalArgumentException("Attempting to assign trooper values to parts for non-BA unit");
-        }
-
-        //Create a list that we can remove parts from as we match them
-        List<EquipmentPart> tempParts = unit.getParts().stream()
-                .filter(p -> p instanceof EquipmentPart)
-                .map(p -> (EquipmentPart)p)
-                .collect(Collectors.toList());
-
-        for (Mounted m : unit.getEntity().getEquipment()) {
-            final int eqNum = unit.getEntity().getEquipmentNum(m);
-            //Look for parts of the same type with the equipment number already set correctly
-            List<EquipmentPart> parts = tempParts.stream()
-                    .filter(p -> p.getType().getInternalName().equals(m.getType().getInternalName())
-                            && p.getEquipmentNum() == eqNum)
-                    .collect(Collectors.toList());
-            //If we don't find any, just match the internal name and set the equipment number.
-            if (parts.isEmpty()) {
-                parts = tempParts.stream()
-                        .filter(p -> p.getType().getInternalName().equals(m.getType().getInternalName()))
-                        .collect(Collectors.toList());
-                parts.forEach(p -> p.setEquipmentNum(eqNum));
-            }
-            if (parts.stream().allMatch(p -> p instanceof BattleArmorEquipmentPart)) {
-                //Try to find one for each trooper; if the Entity has multiple pieces of equipment of this
-                //type this will make sure we're only setting one group to this eq number.
-                Part[] perTrooper = new Part[unit.getEntity().locations() - 1];
-                for (EquipmentPart p : parts) {
-                    int trooper = ((BattleArmorEquipmentPart)p).getTrooper();
-                    if (trooper > 0) {
-                        perTrooper[trooper - 1] = p;
-                    }
-                }
-                //Assign a part to any empty position and set the trooper field
-                for (int t = 0; t < perTrooper.length; t++) {
-                    if (null == perTrooper[t]) {
-                        for (Part p : parts) {
-                            if (((BattleArmorEquipmentPart)p).getTrooper() < 1) {
-                                ((BattleArmorEquipmentPart)p).setTrooper(t + 1);
-                                perTrooper[t] = p;
-                                break;
-                            }
-                        }
-                    }
-                }
-                //Normally there should be a part in each position, but we will leave open the possibility
-                //of equipment missing equipment for some troopers in the case of modular/AP mounts or DWPs
-                for (Part p : perTrooper) {
-                    if (null != p) {
-                        tempParts.remove(p);
-                    }
-                }
-            } else {
-                //Ammo Bin
-                tempParts.removeAll(parts);
-            }
-        }
-        //TODO: Is it necessary to update armor?
     }
 
     /**
@@ -1386,7 +926,7 @@ public class Utilities {
 
             report = model.getRowCount() + " " + resourceMap.getString("RowsWritten.text");
         } catch (Exception ioe) {
-            MekHQ.getLogger().error("Error exporting JTable", ioe);
+            LogManager.getLogger().error("Error exporting JTable", ioe);
             report = "Error exporting JTable. See log for details.";
         }
         return report;
@@ -1395,20 +935,20 @@ public class Utilities {
     public static Vector<String> splitString(String str, String sep) {
         StringTokenizer st = new StringTokenizer(str, sep);
         Vector<String> output = new Vector<>();
-        while(st.hasMoreTokens()) {
+        while (st.hasMoreTokens()) {
             output.add(st.nextToken());
         }
         return output;
     }
 
     public static String combineString(Collection<String> vec, String sep) {
-        if((null == vec) || (null == sep)) {
+        if ((null == vec) || (null == sep)) {
             return null;
         }
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for( String part : vec ) {
-            if( first ) {
+        for (String part : vec) {
+            if (first) {
                 first = false;
             } else {
                 sb.append(sep);
@@ -1420,16 +960,16 @@ public class Utilities {
 
     /** @return the input string with all words capitalized */
     public static String capitalize(String str) {
-        if((null == str) || str.isEmpty()) {
+        if ((null == str) || str.isEmpty()) {
             return str;
         }
         final char[] buffer = str.toCharArray();
         boolean capitalizeNext = true;
-        for(int i = 0; i < buffer.length; ++ i) {
+        for (int i = 0; i < buffer.length; i++) {
             final char ch = buffer[i];
-            if(Character.isWhitespace(ch)) {
+            if (Character.isWhitespace(ch)) {
                 capitalizeNext = true;
-            } else if(capitalizeNext) {
+            } else if (capitalizeNext) {
                 buffer[i] = Character.toTitleCase(ch);
                 capitalizeNext = false;
             }
@@ -1440,11 +980,11 @@ public class Utilities {
     public static String getRomanNumeralsFromArabicNumber(int level, boolean checkZero) {
         // If we're 0, then we just return an empty string
         if (checkZero && level == 0) {
-            return ""; //$NON-NLS-1$
+            return "";
         }
 
         // Roman numeral, prepended with a space for display purposes
-        StringBuilder roman = new StringBuilder(" "); //$NON-NLS-1$
+        StringBuilder roman = new StringBuilder(" ");
         int num = level+1;
 
         for (int i = 0; i < arabicNumbers.length; i++) {
@@ -1468,9 +1008,9 @@ public class Utilities {
 
         // Convert sorted map back to a Map
         Map<String, Integer> sortedMap = new LinkedHashMap<>();
-        if(highFirst) {
+        if (highFirst) {
             ListIterator<Map.Entry<String, Integer>> li = list.listIterator(list.size());
-            while(li.hasPrevious()) {
+            while (li.hasPrevious()) {
                 Map.Entry<String, Integer> entry = li.previous();
                 sortedMap.put(entry.getKey(), entry.getValue());
             }
@@ -1486,7 +1026,7 @@ public class Utilities {
     public static boolean isLikelyCapture(Entity en) {
         //most of these conditions are now controlled better in en.canEscape, but there
         //are some additional ones we want to add
-        if(!en.canEscape()) {
+        if (!en.canEscape()) {
             return true;
         }
         return en.isDestroyed() || en.isDoomed() || en.isStalled() || en.isStuck();
@@ -1519,8 +1059,7 @@ public class Utilities {
                             parser.accept(fis);
                         } catch (Exception ex) {
                             // Ignore this file then
-                            MekHQ.getLogger().error(Utilities.class, "Exception trying to parse " + file.getPath() + " - ignoring.");
-                            MekHQ.getLogger().error(Utilities.class, ex);
+                            LogManager.getLogger().error("Exception trying to parse " + file.getPath() + " - ignoring.", ex);
                         }
                     }
                 }
@@ -1606,15 +1145,15 @@ public class Utilities {
                 try {
                     Thread.sleep(500);
                 } catch (Exception e) {
-                    MekHQ.getLogger().error(Utilities.class, e);
+                    LogManager.getLogger().error("", e);
                 }
-            } else if(loadGround && transport.canLoad(cargo, false) && cargo.getTargetBay() != -1) {
+            } else if (loadGround && transport.canLoad(cargo, false) && cargo.getTargetBay() != -1) {
                 client.sendLoadEntity(id, trnId, cargo.getTargetBay());
                 // Add a wait to make sure that we don't start processing client.sendLoadEntity out of order
                 try {
                     Thread.sleep(500);
                 } catch (Exception e) {
-                    MekHQ.getLogger().error(Utilities.class, e);
+                    LogManager.getLogger().error("", e);
                 }
             }
         }

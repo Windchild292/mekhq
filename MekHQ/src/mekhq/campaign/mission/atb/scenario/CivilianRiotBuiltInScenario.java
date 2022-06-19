@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 The Megamek Team. All rights reserved.
+ * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -10,31 +10,17 @@
  *
  * MekHQ is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with MekHQ.  If not, see <http://www.gnu.org/licenses/>.
+ * along with MekHQ. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package mekhq.campaign.mission.atb.scenario;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
-import megamek.common.Board;
-import megamek.common.Compute;
-import megamek.common.Entity;
-import megamek.common.EntityWeightClass;
-import megamek.common.UnitType;
+import megamek.common.*;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.mission.AtBDynamicScenarioFactory;
-import mekhq.campaign.mission.AtBScenario;
-import mekhq.campaign.mission.BotForce;
-import mekhq.campaign.mission.CommonObjectiveFactory;
-import mekhq.campaign.mission.ObjectiveEffect;
-import mekhq.campaign.mission.ScenarioObjective;
+import mekhq.campaign.mission.*;
 import mekhq.campaign.mission.ObjectiveEffect.EffectScalingType;
 import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
 import mekhq.campaign.mission.atb.AtBScenarioEnabled;
@@ -43,10 +29,11 @@ import mekhq.campaign.parts.equipment.EquipmentPart;
 import mekhq.campaign.rating.IUnitRating;
 import mekhq.campaign.unit.Unit;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 @AtBScenarioEnabled
 public class CivilianRiotBuiltInScenario extends AtBScenario {
-    private static final long serialVersionUID = 6943760300767790979L;
-
     private static String RIOTER_FORCE_ID = "Rioters";
     private static String REBEL_FORCE_ID = "Rebels";
     private static String LOYALIST_FORCE_ID = "Loyalists";
@@ -103,7 +90,7 @@ public class CivilianRiotBuiltInScenario extends AtBScenario {
 
     @Override
     public void setExtraMissionForces(Campaign campaign, ArrayList<Entity> allyEntities,
-            ArrayList<Entity> enemyEntities) {
+                                      ArrayList<Entity> enemyEntities) {
         // north, south, east, west
         int boardEdge = (Compute.randomInt(4) + 1) * 2;
         setStart(boardEdge);
@@ -116,18 +103,18 @@ public class CivilianRiotBuiltInScenario extends AtBScenario {
                     campaign));
         }
 
-        ArrayList<Entity> otherForce = new ArrayList<Entity>();
+        ArrayList<Entity> otherForce = new ArrayList<>();
         addCivilianUnits(otherForce, 8, campaign);
 
         for (Entity e : otherForce) {
             getSurvivalBonusIds().add(UUID.fromString(e.getExternalIdAsString()));
         }
 
-        addBotForce(new BotForce(LOYALIST_FORCE_ID, 1, Board.START_CENTER, otherForce));
+        addBotForce(new BotForce(LOYALIST_FORCE_ID, 1, Board.START_CENTER, otherForce), campaign);
 
-        otherForce = new ArrayList<Entity>();
+        otherForce = new ArrayList<>();
         addCivilianUnits(otherForce, 12, campaign);
-        addBotForce(new BotForce(RIOTER_FORCE_ID, 2, Board.START_CENTER, otherForce));
+        addBotForce(new BotForce(RIOTER_FORCE_ID, 2, Board.START_CENTER, otherForce), campaign);
 
         for (int i = 0; i < 3; i++) {
             // 3 mech rebel lance, use employer RAT, enemy skill
@@ -136,8 +123,7 @@ public class CivilianRiotBuiltInScenario extends AtBScenario {
                     Compute.d6() < 4 ? EntityWeightClass.WEIGHT_LIGHT : EntityWeightClass.WEIGHT_MEDIUM, campaign));
         }
 
-        addBotForce(
-                new BotForce(REBEL_FORCE_ID, 2, AtBDynamicScenarioFactory.getOppositeEdge(boardEdge), enemyEntities));
+        addBotForce(new BotForce(REBEL_FORCE_ID, 2, AtBDynamicScenarioFactory.getOppositeEdge(boardEdge), enemyEntities), campaign);
     }
 
     @Override

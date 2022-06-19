@@ -13,12 +13,16 @@ Warship
 </UnitType>
 
 <Name>
-Peregrine
+Peregrine Corvette
 </Name>
 
 <Model>
 (2969)
 </Model>
+
+<mul id:>
+4805
+</mul id:>
 
 <year>
 2969
