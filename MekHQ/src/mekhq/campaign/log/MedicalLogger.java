@@ -108,21 +108,24 @@ public class MedicalLogger {
     public static void docMadeAMistake(Person doctor, Person patient, Injury injury, LocalDate date) {
         String message = logEntriesResourceMap.getString("docMadeAMistake.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName()));
+                MessageFormat.format(message, doctor.getName().getFullTitle(doctor),
+                        injury.getName()));
         patient.addLogEntry(medicalLogEntry);
     }
 
     public static void docAmazingWork(Person doctor, Person patient, Injury injury, LocalDate date, int critTimeReduction) {
         String message = logEntriesResourceMap.getString("docAmazingWork.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName(), critTimeReduction));
+                MessageFormat.format(message, doctor.getName().getFullTitle(doctor),
+                        injury.getName(), critTimeReduction));
         patient.addLogEntry(medicalLogEntry);
     }
 
     public static void successfullyTreated(Person doctor, Person patient, LocalDate date, Injury injury) {
         String message = logEntriesResourceMap.getString("successfullyTreated.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName()));
+                MessageFormat.format(message, doctor.getName().getFullTitle(doctor),
+                        injury.getName()));
         patient.addLogEntry(medicalLogEntry);
     }
 
@@ -171,7 +174,7 @@ public class MedicalLogger {
         String message = logEntriesResourceMap.getString("hasConceived.text");
 
         if (!sizeString.isBlank()) {
-            message += " " + sizeString;
+            message += ' ' + sizeString;
         }
 
         patient.addLogEntry(new MedicalLogEntry(date, message));

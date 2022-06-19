@@ -506,15 +506,15 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
             try {
                 preparedStatement = connect.prepareStatement("UPDATE " + table + ".crew SET rank=?, lname=?, fname=?, callsign=?, status=?, parent=?, crewnumber=?, joiningdate=?, notes=?, bday=? WHERE uuid=?");
                 preparedStatement.setInt(1, p.getRankNumeric());
-                preparedStatement.setString(2, truncateString(p.getSurname(),30));
-                preparedStatement.setString(3, truncateString(p.getGivenName(), 30));
-                preparedStatement.setString(4, truncateString(p.getCallsign(), 30));
+                preparedStatement.setString(2, truncateString(p.getName().getSurname(),30));
+                preparedStatement.setString(3, truncateString(p.getName().getGivenName(), 30));
+                preparedStatement.setString(4, truncateString(p.getName().getCallsign(), 30));
                 preparedStatement.setString(5, p.getStatus().toString());
                 preparedStatement.setInt(6, forceId);
                 preparedStatement.setInt(7, 1);
-                //TODO: get joining date right
+                // TODO : get joining date right
                 preparedStatement.setDate(8, Date.valueOf(p.getBirthday()));
-                //TODO: combine personnel log with biography
+                // TODO : combine personnel log with biography
                 preparedStatement.setString(9, p.getBiography());
                 preparedStatement.setDate(10, Date.valueOf(p.getBirthday()));
                 preparedStatement.setString(11, p.getId().toString());
@@ -522,9 +522,9 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
                     //no prior record so insert
                     preparedStatement = connect.prepareStatement("INSERT INTO " + table + ".crew (rank, lname, fname, callsign, status, parent, crewnumber, joiningdate, notes, bday, uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     preparedStatement.setInt(1, p.getRankNumeric());
-                    preparedStatement.setString(2, truncateString(p.getSurname(), 30));
-                    preparedStatement.setString(3, truncateString(p.getGivenName(), 30));
-                    preparedStatement.setString(4, truncateString(p.getCallsign(), 30));
+                    preparedStatement.setString(2, truncateString(p.getName().getSurname(), 30));
+                    preparedStatement.setString(3, truncateString(p.getName().getGivenName(), 30));
+                    preparedStatement.setString(4, truncateString(p.getName().getCallsign(), 30));
                     preparedStatement.setString(5, p.getStatus().toString());
                     preparedStatement.setInt(6, forceId);
                     preparedStatement.setInt(7, 1);
@@ -535,21 +535,21 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
                     preparedStatement.executeUpdate();
                 }
 
-                //retrieve the MercRoster id of this person
+                // retrieve the MercRoster id of this person
                 preparedStatement = connect.prepareStatement("SELECT id FROM " + table + ".crew WHERE uuid=?");
                 preparedStatement.setString(1, p.getId().toString());
                 ResultSet rs = preparedStatement.executeQuery();
                 rs.next();
                 int id = rs.getInt("id");
                 rs.close();
-                //put id in a hash for equipment assignment
+                // put id in a hash for equipment assignment
                 personHash.put(p.getId(), id);
-                //assign the personnel position
+                // assign the personnel position
                 preparedStatement = connect.prepareStatement("INSERT INTO " + table + ".personnelpositions (personneltype, person) VALUES (?, ?)");
                 preparedStatement.setInt(1, p.getPrimaryRole().ordinal());
                 preparedStatement.setInt(2, id);
                 preparedStatement.executeUpdate();
-                //write out skills to skills table
+                // write out skills to skills table
                 for (int i = 0; i < SkillType.skillList.length; i++) {
                     if (p.hasSkill(SkillType.skillList[i])) {
                         Skill skill = p.getSkill(SkillType.skillList[i]);
@@ -561,8 +561,8 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
                     }
                 }
                 // add kills
-                // FIXME: the only issue here is we get duplicate kills for crewed vehicles
-                // TODO: clean up the getWhatKilled string
+                // FIXME : the only issue here is we get duplicate kills for crewed vehicles
+                // TODO : clean up the getWhatKilled string
                 for (Kill k : campaign.getKillsFor(p.getId())) {
                     preparedStatement = connect.prepareStatement("INSERT INTO " + table + ".kills (parent, type, killdate, equipment) VALUES (?, ?, ?, ?)");
                     preparedStatement.setInt(1, id);
@@ -580,7 +580,7 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
     }
 
     private void writeEquipmentData() {
-        // TODO: we need to clear the equipment table because equipment will come and go
+        // TODO : we need to clear the equipment table because equipment will come and go
 
         // check for a uuid column
         try {
@@ -628,7 +628,7 @@ public class MercRosterAccess extends SwingWorker<Void, Void> {
                     preparedStatement.setString(8, u.getId().toString());
                     preparedStatement.executeUpdate();
                 }
-                //TODO: connect to a TRO
+                // TODO : connect to a TRO
                 progressTicker += 1;
                 determineProgress();
             } catch (SQLException e) {

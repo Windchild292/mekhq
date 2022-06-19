@@ -73,7 +73,7 @@ public class EditPersonnelInjuriesDialog extends JDialog {
                 MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form");
-        setTitle(resourceMap.getString("Form.title") + " " + person.getFullName());
+        setTitle(resourceMap.getString("Form.title") + ' ' + person.getName());
         getContentPane().setLayout(new BorderLayout());
 
         JPanel panBtns = new JPanel(new GridLayout(1,0));

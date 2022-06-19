@@ -143,7 +143,7 @@ public class ServiceLogger {
 
     public static void successfullyTreated(Person doctor, Person patient, LocalDate date, int injuries) {
         String message = logEntriesResourceMap.getString("successfullyTreatedForXInjuries.text");
-        doctor.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, patient.getFullName(), injuries)));
+        doctor.addLogEntry(new ServiceLogEntry(date, MessageFormat.format(message, patient.getName(), injuries)));
     }
 
     public static void assignedTo(Person person, LocalDate date, String unitName) {
@@ -174,7 +174,7 @@ public class ServiceLogger {
                                           final @Nullable Force newForce) {
         if ((oldForce == null) && (newForce == null)) {
             LogManager.getLogger().error(String.format("Cannot reassign %s on %s because both specified forces are null",
-                    person.getFullTitle(), date));
+                    person.getName().getFullTitle(person), date));
             return;
         }
 

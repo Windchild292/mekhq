@@ -1651,9 +1651,9 @@ public class CampaignGUI extends JPanel {
                     continue;
                 }
                 skillLvl = SkillType.getExperienceLevelName(tech.getExperienceLevel(getCampaign(), false));
-                name = tech.getFullName() + ", " + skillLvl + " " + tech.getPrimaryRoleDesc()
+                name = tech.getName() + ", " + skillLvl + ' ' + tech.getPrimaryRoleDesc()
                         + " (" + getCampaign().getTargetFor(r, tech).getValueAsString() + "+), "
-                        + tech.getMinutesLeft() + "/" + tech.getDailyAvailableTechTime() + " minutes";
+                        + tech.getMinutesLeft() + '/' + tech.getDailyAvailableTechTime() + " minutes";
                 techHash.put(name, tech);
                 if (tech.isRightTechTypeFor(r)) {
                     techList.add(lastRightTech++, name);
@@ -1753,7 +1753,7 @@ public class CampaignGUI extends JPanel {
                 if (!ignoreMaintenance) {
                     time -= Math.max(0, tech.getMaintenanceTimeUsing());
                 }
-                name = tech.getFullTitle() + ", "
+                name = tech.getName().getFullTitle(tech) + ", "
                         + SkillType.getExperienceLevelName(tech.getSkillForWorkingOn(u).getExperienceLevel())
                         + " (" + time + "min)";
                 techHash.put(name, tech);
@@ -1965,7 +1965,7 @@ public class CampaignGUI extends JPanel {
                 xmlDoc = db.parse(is);
             } catch (Exception ex) {
                 LogManager.getLogger().error("Cannot load person XML", ex);
-                return; // otherwise we NPE out in the next line
+                return; // otherwise, we NPE out in the next line
             }
 
             Element personnelEle = xmlDoc.getDocumentElement();
@@ -1988,25 +1988,30 @@ public class CampaignGUI extends JPanel {
                 }
 
                 if (!wn2.getNodeName().equalsIgnoreCase("person")) {
-                    LogManager.getLogger().error("Unknown node type not loaded in Personnel nodes: " + wn2.getNodeName());
+                    LogManager.getLogger().error("Unknown node type not loaded in Personnel nodes: "
+                            + wn2.getNodeName());
                     continue;
                 }
 
-                Person p = Person.generateInstanceFromXML(wn2, getCampaign(), version);
-                if ((p != null) && (getCampaign().getPerson(p.getId()) != null)) {
-                    LogManager.getLogger().error("ERROR: Cannot load person who exists, ignoring. (Name: "
-                            + p.getFullName() + ", Id " + p.getId() + ")");
-                    p = null;
-                }
+                try {
+                    Person p = Person.generateInstanceFromXML(wn2, getCampaign(), version);
+                    if (getCampaign().getPerson(p.getId()) != null) {
+                        LogManager.getLogger().error("ERROR: Cannot load person who exists, ignoring. (Name: "
+                                + p.getName() + ", Id " + p.getId() + ')');
+                        p = null;
+                    }
 
-                if (p != null) {
-                    getCampaign().recruitPerson(p, true);
+                    if (p != null) {
+                        getCampaign().recruitPerson(p, true);
 
-                    // Clear some values we no longer should have set in case this
-                    // has transferred campaigns or things in the campaign have
-                    // changed...
-                    p.setUnit(null);
-                    p.clearTechUnits();
+                        // Clear some values we no longer should have set in case this
+                        // has transferred campaigns or things in the campaign have
+                        // changed...
+                        p.setUnit(null);
+                        p.clearTechUnits();
+                    }
+                } catch (Exception ex) {
+                    LogManager.getLogger().error("Failed to parse person from personnel file", ex);
                 }
             }
 
@@ -2017,8 +2022,8 @@ public class CampaignGUI extends JPanel {
                 if (p.getGenealogy().hasSpouse()
                         && !getCampaign().getPersonnel().contains(p.getGenealogy().getSpouse())) {
                     // If this happens, we need to clear the spouse
-                    if (p.getMaidenName() != null) {
-                        p.setSurname(p.getMaidenName());
+                    if (p.getName().getMaidenName() != null) {
+                        p.getName().setSurname(p.getName().getMaidenName());
                     }
 
                     p.getGenealogy().setSpouse(null);
@@ -2038,7 +2043,7 @@ public class CampaignGUI extends JPanel {
         }
     }
 
-    // TODO: disable if not using personnel tab
+    // TODO : disable if not using personnel tab
     private void savePersonFile() {
         File file = FileDialogs.savePersonnel(frame, getCampaign()).orElse(null);
         if (file == null) {

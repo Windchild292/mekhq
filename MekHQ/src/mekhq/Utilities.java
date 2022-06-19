@@ -39,6 +39,7 @@ import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.unit.CrewType;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.unit.UnitTechProgression;
+import mekhq.io.migration.PersonMigrator;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.logging.log4j.LogManager;
@@ -711,13 +712,13 @@ public class Utilities {
                 String name = oldCrew.getName(crewIndex);
 
                 if (!(name.equalsIgnoreCase(RandomNameGenerator.UNNAMED) || name.equalsIgnoreCase(RandomNameGenerator.UNNAMED_FULL_NAME))) {
-                    p.migrateName(name);
+                    p.getName().migrateName(p, name);
                 }
             } else {
-                p.setGivenName(givenName);
-                p.setSurname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_SURNAME));
-                if (p.getSurname() == null) {
-                    p.setSurname("");
+                p.getName().setGivenName(givenName);
+                p.getName().setSurname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_SURNAME));
+                if (p.getName().getSurname() == null) {
+                    p.getName().setSurname("");
                 }
 
                 String phenotype = oldCrew.getExtraDataValue(crewIndex, Crew.MAP_PHENOTYPE);
@@ -725,7 +726,8 @@ public class Utilities {
                     p.setPhenotype(Phenotype.parseFromString(phenotype));
                 }
 
-                p.setBloodname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_BLOODNAME));
+                // FIXME : Windchild
+                p.getName().setBloodname(PersonMigrator.migrateBloodname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_BLOODNAME)));
             }
 
             // Only created crew can be assigned a portrait, so this is safe to put in here

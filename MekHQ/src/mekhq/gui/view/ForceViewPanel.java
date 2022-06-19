@@ -193,13 +193,13 @@ public class ForceViewPanel extends JScrollablePanel {
         // sort person vector by rank
         people.sort((p1, p2) -> ((Comparable<Integer>) p2.getRankNumeric()).compareTo(p1.getRankNumeric()));
         if (!people.isEmpty()) {
-            commander = people.get(0).getFullTitle();
+            commander = people.get(0).getName().getFullTitle(people.get(0));
         }
 
         if (force.getTechID() != null) {
             final Person person = campaign.getPerson(force.getTechID());
             if (person != null) {
-                lanceTech = person.getFullName();
+                lanceTech = person.getName().toString();
             }
         }
 
@@ -456,8 +456,9 @@ public class ForceViewPanel extends JScrollablePanel {
     }
 
     public String getSummaryFor(Person person, Unit unit) {
-        String toReturn = "<html><font size='2'><b>" + person.getFullTitle() + "</b><br/>";
-        toReturn += person.getSkillSummary(campaign) + " " + person.getRoleDesc();
+        String toReturn = "<html><font size='2'><b>" + person.getName().getFullTitle(person)
+                + "</b><br/>";
+        toReturn += person.getSkillSummary(campaign) + ' ' + person.getRoleDesc();
         if (null != unit && null != unit.getEntity()
                 && null != unit.getEntity().getCrew() && unit.getEntity().getCrew().getHits() > 0) {
             toReturn += "<br><font color='red' size='2'>" + unit.getEntity().getCrew().getHits() + " hit(s)";
@@ -557,7 +558,7 @@ public class ForceViewPanel extends JScrollablePanel {
         // sort person vector by rank
         people.sort((p1, p2) -> ((Comparable<Integer>) p2.getRankNumeric()).compareTo(p1.getRankNumeric()));
         if (!people.isEmpty()) {
-            commander = people.get(0).getFullTitle();
+            commander = people.get(0).getName().getFullTitle(people.get(0));
         }
         String toReturn = "<html><font size='2'><b>" + f.getName() + "</b> (" + commander + ")<br/>";
         toReturn += "<b>Number of Units:</b> " + number + "<br/>";

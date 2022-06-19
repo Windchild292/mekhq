@@ -92,8 +92,8 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
 
             Person p = u.getCommander();
             if (null != p) {
-                LogManager.getLogger().debug("Unit " + u.getName()
-                        + " -- Adding commander (" + p.getFullTitle() + "" + ") to commander list.");
+                LogManager.getLogger().debug("Unit " + u.getName() + " -- Adding commander ("
+                        + p.getName().getFullTitle(p) + ") to commander list.");
                 getCommanderList().add(p);
             }
 
@@ -311,7 +311,8 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        LogManager.getLogger().debug("Person, " + p.getFullTitle() + ", provides " + hours + " tech support hours.");
+        LogManager.getLogger().debug("Person, " + p.getName().getFullTitle(p) + ", provides "
+                + hours + " tech support hours.");
         techSupportHours += hours;
     }
 
@@ -325,7 +326,8 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        LogManager.getLogger().debug("Person, " + p.getFullTitle() + " provides " + hours + " medical support hours.");
+        LogManager.getLogger().debug("Person, " + p.getName().getFullTitle(p) + " provides "
+                + hours + " medical support hours.");
         medSupportHours += hours;
     }
 
@@ -339,7 +341,8 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        LogManager.getLogger().debug("Person, " + p.getFullTitle() + ", provides " + hours + " admin support hours.");
+        LogManager.getLogger().debug("Person, " + p.getName().getFullTitle(p) + ", provides "
+                + hours + " admin support hours.");
         adminSupportHours += hours;
     }
 
@@ -607,20 +610,21 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
     private String getCommandDetails() {
         StringBuilder out = new StringBuilder();
         Person commander = getCommander();
-        String commanderName = (null == commander) ? "" : " (" + commander.getFullTitle() + ")";
+        String commanderName = (null == commander) ? "" : " ("
+                + commander.getName().getFullTitle(commander) + ')';
         out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s",
-                "Command:", getCommanderValue(), commanderName)).append("\n");
+                "Command:", getCommanderValue(), commanderName)).append('\n');
 
         final String TEMPLATE = "    %-" + SUBHEADER_LENGTH + "s %3d";
         out.append(String.format(TEMPLATE, "Leadership:",
                         getCommanderSkillLevelWithBonus(SkillType.S_LEADER)))
-           .append("\n");
+           .append('\n');
         out.append(String.format(TEMPLATE, "Negotiation:",
                         getCommanderSkillLevelWithBonus(SkillType.S_NEG)))
-           .append("\n");
+           .append('\n');
         out.append(String.format(TEMPLATE, "Strategy:",
                         getCommanderSkillLevelWithBonus(SkillType.S_STRATEGY)))
-           .append("\n");
+           .append('\n');
         out.append(String.format(TEMPLATE, "Tactics:",
                 getCommanderSkillLevelWithBonus(SkillType.S_TACTICS)));
 
@@ -629,13 +633,10 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
 
     private String getCombatRecordDetails() {
         final String TEMPLATE = "    %-" + SUBHEADER_LENGTH + "s %3d";
-        return String.format("%-" + HEADER_LENGTH + "s %3d", "Combat Record:",
-                getCombatRecordValue()) + "\n" +
-               String.format(TEMPLATE, "Successful Missions:",
-                       getSuccessCount()) + "\n" +
-               String.format(TEMPLATE, "Failed Missions:",
-                       getFailCount()) + "\n" +
-               String.format(TEMPLATE, "Contract Breaches:", getBreachCount());
+        return String.format("%-" + HEADER_LENGTH + "s %3d", "Combat Record:", getCombatRecordValue())
+                + '\n' + String.format(TEMPLATE, "Successful Missions:", getSuccessCount()) + '\n'
+                + String.format(TEMPLATE, "Failed Missions:", getFailCount()) + '\n'
+                + String.format(TEMPLATE, "Contract Breaches:", getBreachCount());
     }
 
     String getTransportationDetails() {
@@ -643,7 +644,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
         final String TEMPLATE = "    %-" + SUBHEADER_LENGTH + "s %3s";
         final String TEMPLATE_TWO = "        #%-" + CATEGORY_LENGTH + "s %3d needed / %3d available";
 
-        out.append(String.format("%-" + HEADER_LENGTH + "s %3d", "Transportation", getTransportValue())).append("\n");
+        out.append(String.format("%-" + HEADER_LENGTH + "s %3d", "Transportation", getTransportValue())).append('\n');
 
         int excessSuperHeavyVeeBays = Math.max(getSuperHeavyVeeBayCount() - getSuperHeavyVeeCount(), 0);
         int excessHeavyVeeBays = Math.max(getHeavyVeeBayCount() - getHeavyVeeCount(), 0);

@@ -91,12 +91,13 @@ public class RandomPortraitGenerator {
             if (temp.length == 2) {
                 return new Portrait(temp[0], temp[1]);
             } else {
-                LogManager.getLogger().error("Failed to generate portrait for " + p.getFullTitle() + ". "
-                        + chosenPortrait + " does not split into an array of length 2.");
+                LogManager.getLogger().error("Failed to generate portrait for "
+                        + p.getName().getFullTitle(p) + ". " + chosenPortrait
+                        + " does not split into an array of length 2.");
             }
         } else {
-            LogManager.getLogger().warn("Failed to generate portrait for " + p.getFullTitle()
-                    + ". No possible portraits found.");
+            LogManager.getLogger().warn("Failed to generate portrait for "
+                    + p.getName().getFullTitle(p) + ". No possible portraits found.");
         }
 
         return new Portrait();

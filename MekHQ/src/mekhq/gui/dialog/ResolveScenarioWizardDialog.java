@@ -728,7 +728,8 @@ public class ResolveScenarioWizardDialog extends JDialog {
                 if (u.getEntity() instanceof GunEmplacement) {
                     assignModel.addElement("AutoTurret, " + u.getName());
                 } else {
-                    assignModel.addElement(u.getCommander().getFullTitle() + ", " + u.getName());
+                    assignModel.addElement(u.getCommander().getName().getFullTitle(u.getCommander())
+                            + ", " + u.getName());
                 }
 
                 if (u.getId().toString().equals(tracker.getKillCredits().get(killName))) {

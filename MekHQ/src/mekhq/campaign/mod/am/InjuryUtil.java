@@ -275,13 +275,13 @@ public final class InjuryUtil {
                     xpGained += successXP;
                 }
                 final int critTimeReduction = i.getTime() - (int) Math.floor(i.getTime() * 0.9);
-                //Reroll fumbled treatment check with Edge if applicable
+                // Reroll fumbled treatment check with Edge if applicable
                 if (c.getCampaignOptions().useSupportEdge() && (roll < fumbleLimit)
                         && doc.getOptions().booleanOption(PersonnelOptions.EDGE_MEDICAL)
                         && (doc.getCurrentEdge() > 0)) {
                     result.add(new GameEffect(
                     String.format("%s made a mistake in the treatment of %s, but used Edge to reroll.",
-                            doc.getHyperlinkedFullTitle(), p.getHyperlinkedName())));
+                            doc.getName().getHyperlinkedFullTitle(doc), p.getName().getHyperlinkedName(p))));
                     doc.changeCurrentEdge(-1);
                     roll = Compute.randomInt(100);
                 }
@@ -289,7 +289,7 @@ public final class InjuryUtil {
                 if (roll < fumbleLimit) {
                     result.add(new GameEffect(
                         String.format("%s made a mistake in the treatment of %s and caused %s %s to worsen.",
-                            doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(),
+                            doc.getName().getHyperlinkedFullTitle(doc), p.getName().getHyperlinkedName(p),
                             GenderDescriptors.HIS_HER.getDescriptor(p.getGender()), i.getName()),
                         rnd -> {
                             int time = i.getTime();
@@ -306,7 +306,8 @@ public final class InjuryUtil {
                 } else if ((roll > critLimit) && (critTimeReduction > 0)) {
                     result.add(new GameEffect(
                         String.format("%s performed some amazing work in treating %s of %s (%d fewer day(s) to heal).",
-                                doc.getHyperlinkedFullTitle(), i.getName(), p.getHyperlinkedName(), critTimeReduction),
+                                doc.getName().getHyperlinkedFullTitle(doc), i.getName(),
+                                p.getName().getHyperlinkedName(p), critTimeReduction),
                         rnd -> {
                             i.setTime(i.getTime() - critTimeReduction);
                             MedicalLogger.docAmazingWork(doc, p, i, c.getLocalDate(), critTimeReduction);
@@ -315,7 +316,8 @@ public final class InjuryUtil {
                     final int xpChance = (int) Math.round(100.0 / c.getCampaignOptions().getNTasksXP());
                     result.add(new GameEffect(
                             String.format("%s successfully treated %s [%d%% chance of gaining %d XP]",
-                                    doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(),
+                                    doc.getName().getHyperlinkedFullTitle(doc),
+                                    p.getName().getHyperlinkedName(p),
                                     xpChance, c.getCampaignOptions().getTaskXP()),
                         rnd -> {
                             int taskXP = c.getCampaignOptions().getTaskXP();
@@ -343,7 +345,7 @@ public final class InjuryUtil {
                 numTreated++;
             } else {
                 result.add(new GameEffect(
-                    String.format("%s spent time resting to heal %s %s.", p.getHyperlinkedName(),
+                    String.format("%s spent time resting to heal %s %s.", p.getName().getHyperlinkedName(p),
                             GenderDescriptors.HIS_HER.getDescriptor(p.getGender()), i.getName()),
                     rnd -> {
 
@@ -357,10 +359,11 @@ public final class InjuryUtil {
             final String treatmentSummary = (xpGained > 0)
                 ? String.format("%s successfully treated %s for %d injuries "
                     + "(%d XP gained, %d for mistakes, %d for critical successes, and %d for tasks).",
-                    doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(), numTreated,
-                    xp, mistakeXP, successXP, xp - mistakeXP - successXP)
+                    doc.getName().getHyperlinkedFullTitle(doc), p.getName().getHyperlinkedName(p),
+                    numTreated, xp, mistakeXP, successXP, xp - mistakeXP - successXP)
                 : String.format("%s successfully treated %s for %d injuries.",
-                    doc.getHyperlinkedFullTitle(), p.getHyperlinkedName(), numTreated);
+                    doc.getName().getHyperlinkedFullTitle(doc), p.getName().getHyperlinkedName(p),
+                    numTreated);
 
             result.add(new GameEffect(treatmentSummary,
                 rnd -> {
@@ -374,9 +377,8 @@ public final class InjuryUtil {
                 }));
         }
         if (numResting > 0) {
-            result.add(new GameEffect(
-                String.format("%s spent time resting to heal %d injuries.",
-                    p.getHyperlinkedName(), numResting)));
+            result.add(new GameEffect(String.format("%s spent time resting to heal %d injuries.",
+                    p.getName().getHyperlinkedName(p), numResting)));
         }
         return result;
     }
@@ -391,9 +393,9 @@ public final class InjuryUtil {
         p.getInjuries().forEach((i) -> {
             if (i.getTime() <= 1 && !i.isPermanent()) {
                 InjuryType type = i.getType();
-                if (!i.isWorkedOn() &&
-                    ((type == InjuryTypes.BROKEN_LIMB) || (type == InjuryTypes.SPRAIN)
-                    || (type == InjuryTypes.CONCUSSION) || (type == InjuryTypes.BROKEN_COLLAR_BONE))) {
+                if (!i.isWorkedOn()
+                        && ((type == InjuryTypes.BROKEN_LIMB) || (type == InjuryTypes.SPRAIN)
+                        || (type == InjuryTypes.CONCUSSION) || (type == InjuryTypes.BROKEN_COLLAR_BONE))) {
                     result.add(new GameEffect(
                         String.format("83%% chance of %s healing, 17%% chance of it becoming permanent.",
                             i.getName()),
@@ -470,12 +472,6 @@ public final class InjuryUtil {
                     rnd -> {
                         if (rnd.applyAsInt(100) < 30) {
                             i.setTime(i.getTime() + 1);
-                            // TODO: Disabled, too much spam
-                            /*
-                            LogEntry entry = new LogEntry(c.getDate(),
-                                String.format("%s worsened its condition due to lack of proper medical attention", i.getName()), Person.LOGTYPE_MEDICAL);
-                            p.addLogEntry(entry);
-                            */
                         }
                     }));
             }

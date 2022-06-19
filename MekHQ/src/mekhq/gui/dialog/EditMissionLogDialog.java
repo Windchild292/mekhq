@@ -59,10 +59,10 @@ public class EditMissionLogDialog extends JDialog {
         final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.EditMissionLogDialog",
                 MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setName(resourceMap.getString("dialog.name"));
-        setTitle(resourceMap.getString("dialog.title") + " " + person.getFullName());
-        getContentPane().setLayout(new java.awt.BorderLayout());
+        setTitle(resourceMap.getString("dialog.title") + ' ' + person.getName());
+        getContentPane().setLayout(new BorderLayout());
 
         editMissionsControl = new EditMissionLogControl(frame, campaign, person);
         getContentPane().add(editMissionsControl, BorderLayout.CENTER);

@@ -49,6 +49,7 @@ import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.PersonnelOptions;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
+import mekhq.campaign.personnel.name.Name;
 import mekhq.campaign.unit.enums.CrewAssignmentState;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
@@ -3551,8 +3552,8 @@ public class Unit implements ITechnology {
                 entity.getCrew().setMissing(true, 0);
                 return;
             }
-            entity.getCrew().setName(commander.getFullTitle(), 0);
-            entity.getCrew().setNickname(commander.getCallsign(), 0);
+            entity.getCrew().setName(commander.getName().getFullTitle(commander), 0);
+            entity.getCrew().setNickname(commander.getName().getCallsign(), 0);
             entity.getCrew().setGender(commander.getGender(), 0);
             entity.getCrew().setPortrait(commander.getPortrait().clone(), 0);
             entity.getCrew().setExternalIdAsString(commander.getId().toString(), 0);
@@ -3958,8 +3959,8 @@ public class Unit implements ITechnology {
      * @param driveType
      */
     private void assignToCrewSlot(Person p, int slot, String gunType, String driveType) {
-        entity.getCrew().setName(p.getFullTitle(), slot);
-        entity.getCrew().setNickname(p.getCallsign(), slot);
+        entity.getCrew().setName(p.getName().getFullTitle(p), slot);
+        entity.getCrew().setNickname(p.getName().getCallsign(), slot);
         entity.getCrew().setGender(p.getGender(), slot);
         entity.getCrew().setPortrait(p.getPortrait().clone(), slot);
         entity.getCrew().setHits(p.getHits(), slot);
@@ -4018,7 +4019,7 @@ public class Unit implements ITechnology {
 
         if (getEntity() instanceof Infantry) {
             if (!isUnmanned()) {
-                engineer = new Person(getCommander().getGivenName(), getCommander().getSurname(), getCampaign());
+                engineer = new Person(getCampaign(), getCommander().getName().clone());
                 engineer.setEngineer(true);
                 engineer.setClanPersonnel(getCommander().isClanPersonnel());
                 engineer.setMinutesLeft(minutesLeft);
@@ -4038,8 +4039,7 @@ public class Unit implements ITechnology {
                 int sumBonus = 0;
                 int sumEdge = 0;
                 int sumEdgeUsed = 0;
-                String engineerGivenName = "Nobody";
-                String engineerSurname = "Nobody";
+                Name name = new Name();
                 int bestRank = Integer.MIN_VALUE;
                 for (Person p : vesselCrew) {
                     if (engineer != null) {
@@ -4075,14 +4075,15 @@ public class Unit implements ITechnology {
                     if (!(p.getOptions().booleanOption(PersonnelOptions.EDGE_REPAIR_FAILED_REFIT))) {
                         failrefitreroll = false;
                     }
+
                     if (p.getRankNumeric() > bestRank) {
-                        engineerGivenName = p.getGivenName();
-                        engineerSurname = p.getSurname();
+                        name = p.getName().clone();
                         bestRank = p.getRankNumeric();
                     }
                 }
+
                 if (nCrew > 0) {
-                    engineer = new Person(engineerGivenName, engineerSurname, getCampaign());
+                    engineer = new Person(getCampaign(), name);
                     engineer.setEngineer(true);
                     engineer.setClanPersonnel(getCommander().isClanPersonnel());
                     engineer.setEdgeTrigger(PersonnelOptions.EDGE_REPAIR_BREAK_PART, breakpartreroll);
@@ -4334,7 +4335,8 @@ public class Unit implements ITechnology {
         Objects.requireNonNull(p);
 
         if (null != tech) {
-            LogManager.getLogger().warn(String.format("New tech assigned %s without removing previous tech %s", p.getFullName(), tech));
+            LogManager.getLogger().warn(String.format("New tech assigned %s without removing previous tech %s",
+                    p.getName(), tech));
         }
         ensurePersonIsRegistered(p);
         tech = p;
@@ -4356,7 +4358,8 @@ public class Unit implements ITechnology {
         Objects.requireNonNull(person);
         if (getCampaign().getPerson(person.getId()) == null) {
             getCampaign().recruitPerson(person, person.getPrisonerStatus(), true,  false);
-            LogManager.getLogger().warn(String.format("The person %s added this unit %s, was not in the campaign.", person.getFullName(), getName()));
+            LogManager.getLogger().warn(String.format("The person %s added this unit %s, was not in the campaign.",
+                    person.getName(), getName()));
         }
     }
 

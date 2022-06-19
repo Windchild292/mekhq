@@ -705,7 +705,7 @@ public class MassRepairService {
 
             Person tech = techs.get(i);
 
-            debugLog("Checking tech %s", "repairPart", tech.getFullName());
+            debugLog("Checking tech %s", "repairPart", tech.getName());
 
             Skill skill = tech.getSkillForWorkingOn(partWork);
 
@@ -714,7 +714,7 @@ public class MassRepairService {
             }
 
             // We really only have to check one tech of each skill level
-            if (!techSkillToWorktimeMap.containsKey(skill.getType().getName() + "-" + skill.getLevel())) {
+            if (!techSkillToWorktimeMap.containsKey(skill.getType().getName() + '-' + skill.getLevel())) {
                 TargetRoll targetRoll = campaign.getTargetFor(partWork, tech);
                 WorkTime selectedWorktime = null;
 
@@ -843,10 +843,10 @@ public class MassRepairService {
 
         if (partWork instanceof Part) {
             Skill skill = tech.getSkillForWorkingOn(partWork);
-            WorkTime wt = techSkillToWorktimeMap.get(skill.getType().getName() + "-" + skill.getLevel());
+            WorkTime wt = techSkillToWorktimeMap.get(skill.getType().getName() + '-' + skill.getLevel());
 
             if (null == wt) {
-                debugLog("[ERROR] Null work-time from techToWorktimeMap for %s", "repairPart", tech.getFullName());
+                debugLog("[ERROR] Null work-time from techToWorktimeMap for %s", "repairPart", tech.getName());
                 wt = WorkTime.NORMAL;
             }
 

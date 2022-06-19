@@ -354,7 +354,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                         gui.getCampaign().getLocalDate(), selectedPerson.getSkill(type).getType().getName(),
                         selectedPerson.getSkill(type).toString());
                 gui.getCampaign().addReport(String.format(resources.getString("improved.format"),
-                        selectedPerson.getHyperlinkedName(), type));
+                        selectedPerson.getName().getHyperlinkedName(selectedPerson), type));
 
                 if (gui.getCampaign().getCampaignOptions().getUseAtB()
                         && gui.getCampaign().getCampaignOptions().useAbilities()) {
@@ -370,13 +370,13 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                                 PersonalLogger.gainedEdge(gui.getCampaign(), selectedPerson,
                                         gui.getCampaign().getLocalDate());
                                 gui.getCampaign().addReport(String.format(resources.getString("gainedEdge.format"),
-                                        selectedPerson.getHyperlinkedName()));
+                                        selectedPerson.getName().getHyperlinkedName(selectedPerson)));
                             }
                         } else {
                             PersonalLogger.gainedSPA(gui.getCampaign(), selectedPerson,
                                     gui.getCampaign().getLocalDate(), spa);
                             gui.getCampaign().addReport(String.format(resources.getString("gained.format"),
-                                    selectedPerson.getHyperlinkedName(), spa));
+                                    selectedPerson.getName().getHyperlinkedName(selectedPerson), spa));
                         }
                     }
                 }
@@ -393,7 +393,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonalLogger.gainedSPA(gui.getCampaign(), selectedPerson,
                         gui.getCampaign().getLocalDate(), displayName);
                 gui.getCampaign().addReport(String.format(resources.getString("gained.format"),
-                        selectedPerson.getHyperlinkedName(), displayName));
+                        selectedPerson.getName().getHyperlinkedName(selectedPerson), displayName));
                 gui.getCampaign().personUpdated(selectedPerson);
                 break;
             }
@@ -408,7 +408,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonalLogger.gainedSPA(gui.getCampaign(), selectedPerson,
                         gui.getCampaign().getLocalDate(), displayName);
                 gui.getCampaign().addReport(String.format(resources.getString("gained.format"),
-                        selectedPerson.getHyperlinkedName(), displayName));
+                        selectedPerson.getName().getHyperlinkedName(selectedPerson), displayName));
                 gui.getCampaign().personUpdated(selectedPerson);
                 break;
             }
@@ -423,7 +423,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonalLogger.gainedSPA(gui.getCampaign(), selectedPerson,
                         gui.getCampaign().getLocalDate(), displayName);
                 gui.getCampaign().addReport(String.format(resources.getString("gained.format"),
-                        selectedPerson.getHyperlinkedName(), displayName));
+                        selectedPerson.getName().getHyperlinkedName(selectedPerson), displayName));
                 gui.getCampaign().personUpdated(selectedPerson);
                 break;
             }
@@ -438,7 +438,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonalLogger.gainedSPA(gui.getCampaign(), selectedPerson,
                         gui.getCampaign().getLocalDate(), displayName);
                 gui.getCampaign().addReport(String.format(resources.getString("gained.format"),
-                        selectedPerson.getHyperlinkedName(), displayName));
+                        selectedPerson.getName().getHyperlinkedName(selectedPerson), displayName));
                 gui.getCampaign().personUpdated(selectedPerson);
                 break;
             }
@@ -453,7 +453,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonalLogger.gainedSPA(gui.getCampaign(), selectedPerson,
                         gui.getCampaign().getLocalDate(), displayName);
                 gui.getCampaign().addReport(String.format(resources.getString("gained.format"),
-                        selectedPerson.getHyperlinkedName(), displayName));
+                        selectedPerson.getName().getHyperlinkedName(selectedPerson), displayName));
                 gui.getCampaign().personUpdated(selectedPerson);
                 break;
             }
@@ -469,7 +469,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonalLogger.gainedSPA(gui.getCampaign(), selectedPerson,
                         gui.getCampaign().getLocalDate(), displayName);
                 gui.getCampaign().addReport(String.format(resources.getString("spaGainedChoices.format"),
-                        selectedPerson.getHyperlinkedName(), displayName));
+                        selectedPerson.getName().getHyperlinkedName(selectedPerson), displayName));
                 gui.getCampaign().personUpdated(selectedPerson);
                 break;
             }
@@ -477,7 +477,8 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 PersonnelStatus status = PersonnelStatus.valueOf(data[1]);
                 for (Person person : people) {
                     if (status.isActive() || (JOptionPane.showConfirmDialog(null,
-                            String.format(resources.getString("confirmRetireQ.format"), person.getFullTitle()),
+                            String.format(resources.getString("confirmRetireQ.format"),
+                                    person.getName().getFullTitle(person)),
                             status.toString(), JOptionPane.YES_NO_OPTION) == 0)) {
                         person.changeStatus(gui.getCampaign(), gui.getCampaign().getLocalDate(), status);
                     }
@@ -506,9 +507,10 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 break;
             }
             case CMD_FREE: {
-                // TODO: Warn in particular for "freeing" in deep space, leading to Geneva Conventions violation (#1400 adding Crime to MekHQ)
-                // TODO: Record the people into some NPC pool, if still alive
-                String title = (people.length == 1) ? people[0].getFullTitle()
+                // TODO : Warn in particular for "freeing" in deep space, leading to Geneva
+                // TODO : Conventions violation (#1400 adding Crime to MekHQ)
+                // TODO : Record the people into some NPC pool, if still alive
+                String title = (people.length == 1) ? people[0].getName().getFullTitle(people[0])
                         : String.format(resources.getString("numPrisoners.text"), people.length);
                 if (0 == JOptionPane.showConfirmDialog(null,
                         String.format(resources.getString("confirmFree.format"), title),
@@ -564,7 +566,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 break;
             }
             case CMD_REMOVE: {
-                String title = (people.length == 1) ? people[0].getFullTitle()
+                String title = (people.length == 1) ? people[0].getName().getFullTitle(people[0])
                         : String.format(resources.getString("numPersonnel.text"), people.length);
                 if (0 == JOptionPane.showConfirmDialog(null,
                         String.format(resources.getString("confirmRemove.format"), title),
@@ -608,7 +610,8 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                     if (people.length > 1) {
                         question = resources.getString("confirmRemoveMultiple.text");
                     } else {
-                        question = String.format(resources.getString("confirmRemove.format"), people[0].getFullTitle());
+                        question = String.format(resources.getString("confirmRemove.format"),
+                                people[0].getName().getFullTitle(people[0]));
                     }
                     if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
                             null, question, resources.getString("removeQ.text"),
@@ -708,15 +711,16 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                     // the week ends
                     person.changeCurrentEdge(1);
                     PersonalLogger.gainedEdge(gui.getCampaign(), person, gui.getCampaign().getLocalDate());
-                    gui.getCampaign().addReport(String.format(resources.getString("gainedEdge.format"), selectedPerson.getHyperlinkedName()));
+                    gui.getCampaign().addReport(String.format(resources.getString("gainedEdge.format"),
+                            selectedPerson.getName().getHyperlinkedName(selectedPerson)));
                     gui.getCampaign().personUpdated(person);
                 }
                 break;
             }
             case CMD_SET_EDGE: {
                 PopupValueChoiceDialog pvcd = new PopupValueChoiceDialog(
-                        gui.getFrame(), true, resources.getString("edge.text"), selectedPerson.getEdge(), 0,
-                        10);
+                        gui.getFrame(), true, resources.getString("edge.text"),
+                        selectedPerson.getEdge(), 0, 10);
                 pvcd.setVisible(true);
                 if (pvcd.getValue() < 0) {
                     return;
@@ -724,7 +728,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 int i = pvcd.getValue();
                 for (Person person : people) {
                     person.setEdge(i);
-                    //Reset currentEdge for support people
+                    // Reset currentEdge for support people
                     person.resetCurrentEdge();
                     PersonalLogger.changedEdge(gui.getCampaign(), person, gui.getCampaign().getLocalDate());
                     gui.getCampaign().personUpdated(person);
@@ -806,9 +810,9 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 String s = (String) JOptionPane.showInputDialog(gui.getFrame(),
                         resources.getString("enterNewCallsign.text"), resources.getString("editCallsign.text"),
                         JOptionPane.PLAIN_MESSAGE, null, null,
-                        selectedPerson.getCallsign());
+                        selectedPerson.getName().getCallsign());
                 if (null != s) {
-                    selectedPerson.setCallsign(s);
+                    selectedPerson.getName().setCallsign(s);
                     gui.getCampaign().personUpdated(selectedPerson);
                 }
                 break;
@@ -870,8 +874,8 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 for (final Person person : people) {
                     final String[] name = RandomNameGenerator.getInstance().generateGivenNameSurnameSplit(
                             person.getGender(), person.isClanPersonnel(), person.getOriginFaction().getShortName());
-                    person.setGivenName(name[0]);
-                    person.setSurname(name[1]);
+                    person.getName().setGivenName(name[0]);
+                    person.getName().setSurname(name[1]);
                     MekHQ.triggerEvent(new PersonChangedEvent(person));
                 }
                 break;
@@ -885,7 +889,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             }
             case CMD_RANDOM_CALLSIGN: {
                 for (final Person person : people) {
-                    person.setCallsign(RandomCallsignGenerator.getInstance().generate());
+                    person.getName().setCallsign(RandomCallsignGenerator.getInstance().generate());
                     MekHQ.triggerEvent(new PersonChangedEvent(person));
                 }
                 break;
@@ -1157,22 +1161,22 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                                 gui.getCampaign(), gui.getCampaign().getLocalDate(), person,
                                 potentialSpouse, false))
                         .sorted(Comparator.comparing((Person p) -> p.getAge(today))
-                                .thenComparing(Person::getSurname))
+                                .thenComparing(p -> p.getName().getSurname()))
                         .collect(Collectors.toList());
 
                 for (final Person potentialSpouse : personnel) {
                     final String status;
                     if (potentialSpouse.getPrisonerStatus().isBondsman()) {
                         status = String.format(resources.getString("marriageBondsmanDesc.format"),
-                                potentialSpouse.getFullName(), potentialSpouse.getAge(today),
+                                potentialSpouse.getName(), potentialSpouse.getAge(today),
                                 potentialSpouse.getRoleDesc());
                     } else if (potentialSpouse.getPrisonerStatus().isPrisoner()) {
                         status = String.format(resources.getString("marriagePrisonerDesc.format"),
-                                potentialSpouse.getFullName(), potentialSpouse.getAge(today),
+                                potentialSpouse.getName(), potentialSpouse.getAge(today),
                                 potentialSpouse.getRoleDesc());
                     } else {
                         status = String.format(resources.getString("marriagePartnerDesc.format"),
-                                potentialSpouse.getFullName(), potentialSpouse.getAge(today),
+                                potentialSpouse.getName(), potentialSpouse.getAge(today),
                                 potentialSpouse.getRoleDesc());
                     }
 

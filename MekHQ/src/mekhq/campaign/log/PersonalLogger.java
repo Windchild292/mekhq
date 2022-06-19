@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2018-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -39,17 +39,17 @@ public class PersonalLogger {
 
     public static void spouseKia(Person spouse, Person person, LocalDate date) {
         String message = resources.getString("spouseKia.text");
-        spouse.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, person.getFullName())));
+        spouse.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, person.getName())));
     }
 
     public static void divorcedFrom(Person person, Person spouse, LocalDate date) {
         String message = resources.getString("divorcedFrom.text");
-        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getFullName())));
+        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getName())));
     }
 
     public static void marriage(Person person, Person spouse, LocalDate date) {
         String message = resources.getString("marries.text");
-        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getFullName())));
+        person.addLogEntry(new PersonalLogEntry(date, MessageFormat.format(message, spouse.getName())));
     }
 
     public static void marriageNameChange(Person person, Person spouse, LocalDate date) {
@@ -57,9 +57,10 @@ public class PersonalLogger {
 
         message = MessageFormat.format(message,
                 GenderDescriptors.HIS_HER.getDescriptor(person.getGender()),
-                (!StringUtility.isNullOrBlank(person.getMaidenName())) ? person.getMaidenName()
+                (!StringUtility.isNullOrBlank(person.getName().getMaidenName()))
+                        ? person.getName().getMaidenName()
                         : resources.getString("marriageNameChange.emptyMaidenName.text"),
-                person.getSurname(), spouse.getFullName());
+                person.getName().getSurname(), spouse.getName());
 
         person.addLogEntry(new PersonalLogEntry(date, message));
     }
@@ -96,15 +97,13 @@ public class PersonalLogger {
 
     public static void spouseConceived(Person person, String spouseName, LocalDate date, String sizeString) {
         String message = MessageFormat.format(resources.getString("spouseConceived.text"), spouseName);
-
         if (sizeString != null) {
-            message += " " + sizeString;
+            message += ' ' + sizeString;
         }
-
         person.addLogEntry(new PersonalLogEntry(date, message));
     }
 
-    //this is called to log the child being born on the father's personal log
+    // this is called to log the child being born on the father's personal log
     public static void ourChildBorn(Person person, Person baby, String spouseName, LocalDate date) {
         person.addLogEntry(new PersonalLogEntry(date,
                 MessageFormat.format(resources.getString("ourChildBorn.text"),

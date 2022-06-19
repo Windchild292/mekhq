@@ -1,4 +1,4 @@
-/*/*
+/*
  * Copyright (c) 2019-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
@@ -179,7 +179,6 @@ public class NewRecruitDialog extends JDialog {
         return panSidebar;
     }
 
-    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
         try {
             PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(NewRecruitDialog.class);
@@ -217,8 +216,8 @@ public class NewRecruitDialog extends JDialog {
 
         String[] name = RandomNameGenerator.getInstance().generateGivenNameSurnameSplit(
                 person.getGender(), person.isClanPersonnel(), factionCode);
-        person.setGivenName(name[0]);
-        person.setSurname(name[1]);
+        person.getName().setGivenName(name[0]);
+        person.getName().setSurname(name[1]);
         refreshView();
     }
 

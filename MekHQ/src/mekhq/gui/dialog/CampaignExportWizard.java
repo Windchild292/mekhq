@@ -776,11 +776,11 @@ public class CampaignExportWizard extends JDialog {
             Component cmp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             Person person = (Person) value;
             String callsign = "";
-            if ((person.getCallsign() != null) && !person.getCallsign().isBlank()) {
-                callsign = String.format("\"%s\" ", person.getCallsign());
+            if ((person.getName().getCallsign() != null) && !person.getName().getCallsign().isBlank()) {
+                callsign = String.format("\"%s\" ", person.getName().getCallsign());
             }
 
-            String cellValue = String.format("%s %s(%s)", person.getFullName(), callsign,
+            String cellValue = String.format("%s %s(%s)", person.getName(), callsign,
                     person.getPrimaryRoleDesc());
             ((JLabel) cmp).setText(cellValue);
             return cmp;

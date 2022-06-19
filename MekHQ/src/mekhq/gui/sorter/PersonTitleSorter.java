@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2021-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -64,7 +64,7 @@ public class PersonTitleSorter implements Comparator<Person> {
             return personRankComparison;
         }
 
-        // Now we can natural order compare the person's full name
-        return getNaturalOrderComparator().compare(p1.getFullName(), p0.getFullName());
+        // Now, we can natural order compare the person's full name
+        return getNaturalOrderComparator().compare(p1.getName().toString(), p0.getName().toString());
     }
 }

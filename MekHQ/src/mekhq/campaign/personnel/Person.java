@@ -20,7 +20,6 @@
 package mekhq.campaign.personnel;
 
 import megamek.Version;
-import megamek.client.generator.RandomNameGenerator;
 import megamek.codeUtilities.StringUtility;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
@@ -47,6 +46,7 @@ import mekhq.campaign.mod.am.InjuryUtil;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.enums.*;
 import mekhq.campaign.personnel.familyTree.Genealogy;
+import mekhq.campaign.personnel.name.Name;
 import mekhq.campaign.personnel.ranks.Rank;
 import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.RankValidator;
@@ -93,17 +93,7 @@ public class Person {
     //endregion Family Variables
 
     private UUID id;
-
-    //region Name
-    private transient String fullName; // this is a runtime variable, and shouldn't be saved
-    private String preNominal;
-    private String givenName;
-    private String surname;
-    private String postNominal;
-    private String maidenName;
-    private String callsign;
-    //endregion Name
-
+    private Name name;
     private Gender gender;
     private Portrait portrait;
 
@@ -142,7 +132,6 @@ public class Person {
 
     // phenotype and background
     private Phenotype phenotype;
-    private String bloodname;
     private Faction originFaction;
     private Planet originPlanet;
 
@@ -231,47 +220,37 @@ public class Person {
     }
 
     public Person(final Campaign campaign) {
-        this(RandomNameGenerator.UNNAMED, RandomNameGenerator.UNNAMED_SURNAME, campaign);
+        this(campaign, new Name(this));
+    }
+
+    public Person(final Campaign campaign, final Name name) {
+        this(campaign, name, campaign.getFactionCode());
     }
 
     public Person(final Campaign campaign, final String factionCode) {
-        this(RandomNameGenerator.UNNAMED, RandomNameGenerator.UNNAMED_SURNAME, campaign, factionCode);
+        this(campaign, new Name(), factionCode);
     }
 
     public Person(final String givenName, final String surname, final Campaign campaign) {
-        this(givenName, surname, campaign, campaign.getFactionCode());
+        this(campaign, new Name(givenName, surname), campaign.getFactionCode());
     }
 
     public Person(final String givenName, final String surname, final @Nullable Campaign campaign,
                   final String factionCode) {
-        this("", givenName, surname, "", campaign, factionCode);
+        this(campaign, new Name(givenName, surname), factionCode);
     }
 
     /**
      * Primary Person constructor, variables are initialized in the exact same order as they are
      * saved to the XML file
-     * @param preNominal    the person's pre-nominal
-     * @param givenName     the person's given name
-     * @param surname       the person's surname
-     * @param postNominal   the person's post-nominal
-     * @param campaign      the campaign this person is a part of, or null (unit testing only)
-     * @param factionCode   the faction this person was borne into
+     * @param campaign    the campaign this person is a part of, or null (unit testing only)
+     * @param name        the person's name
+     * @param factionCode the faction this person was borne into
      */
-    public Person(final String preNominal, final String givenName, final String surname,
-                  final String postNominal, final @Nullable Campaign campaign,
-                  final String factionCode) {
+    public Person(final @Nullable Campaign campaign, final Name name, final String factionCode) {
         // We assign the variables in XML file order
         id = UUID.randomUUID();
-
-        //region Name
-        setPreNominalDirect(preNominal);
-        setGivenNameDirect(givenName);
-        setSurnameDirect(surname);
-        setPostNominalDirect(postNominal);
-        setMaidenName(null); // this is set to null to handle divorce cases
-        setCallsignDirect("");
-        //endregion Name
-
+        setName(name);
         primaryRole = PersonnelRole.NONE;
         secondaryRole = PersonnelRole.NONE;
         primaryDesignator = ROMDesignation.NONE;
@@ -281,7 +260,6 @@ public class Person {
         originFaction = Factions.getInstance().getFaction(factionCode);
         originPlanet = null;
         phenotype = Phenotype.NONE;
-        bloodname = "";
         biography = "";
         setGenealogy(new Genealogy(this));
         dueDate = null;
@@ -335,7 +313,7 @@ public class Person {
         extraData = new ExtraData();
 
         // Initialize Data based on these settings
-        setFullName();
+        getName().setFullName();
     }
     //endregion Constructors
 
@@ -345,15 +323,6 @@ public class Person {
 
     public void setPhenotype(final Phenotype phenotype) {
         this.phenotype = phenotype;
-    }
-
-    public String getBloodname() {
-        return bloodname;
-    }
-
-    public void setBloodname(final String bloodname) {
-        this.bloodname = bloodname;
-        setFullName();
     }
 
     public Faction getOriginFaction() {
@@ -445,229 +414,6 @@ public class Person {
         return isPregnant() ? " (Pregnant)" : "";
     }
     //endregion Text Getters
-
-    //region Name
-    /**
-     * @return the person's full name
-     */
-    public String getFullName() {
-        return fullName;
-    }
-
-    /**
-     * @return a hyperlinked string for the person's name
-     */
-    public String getHyperlinkedName() {
-        return String.format("<a href='PERSON:%s'>%s</a>", getId(), getFullName());
-    }
-
-    /**
-     * This is used to create the full name of the person, based on their first and last names
-     */
-    public void setFullName() {
-        final String lastName = getLastName();
-        setFullNameDirect(getFirstName()
-                + (getCallsign().isBlank() ? "" : (" \"" + getCallsign() + '"'))
-                + (lastName.isBlank() ? "" : ' ' + lastName));
-    }
-
-    /**
-     * @param fullName this sets the full name to be equal to the input string. This can ONLY be
-     *                 called by {@link Person#setFullName()} or its overrides.
-     */
-    protected void setFullNameDirect(final String fullName) {
-        this.fullName = fullName;
-    }
-
-    /**
-     * @return a String containing the person's first name including their pre-nominal
-     */
-    public String getFirstName() {
-        return (getPreNominal().isBlank() ? "" : (getPreNominal() + ' ')) + getGivenName();
-    }
-
-    /**
-     * Return a full last name which may be a bloodname or a surname with or without a post-nominal.
-     * A bloodname will overrule a surname but we do not disallow surnames for clanners, if the
-     * player wants to input them
-     * @return a String of the person's last name
-     */
-    public String getLastName() {
-        String lastName = !StringUtility.isNullOrBlank(getBloodname()) ? getBloodname()
-                : !StringUtility.isNullOrBlank(getSurname()) ? getSurname()
-                : "";
-        if (!StringUtility.isNullOrBlank(getPostNominal())) {
-            lastName += (lastName.isBlank() ? "" : " ") + getPostNominal();
-        }
-        return lastName;
-    }
-
-    /**
-     * @return the person's pre-nominal
-     */
-    public String getPreNominal() {
-        return preNominal;
-    }
-
-    /**
-     * @param preNominal the person's new pre-nominal
-     */
-    public void setPreNominal(final String preNominal) {
-        setPreNominalDirect(preNominal);
-        setFullName();
-    }
-
-    protected void setPreNominalDirect(final String preNominal) {
-        this.preNominal = preNominal;
-    }
-
-    /**
-     * @return the person's given name
-     */
-    public String getGivenName() {
-        return givenName;
-    }
-
-    /**
-     * @param givenName the person's new given name
-     */
-    public void setGivenName(final String givenName) {
-        setGivenNameDirect(givenName);
-        setFullName();
-    }
-
-    protected void setGivenNameDirect(final String givenName) {
-        this.givenName = givenName;
-    }
-
-    /**
-     * @return the person's surname
-     */
-    public String getSurname() {
-        return surname;
-    }
-
-    /**
-     * @param surname the person's new surname
-     */
-    public void setSurname(final String surname) {
-        setSurnameDirect(surname);
-        setFullName();
-    }
-
-    protected void setSurnameDirect(final String surname) {
-        this.surname = surname;
-    }
-
-    /**
-     * @return the person's post-nominal
-     */
-    public String getPostNominal() {
-        return postNominal;
-    }
-
-    /**
-     * @param postNominal the person's new post-nominal
-     */
-    public void setPostNominal(final String postNominal) {
-        setPostNominalDirect(postNominal);
-        setFullName();
-    }
-
-    protected void setPostNominalDirect(final String postNominal) {
-        this.postNominal = postNominal;
-    }
-
-    /**
-     * @return the person's maiden name
-     */
-    public @Nullable String getMaidenName() {
-        return maidenName;
-    }
-
-    /**
-     * @param maidenName the person's new maiden name
-     */
-    public void setMaidenName(final @Nullable String maidenName) {
-        this.maidenName = maidenName;
-    }
-
-    /**
-     * @return the person's callsign
-     */
-    public String getCallsign() {
-        return callsign;
-    }
-
-    /**
-     * @param callsign the person's new callsign
-     */
-    public void setCallsign(final String callsign) {
-        setCallsignDirect(callsign);
-        setFullName();
-    }
-
-    protected void setCallsignDirect(final String callsign) {
-        this.callsign = callsign;
-    }
-
-    /**
-     * This method is used to migrate names from being a joined name to split between given name and
-     * surname, as part of the Personnel changes in MekHQ 0.47.4, and is used to migrate from
-     * MM-style names to MHQ-style names
-     * @param text text containing the name to be migrated
-     */
-    public void migrateName(final String text) {
-        // How this works:
-        // Takes the input name, and splits it into individual parts.
-        // Then, it depends on whether the person is a Clanner or not.
-        // For Clan names:
-        // Takes the input name, and assumes that person does not have a surname
-        // Bloodnames are assumed to have been assigned by MekHQ
-        // For Inner Sphere names:
-        // Depending on the length of the resulting array, the name is processed differently
-        // Array of length 1: the name is assumed to not have a surname, just a given name
-        // Array of length 2: the name is assumed to be a given name and a surname
-        // Array of length 3: the name is assumed to be a given name and two surnames
-        // Array of length 4+: the name is assumed to be as many given names as possible and two surnames
-        //
-        // Then, the full name is set
-        final String[] name = text.trim().split("\\s+");
-        final StringBuilder givenName = new StringBuilder(name[0]);
-
-        if (isClanPersonnel()) {
-            if (name.length > 1) {
-                int i;
-                for (i = 1; i < name.length - 1; i++) {
-                    givenName.append(' ').append(name[i]);
-                }
-
-                if (!(!StringUtility.isNullOrBlank(getBloodname()) && getBloodname().equals(name[i]))) {
-                    givenName.append(' ').append(name[i]);
-                }
-            }
-        } else {
-            if (name.length == 2) {
-                setSurnameDirect(name[1]);
-            } else if (name.length == 3) {
-                setSurnameDirect(name[1] + ' ' + name[2]);
-            } else if (name.length > 3) {
-                int i;
-                for (i = 1; i < name.length - 2; i++) {
-                    givenName.append(' ').append(name[i]);
-                }
-                setSurnameDirect(name[i] + ' ' + name[i + 1]);
-            }
-        }
-
-        if ((getSurname() == null) || getSurname().equals(RandomNameGenerator.UNNAMED_SURNAME)) {
-            setSurnameDirect("");
-        }
-
-        setGivenNameDirect(givenName.toString());
-        setFullName();
-    }
-    //endregion Names
 
     public Portrait getPortrait() {
         return portrait;
@@ -908,7 +654,7 @@ public class Person {
             // remove date of death for resurrection
             setDateOfDeath(null);
             campaign.addReport(String.format(resources.getString("resurrected.report"),
-                    getHyperlinkedFullTitle()));
+                    getName().getHyperlinkedFullTitle(this)));
             ServiceLogger.resurrected(this, today);
         }
 
@@ -916,29 +662,29 @@ public class Person {
             case ACTIVE:
                 if (getStatus().isMIA()) {
                     campaign.addReport(String.format(resources.getString("recoveredMIA.report"),
-                            getHyperlinkedFullTitle()));
+                            getName().getHyperlinkedFullTitle(this)));
                     ServiceLogger.recoveredMia(this, today);
                 } else if (getStatus().isPoW()) {
                     campaign.addReport(String.format(resources.getString("recoveredPoW.report"),
-                            getHyperlinkedFullTitle()));
+                            getName().getHyperlinkedFullTitle(this)));
                     ServiceLogger.recoveredPoW(this, campaign.getLocalDate());
                 } else if (getStatus().isOnLeave()) {
                     campaign.addReport(String.format(resources.getString("returnedFromLeave.report"),
-                            getHyperlinkedFullTitle()));
+                            getName().getHyperlinkedFullTitle(this)));
                     ServiceLogger.returnedFromLeave(this, campaign.getLocalDate());
                 } else if (getStatus().isAWOL()) {
                     campaign.addReport(String.format(resources.getString("returnedFromAWOL.report"),
-                            getHyperlinkedFullTitle()));
+                            getName().getHyperlinkedFullTitle(this)));
                     ServiceLogger.returnedFromAWOL(this, campaign.getLocalDate());
                 } else {
                     campaign.addReport(String.format(resources.getString("rehired.report"),
-                            getHyperlinkedFullTitle()));
+                            getName().getHyperlinkedFullTitle(this)));
                     ServiceLogger.rehired(this, today);
                 }
                 setRetirement(null);
                 break;
             case RETIRED:
-                campaign.addReport(String.format(status.getReportText(), getHyperlinkedFullTitle()));
+                campaign.addReport(String.format(status.getReportText(), getName().getHyperlinkedFullTitle(this)));
                 ServiceLogger.retired(this, today);
                 if (campaign.getCampaignOptions().isUseRetirementDateTracking()) {
                     setRetirement(today);
@@ -948,7 +694,7 @@ public class Person {
                 campaign.getProcreation().processPregnancyComplications(campaign, campaign.getLocalDate(), this);
                 // purposeful fall through
             default:
-                campaign.addReport(String.format(status.getReportText(), getHyperlinkedFullTitle()));
+                campaign.addReport(String.format(status.getReportText(), getName().getHyperlinkedFullTitle(this)));
                 ServiceLogger.changedStatus(this, campaign.getLocalDate(), status);
                 break;
         }
@@ -1102,6 +848,14 @@ public class Person {
 
     public UUID getId() {
         return id;
+    }
+
+    public Name getName() {
+        return name;
+    }
+
+    public void setName(final Name name) {
+        this.name = name;
     }
 
     public boolean isChild(final LocalDate today) {
@@ -1295,25 +1049,7 @@ public class Person {
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "person", "id", id, "type", getClass());
         try {
             MHQXMLUtility.writeSimpleXMLTag(pw, indent, "id", id.toString());
-
-            //region Name
-            if (!StringUtility.isNullOrBlank(getPreNominal())) {
-                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "preNominal", getPreNominal());
-            }
-            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "givenName", getGivenName());
-            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "surname", getSurname());
-            if (!StringUtility.isNullOrBlank(getPostNominal())) {
-                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "postNominal", getPostNominal());
-            }
-
-            if (getMaidenName() != null) { // this is only a != null comparison because empty is a use case for divorce
-                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "maidenName", getMaidenName());
-            }
-
-            if (!StringUtility.isNullOrBlank(getCallsign())) {
-                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "callsign", getCallsign());
-            }
-            //endregion Name
+            getName().writeToXML(pw, indent);
 
             // Always save the primary role
             MHQXMLUtility.writeSimpleXMLTag(pw, indent, "primaryRole", getPrimaryRole().name());
@@ -1338,10 +1074,6 @@ public class Person {
 
             if (phenotype != Phenotype.NONE) {
                 MHQXMLUtility.writeSimpleXMLTag(pw, indent, "phenotype", phenotype.name());
-            }
-
-            if (!StringUtility.isNullOrBlank(bloodname)) {
-                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "bloodname", bloodname);
             }
 
             if (!StringUtility.isNullOrBlank(biography)) {
@@ -1536,13 +1268,12 @@ public class Person {
                 extraData.writeToXml(pw);
             }
         } catch (Exception ex) {
-            LogManager.getLogger().error("Failed to write " + getFullName() + " to the XML File", ex);
+            LogManager.getLogger().error("Failed to write " + this + " to the XML File", ex);
             throw ex; // we want to rethrow to ensure that the save fails
         }
 
         MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "person");
     }
-
     public static Person generateInstanceFromXML(Node wn, Campaign c, Version version) {
         Person retVal = new Person(c);
 
@@ -1558,17 +1289,6 @@ public class Person {
                 Node wn2 = nl.item(x);
 
                 if (wn2.getNodeName().equalsIgnoreCase("preNominal")) {
-                    retVal.setPreNominalDirect(wn2.getTextContent().trim());
-                } else if (wn2.getNodeName().equalsIgnoreCase("givenName")) {
-                    retVal.setGivenNameDirect(wn2.getTextContent().trim());
-                } else if (wn2.getNodeName().equalsIgnoreCase("surname")) {
-                    retVal.setSurnameDirect(wn2.getTextContent().trim());
-                } else if (wn2.getNodeName().equalsIgnoreCase("postNominal")) {
-                    retVal.setPostNominalDirect(wn2.getTextContent().trim());
-                } else if (wn2.getNodeName().equalsIgnoreCase("maidenName")) {
-                    retVal.setMaidenName(wn2.getTextContent().trim());
-                } else if (wn2.getNodeName().equalsIgnoreCase("callsign")) {
-                    retVal.setCallsignDirect(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("faction")) {
                     if (version.isLowerThan("0.49.7")) {
                         retVal.setOriginFaction(Factions.getInstance().getFaction(
@@ -1582,8 +1302,6 @@ public class Person {
                     retVal.originPlanet = c.getSystemById(systemId).getPlanetById(planetId);
                 } else if (wn2.getNodeName().equalsIgnoreCase("phenotype")) {
                     retVal.phenotype = Phenotype.parseFromString(wn2.getTextContent().trim());
-                } else if (wn2.getNodeName().equalsIgnoreCase("bloodname")) {
-                    retVal.bloodname = wn2.getTextContent();
                 } else if (wn2.getNodeName().equalsIgnoreCase("biography")) {
                     retVal.biography = wn2.getTextContent();
                 } else if (wn2.getNodeName().equalsIgnoreCase("primaryRole")) {
@@ -1781,7 +1499,7 @@ public class Person {
                     }
                     LocalDate now = c.getLocalDate();
                     retVal.injuries.stream().filter(inj -> (null == inj.getStart()))
-                        .forEach(inj -> inj.setStart(now.minusDays(inj.getOriginalTime() - inj.getTime())));
+                            .forEach(inj -> inj.setStart(now.minusDays(inj.getOriginalTime() - inj.getTime())));
                 } else if (wn2.getNodeName().equalsIgnoreCase("originalUnitWeight")) {
                     retVal.originalUnitWeight = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("originalUnitTech")) {
@@ -1830,7 +1548,7 @@ public class Person {
                 } else if (wn2.getNodeName().equalsIgnoreCase("formerSpouses")) { // legacy - 0.47.6 removal
                     retVal.getGenealogy().loadFormerSpouses(wn2.getChildNodes());
                 } else if (wn2.getNodeName().equalsIgnoreCase("name")) { // legacy - 0.47.5 removal
-                    retVal.migrateName(wn2.getTextContent());
+                    retVal.getName().migrateName(wn2.getTextContent());
                 }
             }
 
@@ -1893,8 +1611,9 @@ public class Person {
             if (retVal.getRankNumeric() < 0) {
                 retVal.setRank(0);
             }
-        } catch (Exception e) {
-            LogManager.getLogger().error("Failed to read person " + retVal.getFullName() + " from file", e);
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to read person "
+                    + retVal.getName().getFullTitle(retVal) + " from file", ex);
             retVal = null;
         }
 
@@ -1944,8 +1663,8 @@ public class Person {
             }
         }
 
-        // TODO: distinguish DropShip, JumpShip, and WarShip crew
-        // TODO: Add era mod to salary calc..
+        // TODO : distinguish DropShip, JumpShip, and WarShip crew
+        // TODO : Add era mod to salary calc..
         return primaryBase.plus(secondaryBase)
                 .multipliedBy(getRank().isOfficer()
                         ? campaign.getCampaignOptions().getSalaryCommissionMultiplier()
@@ -2137,7 +1856,7 @@ public class Person {
 
     @Override
     public String toString() {
-        return getFullName();
+        return getName().toString();
     }
 
     /**
@@ -2319,30 +2038,7 @@ public class Person {
      * personnel table among other places
      */
     public String getFullDesc(final Campaign campaign) {
-        return "<b>" + getFullTitle() + "</b><br/>" + getSkillSummary(campaign) + ' ' + getRoleDesc();
-    }
-
-    public String getHTMLTitle() {
-        return String.format("<html><div id=\"%s\" style=\"white-space: nowrap;\">%s</div></html>",
-                getId(), getFullTitle());
-    }
-
-    public String getFullTitle() {
-        String rank = getRankName();
-
-        if (!rank.isBlank()) {
-            rank = rank + ' ';
-        }
-
-        return rank + getFullName();
-    }
-
-    public String makeHTMLRank() {
-        return String.format("<html><div id=\"%s\">%s</div></html>", getId(), getRankName().trim());
-    }
-
-    public String getHyperlinkedFullTitle() {
-        return String.format("<a href='PERSON:%s'>%s</a>", getId(), getFullTitle());
+        return "<b>" + getName().getFullTitle(this) + "</b><br/>" + getSkillSummary(campaign) + ' ' + getRoleDesc();
     }
 
     /**
@@ -3289,7 +2985,7 @@ public class Person {
             unit = campaign.getUnit(id);
             if (unit == null) {
                 LogManager.getLogger().error(String.format("Person %s ('%s') references missing unit %s",
-                        getId(), getFullName(), id));
+                        getId(), this, id));
             }
         }
 
@@ -3301,7 +2997,7 @@ public class Person {
                     techUnits.set(ii, realUnit);
                 } else {
                     LogManager.getLogger().error(String.format("Person %s ('%s') techs missing unit %s",
-                            getId(), getFullName(), techUnit.getId()));
+                            getId(), this, techUnit.getId()));
                     techUnits.remove(ii);
                 }
             }

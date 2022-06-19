@@ -71,16 +71,15 @@ public class UnitStub {
 
     private String getUnitDescription(Unit u) {
         String name = "<font color='red'>No Crew</font>";
-        String uname;
         Person pp = u.getCommander();
         if (null != pp) {
-            name = pp.getFullTitle();
-            name += " (" + u.getEntity().getCrew().getGunnery() + "/" + u.getEntity().getCrew().getPiloting() + ")";
+            name = pp.getName().getFullTitle(pp);
+            name += " (" + u.getEntity().getCrew().getGunnery() + '/' + u.getEntity().getCrew().getPiloting() + ')';
             if (pp.needsFixing()) {
                 name = "<font color='red'>" + name + "</font>";
             }
         }
-        uname = "<i>" + u.getName() + "</i>";
+        String uname = "<i>" + u.getName() + "</i>";
         if (u.isDamaged()) {
             uname = "<font color='red'>" + uname + "</font>";
         }
