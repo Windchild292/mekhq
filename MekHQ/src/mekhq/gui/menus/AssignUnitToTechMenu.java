@@ -110,7 +110,7 @@ public class AssignUnitToTechMenu extends JScrollableMenu {
 
                     if (subMenu != null) {
                         final JMenuItem miAssignTech = new JMenuItem(String.format(
-                                resources.getString("miAssignTech.text"), tech.getFullTitle(), tech.getMaintenanceTimeUsing()));
+                                resources.getString("miAssignTech.text"), tech, tech.getMaintenanceTimeUsing()));
                         miAssignTech.setName("miAssignTech");
                         miAssignTech.addActionListener(evt -> {
                             for (final Unit unit : units) {

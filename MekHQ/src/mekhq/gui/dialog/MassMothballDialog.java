@@ -331,7 +331,6 @@ public class MassMothballDialog extends JDialog implements ActionListener, ListS
      * @author NickAragua
      */
     private static class TechListCellRenderer extends DefaultListCellRenderer {
-
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                 boolean isSelected, boolean cellHasFocus) {
@@ -340,8 +339,7 @@ public class MassMothballDialog extends JDialog implements ActionListener, ListS
             Person person = (Person) value;
 
             boolean maintainsUnits = !person.getTechUnits().isEmpty();
-            setText((maintainsUnits ? "(*) " : "") + person.getFullTitle() + " ("
-                    + person.getMinutesLeft() + " min)");
+            setText((maintainsUnits ? "(*) " : "") + person + " (" + person.getMinutesLeft() + " min)");
 
             return this;
         }

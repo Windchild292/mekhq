@@ -58,7 +58,7 @@ public class EditPersonnelHitsDialog extends JDialog {
                 MekHQ.getMHQOptions().getLocale(), new EncodeControl());
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setName("Form");
-        setTitle(resourceMap.getString("Form.title") + ' ' + person.getFullName());
+        setTitle(resourceMap.getString("Form.title") + ' ' + person.getName().getFullName());
         getContentPane().setLayout(new BorderLayout());
         setMinimumSize(new Dimension(240, 40));
 

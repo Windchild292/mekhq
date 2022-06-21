@@ -227,7 +227,7 @@ public abstract class AbstractCompanyGenerator {
                 .mapToObj(i -> {
                     final Person person = campaign.newPerson(PersonnelRole.MECHWARRIOR, getPersonnelGenerator());
                     if (getOptions().isAssignMechWarriorsCallsigns()) {
-                        person.setCallsign(RandomCallsignGenerator.getInstance().generate());
+                        person.getName().setCallsign(RandomCallsignGenerator.getInstance().generate());
                     }
                     return new CompanyGenerationPersonTracker(person);
                 })
@@ -390,7 +390,7 @@ public abstract class AbstractCompanyGenerator {
      */
     private void generateOfficer(final CompanyGenerationPersonTracker tracker) {
         if (!tracker.getPersonType().isOfficer()) {
-            LogManager.getLogger().error(tracker.getPerson().getFullTitle()
+            LogManager.getLogger().error(tracker.getPerson()
                     + " is not a valid officer for the officer generation, cannot generate them as an officer.");
             return;
         }

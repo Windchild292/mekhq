@@ -93,7 +93,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             Person p = u.getCommander();
             if (null != p) {
                 LogManager.getLogger().debug("Unit " + u.getName()
-                        + " -- Adding commander (" + p.getFullTitle() + "" + ") to commander list.");
+                        + " -- Adding commander (" + p + "" + ") to commander list.");
                 getCommanderList().add(p);
             }
 
@@ -311,7 +311,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        LogManager.getLogger().debug("Person, " + p.getFullTitle() + ", provides " + hours + " tech support hours.");
+        LogManager.getLogger().debug("Person, " + p + ", provides " + hours + " tech support hours.");
         techSupportHours += hours;
     }
 
@@ -325,7 +325,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        LogManager.getLogger().debug("Person, " + p.getFullTitle() + " provides " + hours + " medical support hours.");
+        LogManager.getLogger().debug("Person, " + p + " provides " + hours + " medical support hours.");
         medSupportHours += hours;
     }
 
@@ -339,7 +339,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             hours = (int) Math.floor(hours / 2.0);
         }
 
-        LogManager.getLogger().debug("Person, " + p.getFullTitle() + ", provides " + hours + " admin support hours.");
+        LogManager.getLogger().debug("Person, " + p + ", provides " + hours + " admin support hours.");
         adminSupportHours += hours;
     }
 
@@ -607,9 +607,9 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
     private String getCommandDetails() {
         StringBuilder out = new StringBuilder();
         Person commander = getCommander();
-        String commanderName = (null == commander) ? "" : " (" + commander.getFullTitle() + ")";
+        String commanderName = (null == commander) ? "" : " (" + commander + ')';
         out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s",
-                "Command:", getCommanderValue(), commanderName)).append("\n");
+                "Command:", getCommanderValue(), commanderName)).append('\n');
 
         final String TEMPLATE = "    %-" + SUBHEADER_LENGTH + "s %3d";
         out.append(String.format(TEMPLATE, "Leadership:",

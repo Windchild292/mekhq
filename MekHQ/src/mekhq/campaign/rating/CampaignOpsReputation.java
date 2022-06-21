@@ -739,7 +739,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
     private String getCommanderDetails() {
         StringBuilder out = new StringBuilder();
         String commanderName = null == getCommander() ? "" :
-                "(" + getCommander().getFullTitle() + ")";
+                "(" + getCommander() + ')';
         out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s",
                                  "Commander:", getCommanderValue(),
                                  commanderName));

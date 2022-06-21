@@ -307,7 +307,7 @@ public class ScenarioDeploymentLimit {
         for (UUID personId: requiredPersonnel) {
             Person p = c.getPerson(personId);
             if ((null != p) && p.getStatus().isActive()) {
-                personNames.add(p.getFullName());
+                personNames.add(p.getName().getFullName());
             }
         }
         return String.join(", ", personNames);

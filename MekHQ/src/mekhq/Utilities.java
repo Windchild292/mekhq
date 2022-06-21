@@ -711,13 +711,13 @@ public class Utilities {
                 String name = oldCrew.getName(crewIndex);
 
                 if (!(name.equalsIgnoreCase(RandomNameGenerator.UNNAMED) || name.equalsIgnoreCase(RandomNameGenerator.UNNAMED_FULL_NAME))) {
-                    p.migrateName(name);
+                    p.getName().migrateName(name);
                 }
             } else {
-                p.setGivenName(givenName);
-                p.setSurname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_SURNAME));
-                if (p.getSurname() == null) {
-                    p.setSurname("");
+                p.getName().setGivenName(givenName);
+                p.getName().setSurname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_SURNAME));
+                if (p.getName().getSurname() == null) {
+                    p.getName().setSurname("");
                 }
 
                 String phenotype = oldCrew.getExtraDataValue(crewIndex, Crew.MAP_PHENOTYPE);
@@ -725,7 +725,7 @@ public class Utilities {
                     p.setPhenotype(Phenotype.parseFromString(phenotype));
                 }
 
-                p.setBloodname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_BLOODNAME));
+                p.getName().setBloodname(oldCrew.getExtraDataValue(crewIndex, Crew.MAP_BLOODNAME));
             }
 
             // Only created crew can be assigned a portrait, so this is safe to put in here

@@ -34,7 +34,7 @@ import java.util.ResourceBundle;
  * @author Miguel Azevedo
  */
 public class MedicalLogger {
-    private static final transient ResourceBundle logEntriesResourceMap = ResourceBundle.getBundle("mekhq.resources.LogEntries",
+    private static final ResourceBundle logEntriesResourceMap = ResourceBundle.getBundle("mekhq.resources.LogEntries",
             MekHQ.getMHQOptions().getLocale(), new EncodeControl());
 
     public static MedicalLogEntry severedSpine(Person person, LocalDate date) {
@@ -108,21 +108,21 @@ public class MedicalLogger {
     public static void docMadeAMistake(Person doctor, Person patient, Injury injury, LocalDate date) {
         String message = logEntriesResourceMap.getString("docMadeAMistake.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName()));
+                MessageFormat.format(message, doctor, injury.getName()));
         patient.addLogEntry(medicalLogEntry);
     }
 
     public static void docAmazingWork(Person doctor, Person patient, Injury injury, LocalDate date, int critTimeReduction) {
         String message = logEntriesResourceMap.getString("docAmazingWork.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName(), critTimeReduction));
+                MessageFormat.format(message, doctor, injury.getName(), critTimeReduction));
         patient.addLogEntry(medicalLogEntry);
     }
 
     public static void successfullyTreated(Person doctor, Person patient, LocalDate date, Injury injury) {
         String message = logEntriesResourceMap.getString("successfullyTreated.text");
         MedicalLogEntry medicalLogEntry = new MedicalLogEntry(date,
-                MessageFormat.format(message, doctor.getFullTitle(), injury.getName()));
+                MessageFormat.format(message, doctor, injury.getName()));
         patient.addLogEntry(medicalLogEntry);
     }
 

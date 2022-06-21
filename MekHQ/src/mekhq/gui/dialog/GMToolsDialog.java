@@ -33,7 +33,7 @@ import megamek.common.enums.Gender;
 import mekhq.MekHQ;
 import mekhq.campaign.event.PersonChangedEvent;
 import mekhq.campaign.mission.AtBDynamicScenarioFactory;
-import mekhq.campaign.personnel.Bloodname;
+import mekhq.campaign.personnel.names.LegacyBloodname;
 import mekhq.campaign.personnel.Clan;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.Phenotype;
@@ -1214,18 +1214,18 @@ public class GMToolsDialog extends AbstractMHQDialog {
             return;
         }
 
-        setTitle(getTitle() + " - " + getPerson().getFullTitle());
+        setTitle(getTitle() + " - " + getPerson());
 
         // Current Name is the Person's full name
-        getLblCurrentName().setText(getPerson().getFullName());
+        getLblCurrentName().setText(getPerson().getName().getFullName());
 
         // Gender is set based on the person's gender
         getComboGender().setSelectedItem(getPerson().getGender().isExternal() ? getPerson().getGender()
                 : getPerson().getGender().getExternalVariant());
 
         // Current Callsign is set if applicable
-        if (!StringUtility.isNullOrBlank(getPerson().getCallsign())) {
-            getLblCurrentCallsign().setText(getPerson().getCallsign());
+        if (!StringUtility.isNullOrBlank(getPerson().getName().getCallsign())) {
+            getLblCurrentCallsign().setText(getPerson().getName().getCallsign());
         }
 
         // We set the clanner value based on whether or not the person is a clanner
@@ -1244,8 +1244,8 @@ public class GMToolsDialog extends AbstractMHQDialog {
             }
         }
 
-        if (!StringUtility.isNullOrBlank(getPerson().getBloodname())) {
-            getLblCurrentBloodname().setText(getPerson().getBloodname());
+        if (!StringUtility.isNullOrBlank(getPerson().getName().getBloodname().toString())) {
+            getLblCurrentBloodname().setText(getPerson().getName().getBloodname().toString());
         }
 
         int year = getGUI().getCampaign().getGameYear();
@@ -1407,9 +1407,9 @@ public class GMToolsDialog extends AbstractMHQDialog {
         }
 
         if (getLastGeneratedName() != null) {
-            getLblCurrentName().setText((getLastGeneratedName()[0] + " " + getLastGeneratedName()[1]).trim());
-            getPerson().setGivenName(getLastGeneratedName()[0]);
-            getPerson().setSurname(getLastGeneratedName()[1]);
+            getLblCurrentName().setText((getLastGeneratedName()[0] + ' ' + getLastGeneratedName()[1]).trim());
+            getPerson().getName().setGivenName(getLastGeneratedName()[0]);
+            getPerson().getName().setSurname(getLastGeneratedName()[1]);
             MekHQ.triggerEvent(new PersonChangedEvent(getPerson()));
         }
     }
@@ -1434,13 +1434,13 @@ public class GMToolsDialog extends AbstractMHQDialog {
 
         if (getLastGeneratedCallsign() != null) {
             getLblCurrentCallsign().setText(getLastGeneratedCallsign());
-            getPerson().setCallsign(getLastGeneratedCallsign());
+            getPerson().getName().setCallsign(getLastGeneratedCallsign());
             MekHQ.triggerEvent(new PersonChangedEvent(getPerson()));
         }
     }
 
     private void generateBloodname() {
-        final Bloodname bloodname = Bloodname.randomBloodname(getOriginClan(),
+        final LegacyBloodname bloodname = LegacyBloodname.randomBloodname(getOriginClan(),
                 getSelectedPhenotype(), getBloodnameYear());
         if (bloodname != null) {
             getLblBloodnameGenerated().setText(bloodname.getName() + " (" + bloodname.getFounder() + ")");
@@ -1457,7 +1457,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
 
         if (getLastGeneratedBloodname() != null) {
             getLblCurrentBloodname().setText(getLastGeneratedBloodname());
-            getPerson().setBloodname(getLastGeneratedBloodname());
+            getPerson().getName().setBloodname(getLastGeneratedBloodname());
             MekHQ.triggerEvent(new PersonChangedEvent(getPerson()));
         }
     }
@@ -1469,7 +1469,7 @@ public class GMToolsDialog extends AbstractMHQDialog {
         setSelectedPhenotype(getComboPhenotype().getSelectedItem());
 
         if ((getOriginClan() == null) || (getSelectedPhenotype() == null)
-                || (getSelectedPhenotype() == Phenotype.NONE)) {
+                || getSelectedPhenotype().isNone()) {
             return;
         }
 
@@ -1503,16 +1503,16 @@ public class GMToolsDialog extends AbstractMHQDialog {
             }
         }
 
-        if ((getSelectedPhenotype() == Phenotype.PROTOMECH) && (getBloodnameYear() < 3060)) {
+        if (getSelectedPhenotype().isProtoMech() && (getBloodnameYear() < 3060)) {
             txt += "<div>ProtoMechs did not exist in " + getBloodnameYear() + ". Using Aerospace.</div>";
             setSelectedPhenotype(Phenotype.AEROSPACE);
-        } else if ((getSelectedPhenotype() == Phenotype.NAVAL) && (!"CSR".equals(getOriginClan().getGenerationCode()))) {
+        } else if (getSelectedPhenotype().isNaval() && (!"CSR".equals(getOriginClan().getGenerationCode()))) {
             txt += "<div>The Naval phenotype is unique to Clan Snow Raven. Using General.</div>";
             setSelectedPhenotype(Phenotype.GENERAL);
-        } else if ((getSelectedPhenotype() == Phenotype.VEHICLE) && (!"CHH".equals(getOriginClan().getGenerationCode()))) {
+        } else if (getSelectedPhenotype().isVehicle() && (!"CHH".equals(getOriginClan().getGenerationCode()))) {
             txt += "<div>The vehicle phenotype is unique to Clan Hell's Horses. Using General.</div>";
             setSelectedPhenotype(Phenotype.GENERAL);
-        } else if ((getSelectedPhenotype() == Phenotype.VEHICLE) && (getBloodnameYear() < 3100)) {
+        } else if (getSelectedPhenotype().isVehicle() && (getBloodnameYear() < 3100)) {
             txt += "<div>The vehicle phenotype began development in the 32nd century. Using 3100.</div>";
             setBloodnameYear(3100);
         }

@@ -341,15 +341,15 @@ public enum PersonnelTableModelColumn {
             case RANK:
                 return person.makeHTMLRank();
             case FIRST_NAME:
-                return person.getFirstName();
+                return person.getName().getFirstName();
             case LAST_NAME:
-                return person.getLastName();
+                return person.getName().getLastName();
             case PRE_NOMINAL:
-                return person.getPreNominal();
+                return person.getName().getPreNominal();
             case GIVEN_NAME:
-                return person.getGivenName();
+                return person.getName().getGivenName();
             case SURNAME: {
-                final String surname = person.getSurname();
+                final String surname = person.getName().getSurname();
                 if (StringUtility.isNullOrBlank(surname)) {
                     return "";
                 } else if (!groupByUnit) {
@@ -377,11 +377,11 @@ public enum PersonnelTableModelColumn {
                 }
             }
             case BLOODNAME:
-                return person.getBloodname();
+                return person.getName().getBloodname().toString();
             case POST_NOMINAL:
-                return person.getPostNominal();
+                return person.getName().getPostNominal();
             case CALLSIGN:
-                return person.getCallsign();
+                return person.getName().getCallsign();
             case AGE:
                 return Integer.toString(person.getAge(campaign.getLocalDate()));
             case PERSONNEL_STATUS:

@@ -83,7 +83,7 @@ public class PatientTableModel extends AbstractListModel<Person> {
     }
 
     private String getInjuriesDesc(Person p) {
-        StringBuilder toReturn = new StringBuilder("<html><font size='2'><b>").append(p.getFullTitle())
+        StringBuilder toReturn = new StringBuilder("<html><font size='2'><b>").append(p.toString())
                 .append("</b><br/>").append("&nbsp;&nbsp;&nbsp;Injuries:");
         String sep = "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         for (Injury injury : p.getInjuries()) {
@@ -99,7 +99,7 @@ public class PatientTableModel extends AbstractListModel<Person> {
     }
 
     private String getPatientDesc(Person p) {
-        String toReturn = "<html><font size='2'><b>" + p.getFullTitle() + "</b><br/>";
+        String toReturn = "<html><font size='2'><b>" + p + "</b><br/>";
         toReturn += p.getHits() + " hit(s)<br>[next check in " + p.getDaysToWaitForHealing() + " days]";
         toReturn += "</font></html>";
         return toReturn;

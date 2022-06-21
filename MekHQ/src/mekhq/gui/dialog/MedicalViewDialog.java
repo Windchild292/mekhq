@@ -33,7 +33,6 @@ import mekhq.campaign.personnel.InjuryType;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.BodyLocation;
 import mekhq.campaign.personnel.enums.InjuryLevel;
-import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.gui.view.Paperdoll;
 import org.apache.logging.log4j.LogManager;
 
@@ -302,16 +301,16 @@ public class MedicalViewDialog extends JDialog {
         panel.setBorder(BorderFactory.createMatteBorder(3, 3, 0, 3, Color.BLACK));
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-        String givenName = p.getGivenName();
-        String surname = p.getSurname();
+        String givenName = p.getName().getGivenName();
+        String surname = p.getName().getSurname();
 
         if (p.isClanPersonnel()) {
-            surname = p.getBloodname();
+            surname = p.getName().getBloodname().toString();
         }
 
         Period age = Period.between(p.getBirthday(), c.getLocalDate());
 
-        String phenotype = (p.getPhenotype() != Phenotype.NONE) ? p.getPhenotype().toString()
+        String phenotype = !p.getPhenotype().isNone() ? p.getPhenotype().toString()
                 : resourceMap.getString("baselinePhenotype.text");
 
         Force f = c.getForceFor(p);
@@ -320,7 +319,7 @@ public class MedicalViewDialog extends JDialog {
         Person doc = c.getPerson(p.getDoctorId());
         String doctor = resourceMap.getString("none.text");
         if ((null != doc) && doc.getStatus().isActive()) {
-            doctor = doc.getFullTitle();
+            doctor = doc.toString();
         }
         panel.add(genLabel(resourceMap.getString("familyName.text")));
         panel.add(genLabel(resourceMap.getString("givenNames.text")));

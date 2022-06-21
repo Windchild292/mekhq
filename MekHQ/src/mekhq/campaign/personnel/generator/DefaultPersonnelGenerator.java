@@ -22,7 +22,6 @@ import megamek.common.enums.Gender;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.PersonnelRole;
-import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.selectors.factionSelectors.AbstractFactionSelector;
@@ -80,7 +79,7 @@ public class DefaultPersonnelGenerator extends AbstractPersonnelGenerator {
         generatePhenotype(campaign, person);
 
         generateBirthday(campaign, person, expLvl, person.isClanPersonnel()
-                && person.getPhenotype() != Phenotype.NONE);
+                && !person.getPhenotype().isNone());
 
         AbstractSkillGenerator skillGenerator = new DefaultSkillGenerator(getSkillPreferences());
         skillGenerator.generateSkills(campaign, person, expLvl);

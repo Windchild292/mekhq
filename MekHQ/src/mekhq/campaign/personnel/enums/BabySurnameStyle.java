@@ -67,48 +67,48 @@ public enum BabySurnameStyle {
         switch (this) {
             case WELSH_PATRONYMICS:
                 if (hasFather) {
-                    return getWelshNymic(father.getGivenName(), babyGender);
+                    return getWelshNymic(father.getName().getGivenName(), babyGender);
                 }
             case WELSH_MATRONYMICS:
-                return getWelshNymic(mother.getGivenName(), babyGender);
+                return getWelshNymic(mother.getName().getGivenName(), babyGender);
             case ICELANDIC_COMBINATION_NYMICS:
                 if (hasFather) {
-                    return getIcelandicNymic(mother.getGivenName(), babyGender)
-                            + " " + getIcelandicNymic(father.getGivenName(), babyGender);
+                    return getIcelandicNymic(mother.getName().getGivenName(), babyGender)
+                            + ' ' + getIcelandicNymic(father.getName().getGivenName(), babyGender);
                 }
             case ICELANDIC_PATRONYMICS:
                 if (hasFather) {
-                    return getIcelandicNymic(father.getGivenName(), babyGender);
+                    return getIcelandicNymic(father.getName().getGivenName(), babyGender);
                 }
             case ICELANDIC_MATRONYMICS:
-                return getIcelandicNymic(mother.getGivenName(), babyGender);
+                return getIcelandicNymic(mother.getName().getGivenName(), babyGender);
             case RUSSIAN_PATRONYMICS:
                 if (hasFather) {
-                    return getRussianNymic(father.getGivenName().trim(), babyGender);
+                    return getRussianNymic(father.getName().getGivenName().trim(), babyGender);
                 }
             case MOTHERS_FATHERS:
                 if (hasFather) {
-                    return mother.getSurname() + " " + father.getSurname();
+                    return mother.getName().getSurname() + ' ' + father.getName().getSurname();
                 }
             case FATHERS_MOTHERS:
                 if (hasFather) {
-                    return father.getSurname() + " " + mother.getSurname();
+                    return father.getName().getSurname() + ' ' + mother.getName().getSurname();
                 }
             case MOTHERS_HYP_FATHERS:
                 if (hasFather) {
-                    return mother.getSurname() + "-" + father.getSurname();
+                    return mother.getName().getSurname() + '-' + father.getName().getSurname();
                 }
             case FATHERS_HYP_MOTHERS:
                 if (hasFather) {
-                    return father.getSurname() + "-" + mother.getSurname();
+                    return father.getName().getSurname() + '-' + mother.getName().getSurname();
                 }
             case FATHERS:
                 if (hasFather) {
-                    return father.getSurname();
+                    return father.getName().getSurname();
                 }
             case MOTHERS:
             default:
-                return mother.getSurname();
+                return mother.getName().getSurname();
         }
     }
 

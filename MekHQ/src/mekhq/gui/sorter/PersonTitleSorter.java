@@ -65,6 +65,6 @@ public class PersonTitleSorter implements Comparator<Person> {
         }
 
         // Now we can natural order compare the person's full name
-        return getNaturalOrderComparator().compare(p1.getFullName(), p0.getFullName());
+        return getNaturalOrderComparator().compare(p1.getName().getFullName(), p0.getName().getFullName());
     }
 }

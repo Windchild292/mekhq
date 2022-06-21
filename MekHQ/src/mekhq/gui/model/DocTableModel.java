@@ -31,7 +31,7 @@ public class DocTableModel extends DataTableModel {
 
     private String getDocDesc(Person doc) {
         StringBuilder toReturn = new StringBuilder(128);
-        toReturn.append("<html><font size='2'><b>").append(doc.getFullTitle()).append("</b><br/>");
+        toReturn.append("<html><font size='2'><b>").append(doc.toString()).append("</b><br/>");
 
         Skill skill = doc.getSkill(SkillType.S_DOCTOR);
         if (null != skill) {

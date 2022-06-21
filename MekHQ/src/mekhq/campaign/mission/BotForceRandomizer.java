@@ -29,15 +29,15 @@ import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.enums.Gender;
 import megamek.common.enums.SkillLevel;
-import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.Bloodname;
+import mekhq.campaign.personnel.names.LegacyBloodname;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.IUnitGenerator;
 import mekhq.campaign.universe.UnitGeneratorParameters;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
@@ -331,10 +331,10 @@ public class BotForceRandomizer {
                     break;
             }
 
-            if (phenotype != Phenotype.NONE) {
-                String bloodname = Bloodname.randomBloodname(faction.getShortName(), phenotype,
+            if (!phenotype.isNone()) {
+                String bloodname = LegacyBloodname.randomBloodname(faction.getShortName(), phenotype,
                         campaign.getGameYear()).getName();
-                crewName += " " + bloodname;
+                crewName += ' ' + bloodname;
                 innerMap.put(Crew.MAP_BLOODNAME, bloodname);
                 innerMap.put(Crew.MAP_PHENOTYPE, phenotype.name());
             }

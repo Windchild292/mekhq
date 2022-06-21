@@ -154,7 +154,7 @@ public class Genealogy {
             }
         } else if (getFamily().get(relationshipType) == null) {
             LogManager.getLogger().error("Could not remove unknown family member of relationship "
-                    + relationshipType.name() + " and person " + person.getFullTitle() + " " + person.getId() + ".");
+                    + relationshipType.name() + " and person " + person + ' ' + person.getId() + '.');
         } else {
             List<Person> familyTypeMembers = getFamily().get(relationshipType);
             familyTypeMembers.remove(person);

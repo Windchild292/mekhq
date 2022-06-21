@@ -48,7 +48,7 @@ import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
 import mekhq.campaign.mission.ScenarioObjective.TimeLimitType;
 import mekhq.campaign.mission.atb.AtBScenarioModifier;
 import mekhq.campaign.mission.atb.AtBScenarioModifier.EventTiming;
-import mekhq.campaign.personnel.Bloodname;
+import mekhq.campaign.personnel.names.LegacyBloodname;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.Phenotype;
 import mekhq.campaign.unit.Unit;
@@ -1384,10 +1384,10 @@ public class AtBDynamicScenarioFactory {
                     break;
             }
 
-            if (phenotype != Phenotype.NONE) {
-                String bloodname = Bloodname.randomBloodname(faction.getShortName(), phenotype,
+            if (!phenotype.isNone()) {
+                String bloodname = LegacyBloodname.randomBloodname(faction.getShortName(), phenotype,
                         campaign.getGameYear()).getName();
-                crewName += " " + bloodname;
+                crewName += ' ' + bloodname;
                 innerMap.put(Crew.MAP_BLOODNAME, bloodname);
                 innerMap.put(Crew.MAP_PHENOTYPE, phenotype.name());
             }

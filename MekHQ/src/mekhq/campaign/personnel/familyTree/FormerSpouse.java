@@ -146,8 +146,8 @@ public class FormerSpouse {
      */
     @Override
     public String toString() {
-        return getReason() + ": " + getFormerSpouse().getFullTitle() + " ("
-                + MekHQ.getMHQOptions().getDisplayFormattedDate(getDate()) + ")";
+        return getReason() + ": " + getFormerSpouse() + " ("
+                + MekHQ.getMHQOptions().getDisplayFormattedDate(getDate()) + ')';
     }
 
     /**

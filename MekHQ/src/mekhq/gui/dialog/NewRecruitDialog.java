@@ -217,8 +217,8 @@ public class NewRecruitDialog extends JDialog {
 
         String[] name = RandomNameGenerator.getInstance().generateGivenNameSurnameSplit(
                 person.getGender(), person.isClanPersonnel(), factionCode);
-        person.setGivenName(name[0]);
-        person.setSurname(name[1]);
+        person.getName().setGivenName(name[0]);
+        person.getName().setSurname(name[1]);
         refreshView();
     }
 
