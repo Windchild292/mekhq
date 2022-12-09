@@ -30,7 +30,6 @@ import mekhq.campaign.finances.Finances;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.parts.*;
-import mekhq.campaign.parts.equipment.EquipmentPart;
 import mekhq.campaign.unit.TestUnit;
 import mekhq.campaign.unit.Unit;
 import org.junit.jupiter.api.Test;
@@ -241,7 +240,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we don't pay for units...
-        when(mockOptions.payForUnits()).thenReturn(false);
+        when(mockOptions.isPayForUnits()).thenReturn(false);
 
         // ...then we should automatically buy a unit...
         Entity mockEntity = mock(Entity.class);
@@ -260,7 +259,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for units...
-        when(mockOptions.payForUnits()).thenReturn(true);
+        when(mockOptions.isPayForUnits()).thenReturn(true);
 
         // ...but can't afford a unit...
         Finances mockFinances = mock(Finances.class);
@@ -285,7 +284,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for units...
-        when(mockOptions.payForUnits()).thenReturn(true);
+        when(mockOptions.isPayForUnits()).thenReturn(true);
         when(mockOptions.getInnerSphereUnitPriceMultiplier()).thenReturn(1.0);
 
         // ...and can afford a unit...
@@ -316,7 +315,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for units...
-        when(mockOptions.payForUnits()).thenReturn(true);
+        when(mockOptions.isPayForUnits()).thenReturn(true);
         when(mockOptions.getInnerSphereUnitPriceMultiplier()).thenReturn(1.0);
 
         // ...and can afford a unit...
@@ -347,7 +346,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for units...
-        when(mockOptions.payForUnits()).thenReturn(true);
+        when(mockOptions.isPayForUnits()).thenReturn(true);
 
         // ...and clan units cost 2x...
         double clanMultiplier = 2.0;
@@ -383,7 +382,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for units...
-        when(mockOptions.payForUnits()).thenReturn(true);
+        when(mockOptions.isPayForUnits()).thenReturn(true);
 
         // ...and clan units cost 2x...
         double clanMultiplier = 2.0;
@@ -459,7 +458,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we don't pay for parts...
-        when(mockOptions.payForParts()).thenReturn(false);
+        when(mockOptions.isPayForParts()).thenReturn(false);
 
         Part mockPart = mock(Part.class);
 
@@ -484,7 +483,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we don't pay for parts...
-        when(mockOptions.payForParts()).thenReturn(false);
+        when(mockOptions.isPayForParts()).thenReturn(false);
 
         Refit mockRefit = mock(Refit.class);
 
@@ -509,7 +508,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Part mockPart = mock(Part.class);
         Money cost = Money.of(42.0);
@@ -537,7 +536,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Refit mockRefit = mock(Refit.class);
         Money cost = Money.of(42.0);
@@ -565,7 +564,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Part mockPart = mock(Part.class);
         Money cost = Money.of(1.0);
@@ -594,7 +593,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Part mockPart = mock(Part.class);
         Money cost = Money.of(1.0);
@@ -624,7 +623,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Refit mockRefit = mock(Refit.class);
         Money cost = Money.of(1.0);
@@ -653,7 +652,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Refit mockRefit = mock(Refit.class);
         Money cost = Money.of(1.0);
@@ -683,7 +682,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Part mockPart = mock(Part.class);
         Money cost = Money.of(42.0);
@@ -711,7 +710,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Refit mockRefit = mock(Refit.class);
         Money cost = Money.of(42.0);
@@ -739,7 +738,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we don't pay for parts...
-        when(mockOptions.payForParts()).thenReturn(false);
+        when(mockOptions.isPayForParts()).thenReturn(false);
 
         Part mockPart = mock(Part.class);
         Money cost = Money.of(42.0);
@@ -764,7 +763,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Part mockPart = mock(Part.class);
         Money cost = Money.of(42.0);
@@ -789,7 +788,7 @@ public class QuartermasterTest {
         Quartermaster quartermaster = new Quartermaster(mockCampaign);
 
         // If we pay for parts...
-        when(mockOptions.payForParts()).thenReturn(true);
+        when(mockOptions.isPayForParts()).thenReturn(true);
 
         Part mockPart = mock(Part.class);
         Money cost = Money.of(42.0);
