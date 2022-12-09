@@ -20,21 +20,22 @@
  */
 package mekhq.gui.dialog;
 
-import java.util.ArrayList;
-
-import javax.swing.*;
-
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.UnitLoadingDialog;
 import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.common.Entity;
 import megamek.common.MechSummaryCache;
+import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.mission.Loot;
 import mekhq.campaign.parts.Part;
-import megamek.client.ui.preferences.JWindowPreference;
-import megamek.client.ui.preferences.PreferencesNode;
+import org.apache.logging.log4j.LogManager;
+
+import javax.swing.*;
+import java.util.ArrayList;
 
 /**
  * @author Taharqa
@@ -94,7 +95,7 @@ public class LootDialog extends JDialog {
         listParts = new JList<>(new DefaultListModel<>());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Potential Rewards");
+        setTitle("Scenario Costs & Payouts");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -127,7 +128,7 @@ public class LootDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         getContentPane().add(new JLabel("Cash"), gridBagConstraints);
 
-        spnCash = new JSpinner(new SpinnerNumberModel(loot.getCash().getAmount().intValue(), 0, 300000000, 10000));
+        spnCash = new JSpinner(new SpinnerNumberModel(loot.getCash().getAmount().intValue(), -300000000, 300000000, 10000));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -248,18 +249,19 @@ public class LootDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(LootDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(LootDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
-    public Loot getLoot() {
-        if (cancelled) {
-            return null;
-        }
-        return loot;
+    public @Nullable Loot getLoot() {
+        return cancelled ? null : loot;
     }
 
     private void addUnit() {

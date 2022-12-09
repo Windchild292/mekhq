@@ -21,11 +21,13 @@ package mekhq.campaign.parts;
 import megamek.Version;
 import megamek.common.AmmoType;
 import megamek.common.BombType;
-import mekhq.MekHqXmlUtil;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.equipment.AmmoBin;
+import mekhq.campaign.parts.equipment.EquipmentPart;
 import mekhq.campaign.work.IAcquisitionWork;
+import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -80,7 +82,12 @@ public class AmmoStorageTest {
     @Test
     public void cloneTest() {
         AmmoType ammoType = getAmmoType("ISAC5 Ammo");
+
+        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
+        when(mockCampaignOptions.getCommonPartPriceMultiplier()).thenReturn(1d);
+
         Campaign mockCampaign = mock(Campaign.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
 
         AmmoStorage ammoStorage = new AmmoStorage(0, ammoType, 2 * ammoType.getShots(), mockCampaign);
 
@@ -89,14 +96,19 @@ public class AmmoStorageTest {
 
         assertEquals(ammoStorage.getType(), clone.getType());
         assertEquals(ammoStorage.getBuyCost(), clone.getBuyCost());
-        assertEquals(ammoStorage.getCurrentValue(), clone.getCurrentValue());
+        assertEquals(ammoStorage.getActualValue(), clone.getActualValue());
         assertEquals(ammoStorage.getShots(), clone.getShots());
     }
 
     @Test
     public void getNewPartTest() {
         AmmoType ammoType = getAmmoType("ISAC5 Ammo");
+
+        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
+        when(mockCampaignOptions.getCommonPartPriceMultiplier()).thenReturn(1d);
+
         Campaign mockCampaign = mock(Campaign.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
 
         AmmoStorage ammoStorage = new AmmoStorage(0, ammoType, 2 * ammoType.getShots(), mockCampaign);
 
@@ -106,17 +118,24 @@ public class AmmoStorageTest {
 
         // ... and the new part should be identical in ALMOST every way...
         assertEquals(ammoStorage.getType(), newAmmoStorage.getType());
-        assertEquals(ammoStorage.getBuyCost(), newAmmoStorage.getBuyCost());
+        assertEquals(ammoStorage.getStickerPrice(), newAmmoStorage.getStickerPrice());
 
         // ... except for the number of shots, which should be instead
         // equal to the default number of shots for the type.
         assertEquals(ammoType.getShots(), newAmmoStorage.getShots());
+        // And thus the price, which should be half
+        assertEquals(ammoStorage.getBuyCost().dividedBy(2d), newAmmoStorage.getBuyCost());
     }
 
     @Test
     public void getNewEquipmentTest() {
         AmmoType ammoType = getAmmoType("ISAC5 Ammo");
+
+        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
+        when(mockCampaignOptions.getCommonPartPriceMultiplier()).thenReturn(1d);
+
         Campaign mockCampaign = mock(Campaign.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
 
         AmmoStorage ammoStorage = new AmmoStorage(0, ammoType, 2 * ammoType.getShots(), mockCampaign);
 
@@ -126,17 +145,24 @@ public class AmmoStorageTest {
 
         // ... and the new part should be identical in ALMOST every way...
         assertEquals(ammoStorage.getType(), newAmmoStorage.getType());
-        assertEquals(ammoStorage.getBuyCost(), newAmmoStorage.getBuyCost());
+        assertEquals(ammoStorage.getStickerPrice(), newAmmoStorage.getStickerPrice());
 
         // ... except for the number of shots, which should be instead
         // equal to the default number of shots for the type.
         assertEquals(ammoType.getShots(), newAmmoStorage.getShots());
+        // And thus the price, which should be half
+        assertEquals(ammoStorage.getBuyCost().dividedBy(2d), newAmmoStorage.getBuyCost());
     }
 
     @Test
     public void getAcquisitionWorkTest() {
         AmmoType ammoType = getAmmoType("ISSRM6 Inferno Ammo");
+
+        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
+        when(mockCampaignOptions.getCommonPartPriceMultiplier()).thenReturn(1d);
+
         Campaign mockCampaign = mock(Campaign.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
 
         AmmoStorage ammoStorage = new AmmoStorage(0, ammoType, 2 * ammoType.getShots(), mockCampaign);
 
@@ -147,7 +173,7 @@ public class AmmoStorageTest {
         // Check getNewEquipment()...
         Object newEquipment = acquisitionWork.getNewEquipment();
         assertNotNull(newEquipment);
-        assertTrue(newEquipment instanceof AmmoStorage);
+        assertInstanceOf(AmmoStorage.class, newEquipment);
 
         AmmoStorage newAmmoStorage = (AmmoStorage) newEquipment;
 
@@ -162,7 +188,7 @@ public class AmmoStorageTest {
         // Check getAcquisitionPart()
         Part acquisitionPart = acquisitionWork.getAcquisitionPart();
         assertNotNull(acquisitionPart);
-        assertTrue(acquisitionPart instanceof AmmoStorage);
+        assertInstanceOf(AmmoStorage.class, acquisitionPart);
 
         newAmmoStorage = (AmmoStorage) acquisitionPart;
 
@@ -360,27 +386,32 @@ public class AmmoStorageTest {
     }
 
     @Test
-    public void getCurrentValueTest() {
+    public void getActualValueTest() {
         AmmoType isAC5Ammo = getAmmoType("ISAC5 Ammo");
+
+        CampaignOptions mockCampaignOptions = mock(CampaignOptions.class);
+        when(mockCampaignOptions.getCommonPartPriceMultiplier()).thenReturn(1d);
+
         Campaign mockCampaign = mock(Campaign.class);
+        when(mockCampaign.getCampaignOptions()).thenReturn(mockCampaignOptions);
 
         AmmoStorage ammoStorage = new AmmoStorage(0, isAC5Ammo, 0, mockCampaign);
 
         // If we have no rounds of ammo, we shouldn't cost anything.
-        assertEquals(Money.zero(), ammoStorage.getCurrentValue());
+        assertEquals(Money.zero(), ammoStorage.getActualValue());
 
         // And if we have the default quantity...
         ammoStorage.setShots(isAC5Ammo.getShots());
 
         // ... we should cost the default amount.
-        assertEquals(ammoStorage.getBuyCost(), ammoStorage.getCurrentValue());
-        assertEquals(ammoStorage.getStickerPrice(), ammoStorage.getCurrentValue());
+        assertEquals(ammoStorage.getBuyCost(), ammoStorage.getActualValue());
+        assertEquals(ammoStorage.getStickerPrice(), ammoStorage.getActualValue());
 
         // And if we have twice the amount of ammo...
         ammoStorage.setShots(2 * isAC5Ammo.getShots());
 
         // ... we should cost twice as much.
-        assertEquals(ammoStorage.getBuyCost().multipliedBy(2.0), ammoStorage.getCurrentValue());
+        assertEquals(ammoStorage.getStickerPrice().multipliedBy(2.0), ammoStorage.getActualValue());
     }
 
     @Test
@@ -400,7 +431,7 @@ public class AmmoStorageTest {
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -411,7 +442,7 @@ public class AmmoStorageTest {
         // Deserialize the AmmoStorage
         Part deserializedPart = Part.generateInstanceFromXML(partElt, new Version());
         assertNotNull(deserializedPart);
-        assertTrue(deserializedPart instanceof AmmoStorage);
+        assertInstanceOf(AmmoStorage.class, deserializedPart);
 
         AmmoStorage deserialized = (AmmoStorage) deserializedPart;
 
@@ -439,7 +470,7 @@ public class AmmoStorageTest {
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -450,7 +481,7 @@ public class AmmoStorageTest {
         // Deserialize the AmmoStorage
         Part deserializedPart = Part.generateInstanceFromXML(partElt, new Version());
         assertNotNull(deserializedPart);
-        assertTrue(deserializedPart instanceof AmmoStorage);
+        assertInstanceOf(AmmoStorage.class, deserializedPart);
 
         AmmoStorage deserialized = (AmmoStorage) deserializedPart;
 

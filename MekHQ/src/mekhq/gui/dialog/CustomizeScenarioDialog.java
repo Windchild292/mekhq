@@ -25,20 +25,14 @@ import megamek.client.ui.preferences.PreferencesNode;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.mission.AtBDynamicScenario;
-import mekhq.campaign.mission.AtBDynamicScenarioFactory;
-import mekhq.campaign.mission.AtBScenario;
-import mekhq.campaign.mission.Loot;
-import mekhq.campaign.mission.Mission;
-import mekhq.campaign.mission.Scenario;
-import mekhq.campaign.mission.ScenarioTemplate;
+import mekhq.campaign.mission.*;
 import mekhq.campaign.mission.atb.AtBScenarioModifier;
 import mekhq.campaign.mission.atb.AtBScenarioModifier.EventTiming;
 import mekhq.campaign.mission.enums.ScenarioStatus;
 import mekhq.gui.FileDialogs;
 import mekhq.gui.model.LootTableModel;
 import mekhq.gui.utilities.MarkdownEditorPanel;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -209,7 +203,7 @@ public class CustomizeScenarioDialog extends JDialog {
             panLoot.setPreferredSize(new Dimension(400,150));
             panLoot.setMinimumSize(new Dimension(400,150));
             panLoot.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createTitledBorder("Potential Rewards"),
+                    BorderFactory.createTitledBorder("Scenario Costs & Payouts"),
                     BorderFactory.createEmptyBorder(5,5,5,5)));
             panMain.add(panLoot, gridBagConstraints);
         }
@@ -305,11 +299,15 @@ public class CustomizeScenarioDialog extends JDialog {
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(CustomizeScenarioDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(CustomizeScenarioDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void btnOKActionPerformed(ActionEvent evt) {
@@ -382,28 +380,9 @@ public class CustomizeScenarioDialog extends JDialog {
         if (dc.showDateChooser() == DateChooser.OK_OPTION) {
             if (scenario.getStatus().isCurrent()) {
                 if (dc.getDate().isBefore(campaign.getLocalDate())) {
-                    JOptionPane.showMessageDialog(frame,
-                            "You cannot choose a date before the current date for a pending battle.",
-                            "Invalid date",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "You cannot choose a date before the current date for a pending battle.", "Invalid date", JOptionPane.ERROR_MESSAGE);
                     return;
-                } else {
-                    LocalDate nextMonday = campaign.getLocalDate().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-
-                    if (!dc.getDate().isBefore(nextMonday)) {
-                        JOptionPane.showMessageDialog(frame,
-                                "You cannot choose a date beyond the current week.",
-                                "Invalid date",
-                                JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
                 }
-            } else if (dc.getDate().isAfter(campaign.getLocalDate())) {
-                JOptionPane.showMessageDialog(frame,
-                        "You cannot choose a date after the current date.",
-                        "Invalid date",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
             }
             date = dc.getDate();
             btnDate.setText(MekHQ.getMHQOptions().getDisplayFormattedDate(date));

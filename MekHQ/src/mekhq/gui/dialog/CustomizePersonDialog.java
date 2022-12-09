@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2013-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -42,10 +42,13 @@ import mekhq.campaign.universe.Faction.Tag;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.Planet;
 import mekhq.campaign.universe.PlanetarySystem;
+import mekhq.gui.baseComponents.AbstractMHQScrollablePanel;
+import mekhq.gui.baseComponents.DefaultMHQScrollablePanel;
 import mekhq.gui.control.EditKillLogControl;
 import mekhq.gui.control.EditMissionLogControl;
 import mekhq.gui.control.EditPersonnelLogControl;
 import mekhq.gui.utilities.MarkdownEditorPanel;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -81,8 +84,8 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
     private JButton btnRetirementDate;
     private JComboBox<Gender> choiceGender;
     private JLabel lblAge;
-    private JPanel panSkills;
-    private JPanel panOptions;
+    private AbstractMHQScrollablePanel skillsPanel;
+    private AbstractMHQScrollablePanel optionsPanel;
     private JTextField textToughness;
     private JTextField textPreNominal;
     private JTextField textGivenName;
@@ -151,18 +154,16 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         JLabel lblGender = new JLabel();
         JLabel lblBday = new JLabel();
         JLabel lblRecruitment = new JLabel();
-        lblAge = new javax.swing.JLabel();
+        lblAge = new JLabel();
         JLabel lblNickname = new JLabel();
         JLabel lblBloodname = new JLabel();
-        JPanel panName = new javax.swing.JPanel(new java.awt.GridBagLayout());
-        textNickname = new javax.swing.JTextField();
-        textBloodname = new javax.swing.JTextField();
-        textToughness = new javax.swing.JTextField();
+        JPanel panName = new JPanel(new GridBagLayout());
+        textNickname = new JTextField();
+        textBloodname = new JTextField();
+        textToughness = new JTextField();
         JLabel lblToughness = new JLabel();
         JScrollPane scrOptions = new JScrollPane();
-        panOptions = new javax.swing.JPanel();
         JScrollPane scrSkills = new JScrollPane();
-        panSkills = new javax.swing.JPanel();
         JPanel panButtons = new JPanel();
         JButton btnOk = new JButton();
 
@@ -170,12 +171,12 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         JButton btnRandomName = new JButton();
         JButton btnRandomBloodname = new JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         setTitle(resourceMap.getString("Form.title"));
 
         setName("Form");
-        getContentPane().setLayout(new java.awt.GridBagLayout());
+        getContentPane().setLayout(new GridBagLayout());
 
         int y = 1;
 
@@ -243,7 +244,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
 
         y++;
 
-        if (person.isClanner()) {
+        if (person.isClanPersonnel()) {
             lblBloodname.setText(resourceMap.getString("lblBloodname.text"));
             lblBloodname.setName("lblBloodname");
             gridBagConstraints = new GridBagConstraints();
@@ -499,7 +500,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         choicePhenotype = new JComboBox<>(phenotypeModel);
         choicePhenotype.setSelectedItem(selectedPhenotype);
         choicePhenotype.addActionListener(evt -> backgroundChanged());
-        choicePhenotype.setEnabled(person.isClanner());
+        choicePhenotype.setEnabled(person.isClanPersonnel());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = y;
@@ -510,7 +511,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         panDemog.add(choicePhenotype, gridBagConstraints);
 
         chkClan = new JCheckBox("Clanner");
-        chkClan.setSelected(person.isClanner());
+        chkClan.setSelected(person.isClanPersonnel());
         chkClan.addItemListener(et -> backgroundChanged());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -772,17 +773,17 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(panDemog, gridBagConstraints);
 
-        panSkills.setName("panSkills");
+        skillsPanel = new DefaultMHQScrollablePanel(frame, "skillsPanel");
         refreshSkills();
-        scrSkills.setViewportView(panSkills);
-        scrSkills.setMinimumSize(new java.awt.Dimension(500, 500));
-        scrSkills.setPreferredSize(new java.awt.Dimension(500, 500));
+        scrSkills.setViewportView(skillsPanel);
+        scrSkills.setMinimumSize(new Dimension(500, 500));
+        scrSkills.setPreferredSize(new Dimension(500, 500));
 
-        panOptions.setName("panOptions");
+        optionsPanel = new DefaultMHQScrollablePanel(frame, "optionsPanel");
         refreshOptions();
-        scrOptions.setViewportView(panOptions);
-        scrOptions.setMinimumSize(new java.awt.Dimension(500, 500));
-        scrOptions.setPreferredSize(new java.awt.Dimension(500, 500));
+        scrOptions.setViewportView(optionsPanel);
+        scrOptions.setMinimumSize(new Dimension(500, 500));
+        scrOptions.setPreferredSize(new Dimension(500, 500));
 
         tabStats.addTab(resourceMap.getString("scrSkills.TabConstraints.tabTitle"), scrSkills);
         if (campaign.getCampaignOptions().useAbilities() || campaign.getCampaignOptions().useEdge()
@@ -803,7 +804,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         getContentPane().add(tabStats, gridBagConstraints);
 
         panButtons.setName("panButtons");
-        panButtons.setLayout(new java.awt.GridBagLayout());
+        panButtons.setLayout(new GridBagLayout());
 
         btnOk.setText(resourceMap.getString("btnOk.text"));
         btnOk.setName("btnOk");
@@ -831,10 +832,15 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         pack();
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(CustomizePersonDialog.class);
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(CustomizePersonDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private DefaultComboBoxModel<Faction> getFactionsComboBoxModel() {
@@ -958,7 +964,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
             person.setOriginPlanet(null);
         }
         person.setPhenotype((Phenotype) choicePhenotype.getSelectedItem());
-        person.setClanner(chkClan.isSelected());
+        person.setClanPersonnel(chkClan.isSelected());
         try {
             person.setToughness(Integer.parseInt(textToughness.getText()));
         } catch (NumberFormatException ignored) { }
@@ -980,7 +986,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
                 : RandomNameGenerator.getInstance().getChosenFaction();
 
         String[] name = RandomNameGenerator.getInstance().generateGivenNameSurnameSplit(
-                (Gender) choiceGender.getSelectedItem(), person.isClanner(), factionCode);
+                (Gender) choiceGender.getSelectedItem(), person.isClanPersonnel(), factionCode);
         textGivenName.setText(name[0]);
         textSurname.setText(name[1]);
     }
@@ -994,7 +1000,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
     }
 
     public void refreshSkills() {
-        panSkills.removeAll();
+        skillsPanel.removeAll();
 
         JCheckBox chkSkill;
         JLabel lblName;
@@ -1006,7 +1012,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
 
         GridBagLayout gridBag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
-        panSkills.setLayout(gridBag);
+        skillsPanel.setLayout(gridBag);
 
         c.gridwidth = 1;
         c.fill = GridBagConstraints.NONE;
@@ -1051,32 +1057,32 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
 
             c.anchor = GridBagConstraints.WEST;
             c.weightx = 0;
-            panSkills.add(chkSkill, c);
+            skillsPanel.add(chkSkill, c);
 
             c.gridx = 1;
             c.anchor = GridBagConstraints.WEST;
-            panSkills.add(lblName, c);
+            skillsPanel.add(lblName, c);
 
             c.gridx = 2;
             c.anchor = GridBagConstraints.CENTER;
-            panSkills.add(lblValue, c);
+            skillsPanel.add(lblValue, c);
 
             c.gridx = 3;
             c.anchor = GridBagConstraints.WEST;
-            panSkills.add(lblLevel, c);
+            skillsPanel.add(lblLevel, c);
 
             c.gridx = 4;
             c.anchor = GridBagConstraints.WEST;
-            panSkills.add(spnLevel, c);
+            skillsPanel.add(spnLevel, c);
 
             c.gridx = 5;
             c.anchor = GridBagConstraints.WEST;
-            panSkills.add(lblBonus, c);
+            skillsPanel.add(lblBonus, c);
 
             c.gridx = 6;
             c.anchor = GridBagConstraints.WEST;
             c.weightx = 1.0;
-            panSkills.add(spnBonus, c);
+            skillsPanel.add(spnBonus, c);
         }
     }
 
@@ -1104,12 +1110,12 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
     }
 
     public void refreshOptions() {
-        panOptions.removeAll();
+        optionsPanel.removeAll();
         optionComps = new ArrayList<>();
 
         GridBagLayout gridBag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
-        panOptions.setLayout(gridBag);
+        optionsPanel.setLayout(gridBag);
 
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -1148,7 +1154,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         JLabel groupLabel = new JLabel(resourceMap.getString("optionGroup." + group.getKey()));
 
         gridBag.setConstraints(groupLabel, c);
-        panOptions.add(groupLabel);
+        optionsPanel.add(groupLabel);
     }
 
     private void addOption(IOption option, GridBagLayout gridBag, GridBagConstraints c) {
@@ -1204,7 +1210,7 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         }
 
         gridBag.setConstraints(optionComp, c);
-        panOptions.add(optionComp);
+        optionsPanel.add(optionComp);
         optionComps.add(optionComp);
     }
 

@@ -1,8 +1,8 @@
 /*
  * ResolveScenarioWizardDialog.java
  *
- * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
- * Copyright (c) 2020 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -64,7 +64,7 @@ public class ResolveScenarioWizardDialog extends JDialog {
     final static String SALVAGEPANEL = "Claim Salvage";
     final static String PRISONERPANEL= "Captured Personnel Status";
     final static String KILLPANEL    = "Assign Kills";
-    final static String REWARDPANEL  = "Collect Rewards";
+    final static String REWARDPANEL  = "Scenario Costs & Payouts";
     final static String PREVIEWPANEL = "Preview";
     /* Used by AtB to determine minor contract breaches and bonus rolls */
     final static String OBJECTIVEPANEL    = "Objective Status";
@@ -1124,11 +1124,15 @@ public class ResolveScenarioWizardDialog extends JDialog {
         }
     }
 
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(ResolveScenarioWizardDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(ResolveScenarioWizardDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     private void switchPanel(String name) {

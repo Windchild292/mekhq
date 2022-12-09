@@ -53,6 +53,7 @@ import mekhq.campaign.unit.enums.CrewAssignmentState;
 import mekhq.campaign.work.IAcquisitionWork;
 import mekhq.campaign.work.IPartWork;
 import mekhq.io.migration.CamouflageMigrator;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -385,10 +386,12 @@ public class Unit implements ITechnology {
     }
 
     /**
-     * Gets a value indicating whether or not we are transporting any aero units.
+     * Gets a value indicating whether or not we are transporting any smaller aero units
      */
-    public boolean isCarryingAero() {
-        return transportedUnits.stream().anyMatch(u -> u.getEntity().isAero());
+    public boolean isCarryingSmallerAero() {
+        return transportedUnits.stream().anyMatch(u -> u.getEntity().isAero()
+                && !u.getEntity().isLargeCraft()
+                && (u.getEntity().getUnitType() != UnitType.SMALL_CRAFT));
     }
 
     /**
@@ -462,7 +465,12 @@ public class Unit implements ITechnology {
             }
         }
         if (en instanceof Aero) {
-            if (en.getWalkMP() <= 0 && !(en instanceof Jumpship)) {
+            // aerospace units are considered non-functional if their walk MP is 0
+            // unless they are grounded spheroid dropships or jumpships
+            boolean hasNoWalkMP = en.getWalkMP() <= 0;
+            boolean isJumpship = en instanceof Jumpship;
+            boolean isGroundedSpheroid = (en instanceof Dropship) && ((Dropship) en).isSpheroid() && en.getAltitude() == 0;
+            if (hasNoWalkMP && !isJumpship && !isGroundedSpheroid) {
                 return false;
             }
             return ((Aero) en).getSI() > 0;
@@ -1334,9 +1342,9 @@ public class Unit implements ITechnology {
             amount = 1;
         }
         switch (unitType) {
-            //Be sure that when releasing bay space, the transport does not go over its normal maximum
+            // Be sure that when releasing bay space, the transport does not go over its normal maximum
             case UnitType.MEK:
-                setMechCapacity(Math.min((getCurrentMechCapacity() + amount),getMechCapacity()));
+                setMechCapacity(Math.min((getCurrentMechCapacity() + amount), getMechCapacity()));
                 break;
             case UnitType.AERO:
             case UnitType.CONV_FIGHTER:
@@ -1344,10 +1352,10 @@ public class Unit implements ITechnology {
                 Bay aeroBay = getEntity().getBayById(bayNumber);
                 if (aeroBay != null) {
                     if (BayType.getTypeForBay(aeroBay).equals(BayType.FIGHTER)) {
-                        setASFCapacity(Math.min((getCurrentASFCapacity() + amount),getASFCapacity()));
+                        setASFCapacity(Math.min((getCurrentASFCapacity() + amount), getASFCapacity()));
                         break;
                     } else if (BayType.getTypeForBay(aeroBay).equals(BayType.SMALL_CRAFT)) {
-                        setSmallCraftCapacity(Math.min((getCurrentSmallCraftCapacity() + amount),getSmallCraftCapacity()));
+                        setSmallCraftCapacity(Math.min((getCurrentSmallCraftCapacity() + amount), getSmallCraftCapacity()));
                         break;
                     } else {
                         //This shouldn't happen
@@ -1355,18 +1363,18 @@ public class Unit implements ITechnology {
                         break;
                     }
                 }
-                //This shouldn't happen either
+                // This shouldn't happen either
                 LogManager.getLogger().error("Fighter's bay number assignment produced a null bay");
                 break;
             case UnitType.DROPSHIP:
-                setDocks(Math.min((getCurrentDocks() + amount),getDocks()));
+                setDocks(Math.min((getCurrentDocks() + amount), getDocks()));
                 break;
             case UnitType.SMALL_CRAFT:
-                setSmallCraftCapacity(Math.min((getCurrentSmallCraftCapacity() + amount),getSmallCraftCapacity()));
+                setSmallCraftCapacity(Math.min((getCurrentSmallCraftCapacity() + amount), getSmallCraftCapacity()));
                 break;
             case UnitType.INFANTRY:
                 // Infantry bay capacities are in tons, so consumption depends on platoon type
-                setInfantryCapacity(Math.min((getCurrentInfantryCapacity() + (amount * unitWeight)),getInfantryCapacity()));
+                setInfantryCapacity(Math.min((getCurrentInfantryCapacity() + (amount * unitWeight)), getInfantryCapacity()));
                 break;
             case UnitType.BATTLE_ARMOR:
                 setBattleArmorCapacity(Math.min((getCurrentBattleArmorCapacity() + amount),getBattleArmorCapacity()));
@@ -1378,13 +1386,13 @@ public class Unit implements ITechnology {
                 Bay tankBay = getEntity().getBayById(bayNumber);
                 if (tankBay != null) {
                     if (BayType.getTypeForBay(tankBay).equals(BayType.VEHICLE_LIGHT)) {
-                        setLightVehicleCapacity(Math.min((getCurrentLightVehicleCapacity() + amount),getLightVehicleCapacity()));
+                        setLightVehicleCapacity(Math.min((getCurrentLightVehicleCapacity() + amount), getLightVehicleCapacity()));
                         break;
                     } else if (BayType.getTypeForBay(tankBay).equals(BayType.VEHICLE_HEAVY)) {
-                        setHeavyVehicleCapacity(Math.min((getCurrentHeavyVehicleCapacity() + amount),getHeavyVehicleCapacity()));
+                        setHeavyVehicleCapacity(Math.min((getCurrentHeavyVehicleCapacity() + amount), getHeavyVehicleCapacity()));
                         break;
                     } else if (BayType.getTypeForBay(tankBay).equals(BayType.VEHICLE_SH)) {
-                        setSuperHeavyVehicleCapacity(Math.min((getCurrentSuperHeavyVehicleCapacity() + amount),getSuperHeavyVehicleCapacity()));
+                        setSuperHeavyVehicleCapacity(Math.min((getCurrentSuperHeavyVehicleCapacity() + amount), getSuperHeavyVehicleCapacity()));
                         break;
                     } else {
                         //This shouldn't happen
@@ -1392,7 +1400,7 @@ public class Unit implements ITechnology {
                         break;
                     }
                 }
-                //This shouldn't happen either
+                // This shouldn't happen either
                 LogManager.getLogger().error("Vehicle's bay number assignment produced a null bay");
                 break;
         }
@@ -1471,7 +1479,6 @@ public class Unit implements ITechnology {
     public void setSuperHeavyVehicleCapacity(double bays) {
         shVeeCapacity = bays;
     }
-
 
     public double getBattleArmorCapacity() {
         double bays = 0;
@@ -1623,7 +1630,7 @@ public class Unit implements ITechnology {
     public double calcInfantryBayWeight(Entity unit) {
         PlatoonType type = PlatoonType.getPlatoonType(unit);
         if ((unit instanceof Infantry) && (type == PlatoonType.MECHANIZED)) {
-            return type.getWeight() * ((Infantry) unit).getSquadN();
+            return type.getWeight() * ((Infantry) unit).getSquadCount();
         } else {
             return type.getWeight();
         }
@@ -1746,134 +1753,134 @@ public class Unit implements ITechnology {
     }
 
     public void writeToXML(final PrintWriter pw, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "unit", "id", id, "type", getClass());
-        pw.println(MekHqXmlUtil.writeEntityToXmlString(entity, indent, getCampaign().getEntities()));
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "unit", "id", id, "type", getClass());
+        pw.println(MHQXMLUtility.writeEntityToXmlString(entity, indent, getCampaign().getEntities()));
         for (Person driver : drivers) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "driverId", driver.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "driverId", driver.getId());
         }
 
         for (Person gunner : gunners) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "gunnerId", gunner.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "gunnerId", gunner.getId());
         }
 
         for (Person crew : vesselCrew) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "vesselCrewId", crew.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "vesselCrewId", crew.getId());
         }
 
         if (navigator != null) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "navigatorId", navigator.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "navigatorId", navigator.getId());
         }
 
         if (techOfficer != null) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "techOfficerId", techOfficer.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "techOfficerId", techOfficer.getId());
         }
 
         if (tech != null) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "techId", tech.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "techId", tech.getId());
         }
 
         // If this entity is assigned to a transport, write that
         if (hasTransportShipAssignment()) {
-            pw.println(MekHqXmlUtil.indentStr(indent) + "<transportShip id=\""
+            pw.println(MHQXMLUtility.indentStr(indent) + "<transportShip id=\""
                     + getTransportShipAssignment().getTransportShip().getId()
                     + "\" baynumber=\"" + getTransportShipAssignment().getBayNumber() + "\"/>");
         }
 
         for (Unit unit : getTransportedUnits()) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "transportedUnitId", unit.getId());
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "transportedUnitId", unit.getId());
         }
 
         // Used transport bay space
         if ((getEntity() != null) && !getEntity().getTransportBays().isEmpty()) {
             if (aeroCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "asfCapacity", aeroCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "asfCapacity", aeroCapacity);
             }
 
             if (baCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "baCapacity", baCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "baCapacity", baCapacity);
             }
 
             if (dockCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "dockCapacity", dockCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "dockCapacity", dockCapacity);
             }
 
             if (hVeeCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "hVeeCapacity", hVeeCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "hVeeCapacity", hVeeCapacity);
             }
 
             if (infCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "infCapacity", infCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "infCapacity", infCapacity);
             }
 
             if (lVeeCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "lVeeCapacity", lVeeCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "lVeeCapacity", lVeeCapacity);
             }
 
             if (mechCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "mechCapacity", mechCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "mechCapacity", mechCapacity);
             }
 
             if (protoCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "protoCapacity", protoCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "protoCapacity", protoCapacity);
             }
 
             if (scCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "scCapacity", scCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "scCapacity", scCapacity);
             }
 
             if (shVeeCapacity > 0) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "shVeeCapacity", shVeeCapacity);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "shVeeCapacity", shVeeCapacity);
             }
         }
         // Salvage status
         if (salvaged) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "salvaged", true);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "salvaged", true);
         }
 
         if (site != SITE_BAY) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "site", site);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "site", site);
         }
 
         if (forceId != Force.FORCE_NONE) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "forceId", forceId);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "forceId", forceId);
         }
 
         if (scenarioId != Scenario.S_DEFAULT_ID) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "scenarioId", scenarioId);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "scenarioId", scenarioId);
         }
 
         if (daysToArrival > 0) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "daysToArrival", daysToArrival);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "daysToArrival", daysToArrival);
         }
 
         if (daysSinceMaintenance > 0) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "daysSinceMaintenance", daysSinceMaintenance);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "daysSinceMaintenance", daysSinceMaintenance);
         }
 
         if (daysActivelyMaintained > 0) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "daysActivelyMaintained", daysActivelyMaintained);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "daysActivelyMaintained", daysActivelyMaintained);
         }
 
         if (astechDaysMaintained > 0) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "astechDaysMaintained", astechDaysMaintained);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "astechDaysMaintained", astechDaysMaintained);
         }
 
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "maintenanceMultiplier", maintenanceMultiplier);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "maintenanceMultiplier", maintenanceMultiplier);
 
         if (mothballTime > 0) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "mothballTime", mothballTime);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "mothballTime", mothballTime);
         }
 
         if (mothballed) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "mothballed", true);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "mothballed", true);
         }
 
         if (!fluffName.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "fluffName", fluffName);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "fluffName", fluffName);
         }
 
         if (!history.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "history", history);
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "history", history);
         }
 
         if (refit != null) {
@@ -1882,7 +1889,7 @@ public class Unit implements ITechnology {
 
         if ((lastMaintenanceReport != null) && !lastMaintenanceReport.isEmpty()
                 && getCampaign().getCampaignOptions().checkMaintenance()) {
-            pw.println(MekHqXmlUtil.indentStr(indent)
+            pw.println(MHQXMLUtility.indentStr(indent)
                     + "<lastMaintenanceReport><![CDATA[" + lastMaintenanceReport + "]]></lastMaintenanceReport>");
 
         }
@@ -1891,7 +1898,7 @@ public class Unit implements ITechnology {
             mothballInfo.writeToXML(pw, indent);
         }
 
-        MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "unit");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "unit");
     }
 
     public static Unit generateInstanceFromXML(final Node wn, final Version version,
@@ -1990,7 +1997,7 @@ public class Unit implements ITechnology {
                 } else if (wn2.getNodeName().equalsIgnoreCase("mothballed")) {
                     retVal.mothballed = wn2.getTextContent().equalsIgnoreCase("true");
                 } else if (wn2.getNodeName().equalsIgnoreCase("entity")) {
-                    retVal.entity = MekHqXmlUtil.parseSingleEntityMul((Element) wn2, campaign.getGameOptions());
+                    retVal.entity = MHQXMLUtility.parseSingleEntityMul((Element) wn2, campaign);
                 } else if (wn2.getNodeName().equalsIgnoreCase("refit")) {
                     retVal.refit = Refit.generateInstanceFromXML(wn2, version, campaign, retVal);
                 } else if (wn2.getNodeName().equalsIgnoreCase("history")) {
@@ -2146,7 +2153,7 @@ public class Unit implements ITechnology {
             } else if (en instanceof BattleArmor) {
                 return Money.of(((BattleArmor) en).getTroopers() * 50.0);
             } else if (en instanceof Infantry) {
-                return Money.of(((Infantry) en).getSquadN()*10.0);
+                return Money.of(((Infantry) en).getSquadCount()*10.0);
             }
         }
         return mCost.dividedBy(52.0);
@@ -3231,7 +3238,7 @@ public class Unit implements ITechnology {
             if ((null == motiveType) && (entity.getMovementMode() != EntityMovementMode.INF_LEG)) {
                 int number = entity.getOInternal(Infantry.LOC_INFANTRY);
                 if (((Infantry) entity).isMechanized()) {
-                    number = ((Infantry) entity).getSquadN();
+                    number = ((Infantry) entity).getSquadCount();
                 }
                 while (number > 0) {
                     motiveType = new InfantryMotiveType(0, getCampaign(), entity.getMovementMode());
@@ -3263,7 +3270,7 @@ public class Unit implements ITechnology {
             InfantryWeapon primaryType = ((Infantry) entity).getPrimaryWeapon();
             InfantryWeapon secondaryType = ((Infantry) entity).getSecondaryWeapon();
             if ((null == primaryW) && (null != primaryType)) {
-                int number = (((Infantry) entity).getSquadSize() - ((Infantry) entity).getSecondaryN()) * ((Infantry) entity).getSquadN();
+                int number = (((Infantry) entity).getSquadSize() - ((Infantry) entity).getSecondaryWeaponsPerSquad()) * ((Infantry) entity).getSquadCount();
                 while (number > 0) {
                     primaryW = new InfantryWeaponPart((int) entity.getWeight(), primaryType, -1, getCampaign(), true);
                     addPart(primaryW);
@@ -3273,7 +3280,7 @@ public class Unit implements ITechnology {
 
             }
             if (null == secondaryW && null != secondaryType) {
-                int number = ((Infantry) entity).getSecondaryN() * ((Infantry) entity).getSquadN();
+                int number = ((Infantry) entity).getSecondaryWeaponsPerSquad() * ((Infantry) entity).getSquadCount();
                 while (number > 0) {
                     secondaryW = new InfantryWeaponPart((int) entity.getWeight(), secondaryType, -1, getCampaign(), false);
                     addPart(secondaryW);
@@ -4019,7 +4026,7 @@ public class Unit implements ITechnology {
             if (!isUnmanned()) {
                 engineer = new Person(getCommander().getGivenName(), getCommander().getSurname(), getCampaign());
                 engineer.setEngineer(true);
-                engineer.setClanner(getCommander().isClanner());
+                engineer.setClanPersonnel(getCommander().isClanPersonnel());
                 engineer.setMinutesLeft(minutesLeft);
                 engineer.setOvertimeLeft(overtimeLeft);
                 engineer.setId(getCommander().getId());
@@ -4083,7 +4090,7 @@ public class Unit implements ITechnology {
                 if (nCrew > 0) {
                     engineer = new Person(engineerGivenName, engineerSurname, getCampaign());
                     engineer.setEngineer(true);
-                    engineer.setClanner(getCommander().isClanner());
+                    engineer.setClanPersonnel(getCommander().isClanPersonnel());
                     engineer.setEdgeTrigger(PersonnelOptions.EDGE_REPAIR_BREAK_PART, breakpartreroll);
                     engineer.setEdgeTrigger(PersonnelOptions.EDGE_REPAIR_FAILED_REFIT, failrefitreroll);
                     engineer.setMinutesLeft(minutesLeft);

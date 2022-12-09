@@ -32,6 +32,7 @@ import mekhq.campaign.mission.ScenarioForceTemplate.ForceGenerationMethod;
 import mekhq.campaign.mission.ScenarioForceTemplate.SynchronizedDeploymentType;
 import mekhq.campaign.mission.atb.AtBScenarioModifier;
 import mekhq.gui.FileDialogs;
+import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -42,6 +43,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.List;
 import java.util.*;
+import mekhq.MHQConstants;
 
 /**
  * Handles editing, saving and loading of scenario template definitions.
@@ -104,6 +106,7 @@ public class ScenarioTemplateEditorDialog extends JDialog implements ActionListe
     JList<ScenarioObjective> objectiveList;
     JScrollPane objectiveScrollPane;
     JButton btnRemoveObjective;
+    JList<String> lstMuls;
 
     JPanel globalPanel;
 
@@ -169,14 +172,15 @@ public class ScenarioTemplateEditorDialog extends JDialog implements ActionListe
         updateObjectiveList();
     }
 
-    /**
-     * Use user preferences for this dialog.
-     */
+    @Deprecated // These need to be migrated to the Suite Constants / Suite Options Setup
     private void setUserPreferences() {
-        PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(ScenarioTemplateEditorDialog.class);
-
-        this.setName("dialog");
-        preferences.manage(new JWindowPreference(this));
+        try {
+            PreferencesNode preferences = MekHQ.getMHQPreferences().forClass(ScenarioTemplateEditorDialog.class);
+            this.setName("dialog");
+            preferences.manage(new JWindowPreference(this));
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Failed to set user preferences", ex);
+        }
     }
 
     /**
@@ -427,6 +431,29 @@ public class ScenarioTemplateEditorDialog extends JDialog implements ActionListe
         gbc.gridy++;
         gbc.gridx = 1;
         forcedPanel.add(cboSyncForceName, gbc);
+        
+        JLabel lblFixedMul = new JLabel("Fixed MUL:");
+        gbc.gridx = 0;
+        gbc.gridy++;
+        forcedPanel.add(lblFixedMul, gbc);        
+        
+        lstMuls = new JList<>();
+        DefaultListModel<String> mulModel = new DefaultListModel<>();
+        JScrollPane scrMulList = new JScrollPane(lstMuls);
+        File mulDir = new File(MHQConstants.STRATCON_MUL_FILES_DIRECTORY);
+        
+        if (mulDir.exists() && mulDir.isDirectory()) {
+            for (String mul : mulDir.list((d, s) -> {
+                        return s.toLowerCase().endsWith(".mul");
+                      })) {
+                mulModel.addElement(mul);
+            }
+        }
+        
+        lstMuls.setModel(mulModel);    
+        lstMuls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        gbc.gridx = 1;
+        forcedPanel.add(scrMulList, gbc);
 
         DefaultListModel<String> zoneModel = new DefaultListModel<>();
         for (String s : ScenarioForceTemplate.DEPLOYMENT_ZONES) {
@@ -598,6 +625,7 @@ public class ScenarioTemplateEditorDialog extends JDialog implements ActionListe
         txtForceName.setText(forceTemplate.getForceName());
         cboSyncDeploymentType.setSelectedIndex(forceTemplate.getSyncDeploymentType().ordinal());
         cboSyncForceName.setSelectedItem(forceTemplate.getSyncedForceName());
+        lstMuls.setSelectedValue(forceTemplate.getFixedMul(), true);
 
         int[] deploymentZones = new int[forceTemplate.getDeploymentZones().size()];
         for (int x = 0; x < forceTemplate.getDeploymentZones().size(); x++) {
@@ -1107,6 +1135,8 @@ public class ScenarioTemplateEditorDialog extends JDialog implements ActionListe
         sft.setDeployOffboard(chkOffBoard.isSelected());
 
         sft.setSyncDeploymentType(SynchronizedDeploymentType.values()[cboSyncDeploymentType.getSelectedIndex()]);
+        
+        sft.setFixedMul(lstMuls.getSelectedValue());
 
         // if we have picked "None" for synchronization, then set explicit deployment zones.
         // otherwise, set the synced force name

@@ -31,7 +31,7 @@ import megamek.common.options.OptionsConstants;
 import megamek.common.util.EncodeControl;
 import mekhq.MHQConstants;
 import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.againstTheBot.AtBConfiguration;
 import mekhq.campaign.force.Force;
@@ -902,9 +902,15 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
      */
     protected void addEnemyForce(List<Entity> list, int weightClass, int maxWeight, int rollMod,
                                  int weightMod, Campaign campaign) {
-        String org = AtBConfiguration.getParentFactionType(getContract(campaign).getEnemyCode());
+        String org = AtBConfiguration.getParentFactionType(getContract(campaign).getEnemy());
 
         String lances = campaign.getAtBConfig().selectBotLances(org, weightClass, rollMod / 20f);
+        if (lances == null) {
+            LogManager.getLogger().error(String.format(
+                    "Cannot add enemy force: failed to generate lances for faction %s at weight class %s",
+                    org, weightClass));
+            return;
+        }
         int maxLances = Math.min(lances.length(), campaign.getCampaignOptions().getSkillLevel() + 1);
 
         for (int i = 0; i < maxLances; i++) {
@@ -1036,14 +1042,18 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         if (Factions.getInstance().getFaction(faction).isClan()) {
             addStar(list, faction, skill, quality, weightClass, maxWeight, campaign, arrivalTurn);
             return;
-        }
-        if (faction.equals("CS") || faction.equals("WOB")) {
+        } else if (faction.equals("CS") || faction.equals("WOB")) {
             addLevelII(list, faction, skill, quality, weightClass, maxWeight, campaign, arrivalTurn);
             return;
         }
 
-        String weights = adjustForMaxWeight(campaign.getAtBConfig()
-                .selectBotUnitWeights(AtBConfiguration.ORG_IS, weightClass), maxWeight);
+        String weights = campaign.getAtBConfig().selectBotUnitWeights(AtBConfiguration.ORG_IS, weightClass);
+        if (weights == null) {
+            // we can't generate a weight, so cancel adding the lance
+            LogManager.getLogger().error("Cannot add lance: failed to generate weights for faction IS with weight class " + weightClass);
+            return;
+        }
+        weights = adjustForMaxWeight(weights, maxWeight);
 
         int forceType = FORCE_MEK;
         if (campaign.getCampaignOptions().getUseVehicles()) {
@@ -1138,8 +1148,13 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
             forceType = FORCE_VEHICLE;
         }
 
-        String weights = adjustForMaxWeight(campaign.getAtBConfig()
-                .selectBotUnitWeights(AtBConfiguration.ORG_CLAN, weightClass), maxWeight);
+        String weights = campaign.getAtBConfig().selectBotUnitWeights(AtBConfiguration.ORG_CLAN, weightClass);
+        if (weights == null) {
+            // we can't generate a weight, so cancel adding the star
+            LogManager.getLogger().error("Cannot add star: failed to generate weights for faction CLAN with weight class " + weightClass);
+            return;
+        }
+        weights = adjustForMaxWeight(weights, maxWeight);
 
         int unitType = (forceType == FORCE_VEHICLE) ? UnitType.TANK : UnitType.MEK;
 
@@ -1213,8 +1228,13 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
      */
     private void addLevelII(List<Entity> list, String faction, SkillLevel skill, int quality,
                             int weightClass, int maxWeight, Campaign campaign, int arrivalTurn) {
-        String weights = adjustForMaxWeight(campaign.getAtBConfig()
-                .selectBotUnitWeights(AtBConfiguration.ORG_CS, weightClass), maxWeight);
+        String weights = campaign.getAtBConfig().selectBotUnitWeights(AtBConfiguration.ORG_CS, weightClass);
+        if (weights == null) {
+            // we can't generate a weight, so cancel adding the Level II
+            LogManager.getLogger().error("Cannot add Level II: failed to generate weights for faction CS with weight class " + weightClass);
+            return;
+        }
+        weights = adjustForMaxWeight(weights, maxWeight);
 
         int forceType = FORCE_MEK;
         int roll = Compute.d6();
@@ -1509,81 +1529,81 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
     @Override
     protected void writeToXMLEnd(final PrintWriter pw, int indent) {
         indent++;
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "attacker", isAttacker());
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "lanceForceId", lanceForceId);
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "lanceRole", lanceRole.name());
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "deploymentDelay", deploymentDelay);
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "lanceCount", lanceCount);
-        MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "rerollsRemaining", rerollsRemaining);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "attacker", isAttacker());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "lanceForceId", lanceForceId);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "lanceRole", lanceRole.name());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "deploymentDelay", deploymentDelay);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "lanceCount", lanceCount);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "rerollsRemaining", rerollsRemaining);
 
         if (null != bigBattleAllies && !bigBattleAllies.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "bigBattleAllies");
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "bigBattleAllies");
             for (Entity entity : bigBattleAllies) {
                 if (entity != null) {
-                    MekHqXmlUtil.writeEntityWithCrewToXML(pw, indent, entity, bigBattleAllies);
+                    MHQXMLUtility.writeEntityWithCrewToXML(pw, indent, entity, bigBattleAllies);
                 }
             }
-            MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "bigBattleAllies");
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "bigBattleAllies");
         } else if (!alliesPlayer.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "alliesPlayer");
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "alliesPlayer");
             for (Entity entity : alliesPlayer) {
                 if (entity != null) {
-                    MekHqXmlUtil.writeEntityWithCrewToXML(pw, indent, entity, alliesPlayer);
+                    MHQXMLUtility.writeEntityWithCrewToXML(pw, indent, entity, alliesPlayer);
                 }
             }
-            MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "alliesPlayer");
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "alliesPlayer");
         }
 
         if (!alliesPlayerStub.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "alliesPlayerStub");
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "alliesPlayerStub");
             for (String stub : alliesPlayerStub) {
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "entityStub", stub);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "entityStub", stub);
             }
-            MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "alliesPlayerStub");
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "alliesPlayerStub");
         }
 
         if (!attachedUnitIds.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "attachedUnits", getCsvFromList(attachedUnitIds));
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "attachedUnits", getCsvFromList(attachedUnitIds));
         }
 
         if (!survivalBonus.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "survivalBonus", getCsvFromList(survivalBonus));
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "survivalBonus", getCsvFromList(survivalBonus));
         }
 
         if (null != specMissionEnemies && !specMissionEnemies.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "specMissionEnemies");
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "specMissionEnemies");
             for (int i = 0; i < specMissionEnemies.size(); i++) {
-                MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "playerWeight", "class", i);
+                MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "playerWeight", "class", i);
                 for (Entity entity : specMissionEnemies.get(i)) {
                     if (entity != null) {
-                        MekHqXmlUtil.writeEntityWithCrewToXML(pw, indent, entity, specMissionEnemies.get(i));
+                        MHQXMLUtility.writeEntityWithCrewToXML(pw, indent, entity, specMissionEnemies.get(i));
                     }
                 }
-                MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "playerWeight");
+                MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "playerWeight");
             }
-            MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "specMissionEnemies");
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "specMissionEnemies");
         }
 
         if (!transportLinkages.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "transportLinkages");
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "transportLinkages");
             for (String key : transportLinkages.keySet()) {
-                MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "transportLinkage");
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "transportID", key);
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "transportedUnits", transportLinkages.get(key));
-                MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "transportLinkage");
+                MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "transportLinkage");
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "transportID", key);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "transportedUnits", transportLinkages.get(key));
+                MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "transportLinkage");
             }
-            MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "transportLinkages");
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "transportLinkages");
         }
 
         if (!numPlayerMinefields.isEmpty()) {
-            MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "numPlayerMinefields");
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "numPlayerMinefields");
             for (int key : numPlayerMinefields.keySet()) {
-                MekHqXmlUtil.writeSimpleXMLOpenTag(pw, indent++, "numPlayerMinefield");
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "minefieldType", key);
-                MekHqXmlUtil.writeSimpleXMLTag(pw, indent, "minefieldCount", numPlayerMinefields.get(key).toString());
-                MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "numPlayerMinefield");
+                MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "numPlayerMinefield");
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "minefieldType", key);
+                MHQXMLUtility.writeSimpleXMLTag(pw, indent, "minefieldCount", numPlayerMinefields.get(key).toString());
+                MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "numPlayerMinefield");
             }
-            MekHqXmlUtil.writeSimpleXMLCloseTag(pw, --indent, "numPlayerMinefields");
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "numPlayerMinefields");
         }
 
         super.writeToXMLEnd(pw, --indent);
@@ -1620,10 +1640,11 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                         if (wn3.getNodeName().equalsIgnoreCase("entity")) {
                             Entity en = null;
                             try {
-                                en = MekHqXmlUtil.parseSingleEntityMul((Element) wn3, campaign.getGameOptions());
-                            } catch (Exception e) {
-                                LogManager.getLogger().error("Error loading allied unit in scenario", e);
+                                en = MHQXMLUtility.parseSingleEntityMul((Element) wn3, campaign);
+                            } catch (Exception ex) {
+                                LogManager.getLogger().error("Error loading allied unit in scenario", ex);
                             }
+
                             if (en != null) {
                                 alliesPlayer.add(en);
                                 entityIds.put(UUID.fromString(en.getExternalIdAsString()), en);
@@ -1639,10 +1660,11 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                         if (wn3.getNodeName().equalsIgnoreCase("entity")) {
                             Entity en = null;
                             try {
-                                en = MekHqXmlUtil.parseSingleEntityMul((Element) wn3, campaign.getGameOptions());
-                            } catch (Exception e) {
-                                LogManager.getLogger().error("Error loading allied unit in scenario", e);
+                                en = MHQXMLUtility.parseSingleEntityMul((Element) wn3, campaign);
+                            } catch (Exception ex) {
+                                LogManager.getLogger().error("Error loading allied unit in scenario", ex);
                             }
+
                             if (en != null) {
                                 bigBattleAllies.add(en);
                                 entityIds.put(UUID.fromString(en.getExternalIdAsString()), en);
@@ -1666,10 +1688,11 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
                                 if (wn4.getNodeName().equalsIgnoreCase("entity")) {
                                     Entity en = null;
                                     try {
-                                        en = MekHqXmlUtil.parseSingleEntityMul((Element) wn4, campaign.getGameOptions());
-                                    } catch (Exception e) {
-                                        LogManager.getLogger().error("Error loading enemy unit in scenario", e);
+                                        en = MHQXMLUtility.parseSingleEntityMul((Element) wn4, campaign);
+                                    } catch (Exception ex) {
+                                        LogManager.getLogger().error("Error loading enemy unit in scenario", ex);
                                     }
+
                                     if (null != en) {
                                         specMissionEnemies.get(weightClass).add(en);
                                         entityIds.put(UUID.fromString(en.getExternalIdAsString()), en);

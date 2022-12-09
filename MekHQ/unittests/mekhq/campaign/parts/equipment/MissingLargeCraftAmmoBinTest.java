@@ -22,14 +22,15 @@ import megamek.Version;
 import megamek.common.AmmoType;
 import megamek.common.Entity;
 import megamek.common.Mounted;
-import mekhq.MekHqXmlUtil;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.Quartermaster;
 import mekhq.campaign.Warehouse;
+import mekhq.campaign.parts.Armor;
 import mekhq.campaign.parts.MekLocation;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.parts.enums.PartRepairType;
 import mekhq.campaign.unit.Unit;
+import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.w3c.dom.Document;
@@ -64,7 +65,7 @@ public class MissingLargeCraftAmmoBinTest {
 
         MissingLargeCraftAmmoBin missingAmmoBin = new MissingLargeCraftAmmoBin(0, ammoType, 18, 25.0, mockCampaign);
 
-        assertEquals(PartRepairType.AMMO, missingAmmoBin.getMassRepairOptionType());
+        assertEquals(PartRepairType.AMMUNITION, missingAmmoBin.getMassRepairOptionType());
     }
 
     @Test
@@ -102,7 +103,7 @@ public class MissingLargeCraftAmmoBinTest {
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -113,7 +114,7 @@ public class MissingLargeCraftAmmoBinTest {
         // Deserialize the AmmoBin
         Part deserializedPart = Part.generateInstanceFromXML(partElt, new Version());
         assertNotNull(deserializedPart);
-        assertTrue(deserializedPart instanceof MissingLargeCraftAmmoBin);
+        assertInstanceOf(MissingLargeCraftAmmoBin.class, deserializedPart);
 
         MissingLargeCraftAmmoBin deserialized = (MissingLargeCraftAmmoBin) deserializedPart;
 
@@ -231,7 +232,7 @@ public class MissingLargeCraftAmmoBinTest {
         // 1. Unit should have received a new replacement
         Part replacementPart = replacementCaptor.getValue();
         assertNotNull(replacementPart);
-        assertTrue(replacementPart instanceof LargeCraftAmmoBin);
+        assertInstanceOf(LargeCraftAmmoBin.class, replacementPart);
 
         // 2. And the replacement should match the missing ammo bin
         LargeCraftAmmoBin replacementAmmoBin = (LargeCraftAmmoBin) replacementPart;

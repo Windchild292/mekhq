@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All rights reserved.
- * Copyright (c) 2020 - The MegaMek Team. All rights reserved.
+ * Copyright (c) 2009 - Jay Lawson (jaylawson39 at yahoo.com). All Rights Reserved.
+ * Copyright (c) 2020-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -19,9 +19,9 @@
  */
 package mekhq.campaign.finances;
 
+import megamek.common.annotations.Nullable;
 import megamek.common.util.EncodeControl;
 import mekhq.MekHQ;
-import mekhq.MekHqXmlUtil;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.event.LoanDefaultedEvent;
 import mekhq.campaign.event.TransactionCreditEvent;
@@ -31,6 +31,7 @@ import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.Contract;
 import mekhq.campaign.personnel.Person;
 import mekhq.io.FileType;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.logging.log4j.LogManager;
@@ -39,7 +40,6 @@ import org.w3c.dom.NodeList;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Jay Lawson (jaylawson39 at yahoo.com)
@@ -62,7 +63,7 @@ public class Finances {
     private List<Loan> loans;
     private List<Asset> assets;
     private int loanDefaults;
-    private int failCollateral;
+    private int failedCollateral;
     private LocalDate wentIntoDebt;
 
     public Finances() {
@@ -70,8 +71,56 @@ public class Finances {
         loans = new ArrayList<>();
         assets = new ArrayList<>();
         loanDefaults = 0;
-        failCollateral = 0;
+        failedCollateral = 0;
         wentIntoDebt = null;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(final List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+
+    public List<Loan> getLoans() {
+        return loans;
+    }
+
+    public void setLoans(final List<Loan> loans) {
+        this.loans = loans;
+    }
+
+    public List<Asset> getAssets() {
+        return assets;
+    }
+
+    public void setAssets(final List<Asset> assets) {
+        this.assets = assets;
+    }
+
+    public int getLoanDefaults() {
+        return loanDefaults;
+    }
+
+    public void setLoanDefaults(final int loanDefaults) {
+        this.loanDefaults = loanDefaults;
+    }
+
+    public int getFailedCollateral() {
+        return failedCollateral;
+    }
+
+    public void setFailedCollateral(final int failedCollateral) {
+        this.failedCollateral = failedCollateral;
+    }
+
+    public @Nullable LocalDate getWentIntoDebt() {
+        return wentIntoDebt;
+    }
+
+    public void setWentIntoDebt(final @Nullable LocalDate wentIntoDebt) {
+        this.wentIntoDebt = wentIntoDebt;
     }
 
     public Money getBalance() {
@@ -151,62 +200,6 @@ public class Finances {
                 resourceMap.getString("FinancialTermEndCarryover.finances"));
     }
 
-    public List<Transaction> getAllTransactions() {
-        return transactions;
-    }
-
-    public List<Loan> getAllLoans() {
-        return loans;
-    }
-
-    public List<Asset> getAllAssets() {
-        return assets;
-    }
-
-    public void writeToXml(PrintWriter pw1, int indent) {
-        MekHqXmlUtil.writeSimpleXMLOpenIndentedLine(pw1, indent, "finances");
-        MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "loanDefaults", loanDefaults);
-        for (Transaction transaction : getAllTransactions()) {
-            transaction.writeToXML(pw1, indent + 1);
-        }
-        for (final Loan loan : getAllLoans()) {
-            loan.writeToXML(pw1, indent + 1);
-        }
-        for (Asset asset : getAllAssets()) {
-            asset.writeToXML(pw1, indent + 1);
-        }
-        if (wentIntoDebt != null) {
-            MekHqXmlUtil.writeSimpleXmlTag(pw1, indent + 1, "wentIntoDebt",
-                    MekHqXmlUtil.saveFormattedDate(wentIntoDebt));
-        }
-        MekHqXmlUtil.writeSimpleXMLCloseIndentedLine(pw1, indent, "finances");
-    }
-
-    public static Finances generateInstanceFromXML(Node wn) {
-        Finances retVal = new Finances();
-        NodeList nl = wn.getChildNodes();
-        for (int x = 0; x < nl.getLength(); x++) {
-            Node wn2 = nl.item(x);
-            try {
-                if (wn2.getNodeName().equalsIgnoreCase("transaction")) {
-                    retVal.transactions.add(Transaction.generateInstanceFromXML(wn2));
-                } else if (wn2.getNodeName().equalsIgnoreCase("loan")) {
-                    retVal.loans.add(Loan.generateInstanceFromXML(wn2));
-                } else if (wn2.getNodeName().equalsIgnoreCase("asset")) {
-                    retVal.assets.add(Asset.generateInstanceFromXML(wn2));
-                } else if (wn2.getNodeName().equalsIgnoreCase("loanDefaults")) {
-                    retVal.loanDefaults = Integer.parseInt(wn2.getTextContent().trim());
-                } else if (wn2.getNodeName().equalsIgnoreCase("wentIntoDebt")) {
-                    retVal.wentIntoDebt = MekHqXmlUtil.parseDate(wn2.getTextContent().trim());
-                }
-            } catch (Exception e) {
-                LogManager.getLogger().error("", e);
-            }
-        }
-
-        return retVal;
-    }
-
     public void addLoan(Loan loan) {
         loans.add(loan);
     }
@@ -234,7 +227,7 @@ public class Finances {
         }
 
         // Handle assets
-        getAllAssets().forEach(asset -> asset.processNewDay(campaign, yesterday, today, this));
+        getAssets().forEach(asset -> asset.processNewDay(campaign, yesterday, today, this));
 
         // Handle peacetime operating expenses, payroll, and loan payments
         if (today.getDayOfMonth() == 1) {
@@ -325,18 +318,16 @@ public class Finances {
         }
 
         List<Loan> newLoans = new ArrayList<>();
-        for (Loan loan : loans) {
+        for (Loan loan : getLoans()) {
             if (loan.checkLoanPayment(today)) {
                 if (debit(TransactionType.LOAN_PAYMENT, today, loan.getPaymentAmount(),
                         String.format(resourceMap.getString("Loan.title"), loan))) {
-                    campaign.addReport(String.format(
-                            resourceMap.getString("Loan.text"),
-                            loan.getPaymentAmount().toAmountAndSymbolString(), loan));
+                    campaign.addReport(resourceMap.getString("Loan.text"),
+                            loan.getPaymentAmount().toAmountAndSymbolString(), loan);
                     loan.paidLoan();
                 } else {
-                    campaign.addReport(String.format(
-                            resourceMap.getString("Loan.insufficient"),
-                            loan.getPaymentAmount().toAmountAndSymbolString()));
+                    campaign.addReport(resourceMap.getString("Loan.insufficient.report"),
+                            loan, loan.getPaymentAmount().toAmountAndSymbolString());
                     loan.setOverdue(true);
                 }
             }
@@ -344,17 +335,16 @@ public class Finances {
             if (loan.getRemainingPayments() > 0) {
                 newLoans.add(loan);
             } else {
-                campaign.addReport(String.format(resourceMap.getString("Loan.paid"), loan));
+                campaign.addReport(resourceMap.getString("Loan.paid.report"), loan);
             }
         }
 
-        if ((wentIntoDebt != null) && !isInDebt()) {
-            wentIntoDebt = null;
+        if ((getWentIntoDebt() != null) && !isInDebt()) {
+            setWentIntoDebt(null);
         }
 
         loans = newLoans;
     }
-
 
     private void payoutShares(Campaign campaign, Contract contract, LocalDate date) {
         if (campaign.getCampaignOptions().getUseAtB() && campaign.getCampaignOptions().getUseShareSystem()
@@ -363,8 +353,7 @@ public class Finances {
                     .dividedBy(100);
             if (debit(TransactionType.SALARIES, date, shares,
                     String.format(resourceMap.getString("ContractSharePayment.text"), contract.getName()))) {
-                campaign.addReport(String.format(resourceMap.getString("DistributedShares.text"),
-                        shares.toAmountAndSymbolString()));
+                campaign.addReport(resourceMap.getString("DistributedShares.text"), shares.toAmountAndSymbolString());
 
                 if (campaign.getCampaignOptions().isTrackTotalEarnings()) {
                     int numberOfShares = 0;
@@ -383,7 +372,7 @@ public class Finances {
                  * This should not happen, as the shares payment should be less than the contract
                  * payment that has just been made.
                  */
-                campaign.addReport(String.format(resourceMap.getString("NotImplemented.text"), "shares"));
+                campaign.addReport(resourceMap.getString("NotImplemented.text"), "shares");
                 LogManager.getLogger().error("Attempted to payout share amount larger than the payment of the contract");
             }
         }
@@ -396,9 +385,8 @@ public class Finances {
             if (loan.isOverdue()) {
                 if (debit(TransactionType.LOAN_PAYMENT, campaign.getLocalDate(), loan.getPaymentAmount(),
                         String.format(resourceMap.getString("Loan.title"), loan))) {
-                    campaign.addReport(String.format(
-                            resourceMap.getString("Loan.text"),
-                            loan.getPaymentAmount().toAmountAndSymbolString(), loan));
+                    campaign.addReport(resourceMap.getString("Loan.text"),
+                            loan.getPaymentAmount().toAmountAndSymbolString(), loan);
                     loan.paidLoan();
                 } else {
                     overdueAmount = overdueAmount.plus(loan.getPaymentAmount());
@@ -407,7 +395,7 @@ public class Finances {
             if (loan.getRemainingPayments() > 0) {
                 newLoans.add(loan);
             } else {
-                campaign.addReport(String.format(resourceMap.getString("Loan.paid"), loan));
+                campaign.addReport(resourceMap.getString("Loan.paid.report"), loan);
             }
         }
         loans = newLoans;
@@ -427,18 +415,10 @@ public class Finances {
     public void defaultOnLoan(Loan loan, boolean paidCollateral) {
         loanDefaults++;
         if (!paidCollateral) {
-            failCollateral++;
+            failedCollateral++;
         }
         removeLoan(loan);
         MekHQ.triggerEvent(new LoanDefaultedEvent(loan));
-    }
-
-    public int getLoanDefaults() {
-        return loanDefaults;
-    }
-
-    public int getFailedCollateral() {
-        return failCollateral;
     }
 
     public Money getTotalLoanCollateral() {
@@ -451,25 +431,22 @@ public class Finances {
         return amount.plus(assets.stream().map(Asset::getValue).collect(Collectors.toList()));
     }
 
-    public void setAssets(List<Asset> newAssets) {
-        assets = newAssets;
-    }
-
     public Money getMaxCollateral(Campaign c) {
         return c.getAccountant().getTotalEquipmentValue()
                 .plus(getTotalAssetValue())
                 .minus(getTotalLoanCollateral());
     }
 
+    //region File I/O
+    //region CSV
     public String exportFinancesToCSV(String path, String format) {
         String report;
 
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(path));
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-                     .withHeader("Date", "Type", "Description", "Amount", "RunningTotal"))) {
-
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.builder()
+                     .setHeader("Date", "Type", "Description", "Amount", "RunningTotal").build())) {
             Money runningTotal = Money.zero();
-            for (Transaction transaction : getAllTransactions()) {
+            for (Transaction transaction : getTransactions()) {
                 runningTotal = runningTotal.plus(transaction.getAmount());
                 csvPrinter.printRecord(
                         MekHQ.getMHQOptions().getDisplayFormattedDate(transaction.getDate()),
@@ -481,12 +458,135 @@ public class Finances {
 
             csvPrinter.flush();
 
-            report = transactions.size() + resourceMap.getString("FinanceExport.text");
-        } catch (IOException ioe) {
-            LogManager.getLogger().info("Error exporting finances to " + format);
+            report = String.format(resourceMap.getString("FinanceExport.format"), transactions.size());
+        } catch (Exception ex) {
+            LogManager.getLogger().error("Error exporting finances to " + format, ex);
             report = "Error exporting finances. See log for details.";
         }
 
         return report;
     }
+    //endregion CSV
+
+    //region XML
+    public void writeToXML(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "finances");
+        if (!getTransactions().isEmpty()) {
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "transactions");
+            for (final Transaction transaction : getTransactions()) {
+                transaction.writeToXML(pw, indent);
+            }
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "transactions");
+        }
+
+        if (!getLoans().isEmpty()) {
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "loans");
+            for (final Loan loan : getLoans()) {
+                loan.writeToXML(pw, indent);
+            }
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "loans");
+        }
+
+        if (!getAssets().isEmpty()) {
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "assets");
+            for (final Asset asset : getAssets()) {
+                asset.writeToXML(pw, indent);
+            }
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "assets");
+        }
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "loanDefaults", getLoanDefaults());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "failedCollateral", getFailedCollateral());
+        if (getWentIntoDebt() != null) {
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "wentIntoDebt", getWentIntoDebt());
+        }
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "finances");
+    }
+
+    public static Finances generateInstanceFromXML(Node wn) {
+        Finances retVal = new Finances();
+        NodeList nl = wn.getChildNodes();
+        for (int x = 0; x < nl.getLength(); x++) {
+            Node wn2 = nl.item(x);
+            try {
+                switch (wn2.getNodeName()) {
+                    case "transactions":
+                        retVal.setTransactions(parseTransactionsFromXML(wn2));
+                        break;
+                    case "loans":
+                        retVal.setLoans(parseLoansFromXML(wn2));
+                        break;
+                    case "assets":
+                        retVal.setAssets(parseAssetsFromXML(wn2));
+                        break;
+                    case "loanDefaults":
+                        retVal.setLoanDefaults(Integer.parseInt(wn2.getTextContent().trim()));
+                        break;
+                    case "failedCollateral":
+                        retVal.setFailedCollateral(Integer.parseInt(wn2.getTextContent().trim()));
+                        break;
+                    case "wentIntoDebt":
+                        retVal.setWentIntoDebt(MHQXMLUtility.parseDate(wn2.getTextContent().trim()));
+                        break;
+                    //region Legacy
+                    case "transaction": // Removed in 0.49.8
+                        retVal.getTransactions().add(Transaction.generateInstanceFromXML(wn2));
+                        break;
+                    case "loan": // Removed in 0.49.8
+                        retVal.getLoans().add(Loan.generateInstanceFromXML(wn2));
+                        break;
+                    case "asset": // Removed in 0.49.8
+                        retVal.getAssets().add(Asset.generateInstanceFromXML(wn2));
+                        break;
+                    //endregion Legacy
+                    default:
+                        break;
+                }
+            } catch (Exception ex) {
+                LogManager.getLogger().error("", ex);
+            }
+        }
+
+        return retVal;
+    }
+
+    private static List<Transaction> parseTransactionsFromXML(final Node wn) {
+        if (!wn.hasChildNodes()) {
+            return new ArrayList<>();
+        }
+
+        final NodeList nl = wn.getChildNodes();
+        return IntStream.range(0, nl.getLength())
+                .mapToObj(nl::item)
+                .filter(node -> "transaction".equals(node.getNodeName()))
+                .map(Transaction::generateInstanceFromXML)
+                .collect(Collectors.toList());
+    }
+
+    private static List<Loan> parseLoansFromXML(final Node wn) {
+        if (!wn.hasChildNodes()) {
+            return new ArrayList<>();
+        }
+
+        final NodeList nl = wn.getChildNodes();
+        return IntStream.range(0, nl.getLength())
+                .mapToObj(nl::item)
+                .filter(node -> "loan".equals(node.getNodeName()))
+                .map(Loan::generateInstanceFromXML)
+                .collect(Collectors.toList());
+    }
+
+    private static List<Asset> parseAssetsFromXML(final Node wn) {
+        if (!wn.hasChildNodes()) {
+            return new ArrayList<>();
+        }
+
+        final NodeList nl = wn.getChildNodes();
+        return IntStream.range(0, nl.getLength())
+                .mapToObj(nl::item)
+                .filter(node -> "asset".equals(node.getNodeName()))
+                .map(Asset::generateInstanceFromXML)
+                .collect(Collectors.toList());
+    }
+    //endregion XML
+    //endregion File I/O
 }

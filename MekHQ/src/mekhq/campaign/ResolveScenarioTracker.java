@@ -423,12 +423,12 @@ public class ResolveScenarioTracker {
     private void checkForLostLimbs(Entity en, boolean controlsField) {
         for (int loc = 0; loc < en.locations(); loc++) {
             if (en.isLocationBlownOff(loc) && !controlsField) {
-                //sorry dude, we cant find your arm
+                // Sorry dude, we can't find your arm
                 en.setLocationBlownOff(loc, false);
                 en.setArmor(IArmorState.ARMOR_DESTROYED, loc);
                 en.setInternal(IArmorState.ARMOR_DESTROYED, loc);
             }
-            //check for mounted and critical slot missingness as well
+            // Check for mounted and critical slot missingness as well
             for (int i = 0; i < en.getNumberOfCriticals(loc); i++) {
                 final CriticalSlot cs = en.getCritical(loc, i);
                 if (null == cs || !cs.isEverHittable()) {
@@ -659,7 +659,7 @@ public class ResolveScenarioTracker {
         }
 
         // And now we have potential prisoners that are crewing a unit...
-        if (campaign.getCampaignOptions().getPrisonerCaptureStyle().isEnabled()) {
+        if (!campaign.getCampaignOptions().getPrisonerCaptureStyle().isNone()) {
             processPrisonerCapture(potentialSalvage);
             processPrisonerCapture(devastatedEnemyUnits);
         }
@@ -1435,7 +1435,7 @@ public class ResolveScenarioTracker {
                 PrisonerStatus prisonerStatus = getCampaign().getCampaignOptions().getDefaultPrisonerStatus();
 
                 // Then, we need to determine if they are a defector
-                if (prisonerStatus.isPrisoner() && getCampaign().getCampaignOptions().useAtBPrisonerDefection()
+                if (prisonerStatus.isCurrentPrisoner() && getCampaign().getCampaignOptions().useAtBPrisonerDefection()
                         && isAtBContract) {
                     // Are they actually a defector?
                     if (Compute.d6(2) >= (8 + ((AtBContract) mission).getEnemySkill().ordinal() - getCampaign().getUnitRatingAsInteger())) {
@@ -1444,7 +1444,7 @@ public class ResolveScenarioTracker {
                 }
 
                 getCampaign().recruitPerson(person, prisonerStatus);
-                if (prisonerStatus.isWillingToDefect()) {
+                if (prisonerStatus.isPrisonerDefector()) {
                     getCampaign().addReport(String.format("You have convinced %s to defect.",
                             person.getHyperlinkedName()));
                 }
@@ -1523,15 +1523,16 @@ public class ResolveScenarioTracker {
                 Money repairBLC = Money.zero();
                 String blcString = "battle loss compensation (parts) for " + unit.getName();
                 if (!unit.isRepairable()) {
-                    //if the unit is not repairable, you should get BLC for it but we should subtract
-                    //the value of salvageable parts
+                    // if the unit is not repairable, you should get BLC for it but we should
+                    // subtract the value of salvageable parts
                     blcValue = unitValue.minus(unit.getSellValue());
                     blcString = "battle loss compensation for " + unit.getName();
                 }
-                if (campaign.getCampaignOptions().payForRepairs()) {
+
+                if (getCampaign().getCampaignOptions().isPayForTransport()) {
                     for (Part p : unit.getParts()) {
                         if (p.needsFixing() && !(p instanceof Armor)) {
-                            repairBLC = repairBLC.plus(p.getStickerPrice().multipliedBy(0.2));
+                            repairBLC = repairBLC.plus(p.getActualValue().multipliedBy(0.2));
                         }
                     }
                 }

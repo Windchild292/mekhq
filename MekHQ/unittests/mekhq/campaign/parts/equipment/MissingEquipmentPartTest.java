@@ -20,13 +20,13 @@ package mekhq.campaign.parts.equipment;
 
 import megamek.Version;
 import megamek.common.*;
-import mekhq.MekHqXmlUtil;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.Quartermaster;
 import mekhq.campaign.Warehouse;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.unit.Unit;
+import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.w3c.dom.Document;
@@ -480,7 +480,7 @@ public class MissingEquipmentPartTest {
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -491,7 +491,7 @@ public class MissingEquipmentPartTest {
         // Deserialize the MissingEquipmentPart
         Part deserializedPart = Part.generateInstanceFromXML(partElt, new Version());
         assertNotNull(deserializedPart);
-        assertTrue(deserializedPart instanceof MissingEquipmentPart);
+        assertInstanceOf(MissingEquipmentPart.class, deserializedPart);
 
         MissingEquipmentPart deserialized = (MissingEquipmentPart) deserializedPart;
 
@@ -871,7 +871,7 @@ public class MissingEquipmentPartTest {
         verify(unit, times(1)).addPart(replacementCaptor.capture());
 
         Part replacement = replacementCaptor.getValue();
-        assertTrue(replacement instanceof EquipmentPart);
+        assertInstanceOf(EquipmentPart.class, replacement);
 
         EquipmentPart replacementEquipmentPart = (EquipmentPart) replacement;
         assertTrue(replacementEquipmentPart.getId() > 0);
@@ -944,7 +944,7 @@ public class MissingEquipmentPartTest {
         verify(unit, times(1)).addPart(replacementCaptor.capture());
 
         Part replacement = replacementCaptor.getValue();
-        assertTrue(replacement instanceof EquipmentPart);
+        assertInstanceOf(EquipmentPart.class, replacement);
 
         EquipmentPart replacementEquipmentPart = (EquipmentPart) replacement;
         assertTrue(replacementEquipmentPart.getId() > 0);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - The MegaMek Team. All Rights Reserved.
+ * Copyright (c) 2021-2022 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
  *
@@ -50,7 +50,7 @@ public abstract class AbstractMarriage {
     private boolean useRandomClannerMarriages;
     private boolean useRandomPrisonerMarriages;
 
-    private final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
+    private static final ResourceBundle resources = ResourceBundle.getBundle("mekhq.resources.Personnel",
             MekHQ.getMHQOptions().getLocale(), new EncodeControl());
     //endregion Variable Declarations
 
@@ -131,14 +131,14 @@ public abstract class AbstractMarriage {
             return resources.getString("cannotMarry.Deployed.text");
         } else if (person.getAge(today) < campaign.getCampaignOptions().getMinimumMarriageAge()) {
             return resources.getString("cannotMarry.TooYoung.text");
-        } else if (!isUseClannerMarriages() && person.isClanner()) {
+        } else if (!isUseClannerMarriages() && person.isClanPersonnel()) {
             return resources.getString("cannotMarry.Clanner.text");
-        } else if (!isUsePrisonerMarriages() && person.getPrisonerStatus().isPrisoner()) {
+        } else if (!isUsePrisonerMarriages() && person.getPrisonerStatus().isCurrentPrisoner()) {
             return resources.getString("cannotMarry.Prisoner.text");
         } else if (randomMarriage) {
-            if (!isUseRandomClannerMarriages() && person.isClanner()) {
+            if (!isUseRandomClannerMarriages() && person.isClanPersonnel()) {
                 return resources.getString("cannotMarry.RandomClanner.text");
-            } else if (!isUseRandomPrisonerMarriages() && person.getPrisonerStatus().isPrisoner()) {
+            } else if (!isUseRandomPrisonerMarriages() && person.getPrisonerStatus().isCurrentPrisoner()) {
                 return resources.getString("cannotMarry.RandomPrisoner.text");
             }
         }
@@ -171,9 +171,9 @@ public abstract class AbstractMarriage {
                         campaign.getCampaignOptions().getCheckMutualAncestorsDepth())) {
             return false;
         } else if (randomMarriage) {
-            return person.getPrisonerStatus().isPrisoner() == potentialSpouse.getPrisonerStatus().isPrisoner();
+            return person.getPrisonerStatus().isCurrentPrisoner() == potentialSpouse.getPrisonerStatus().isCurrentPrisoner();
         } else {
-            return !potentialSpouse.getPrisonerStatus().isPrisoner() || person.getPrisonerStatus().isPrisoner();
+            return !potentialSpouse.getPrisonerStatus().isCurrentPrisoner() || person.getPrisonerStatus().isCurrentPrisoner();
         }
     }
 
@@ -255,8 +255,8 @@ public abstract class AbstractMarriage {
      * @param person the person who is getting randomly married
      * @param sameSex whether the marriage is homosexual or heterosexual
      */
-    private void marryRandomSpouse(final Campaign campaign, final LocalDate today,
-                                   final Person person, final boolean sameSex) {
+    protected void marryRandomSpouse(final Campaign campaign, final LocalDate today,
+                                     final Person person, final boolean sameSex) {
         final Gender gender = sameSex ? person.getGender() : (person.getGender().isMale() ? Gender.FEMALE : Gender.MALE);
         final List<Person> potentials = campaign.getActivePersonnel().stream()
                 .filter(potentialSpouse -> isPotentialRandomSpouse(campaign, today, person, potentialSpouse, gender))
@@ -278,9 +278,9 @@ public abstract class AbstractMarriage {
      * @param gender the desired gender to be married to
      * @return true if they are a valid potential random spouse
      */
-    private boolean isPotentialRandomSpouse(final Campaign campaign, final LocalDate today,
-                                            final Person person, final Person potentialSpouse,
-                                            final Gender gender) {
+    protected boolean isPotentialRandomSpouse(final Campaign campaign, final LocalDate today,
+                                              final Person person, final Person potentialSpouse,
+                                              final Gender gender) {
         // A Potential Spouse must:
         // 1. Be the specified gender
         // 2. Be a safe spouse for the current person

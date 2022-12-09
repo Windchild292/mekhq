@@ -22,14 +22,15 @@ import megamek.Version;
 import megamek.common.AmmoType;
 import megamek.common.Entity;
 import megamek.common.Mounted;
-import mekhq.MekHqXmlUtil;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.Quartermaster;
 import mekhq.campaign.Warehouse;
 import mekhq.campaign.parts.AmmoStorage;
+import mekhq.campaign.parts.InfantryAmmoStorage;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.unit.Unit;
+import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -161,7 +162,7 @@ public class LargeCraftAmmoBinTest {
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -172,7 +173,7 @@ public class LargeCraftAmmoBinTest {
         // Deserialize the AmmoBin
         Part deserializedPart = Part.generateInstanceFromXML(partElt, new Version());
         assertNotNull(deserializedPart);
-        assertTrue(deserializedPart instanceof LargeCraftAmmoBin);
+        assertInstanceOf(LargeCraftAmmoBin.class, deserializedPart);
 
         LargeCraftAmmoBin deserialized = (LargeCraftAmmoBin) deserializedPart;
 
@@ -528,7 +529,7 @@ public class LargeCraftAmmoBinTest {
         AmmoStorage added = null;
         for (Part part : warehouse.getParts()) {
             assertNull(added);
-            assertTrue(part instanceof AmmoStorage);
+            assertInstanceOf(AmmoStorage.class, part);
             added = (AmmoStorage) part;
         }
 
@@ -559,7 +560,7 @@ public class LargeCraftAmmoBinTest {
         AmmoStorage added = null;
         for (Part part : warehouse.getParts()) {
             assertNull(added);
-            assertTrue(part instanceof AmmoStorage);
+            assertInstanceOf(AmmoStorage.class, part);
             added = (AmmoStorage) part;
         }
 
@@ -616,7 +617,7 @@ public class LargeCraftAmmoBinTest {
         AmmoStorage added = null;
         for (Part part : warehouse.getParts()) {
             assertNull(added);
-            assertTrue(part instanceof AmmoStorage);
+            assertInstanceOf(AmmoStorage.class, part);
             added = (AmmoStorage) part;
         }
 
@@ -650,7 +651,7 @@ public class LargeCraftAmmoBinTest {
         AmmoStorage added = null;
         for (Part part : warehouse.getParts()) {
             assertNull(added);
-            assertTrue(part instanceof AmmoStorage);
+            assertInstanceOf(AmmoStorage.class, part);
             added = (AmmoStorage) part;
         }
 
@@ -728,7 +729,7 @@ public class LargeCraftAmmoBinTest {
         AmmoStorage added = null;
         for (Part part : warehouse.getParts()) {
             assertNull(added);
-            assertTrue(part instanceof AmmoStorage);
+            assertInstanceOf(AmmoStorage.class, part);
             added = (AmmoStorage) part;
         }
 
@@ -776,7 +777,7 @@ public class LargeCraftAmmoBinTest {
         AmmoStorage added = null;
         for (Part part : warehouse.getParts()) {
             assertNull(added);
-            assertTrue(part instanceof AmmoStorage);
+            assertInstanceOf(AmmoStorage.class, part);
             added = (AmmoStorage) part;
         }
 

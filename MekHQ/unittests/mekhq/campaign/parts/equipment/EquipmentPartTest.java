@@ -21,7 +21,7 @@ package mekhq.campaign.parts.equipment;
 import megamek.Version;
 import megamek.common.*;
 import megamek.common.weapons.bayweapons.BayWeapon;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.Quartermaster;
@@ -477,7 +477,7 @@ public class EquipmentPartTest {
         assertFalse(xml.isBlank());
 
         // Using factory get an instance of document builder
-        DocumentBuilder db = MekHqXmlUtil.newSafeDocumentBuilder();
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
 
         // Parse using builder to get DOM representation of the XML file
         Document xmlDoc = db.parse(new ByteArrayInputStream(xml.getBytes()));
@@ -488,7 +488,7 @@ public class EquipmentPartTest {
         // Deserialize the EquipmentPart
         Part deserializedPart = Part.generateInstanceFromXML(partElt, new Version());
         assertNotNull(deserializedPart);
-        assertTrue(deserializedPart instanceof EquipmentPart);
+        assertInstanceOf(EquipmentPart.class, deserializedPart);
 
         EquipmentPart deserialized = (EquipmentPart) deserializedPart;
 
@@ -557,7 +557,7 @@ public class EquipmentPartTest {
         verify(unit, times(1)).addPart(missingPartCaptor.capture());
 
         Part missingPart = missingPartCaptor.getValue();
-        assertTrue(missingPart instanceof MissingEquipmentPart);
+        assertInstanceOf(MissingEquipmentPart.class, missingPart);
 
         MissingEquipmentPart missingEquipmentPart = (MissingEquipmentPart) missingPart;
         assertTrue(missingEquipmentPart.getId() > 0);
@@ -622,7 +622,7 @@ public class EquipmentPartTest {
         verify(unit, times(1)).addPart(missingPartCaptor.capture());
 
         Part missingPart = missingPartCaptor.getValue();
-        assertTrue(missingPart instanceof MissingEquipmentPart);
+        assertInstanceOf(MissingEquipmentPart.class, missingPart);
 
         MissingEquipmentPart missingEquipmentPart = (MissingEquipmentPart) missingPart;
         assertTrue(missingEquipmentPart.getId() > 0);

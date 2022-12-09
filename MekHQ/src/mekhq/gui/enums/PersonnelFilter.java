@@ -305,6 +305,10 @@ public enum PersonnelFilter {
         return this == RETIRED;
     }
 
+    public boolean isDeserted() {
+        return this == DESERTED;
+    }
+
     public boolean isKIA() {
         return this == KIA;
     }
@@ -346,7 +350,7 @@ public enum PersonnelFilter {
     }
 
     public boolean getFilteredInformation(final Person person) {
-        final boolean active = person.getStatus().isActive() && !person.getPrisonerStatus().isPrisoner();
+        final boolean active = person.getStatus().isActive() && !person.getPrisonerStatus().isCurrentPrisoner();
         switch (this) {
             case ALL:
                 return true;
@@ -466,7 +470,7 @@ public enum PersonnelFilter {
             case FOUNDER:
                 return person.isFounder();
             case PRISONER:
-                return person.getPrisonerStatus().isPrisoner() || person.getPrisonerStatus().isBondsman();
+                return person.getPrisonerStatus().isCurrentPrisoner() || person.getPrisonerStatus().isBondsman();
             case INACTIVE:
                 return !person.getStatus().isActive();
             case MIA:

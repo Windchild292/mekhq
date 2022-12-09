@@ -27,7 +27,7 @@ public final class MHQConstants extends SuiteConstants {
     //region General Constants
     public static final String PROJECT_NAME = "MekHQ";
     public static final int ASTECH_TEAM_SIZE = 6;
-    public static final int PREGNANCY_STANDARD_DURATION = 280; //standard duration of a pregnancy in days (40 weeks)
+    public static final int PREGNANCY_STANDARD_DURATION = 280; // standard duration of a pregnancy in days (40 weeks)
     public static final String EGO_OBJECTIVE_NAME = "Player";
     // endregion General Constants
 
@@ -192,12 +192,15 @@ public final class MHQConstants extends SuiteConstants {
     public static final String RATINFO_DIR = "data/universe/ratdata/";
     public static final String ERAS_FILE_PATH = "data/universe/eras.xml";
     public static final String FACTION_HINTS_FILE = "data/universe/factionhints.xml";
+    public static final String FINANCIAL_INSTITUTIONS_FILE_PATH = "data/universe/financialInstitutions.xml";
     public static final String RANDOM_DEATH_CAUSES_FILE_PATH = "data/universe/randomDeathCauses.xml";
     public static final String RANKS_FILE_PATH = "data/universe/ranks.xml";
     public static final String CAMPAIGN_PRESET_DIRECTORY = "mmconf/campaignPresets/";
+    public static final String USER_FINANCIAL_INSTITUTIONS_FILE_PATH = "userdata/data/universe/financialInstitutions.xml";
     public static final String USER_RANDOM_DEATH_CAUSES_FILE_PATH = "userdata/data/universe/randomDeathCauses.xml";
     public static final String USER_RANKS_FILE_PATH = "userdata/data/universe/ranks.xml";
     public static final String USER_CAMPAIGN_PRESET_DIRECTORY = "userdata/mmconf/campaignPresets/";
+    public static final String STRATCON_MUL_FILES_DIRECTORY="data/scenariotemplates/fixedmuls/";
 
     //region StratCon
     public static final String STRATCON_REQUIRED_HOSTILE_FACILITY_MODS = "./data/scenariomodifiers/requiredHostileFacilityModifiers.xml";

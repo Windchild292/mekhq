@@ -21,7 +21,7 @@
 package mekhq.campaign.parts;
 
 import megamek.common.*;
-import mekhq.MekHqXmlUtil;
+import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.parts.enums.PartRepairType;
@@ -127,8 +127,8 @@ public class MekActuator extends Part {
     @Override
     public void writeToXML(PrintWriter pw1, int indent) {
         writeToXmlBegin(pw1, indent);
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<type>" + type + "</type>");
-        pw1.println(MekHqXmlUtil.indentStr(indent + 1) + "<location>" + location + "</location>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<type>" + type + "</type>");
+        pw1.println(MHQXMLUtility.indentStr(indent + 1) + "<location>" + location + "</location>");
         writeToXmlEnd(pw1, indent);
     }
 
@@ -231,15 +231,14 @@ public class MekActuator extends Part {
 
     @Override
     public String getDetails(boolean includeRepairDetails) {
-        if (null != unit) {
+        if (getUnit() != null) {
             StringJoiner sj = new StringJoiner(", ");
             if (!StringUtils.isEmpty(getLocationName())) {
                 sj.add(getLocationName());
             }
 
             if (includeRepairDetails && getCampaign().getCampaignOptions().isPayForRepairs()) {
-                Money repairCost = getStickerPrice().multipliedBy(0.2);
-                sj.add(repairCost.toAmountAndSymbolString() + " to repair");
+                sj.add(getActualValue().multipliedBy(0.2).toAmountAndSymbolString() + " to repair");
             }
             return sj.toString();
         }
