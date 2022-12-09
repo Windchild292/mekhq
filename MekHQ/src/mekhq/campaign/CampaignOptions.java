@@ -3786,24 +3786,24 @@ public class CampaignOptions {
 
         //region Finances Tab
         //region General Finances
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForParts", payForParts);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForRepairs", payForRepairs);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForUnits", payForUnits);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForSalaries", payForSalaries);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForOverhead", payForOverhead);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForMaintain", payForMaintain);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForTransport", payForTransport);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "sellUnits", sellUnits);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "sellParts", sellParts);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForRecruitment", payForRecruitment);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "useLoanLimits", useLoanLimits);
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForParts", isPayForParts());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForRepairs", isPayForRepairs());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForUnits", isPayForUnits());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForSalaries", isPayForSalaries());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForOverhead", isPayForOverhead());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForMaintain", isPayForMaintain());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForTransport", isPayForTransport());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "sellUnits", isSellUnits());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "sellParts", isSellParts());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForRecruitment", isPayForRecruitment());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "useLoanLimits", isUseLoanLimits());
         MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "usePercentageMaint", isUsePercentageMaint());
         MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "infantryDontCount", isInfantryDontCount());
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "usePeacetimeCost", usePeacetimeCost);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "useExtendedPartsModifier", useExtendedPartsModifier);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "showPeacetimeCost", showPeacetimeCost);
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "financialYearDuration", financialYearDuration.name());
-        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "newFinancialYearFinancesToCSVExport", newFinancialYearFinancesToCSVExport);
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "usePeacetimeCost", isUsePeacetimeCost());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "useExtendedPartsModifier", isUseExtendedPartsModifier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "showPeacetimeCost", isShowPeacetimeCost());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "financialYearDuration", getFinancialYearDuration().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "newFinancialYearFinancesToCSVExport", isNewFinancialYearFinancesToCSVExport());
         //endregion General Finances
 
         //region Price Multipliers
