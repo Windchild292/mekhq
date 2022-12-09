@@ -1100,7 +1100,7 @@ public abstract class Part implements IPartWork, ITechnology {
 
         if (includeRepairDetails) {
             sj.add(hits + " hit(s)");
-            if (campaign.getCampaignOptions().payForRepairs() && (hits > 0)) {
+            if (getCampaign().getCampaignOptions().isPayForRepairs() && (hits > 0)) {
                 sj.add(getActualValue().multipliedBy(0.2).toAmountAndSymbolString() + " to repair");
             }
         }

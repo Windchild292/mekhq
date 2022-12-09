@@ -6199,24 +6199,24 @@ public class CampaignOptionsPane extends AbstractMHQTabbedPane {
         //endregion Personnel Tab
 
         //region Finances Tab
-        payForPartsBox.setSelected(options.payForParts());
-        payForRepairsBox.setSelected(options.payForRepairs());
-        payForUnitsBox.setSelected(options.payForUnits());
-        payForSalariesBox.setSelected(options.payForSalaries());
-        payForOverheadBox.setSelected(options.payForOverhead());
-        payForMaintainBox.setSelected(options.payForMaintain());
-        payForTransportBox.setSelected(options.payForTransport());
-        sellUnitsBox.setSelected(options.canSellUnits());
-        sellPartsBox.setSelected(options.canSellParts());
-        payForRecruitmentBox.setSelected(options.payForRecruitment());
-        useLoanLimitsBox.setSelected(options.useLoanLimits());
-        usePercentageMaintBox.setSelected(options.usePercentageMaint());
-        useInfantryDontCountBox.setSelected(options.useInfantryDontCount());
-        usePeacetimeCostBox.setSelected(options.usePeacetimeCost());
-        useExtendedPartsModifierBox.setSelected(options.useExtendedPartsModifier());
-        showPeacetimeCostBox.setSelected(options.showPeacetimeCost());
+        payForPartsBox.setSelected(options.isPayForParts());
+        payForRepairsBox.setSelected(options.isPayForRepairs());
+        payForUnitsBox.setSelected(options.isPayForUnits());
+        payForSalariesBox.setSelected(options.isPayForSalaries());
+        payForOverheadBox.setSelected(options.isPayForOverhead());
+        payForMaintainBox.setSelected(options.isPayForMaintain());
+        payForTransportBox.setSelected(options.isPayForTransport());
+        sellUnitsBox.setSelected(options.isSellUnits());
+        sellPartsBox.setSelected(options.isSellParts());
+        payForRecruitmentBox.setSelected(options.isPayForRecruitment());
+        useLoanLimitsBox.setSelected(options.isUseLoanLimits());
+        usePercentageMaintBox.setSelected(options.isUsePercentageMaint());
+        useInfantryDontCountBox.setSelected(options.isInfantryDontCount());
+        usePeacetimeCostBox.setSelected(options.isUsePeacetimeCost());
+        useExtendedPartsModifierBox.setSelected(options.isUseExtendedPartsModifier());
+        showPeacetimeCostBox.setSelected(options.isShowPeacetimeCost());
         comboFinancialYearDuration.setSelectedItem(options.getFinancialYearDuration());
-        newFinancialYearFinancesToCSVExportBox.setSelected(options.getNewFinancialYearFinancesToCSVExport());
+        newFinancialYearFinancesToCSVExportBox.setSelected(options.isNewFinancialYearFinancesToCSVExport());
 
         // Price Multipliers
         spnCommonPartPriceMultiplier.setValue(options.getCommonPartPriceMultiplier());
@@ -6484,9 +6484,9 @@ public class CampaignOptionsPane extends AbstractMHQTabbedPane {
             options.setPayForMaintain(payForMaintainBox.isSelected());
             options.setPayForTransport(payForTransportBox.isSelected());
             options.setPayForRecruitment(payForRecruitmentBox.isSelected());
-            options.setLoanLimits(useLoanLimitsBox.isSelected());
+            options.setUseLoanLimits(useLoanLimitsBox.isSelected());
             options.setUsePercentageMaint(usePercentageMaintBox.isSelected());
-            options.setUseInfantryDontCount(useInfantryDontCountBox.isSelected());
+            options.setInfantryDontCount(useInfantryDontCountBox.isSelected());
             options.setSellUnits(sellUnitsBox.isSelected());
             options.setSellParts(sellPartsBox.isSelected());
             options.setUsePeacetimeCost(usePeacetimeCostBox.isSelected());

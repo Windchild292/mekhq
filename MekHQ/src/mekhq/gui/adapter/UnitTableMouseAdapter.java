@@ -780,7 +780,7 @@ public class UnitTableMouseAdapter extends JPopupMenuAdapter {
             }
 
             if (oneSelected && !unit.isMothballed()
-                    && gui.getCampaign().getCampaignOptions().usePeacetimeCost()) {
+                    && gui.getCampaign().getCampaignOptions().isUsePeacetimeCost()) {
                 menuItem = new JMenuItem("Show Monthly Supply Cost Report");
                 menuItem.setActionCommand(COMMAND_SUPPLY_COST);
                 menuItem.addActionListener(this);
@@ -912,7 +912,7 @@ public class UnitTableMouseAdapter extends JPopupMenuAdapter {
             }
 
             // sell unit
-            if (!allDeployed && gui.getCampaign().getCampaignOptions().canSellUnits()) {
+            if (!allDeployed && gui.getCampaign().getCampaignOptions().isSellUnits()) {
                 popup.addSeparator();
                 menuItem = new JMenuItem("Sell Unit");
                 menuItem.setActionCommand(COMMAND_SELL);

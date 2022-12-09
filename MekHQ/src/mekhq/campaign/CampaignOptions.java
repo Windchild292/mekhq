@@ -291,6 +291,17 @@ public class CampaignOptions {
     //endregion Personnel Tab
 
     //region Finance tab
+    // General Finances
+
+    private FinancialYearDuration financialYearDuration;
+    private boolean newFinancialYearFinancesToCSVExport;
+    private boolean usePercentageMaint; // Unofficial
+    private boolean infantryDontCount; // Unofficial
+    private boolean usePeacetimeCost;
+    private boolean useExtendedPartsModifier;
+    private boolean showPeacetimeCost;
+
+    // Payment
     private boolean payForParts;
     private boolean payForRepairs;
     private boolean payForUnits;
@@ -298,17 +309,14 @@ public class CampaignOptions {
     private boolean payForOverhead;
     private boolean payForMaintain;
     private boolean payForTransport;
+    private boolean payForRecruitment;
+
+    //
     private boolean sellUnits;
     private boolean sellParts;
-    private boolean payForRecruitment;
+
+    // Loans
     private boolean useLoanLimits;
-    private boolean usePercentageMaint; // Unofficial
-    private boolean infantryDontCount; // Unofficial
-    private boolean usePeacetimeCost;
-    private boolean useExtendedPartsModifier;
-    private boolean showPeacetimeCost;
-    private FinancialYearDuration financialYearDuration;
-    private boolean newFinancialYearFinancesToCSVExport;
 
     // Price Multipliers
     private double commonPartPriceMultiplier;
@@ -2097,134 +2105,7 @@ public class CampaignOptions {
     //endregion Personnel Tab
 
     //region Finances Tab
-    public boolean payForParts() {
-        return payForParts;
-    }
-
-    public void setPayForParts(boolean b) {
-        this.payForParts = b;
-    }
-
-    public boolean payForRepairs() {
-        return payForRepairs;
-    }
-
-    public void setPayForRepairs(boolean b) {
-        this.payForRepairs = b;
-    }
-
-    public boolean payForUnits() {
-        return payForUnits;
-    }
-
-    public void setPayForUnits(boolean b) {
-        this.payForUnits = b;
-    }
-
-    public boolean payForSalaries() {
-        return payForSalaries;
-    }
-
-    public void setPayForSalaries(boolean b) {
-        this.payForSalaries = b;
-    }
-
-    public boolean payForOverhead() {
-        return payForOverhead;
-    }
-
-    public void setPayForOverhead(boolean b) {
-        this.payForOverhead = b;
-    }
-
-    public boolean payForMaintain() {
-        return payForMaintain;
-    }
-
-    public void setPayForMaintain(boolean b) {
-        this.payForMaintain = b;
-    }
-
-    public boolean payForTransport() {
-        return payForTransport;
-    }
-
-    public void setPayForTransport(boolean b) {
-        this.payForTransport = b;
-    }
-
-    public boolean canSellUnits() {
-        return sellUnits;
-    }
-
-    public void setSellUnits(boolean b) {
-        this.sellUnits = b;
-    }
-
-    public boolean canSellParts() {
-        return sellParts;
-    }
-
-    public void setSellParts(boolean b) {
-        this.sellParts = b;
-    }
-
-    public boolean payForRecruitment() {
-        return payForRecruitment;
-    }
-
-    public void setPayForRecruitment(boolean b) {
-        this.payForRecruitment = b;
-    }
-
-    public boolean useLoanLimits() {
-        return useLoanLimits;
-    }
-
-    public void setLoanLimits(boolean b) {
-        this.useLoanLimits = b;
-    }
-
-    public boolean usePercentageMaint() {
-        return usePercentageMaint;
-    }
-
-    public void setUsePercentageMaint(boolean b) {
-        usePercentageMaint = b;
-    }
-
-    public boolean useInfantryDontCount() {
-        return infantryDontCount;
-    }
-
-    public void setUseInfantryDontCount(boolean b) {
-        infantryDontCount = b;
-    }
-
-    public boolean usePeacetimeCost() {
-        return usePeacetimeCost;
-    }
-
-    public void setUsePeacetimeCost(boolean b) {
-        this.usePeacetimeCost = b;
-    }
-
-    public boolean useExtendedPartsModifier() {
-        return useExtendedPartsModifier;
-    }
-
-    public void setUseExtendedPartsModifier(boolean b) {
-        this.useExtendedPartsModifier = b;
-    }
-
-    public boolean showPeacetimeCost() {
-        return showPeacetimeCost;
-    }
-
-    public void setShowPeacetimeCost(boolean b) {
-        this.showPeacetimeCost = b;
-    }
-
+    //region General Finances
     /**
      * @return the duration of a financial year
      */
@@ -2235,22 +2116,151 @@ public class CampaignOptions {
     /**
      * @param financialYearDuration the financial year duration to set
      */
-    public void setFinancialYearDuration(FinancialYearDuration financialYearDuration) {
+    public void setFinancialYearDuration(final FinancialYearDuration financialYearDuration) {
         this.financialYearDuration = financialYearDuration;
     }
 
     /**
-     * @return whether or not to export finances to CSV at the end of a financial year
+     * @return whether to export finances to CSV at the end of a financial year
      */
-    public boolean getNewFinancialYearFinancesToCSVExport() {
+    public boolean isNewFinancialYearFinancesToCSVExport() {
         return newFinancialYearFinancesToCSVExport;
     }
 
     /**
-     * @param b whether or not to export finances to CSV at the end of a financial year
+     * @param newFinancialYearFinancesToCSVExport whether to export finances to CSV at the end of a financial year
      */
-    public void setNewFinancialYearFinancesToCSVExport(boolean b) {
-        newFinancialYearFinancesToCSVExport = b;
+    public void setNewFinancialYearFinancesToCSVExport(final boolean newFinancialYearFinancesToCSVExport) {
+        this.newFinancialYearFinancesToCSVExport = newFinancialYearFinancesToCSVExport;
+    }
+
+    public boolean isUsePercentageMaint() {
+        return usePercentageMaint;
+    }
+
+    public void setUsePercentageMaint(final boolean usePercentageMaint) {
+        this.usePercentageMaint = usePercentageMaint;
+    }
+
+    public boolean isInfantryDontCount() {
+        return infantryDontCount;
+    }
+
+    public void setInfantryDontCount(final boolean infantryDontCount) {
+        this.infantryDontCount = infantryDontCount;
+    }
+
+    public boolean isUsePeacetimeCost() {
+        return usePeacetimeCost;
+    }
+
+    public void setUsePeacetimeCost(final boolean usePeacetimeCost) {
+        this.usePeacetimeCost = usePeacetimeCost;
+    }
+
+    public boolean isUseExtendedPartsModifier() {
+        return useExtendedPartsModifier;
+    }
+
+    public void setUseExtendedPartsModifier(final boolean useExtendedPartsModifier) {
+        this.useExtendedPartsModifier = useExtendedPartsModifier;
+    }
+
+    public boolean isShowPeacetimeCost() {
+        return showPeacetimeCost;
+    }
+
+    public void setShowPeacetimeCost(final boolean showPeacetimeCost) {
+        this.showPeacetimeCost = showPeacetimeCost;
+    }
+    //endregion General Finances
+
+    public boolean isPayForParts() {
+        return payForParts;
+    }
+
+    public void setPayForParts(final boolean payForParts) {
+        this.payForParts = payForParts;
+    }
+
+    public boolean isPayForRepairs() {
+        return payForRepairs;
+    }
+
+    public void setPayForRepairs(final boolean payForRepairs) {
+        this.payForRepairs = payForRepairs;
+    }
+
+    public boolean isPayForUnits() {
+        return payForUnits;
+    }
+
+    public void setPayForUnits(final boolean payForUnits) {
+        this.payForUnits = payForUnits;
+    }
+
+    public boolean isPayForSalaries() {
+        return payForSalaries;
+    }
+
+    public void setPayForSalaries(final boolean payForSalaries) {
+        this.payForSalaries = payForSalaries;
+    }
+
+    public boolean isPayForOverhead() {
+        return payForOverhead;
+    }
+
+    public void setPayForOverhead(final boolean payForOverhead) {
+        this.payForOverhead = payForOverhead;
+    }
+
+    public boolean isPayForMaintain() {
+        return payForMaintain;
+    }
+
+    public void setPayForMaintain(final boolean payForMaintain) {
+        this.payForMaintain = payForMaintain;
+    }
+
+    public boolean isPayForTransport() {
+        return payForTransport;
+    }
+
+    public void setPayForTransport(final boolean payForTransport) {
+        this.payForTransport = payForTransport;
+    }
+
+    public boolean isSellUnits() {
+        return sellUnits;
+    }
+
+    public void setSellUnits(final boolean sellUnits) {
+        this.sellUnits = sellUnits;
+    }
+
+    public boolean isSellParts() {
+        return sellParts;
+    }
+
+    public void setSellParts(final boolean sellParts) {
+        this.sellParts = sellParts;
+    }
+
+    public boolean isPayForRecruitment() {
+        return payForRecruitment;
+    }
+
+    public void setPayForRecruitment(final boolean payForRecruitment) {
+        this.payForRecruitment = payForRecruitment;
+    }
+
+    public boolean isUseLoanLimits() {
+        return useLoanLimits;
+    }
+
+    public void setUseLoanLimits(final boolean useLoanLimits) {
+        this.useLoanLimits = useLoanLimits;
     }
 
     //region Price Multipliers
@@ -3775,36 +3785,38 @@ public class CampaignOptions {
         //endregion Personnel Tab
 
         //region Finances Tab
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForParts", payForParts);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForRepairs", payForRepairs);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForUnits", payForUnits);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForSalaries", payForSalaries);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForOverhead", payForOverhead);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForMaintain", payForMaintain);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForTransport", payForTransport);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "sellUnits", sellUnits);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "sellParts", sellParts);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "payForRecruitment", payForRecruitment);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "useLoanLimits", useLoanLimits);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "usePercentageMaint", usePercentageMaint);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "infantryDontCount", infantryDontCount);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "usePeacetimeCost", usePeacetimeCost);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "useExtendedPartsModifier", useExtendedPartsModifier);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "showPeacetimeCost", showPeacetimeCost);
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "financialYearDuration", financialYearDuration.name());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "newFinancialYearFinancesToCSVExport", newFinancialYearFinancesToCSVExport);
+        //region General Finances
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForParts", isPayForParts());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForRepairs", isPayForRepairs());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForUnits", isPayForUnits());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForSalaries", isPayForSalaries());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForOverhead", isPayForOverhead());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForMaintain", isPayForMaintain());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForTransport", isPayForTransport());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "sellUnits", isSellUnits());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "sellParts", isSellParts());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "payForRecruitment", isPayForRecruitment());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "useLoanLimits", isUseLoanLimits());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "usePercentageMaint", isUsePercentageMaint());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "infantryDontCount", isInfantryDontCount());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "usePeacetimeCost", isUsePeacetimeCost());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "useExtendedPartsModifier", isUseExtendedPartsModifier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "showPeacetimeCost", isShowPeacetimeCost());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "financialYearDuration", getFinancialYearDuration().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "newFinancialYearFinancesToCSVExport", isNewFinancialYearFinancesToCSVExport());
+        //endregion General Finances
 
         //region Price Multipliers
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "commonPartPriceMultiplier", getCommonPartPriceMultiplier());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "innerSphereUnitPriceMultiplier", getInnerSphereUnitPriceMultiplier());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "innerSpherePartPriceMultiplier", getInnerSpherePartPriceMultiplier());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "clanUnitPriceMultiplier", getClanUnitPriceMultiplier());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "clanPartPriceMultiplier", getClanPartPriceMultiplier());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "mixedTechUnitPriceMultiplier", getMixedTechUnitPriceMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "commonPartPriceMultiplier", getCommonPartPriceMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "innerSphereUnitPriceMultiplier", getInnerSphereUnitPriceMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "innerSpherePartPriceMultiplier", getInnerSpherePartPriceMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "clanUnitPriceMultiplier", getClanUnitPriceMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "clanPartPriceMultiplier", getClanPartPriceMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "mixedTechUnitPriceMultiplier", getMixedTechUnitPriceMultiplier());
         MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "usedPartPriceMultipliers", getUsedPartPriceMultipliers());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "damagedPartsValueMultiplier", getDamagedPartsValueMultiplier());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "unrepairablePartsValueMultiplier", getUnrepairablePartsValueMultiplier());
-        MHQXMLUtility.writeSimpleXmlTag(pw1, indent, "cancelledOrderRefundMultiplier", getCancelledOrderRefundMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "damagedPartsValueMultiplier", getDamagedPartsValueMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "unrepairablePartsValueMultiplier", getUnrepairablePartsValueMultiplier());
+        MHQXMLUtility.writeSimpleXMLTag(pw1, indent, "cancelledOrderRefundMultiplier", getCancelledOrderRefundMultiplier());
         //endregion Price Multipliers
         //endregion Finances Tab
 
@@ -4475,41 +4487,41 @@ public class CampaignOptions {
 
                 //region Finances Tab
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForParts")) {
-                    retVal.payForParts = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForParts(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForRepairs")) {
-                    retVal.payForRepairs = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForRepairs(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForUnits")) {
-                    retVal.payForUnits = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForUnits(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForSalaries")) {
-                    retVal.payForSalaries = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForSalaries(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForOverhead")) {
-                    retVal.payForOverhead = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForOverhead(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForMaintain")) {
-                    retVal.payForMaintain = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForMaintain(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForTransport")) {
-                    retVal.payForTransport = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForTransport(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("sellUnits")) {
-                    retVal.sellUnits = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setSellUnits(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("sellParts")) {
-                    retVal.sellParts = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setSellParts(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("payForRecruitment")) {
-                    retVal.payForRecruitment = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setPayForRecruitment(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("useLoanLimits")) {
-                    retVal.useLoanLimits = Boolean.parseBoolean(wn2.getTextContent().trim());
+                    retVal.setUseLoanLimits(Boolean.parseBoolean(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("usePercentageMaint")) {
-                    retVal.usePercentageMaint = Boolean.parseBoolean(wn2.getTextContent().trim());
+                    retVal.setUsePercentageMaint(Boolean.parseBoolean(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("infantryDontCount")) {
-                    retVal.infantryDontCount = Boolean.parseBoolean(wn2.getTextContent().trim());
+                    retVal.setInfantryDontCount(Boolean.parseBoolean(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("usePeacetimeCost")) {
-                    retVal.usePeacetimeCost = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setUsePeacetimeCost(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("useExtendedPartsModifier")) {
-                    retVal.useExtendedPartsModifier = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setUseExtendedPartsModifier(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("showPeacetimeCost")) {
-                    retVal.showPeacetimeCost = Boolean.parseBoolean(wn2.getTextContent());
+                    retVal.setShowPeacetimeCost(Boolean.parseBoolean(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("financialYearDuration")) {
-                    retVal.setFinancialYearDuration(FinancialYearDuration.parseFromString(wn2.getTextContent().trim()));
+                    retVal.setFinancialYearDuration(FinancialYearDuration.parseFromString(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("newFinancialYearFinancesToCSVExport")) {
-                    retVal.newFinancialYearFinancesToCSVExport = Boolean.parseBoolean(wn2.getTextContent().trim());
+                    retVal.setNewFinancialYearFinancesToCSVExport(Boolean.parseBoolean(wn2.getTextContent()));
 
                 //region Price Multipliers
                 } else if (wn2.getNodeName().equalsIgnoreCase("commonPartPriceMultiplier")) {

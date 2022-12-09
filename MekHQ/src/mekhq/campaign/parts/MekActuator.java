@@ -231,12 +231,13 @@ public class MekActuator extends Part {
 
     @Override
     public String getDetails(boolean includeRepairDetails) {
-        if (null != unit) {
+        if (getUnit() != null) {
             StringJoiner sj = new StringJoiner(", ");
             if (!StringUtils.isEmpty(getLocationName())) {
                 sj.add(getLocationName());
             }
-            if (includeRepairDetails && campaign.getCampaignOptions().payForRepairs()) {
+
+            if (includeRepairDetails && getCampaign().getCampaignOptions().isPayForRepairs()) {
                 sj.add(getActualValue().multipliedBy(0.2).toAmountAndSymbolString() + " to repair");
             }
             return sj.toString();

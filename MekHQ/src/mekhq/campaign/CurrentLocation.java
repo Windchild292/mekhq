@@ -211,8 +211,8 @@ public class CurrentLocation {
                 }
             }
             if (isAtJumpPoint() && (rechargeTime >= neededRechargeTime)) {
-                //jump
-                if (campaign.getCampaignOptions().payForTransport()) {
+                // jump
+                if (campaign.getCampaignOptions().isPayForTransport()) {
                     if (!campaign.getFinances().debit(TransactionType.TRANSPORTATION, campaign.getLocalDate(),
                             campaign.calculateCostPerJump(
                                     true, campaign.getCampaignOptions().useEquipmentContractBase()),
@@ -249,7 +249,7 @@ public class CurrentLocation {
             transitTime -= usedTransitTime/24.0;
             if (transitTime <= 0) {
                 campaign.addReport(jumpPath.getLastSystem().getPrintableName(campaign.getLocalDate()) + " reached.");
-                //we are here!
+                // we are here!
                 transitTime = 0;
                 jumpPath = null;
             }

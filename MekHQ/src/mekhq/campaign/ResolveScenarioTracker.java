@@ -1523,12 +1523,13 @@ public class ResolveScenarioTracker {
                 Money repairBLC = Money.zero();
                 String blcString = "battle loss compensation (parts) for " + unit.getName();
                 if (!unit.isRepairable()) {
-                    //if the unit is not repairable, you should get BLC for it but we should subtract
-                    //the value of salvageable parts
+                    // if the unit is not repairable, you should get BLC for it but we should
+                    // subtract the value of salvageable parts
                     blcValue = unitValue.minus(unit.getSellValue());
                     blcString = "battle loss compensation for " + unit.getName();
                 }
-                if (campaign.getCampaignOptions().payForRepairs()) {
+
+                if (getCampaign().getCampaignOptions().isPayForTransport()) {
                     for (Part p : unit.getParts()) {
                         if (p.needsFixing() && !(p instanceof Armor)) {
                             repairBLC = repairBLC.plus(p.getActualValue().multipliedBy(0.2));

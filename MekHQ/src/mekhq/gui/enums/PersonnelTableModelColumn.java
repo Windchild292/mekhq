@@ -709,7 +709,7 @@ public enum PersonnelTableModelColumn {
                     case XP:
                         return true;
                     case SALARY:
-                        return campaign.getCampaignOptions().payForSalaries();
+                        return campaign.getCampaignOptions().isPayForSalaries();
                     default:
                         return false;
                 }
