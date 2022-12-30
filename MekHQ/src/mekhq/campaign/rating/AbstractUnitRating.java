@@ -63,9 +63,6 @@ public abstract class AbstractUnitRating {
 
     private Campaign campaign = null;
 
-    static final BigDecimal greenThreshold = new BigDecimal("5.5");
-    static final BigDecimal regularThreshold = new BigDecimal("4.0");
-    static final BigDecimal veteranThreshold = new BigDecimal("2.5");
     private final Map<String, Integer> skillRatingCounts = new HashMap<>();
 
     private List<Person> commanderList = new ArrayList<>();
@@ -208,7 +205,7 @@ public abstract class AbstractUnitRating {
             // If we don't have a list of potential commanders, we cannot
             // determine a commander.
             List<Person> commanderList = getCommanderList();
-            if (commanderList == null || commanderList.isEmpty()) {
+            if ((commanderList == null) || commanderList.isEmpty()) {
                 commander = null;
                 return null;
             }
@@ -308,25 +305,21 @@ public abstract class AbstractUnitRating {
             return 0;
         }
 
-        //Find the percentage of units that are transported.
+        // Find the percentage of units that are transported.
         setTransportPercent(getTransportPercent());
 
-        //Compute the score.
-        BigDecimal scoredPercent = getTransportPercent().subtract(
-                new BigDecimal(50));
+        // Compute the score.
+        BigDecimal scoredPercent = getTransportPercent().subtract(new BigDecimal(50));
         if (scoredPercent.compareTo(BigDecimal.ZERO) < 0) {
             return value;
         }
-        BigDecimal percentageScore = scoredPercent.divide(new BigDecimal(10),
-                                                          0,
-                                                          RoundingMode.DOWN);
+        BigDecimal percentageScore = scoredPercent.divide(new BigDecimal(10), 0, RoundingMode.DOWN);
         value += percentageScore.multiply(new BigDecimal(5))
-                                .setScale(0, RoundingMode.DOWN)
-                                .intValue();
+                .setScale(0, RoundingMode.DOWN)
+                .intValue();
         value = Math.min(value, 25);
 
-        //Only the highest of these values should be used, regardless of how
-        // many are actually owned.
+        // Only the highest of these values should be used, regardless of how many are actually owned.
         if (isWarShipWithDocsOwner()) {
             value += 30;
         } else if (isWarShipOwner()) {
@@ -398,7 +391,7 @@ public abstract class AbstractUnitRating {
     }
 
     public int getModifier() {
-        return (calculateUnitRatingScore() / 10);
+        return calculateUnitRatingScore() / 10;
     }
 
     /**
@@ -943,7 +936,7 @@ public abstract class AbstractUnitRating {
         LogManager.getLogger().debug("Adding " + u.getName() + " to unit counts.");
 
         Entity e = u.getEntity();
-        if (null == e) {
+        if (e == null) {
             LogManager.getLogger().debug("Unit " + u.getName() + " is not an Entity.  Skipping.");
             return;
         }
@@ -992,7 +985,6 @@ public abstract class AbstractUnitRating {
                 break;
             case UnitType.INFANTRY:
                 Infantry i = (Infantry) e;
-
                 incrementInfantryCount(i.getSquadSize() * i.getSquadCount());
                 incrementInfantryUnitCount();
                 break;
