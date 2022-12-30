@@ -26,7 +26,6 @@ import megamek.common.Compute;
 import megamek.common.annotations.Nullable;
 import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
-import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.JumpPath;
 import mekhq.campaign.market.enums.ContractMarketMethod;
@@ -38,8 +37,9 @@ import mekhq.campaign.mission.enums.ContractCommandRights;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.*;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -395,7 +395,7 @@ public class ContractMarket {
 
         if (contract.getContractType().isCadreDuty()) {
             contract.setAllySkill(SkillLevel.GREEN);
-            contract.setAllyQuality(IUnitRating.DRAGOON_F);
+            contract.setAllyQuality(AbstractUnitRating.DRAGOON_F);
         }
 
         contract.calculateLength(campaign.getCampaignOptions().getVariableContractLength());
@@ -477,7 +477,7 @@ public class ContractMarket {
 
         if (contract.getContractType().isCadreDuty()) {
             contract.setAllySkill(SkillLevel.GREEN);
-            contract.setAllyQuality(IUnitRating.DRAGOON_F);
+            contract.setAllyQuality(AbstractUnitRating.DRAGOON_F);
         }
         contract.calculateLength(campaign.getCampaignOptions().getVariableContractLength());
 
@@ -563,7 +563,7 @@ public class ContractMarket {
                         AtBContractType.SECURITY_DUTY, AtBContractType.OBJECTIVE_RAID, AtBContractType.GARRISON_DUTY,
                         AtBContractType.CADRE_DUTY, AtBContractType.DIVERSIONARY_RAID }
         };
-        int roll = MathUtility.clamp(Compute.d6(2) + unitRatingMod - IUnitRating.DRAGOON_C, 2, 12);
+        int roll = MathUtility.clamp(Compute.d6(2) + unitRatingMod - AbstractUnitRating.DRAGOON_C, 2, 12);
         return table[majorPower ? 0 : 1][roll - 2];
     }
 
@@ -642,15 +642,15 @@ public class ContractMarket {
 
     protected int getQualityRating(int roll) {
         if (roll <= 5) {
-            return IUnitRating.DRAGOON_F;
+            return AbstractUnitRating.DRAGOON_F;
         } else if (roll <= 8) {
-            return IUnitRating.DRAGOON_D;
+            return AbstractUnitRating.DRAGOON_D;
         } else if (roll <= 10) {
-            return IUnitRating.DRAGOON_C;
+            return AbstractUnitRating.DRAGOON_C;
         } else if (roll == 11) {
-            return IUnitRating.DRAGOON_B;
+            return AbstractUnitRating.DRAGOON_B;
         } else {
-            return IUnitRating.DRAGOON_A;
+            return AbstractUnitRating.DRAGOON_A;
         }
     }
 
@@ -694,15 +694,15 @@ public class ContractMarket {
         mods.mods[CLAUSE_SALVAGE] = 0;
         mods.mods[CLAUSE_TRANSPORT] = adminTransportExp - SkillType.EXP_REGULAR;
         mods.mods[CLAUSE_SUPPORT] = adminLogisticsExp - SkillType.EXP_REGULAR;
-        if (unitRatingMod >= IUnitRating.DRAGOON_A) {
+        if (unitRatingMod >= AbstractUnitRating.DRAGOON_A) {
             mods.mods[Compute.randomInt(4)] += 2;
             mods.mods[Compute.randomInt(4)] += 2;
-        } else if (unitRatingMod == IUnitRating.DRAGOON_B) {
+        } else if (unitRatingMod == AbstractUnitRating.DRAGOON_B) {
             mods.mods[Compute.randomInt(4)] += 1;
             mods.mods[Compute.randomInt(4)] += 1;
-        } else if (unitRatingMod == IUnitRating.DRAGOON_C) {
+        } else if (unitRatingMod == AbstractUnitRating.DRAGOON_C) {
             mods.mods[Compute.randomInt(4)] += 1;
-        } else if (unitRatingMod <= IUnitRating.DRAGOON_F) {
+        } else if (unitRatingMod <= AbstractUnitRating.DRAGOON_F) {
             mods.mods[Compute.randomInt(4)] -= 1;
         }
 

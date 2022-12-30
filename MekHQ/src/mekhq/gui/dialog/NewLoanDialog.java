@@ -28,7 +28,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Loan;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.enums.FinancialTerm;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import org.apache.logging.log4j.LogManager;
 
 import javax.swing.*;
@@ -102,7 +102,7 @@ public class NewLoanDialog extends javax.swing.JDialog implements ActionListener
         this.frame = parent;
         this.campaign = c;
         this.numberFormatter = new NumberFormatter(NumberFormat.getInstance());
-        IUnitRating unitRating = c.getUnitRating();
+        AbstractUnitRating unitRating = c.getUnitRating();
         rating = unitRating.getModifier();
         loan = Loan.getBaseLoan(rating, campaign.getLocalDate());
         maxCollateralValue = campaign.getFinances().getMaxCollateral(campaign);

@@ -23,17 +23,17 @@ import megamek.common.*;
 import megamek.common.event.Subscribe;
 import megamek.common.loaders.EntityLoadingException;
 import mekhq.MekHQ;
-import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.event.MarketNewPersonnelEvent;
 import mekhq.campaign.event.OptionsChangedEvent;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.unit.HangarStatistics;
 import mekhq.module.PersonnelMarketServiceManager;
 import mekhq.module.api.PersonnelMarketMethod;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -410,7 +410,7 @@ public class PersonnelMarket {
             }
         }
         target.addModifier(SkillType.EXP_REGULAR - adminLogExp, "Admin/Logistics");
-        target.addModifier(IUnitRating.DRAGOON_C - campaign.getUnitRatingMod(), "Unit Rating");
+        target.addModifier(AbstractUnitRating.DRAGOON_C - campaign.getUnitRatingMod(), "Unit Rating");
         return target;
     }
 }

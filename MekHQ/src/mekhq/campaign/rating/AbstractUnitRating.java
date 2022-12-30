@@ -40,7 +40,19 @@ import java.util.Map;
  * @since 3/15/2012
  */
 @SuppressWarnings(value = "SameParameterValue")
-public abstract class AbstractUnitRating implements IUnitRating {
+public abstract class AbstractUnitRating {
+
+    public static final int PRECISION = 5;
+    public static final RoundingMode HALF_EVEN = RoundingMode.HALF_EVEN;
+    public static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
+
+    // TODO : Add an array for each level of this, then use it across MekHQ instead of a bunch of random lists
+    public static final int DRAGOON_F = 0;
+    public static final int DRAGOON_D = 1;
+    public static final int DRAGOON_C = 2;
+    public static final int DRAGOON_B = 3;
+    public static final int DRAGOON_A = 4;
+    public static final int DRAGOON_ASTAR = 5;
 
     static final int HEADER_LENGTH = 19;
     static final int SUBHEADER_LENGTH = 23;
@@ -114,18 +126,26 @@ public abstract class AbstractUnitRating implements IUnitRating {
         AbstractUnitRating.initialized = initialized;
     }
 
-    @Override
     public void reInitialize() {
         setInitialized(false);
         initValues();
     }
 
-    @Override
+    /**
+     * @return the typs of unit rating method used.
+     */
+    public abstract UnitRatingMethod getUnitRatingMethod();
+
+    /**
+     * @return the unit's average experience level.
+     */
     public String getAverageExperience() {
         return getExperienceLevelName(calcAverageExperience());
     }
 
-    @Override
+    /**
+     * @return the Unit Rating score for the force's contract success/failure record.
+     */
     public int getCombatRecordValue() {
         setSuccessCount(0);
         setPartialCount(0);
@@ -174,9 +194,8 @@ public abstract class AbstractUnitRating implements IUnitRating {
     }
 
     /**
-     * Returns the commander (highest ranking person) for this force.
+     * @return the commander (highest ranking person) for this force.
      */
-    @Override
     public Person getCommander() {
         if ((commander == null)) {
 
@@ -251,7 +270,9 @@ public abstract class AbstractUnitRating implements IUnitRating {
         return failCount;
     }
 
-    @Override
+    /**
+     * @return the Unit Rating score for the percentage of combat units greater than L1 tech.
+     */
     public int getTechValue() {
         return 0;
     }
@@ -271,14 +292,15 @@ public abstract class AbstractUnitRating implements IUnitRating {
     }
 
     /**
-     * Returns the overall percentage of fully supported units.
+     * @return the percentage of units that are properly supported.
      */
-    @Override
     public BigDecimal getSupportPercent() {
         return supportPercent;
     }
 
-    @Override
+    /**
+     * @return the Unit Rating score for the force's ratio of transportation available to transportation needs.
+     */
     public int getTransportValue() {
         int value = 0;
 
@@ -316,7 +338,6 @@ public abstract class AbstractUnitRating implements IUnitRating {
         return value;
     }
 
-    @Override
     public int getUnitRating(int score) {
         if (score < 0) {
             return DRAGOON_F;
@@ -333,7 +354,10 @@ public abstract class AbstractUnitRating implements IUnitRating {
         }
     }
 
-    @Override
+    /**
+     * @param rating The numeric rating to be converted.
+     * @return the letter code of the passed in Unit rating.
+     */
     public String getUnitRatingName(int rating) {
         switch (rating) {
             case DRAGOON_F:
@@ -353,23 +377,26 @@ public abstract class AbstractUnitRating implements IUnitRating {
         }
     }
 
-    @Override
+    /**
+     * @param score The total Dragoon's score.
+     * @return the static constant representation of the passed in Unit rating.
+     */
     public String getUnitRating() {
         int score = calculateUnitRatingScore();
         return getUnitRatingName(getUnitRating(score)) + " (" + score + ")";
     }
 
-    @Override
+    /**
+     * @return the static constant representation of the computed Unit/Dragoon's rating as an integer.
+     */
     public int getUnitRatingAsInteger() {
         return getUnitRating(calculateUnitRatingScore());
     }
 
-    @Override
     public int getScore() {
         return calculateUnitRatingScore();
     }
 
-    @Override
     public int getModifier() {
         return (calculateUnitRatingScore() / 10);
     }
@@ -427,6 +454,39 @@ public abstract class AbstractUnitRating implements IUnitRating {
      * Calculates the unit's rating score.
      */
     protected abstract int calculateUnitRatingScore();
+
+    /**
+     * @return the Unit Rating score for the force's average experience level.
+     */
+    public abstract int getExperienceValue();
+
+    /**
+     * @return the Unit Rating score for the force's commander.
+     */
+    public abstract int getCommanderValue();
+
+    /**
+     * @return the Unit Rating score for the force's ratio of support to combat units.
+     */
+    public abstract int getSupportValue();
+
+    /**
+     * @return the Unit Rating score for the force's financial record. If the unit has never been
+     * in debt, a value of 0 is returned. If the unit has been in debt, a negative number will be
+     * returned.
+     */
+    public abstract int getFinancialValue();
+
+    /**
+     * @return a text description of how the Unit rating was calculated.
+     */
+    public abstract String getDetails();
+
+    /**
+     * @return descriptive text that should be displayed in a Help/About dialog to inform users of
+     * the means by which the Unit rating is calculated.
+     */
+    public abstract String getHelpText();
 
     /**
      * Recalculates the dragoons rating.  If this has already been done, the
@@ -865,7 +925,9 @@ public abstract class AbstractUnitRating implements IUnitRating {
         this.supportPercent = supportPercent;
     }
 
-    @Override
+    /**
+     * @return the percentage of units that can be transported without outside help.
+     */
     public BigDecimal getTransportPercent() {
         return transportPercent;
     }

@@ -28,7 +28,6 @@ import megamek.common.enums.SkillLevel;
 import megamek.common.icons.Camouflage;
 import megamek.common.loaders.EntityLoadingException;
 import mekhq.MekHQ;
-import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.event.MissionChangedEvent;
 import mekhq.campaign.finances.Money;
@@ -38,7 +37,7 @@ import mekhq.campaign.mission.enums.AtBContractType;
 import mekhq.campaign.mission.enums.AtBMoraleLevel;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.stratcon.StratconCampaignState;
 import mekhq.campaign.stratcon.StratconContractDefinition;
 import mekhq.campaign.stratcon.StratconContractInitializer;
@@ -46,6 +45,7 @@ import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.RandomFactionGenerator;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -145,9 +145,9 @@ public class AtBContract extends Contract {
 
         setContractType(AtBContractType.GARRISON_DUTY);
         setAllySkill(SkillLevel.REGULAR);
-        allyQuality = IUnitRating.DRAGOON_C;
+        allyQuality = AbstractUnitRating.DRAGOON_C;
         setEnemySkill(SkillLevel.REGULAR);
-        enemyQuality = IUnitRating.DRAGOON_C;
+        enemyQuality = AbstractUnitRating.DRAGOON_C;
         allyBotName = "Ally";
         enemyBotName = "Enemy";
         setAllyCamouflage(new Camouflage(Camouflage.COLOUR_CAMOUFLAGE, PlayerColour.RED.name()));
@@ -230,13 +230,13 @@ public class AtBContract extends Contract {
         if (campaign.getCampaignOptions().getUnitRatingMethod().isCampaignOperations()) {
             multiplier *= (unitRatingMod * 0.2) + 0.5;
         } else {
-            if (unitRatingMod >= IUnitRating.DRAGOON_A) {
+            if (unitRatingMod >= AbstractUnitRating.DRAGOON_A) {
                 multiplier *= 2.0;
-            } else if (unitRatingMod == IUnitRating.DRAGOON_B) {
+            } else if (unitRatingMod == AbstractUnitRating.DRAGOON_B) {
                 multiplier *= 1.5;
-            } else if (unitRatingMod == IUnitRating.DRAGOON_D) {
+            } else if (unitRatingMod == AbstractUnitRating.DRAGOON_D) {
                 multiplier *= 0.8;
-            } else if (unitRatingMod == IUnitRating.DRAGOON_F) {
+            } else if (unitRatingMod == AbstractUnitRating.DRAGOON_F) {
                 multiplier *= 0.5;
             }
         }
@@ -316,7 +316,7 @@ public class AtBContract extends Contract {
         int mod = Math.max(getEnemySkill().ordinal() - 3, -1);
 
         // Player Dragoon/MRBC rating: F +2, D +1, B -1, A -2
-        mod -= dragoonRating - IUnitRating.DRAGOON_C;
+        mod -= dragoonRating - AbstractUnitRating.DRAGOON_C;
 
         // For every 5 player victories in last month: -1
         mod -= victories / 5;
@@ -406,7 +406,7 @@ public class AtBContract extends Contract {
             repairLocation = Unit.SITE_BAY;
         }
 
-        if (unitRating >= IUnitRating.DRAGOON_B) {
+        if (unitRating >= AbstractUnitRating.DRAGOON_B) {
             repairLocation++;
         }
 
@@ -656,7 +656,7 @@ public class AtBContract extends Contract {
                         case 6:
                             final String unitName = c.getUnitMarket().addSingleUnit(c,
                                     UnitMarketType.EMPLOYER, UnitType.MEK, getEmployerFaction(),
-                                    IUnitRating.DRAGOON_F, 50);
+                                    AbstractUnitRating.DRAGOON_F, 50);
                             if (unitName != null) {
                                 text += String.format("Surplus Sale: %s offered by employer on the <a href='UNIT_MARKET'>unit market</a>", unitName);
                             }

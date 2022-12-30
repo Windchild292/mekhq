@@ -117,7 +117,7 @@ public class ContractSummaryPanel extends JPanel {
 
     private void fillStats() {
         //region Variable Initialization
-        // TODO : Switch me to use IUnitRating
+        // TODO : Switch me to use AbstractUnitRating
         String[] ratingNames = {"F", "D", "C", "B", "A"};
 
         // Initializing the GridBagConstraint used for Labels

@@ -32,7 +32,7 @@ import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.Factions;
 import mekhq.campaign.universe.IUnitGenerator;
 import mekhq.campaign.universe.RandomFactionGenerator;
@@ -94,7 +94,7 @@ public class AtBEventProcessor {
                 break;
         }
 
-        mod += campaign.getUnitRatingMod() - IUnitRating.DRAGOON_C;
+        mod += campaign.getUnitRatingMod() - AbstractUnitRating.DRAGOON_C;
         if (campaign.getFinances().isInDebt()) {
             mod -= 3;
         }
@@ -188,7 +188,7 @@ public class AtBEventProcessor {
         }
         final String faction = getRecruitFaction(campaign);
         MechSummary ms = campaign.getUnitGenerator().generate(faction, unitType, weight, campaign.getGameYear(),
-                IUnitRating.DRAGOON_F, movementModes, missionRoles);
+                AbstractUnitRating.DRAGOON_F, movementModes, missionRoles);
         Entity en;
         if (null != ms) {
             if (Factions.getInstance().getFaction(faction).isClan() && ms.getName().matches(".*Platoon.*")) {

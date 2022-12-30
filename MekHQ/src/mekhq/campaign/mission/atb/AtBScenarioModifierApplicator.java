@@ -21,17 +21,17 @@ package mekhq.campaign.mission.atb;
 import megamek.client.generator.enums.SkillGeneratorType;
 import megamek.client.generator.skillGenerators.AbstractSkillGenerator;
 import megamek.client.generator.skillGenerators.TaharqaSkillGenerator;
+import megamek.codeUtilities.MathUtility;
 import megamek.common.*;
 import megamek.common.enums.SkillLevel;
 import megamek.common.options.OptionsConstants;
-import megamek.codeUtilities.MathUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.mission.*;
 import mekhq.campaign.mission.ScenarioForceTemplate.ForceAlignment;
 import mekhq.campaign.mission.atb.AtBScenarioModifier.EventTiming;
 import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Factions;
 import org.apache.logging.log4j.LogManager;
@@ -214,8 +214,8 @@ public class AtBScenarioModifierApplicator {
         int currentQuality = scenario.getContract(c).getEnemyQuality();
 
         currentQuality += qualityAdjustment;
-        currentQuality = Math.min(IUnitRating.DRAGOON_ASTAR, currentQuality);
-        currentQuality = Math.max(IUnitRating.DRAGOON_F, currentQuality);
+        currentQuality = Math.min(AbstractUnitRating.DRAGOON_ASTAR, currentQuality);
+        currentQuality = Math.max(AbstractUnitRating.DRAGOON_F, currentQuality);
         scenario.setEffectiveOpforQuality(currentQuality);
     }
 

@@ -18,7 +18,7 @@
  */
 package mekhq.campaign.universe.generators.battleMechQualityGenerators;
 
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.enums.BattleMechQualityGenerationMethod;
 
 /**
@@ -38,20 +38,20 @@ public class AtBBattleMechQualityGenerator extends AbstractBattleMechQualityGene
             case 3:
             case 4:
             case 5:
-                return IUnitRating.DRAGOON_F;
+                return AbstractUnitRating.DRAGOON_F;
             case 6:
             case 7:
             case 8:
-                return IUnitRating.DRAGOON_D;
+                return AbstractUnitRating.DRAGOON_D;
             case 9:
             case 10:
-                return IUnitRating.DRAGOON_C;
+                return AbstractUnitRating.DRAGOON_C;
             case 11:
-                return IUnitRating.DRAGOON_B;
+                return AbstractUnitRating.DRAGOON_B;
             case 12:
-                return IUnitRating.DRAGOON_A;
+                return AbstractUnitRating.DRAGOON_A;
             default:
-                return IUnitRating.DRAGOON_ASTAR;
+                return AbstractUnitRating.DRAGOON_ASTAR;
         }
     }
 }

@@ -18,21 +18,16 @@
  */
 package mekhq.campaign.mission.atb.scenario;
 
-import java.util.ArrayList;
-
-import megamek.common.Board;
-import megamek.common.Compute;
-import megamek.common.Entity;
-import megamek.common.EntityWeightClass;
-import megamek.common.MechSummary;
-import megamek.common.UnitType;
+import megamek.common.*;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.AtBDynamicScenarioFactory;
 import mekhq.campaign.mission.CommonObjectiveFactory;
 import mekhq.campaign.mission.ScenarioObjective;
 import mekhq.campaign.mission.atb.AtBScenarioEnabled;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
+
+import java.util.ArrayList;
 
 @AtBScenarioEnabled
 public class StarLeagueCache2BuiltInScenario extends StarLeagueCache1BuiltInScenario {
@@ -60,7 +55,7 @@ public class StarLeagueCache2BuiltInScenario extends StarLeagueCache1BuiltInScen
         for (int weight = EntityWeightClass.WEIGHT_LIGHT; weight <= EntityWeightClass.WEIGHT_ASSAULT; weight++) {
             enemyEntities = new ArrayList<>();
             MechSummary ms = campaign.getUnitGenerator().generate("SL", UnitType.MEK, weight, 2750,
-                    (Compute.d6() == 6) ? IUnitRating.DRAGOON_A : IUnitRating.DRAGOON_D);
+                    (Compute.d6() == 6) ? AbstractUnitRating.DRAGOON_A : AbstractUnitRating.DRAGOON_D);
 
             if (ms != null) {
                 enemyEntities.add(AtBDynamicScenarioFactory.createEntityWithCrew(getContract(campaign).getEnemyCode(),

@@ -84,9 +84,9 @@ import mekhq.campaign.personnel.procreation.DisabledRandomProcreation;
 import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.campaign.personnel.ranks.RankValidator;
 import mekhq.campaign.personnel.ranks.Ranks;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.rating.CampaignOpsReputation;
 import mekhq.campaign.rating.FieldManualMercRevDragoonsRating;
-import mekhq.campaign.rating.IUnitRating;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.stratcon.StratconContractInitializer;
 import mekhq.campaign.stratcon.StratconRulesManager;
@@ -227,7 +227,7 @@ public class Campaign implements ITechManager {
     private String shipSearchResult; //AtB
     private LocalDate shipSearchExpiration; //AtB
     private IUnitGenerator unitGenerator;
-    private IUnitRating unitRating;
+    private AbstractUnitRating unitRating;
     private CampaignSummary campaignSummary;
     private final Quartermaster quartermaster;
 
@@ -1536,8 +1536,8 @@ public class Campaign implements ITechManager {
             }
             // Higher rated units are more likely to have Bloodnamed
             if (getCampaignOptions().getUnitRatingMethod().isEnabled()) {
-                IUnitRating rating = getUnitRating();
-                bloodnameTarget += IUnitRating.DRAGOON_C - (getCampaignOptions().getUnitRatingMethod().equals(
+                AbstractUnitRating rating = getUnitRating();
+                bloodnameTarget += AbstractUnitRating.DRAGOON_C - (getCampaignOptions().getUnitRatingMethod().equals(
                         mekhq.campaign.rating.UnitRatingMethod.FLD_MAN_MERCS_REV)
                         ? rating.getUnitRatingAsInteger() : rating.getModifier());
             }
@@ -3202,9 +3202,9 @@ public class Campaign implements ITechManager {
 
         if (getLocalDate().getDayOfMonth() == 1) {
             /*
-             * First of the month; roll morale, track unit fatigue.
+             * First of the month; roll morale,AbstractUnitRating fatigue.
              */
-            IUnitRating rating = getUnitRating();
+            AbstractUnitRating rating = getUnitRating();
             rating.reInitialize();
 
             for (AtBContract contract : getActiveAtBContracts()) {
@@ -5541,9 +5541,9 @@ public class Campaign implements ITechManager {
      */
     public int getUnitRatingMod() {
         if (!getCampaignOptions().getUnitRatingMethod().isEnabled()) {
-            return IUnitRating.DRAGOON_C;
+            return AbstractUnitRating.DRAGOON_C;
         }
-        IUnitRating rating = getUnitRating();
+        AbstractUnitRating rating = getUnitRating();
         return getCampaignOptions().getUnitRatingMethod().isFMMR() ? rating.getUnitRatingAsInteger()
                 : rating.getModifier();
     }
@@ -5553,7 +5553,7 @@ public class Campaign implements ITechManager {
      */
     public int getUnitRatingAsInteger() {
         return getCampaignOptions().getUnitRatingMethod().isEnabled()
-                ? getUnitRating().getUnitRatingAsInteger() : IUnitRating.DRAGOON_C;
+                ? getUnitRating().getUnitRatingAsInteger() : AbstractUnitRating.DRAGOON_C;
     }
 
     public RandomSkillPreferences getRandomSkillPreferences() {
@@ -6741,7 +6741,7 @@ public class Campaign implements ITechManager {
     /**
      * Sets the type of rating method used.
      */
-    public void setUnitRating(IUnitRating rating) {
+    public void setUnitRating(AbstractUnitRating rating) {
         unitRating = rating;
     }
 
@@ -6749,7 +6749,7 @@ public class Campaign implements ITechManager {
      * Returns the type of rating method as selected in the Campaign Options dialog.
      * Lazy-loaded for performance. Default is CampaignOpsReputation
      */
-    public IUnitRating getUnitRating() {
+    public AbstractUnitRating getUnitRating() {
         // if we switched unit rating methods,
         if (unitRating != null && (unitRating.getUnitRatingMethod() != getCampaignOptions().getUnitRatingMethod())) {
             unitRating = null;

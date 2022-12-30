@@ -29,7 +29,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.mission.AtBContract;
 import mekhq.campaign.mission.enums.AtBContractType;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.stratcon.StratconContractDefinition;
 import mekhq.campaign.stratcon.StratconContractInitializer;
 import mekhq.campaign.universe.PlanetarySystem;
@@ -93,7 +93,7 @@ public class NewAtBContractDialog extends NewContractDialog {
         contract = new AtBContract("New Contract");
         contract.calculateContract(campaign);
         ((AtBContract) contract).initContractDetails(campaign);
-        IUnitRating rating = campaign.getUnitRating();
+        AbstractUnitRating rating = campaign.getUnitRating();
         dragoonRating = rating.getUnitRatingAsInteger();
         super.initComponents();
 
@@ -142,7 +142,7 @@ public class NewAtBContractDialog extends NewContractDialog {
         btnClose = new JButton();
         txtDesc = new MarkdownEditorPanel();
         JLabel lblPlanetName = new JLabel();
-        // TODO : Switch me to use IUnitRating
+        // TODO : Switch me to use AbstractUnitRating
         String[] ratingNames = {"F", "D", "C", "B", "A"};
 
         final DefaultComboBoxModel<SkillLevel> allySkillModel = new DefaultComboBoxModel<>();

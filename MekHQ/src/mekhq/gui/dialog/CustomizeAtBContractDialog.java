@@ -164,7 +164,7 @@ public class CustomizeAtBContractDialog extends JDialog {
         btnClose = new JButton();
         txtDesc = new MarkdownEditorPanel("Contract Description");
         JLabel lblPlanetName = new JLabel();
-        // TODO : Switch me to use IUnitRating
+        // TODO : Switch me to use AbstractUnitRating
         String[] ratingNames = {"F", "D", "C", "B", "A"};
         final DefaultComboBoxModel<SkillLevel> allySkillModel = new DefaultComboBoxModel<>();
         allySkillModel.addAll(SkillLevel.getGeneratableValues());
