@@ -34,6 +34,7 @@ import megamek.common.Infantry;
 import megamek.common.Jumpship;
 import megamek.common.SmallCraft;
 import megamek.common.UnitType;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
@@ -106,13 +107,9 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         setTotalSkillLevels(BigDecimal.ZERO);
 
         for (Unit u : getCampaign().getHangar().getUnits()) {
-            if (u.isMothballed()) {
+            if (u.isMothballed() || !u.isPresent()) {
                 continue;
             }
-            if (!u.isPresent()) {
-                continue;
-            }
-
             updateUnitCounts(u);
 
             Person p = u.getCommander();
@@ -123,8 +120,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
             Entity entity = u.getEntity();
             updateBayCount(entity);
             int unitType = entity.getUnitType();
-            if (UnitType.INFANTRY == unitType ||
-                UnitType.BATTLE_ARMOR == unitType) {
+            if ((unitType == UnitType.INFANTRY) || (unitType == UnitType.BATTLE_ARMOR)) {
                 updateTotalSkill((Infantry) entity);
             } else {
                 updateTotalSkill(u.getEntity().getCrew(), entity.getUnitType());
@@ -158,13 +154,13 @@ public class CampaignOpsReputation extends AbstractUnitRating {
 
     private void updateTotalSkill(Infantry infantry) {
         Crew crew = infantry.getCrew();
-        if (null == crew) {
+        if (crew == null) {
             return;
         }
 
         int gunnery = crew.getGunnery();
         int antiMek = infantry.getAntiMekSkill();
-        if (antiMek == 0 || antiMek == 8) {
+        if ((antiMek == 0) || (antiMek == 8)) {
             antiMek = gunnery + 1;
         }
 
@@ -222,15 +218,9 @@ public class CampaignOpsReputation extends AbstractUnitRating {
     }
 
     private int getTotalCombatUnits() {
-        int totalCombatUnits = getMechCount();
-        totalCombatUnits += getFighterCount();
-        totalCombatUnits += getProtoCount();
-        totalCombatUnits += getVeeCount();
-        totalCombatUnits += getNumberBaSquads();
-        totalCombatUnits += getInfantryUnitCount();
-        totalCombatUnits += getDropShipCount();
-        totalCombatUnits += getSmallCraftCount();
-        return totalCombatUnits;
+        return getMechCount() + getFighterCount() + getProtoCount() + getVeeCount()
+                + getNumberBaSquads() + getInfantryUnitCount() + getDropShipCount()
+                + getSmallCraftCount();
     }
 
     private int getTotalForceUnits() {
@@ -238,49 +228,35 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         int totalAero = 0;
         int totalInfantry = 0;
         int totalBattleArmor = 0;
-        int forceTotal;
 
         // Count total units for transport
         getTotalCombatUnits();
 
         for (Unit u : getCampaign().getHangar().getUnits()) {
-            if (u == null) {
-                continue;
-            }
-            if (u.isMothballed() || !u.hasPilot()) {
+            if ((u == null) || u.isMothballed() || !u.hasPilot())  {
                 continue;
             }
 
-            if ((u.getEntity().getEntityType() &
-                 Entity.ETYPE_WARSHIP) == Entity.ETYPE_WARSHIP) {
+            if ((u.getEntity().getEntityType() & Entity.ETYPE_WARSHIP) == Entity.ETYPE_WARSHIP) {
                 totalAero++;
-            } else if ((u.getEntity().getEntityType() &
-                        Entity.ETYPE_JUMPSHIP) == Entity.ETYPE_JUMPSHIP) {
+            } else if ((u.getEntity().getEntityType() & Entity.ETYPE_JUMPSHIP) == Entity.ETYPE_JUMPSHIP) {
                 //noinspection UnnecessaryContinue
                 continue;
-            } else if ((u.getEntity().getEntityType() &
-                        Entity.ETYPE_AERO) == Entity.ETYPE_AERO) {
+            } else if ((u.getEntity().getEntityType() & Entity.ETYPE_AERO) == Entity.ETYPE_AERO) {
                 totalAero++;
-            } else if ((u.getEntity().getEntityType() &
-                        Entity.ETYPE_DROPSHIP) == Entity.ETYPE_DROPSHIP) {
+            } else if ((u.getEntity().getEntityType() & Entity.ETYPE_DROPSHIP) == Entity.ETYPE_DROPSHIP) {
                 totalAero++;
-            } else if (((u.getEntity().getEntityType() &
-                         Entity.ETYPE_MECH) == Entity.ETYPE_MECH)
-                       || ((u.getEntity().getEntityType() &
-                            Entity.ETYPE_TANK) == Entity.ETYPE_TANK)) {
+            } else if (((u.getEntity().getEntityType() & Entity.ETYPE_MECH) == Entity.ETYPE_MECH)
+                       || ((u.getEntity().getEntityType() & Entity.ETYPE_TANK) == Entity.ETYPE_TANK)) {
                 totalGround++;
-            } else if ((u.getEntity().getEntityType() &
-                        Entity.ETYPE_BATTLEARMOR) == Entity.ETYPE_BATTLEARMOR) {
+            } else if ((u.getEntity().getEntityType() & Entity.ETYPE_BATTLEARMOR) == Entity.ETYPE_BATTLEARMOR) {
                 totalBattleArmor++;
-            } else if ((u.getEntity().getEntityType() &
-                        Entity.ETYPE_INFANTRY) == Entity.ETYPE_INFANTRY) {
+            } else if ((u.getEntity().getEntityType() & Entity.ETYPE_INFANTRY) == Entity.ETYPE_INFANTRY) {
                 totalInfantry++;
             }
-
         }
 
-        forceTotal = totalGround + totalAero + totalInfantry + totalBattleArmor;
-        return forceTotal;
+        return totalGround + totalAero + totalInfantry + totalBattleArmor;
     }
 
     @Override
@@ -291,29 +267,22 @@ public class CampaignOpsReputation extends AbstractUnitRating {
             return BigDecimal.ZERO;
         }
 
-        return getTotalSkillLevels().divide(BigDecimal.valueOf(totalCombatUnits),
-                                            2,RoundingMode.HALF_DOWN);
+        return getTotalSkillLevels().divide(BigDecimal.valueOf(totalCombatUnits), 2, RoundingMode.HALF_DOWN);
     }
 
     private void calcNeededTechs() {
         int protoTeamCount = BigDecimal.valueOf(getProtoCount())
-                                       .divide(BigDecimal.valueOf(5), 0,
-                                               RoundingMode.HALF_UP)
-                                       .intValue();
+                .divide(BigDecimal.valueOf(5), 0, RoundingMode.HALF_UP)
+                .intValue();
         setMechTechTeamsNeeded(getMechCount() + protoTeamCount);
         setAeroTechTeamsNeeded(getFighterCount() + getSmallCraftCount());
         int infantryTeamCount = BigDecimal.valueOf(getInfantryCount())
-                                          .divide(BigDecimal.valueOf(112),
-                                                  0,
-                                                  RoundingMode.HALF_UP)
-                                          .intValue();
-        setMechanicTeamsNeeded(getSuperHeavyVeeCount() + getVeeCount() +
-                               infantryTeamCount);
+                .divide(BigDecimal.valueOf(112), 0, RoundingMode.HALF_UP)
+                .intValue();
+        setMechanicTeamsNeeded(getSuperHeavyVeeCount() + getVeeCount() + infantryTeamCount);
         setBattleArmorTechTeamsNeeded(BigDecimal.valueOf(getBattleArmorCount())
-                                                .divide(BigDecimal.valueOf(5),
-                                                        0,
-                                                        RoundingMode.HALF_UP)
-                                                .intValue());
+                .divide(BigDecimal.valueOf(5), 0, RoundingMode.HALF_UP)
+                .intValue());
     }
 
     private void updatePersonnelCounts() {
@@ -324,24 +293,24 @@ public class CampaignOpsReputation extends AbstractUnitRating {
             if (p.isAdministrator() || p.isDoctor()) {
                 continue;
             }
+
             if (p.isTech()) {
                 technicians++;
             }
             setNonAdminPersonnelCount(getNonAdminPersonnelCount() + 1);
         }
-        setNonAdminPersonnelCount(getNonAdminPersonnelCount() +
-                                  getCampaign().getAstechPool());
+        setNonAdminPersonnelCount(getNonAdminPersonnelCount() + getCampaign().getAstechPool());
     }
 
     private void calcNeededAdmins() {
         int calculatedAdmin = BigDecimal.valueOf(getNonAdminPersonnelCount())
-                .divide(BigDecimal.TEN, 0,
-                RoundingMode.UP).intValue();
+                .divide(BigDecimal.TEN, 0, RoundingMode.UP)
+                .intValue();
 
         if (getCampaign().getFaction().is(Tag.MERC) || getCampaign().getFaction().is(Tag.PIRATE)) {
             setAdminsNeeded(calculatedAdmin);
         } else {
-            setAdminsNeeded((int) Math.ceil((double) calculatedAdmin / 2));
+            setAdminsNeeded((int) Math.ceil((double) calculatedAdmin / 2d));
         }
     }
 
@@ -372,56 +341,49 @@ public class CampaignOpsReputation extends AbstractUnitRating {
 
     @Override
     protected int calculateUnitRatingScore() {
-        int totalScore = getExperienceValue();
-        totalScore += getCampaign().getCampaignOptions().getManualUnitRatingModifier();
-        totalScore += getCommanderValue();
-        totalScore += getCombatRecordValue();
-        totalScore += getTransportValue();
-        totalScore += getSupportValue();
-        totalScore += getFinancialValue();
-        totalScore += getCrimesPenalty();
-        totalScore += getIdleTimeModifier();
-
-        return totalScore;
+        return getExperienceValue()
+                + getCampaign().getCampaignOptions().getManualUnitRatingModifier()
+                + getCommanderValue()
+                + getCombatRecordValue()
+                + getTransportValue()
+                + getSupportValue()
+                + getFinancialValue()
+                + getCrimesPenalty()
+                + getIdleTimeModifier();
     }
 
     @Override
     public String getAverageExperience() {
         if (!hasUnits()) {
-            return SkillType.getExperienceLevelName(-1);
+            return SkillLevel.NONE.toString();
         }
         switch (getExperienceValue()) {
             case 5:
-                return SkillType.getExperienceLevelName(SkillType.EXP_GREEN);
+                return SkillLevel.GREEN.toString();
             case 10:
-                return SkillType.getExperienceLevelName(SkillType.EXP_REGULAR);
+                return SkillLevel.REGULAR.toString();
             case 20:
-                return SkillType.getExperienceLevelName(SkillType.EXP_VETERAN);
+                return SkillLevel.VETERAN.toString();
             case 40:
-                return SkillType.getExperienceLevelName(SkillType.EXP_ELITE);
+                return SkillLevel.ELITE.toString();
             default:
-                return SkillType.getExperienceLevelName(-1);
+                return SkillLevel.NONE.toString();
         }
     }
 
     @Override
     protected String getExperienceLevelName(BigDecimal experience) {
         if (!hasUnits()) {
-            return SkillType.getExperienceLevelName(-1);
+            return SkillLevel.NONE.toString();
+        } else if (experience.compareTo(new BigDecimal("9.00")) > 0) {
+            return SkillLevel.GREEN.toString();
+        } else if (experience.compareTo(new BigDecimal("7.00")) > 0) {
+            return SkillLevel.REGULAR.toString();
+        } else if (experience.compareTo(new BigDecimal("5.00")) > 0) {
+            return SkillLevel.VETERAN.toString();
+        } else {
+            return SkillLevel.ELITE.toString();
         }
-
-        final BigDecimal eliteThreshold = new BigDecimal("5.00");
-        final BigDecimal vetThreshold = new BigDecimal("7.00");
-        final BigDecimal regThreshold = new BigDecimal("9.00");
-
-        if (experience.compareTo(regThreshold) > 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_GREEN);
-        } else if (experience.compareTo(vetThreshold) > 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_REGULAR);
-        } else if (experience.compareTo(eliteThreshold) > 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_VETERAN);
-        }
-        return SkillType.getExperienceLevelName(SkillType.EXP_ELITE);
     }
 
     @Override
@@ -429,15 +391,14 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         if (!hasUnits()) {
             return 0;
         }
-        BigDecimal averageExp = calcAverageExperience();
-        String level = getExperienceLevelName(averageExp);
-        if (SkillType.getExperienceLevelName(-1).equalsIgnoreCase(level)) {
+        String level = getExperienceLevelName(calcAverageExperience());
+        if (SkillLevel.NONE.toString().equalsIgnoreCase(level)) {
             return 0;
-        } else if (SkillType.getExperienceLevelName(SkillType.EXP_GREEN).equalsIgnoreCase(level)) {
+        } else if (SkillLevel.GREEN.toString().equalsIgnoreCase(level)) {
             return 5;
-        } else if (SkillType.getExperienceLevelName(SkillType.EXP_REGULAR).equalsIgnoreCase(level)) {
+        } else if (SkillLevel.REGULAR.toString().equalsIgnoreCase(level)) {
             return 10;
-        } else if (SkillType.getExperienceLevelName(SkillType.EXP_VETERAN).equalsIgnoreCase(level)) {
+        } else if (SkillLevel.VETERAN.toString().equalsIgnoreCase(level)) {
             return 20;
         } else {
             return 40;
@@ -513,14 +474,13 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         // Assume you have 2 heavy vehicle bays, and 4 light vehicle bays, and are trying to store 1 heavy and 5 light vehicles
         // You have 1 more light vehicle than light vehicle bays to store them in, so you check how many free heavy vehicle bays
         // there are. Finding 1, you can store the light vehicle there, and it doesn't count as having excess
-        int superHeavyVeeBaysFilledByLighterVees, heavyVeeBaysFilledByLights, smallCraftBaysFilledByFighters;
         int excessHeavyVees = Math.max(getHeavyVeeCount() - getHeavyVeeBayCount(), 0);
         int excessLightVees = Math.max(getLightVeeCount() - getLightVeeBayCount(), 0);
         int excessFighters = Math.max(getFighterCount() - getFighterBayCount(), 0);
 
-        superHeavyVeeBaysFilledByLighterVees = Math.min(excessHeavyVees + excessLightVees, excessSuperHeavyVeeBays);
-        heavyVeeBaysFilledByLights = Math.min(excessLightVees, excessHeavyVeeBays);
-        smallCraftBaysFilledByFighters = Math.min(excessFighters, excessSmallCraftBays);
+        int superHeavyVeeBaysFilledByLighterVees = Math.min(excessHeavyVees + excessLightVees, excessSuperHeavyVeeBays);
+        int heavyVeeBaysFilledByLights = Math.min(excessLightVees, excessHeavyVeeBays);
+        int smallCraftBaysFilledByFighters = Math.min(excessFighters, excessSmallCraftBays);
 
         tci.updateCapacityIndicators(getSuperHeavyVeeBayCount() - superHeavyVeeBaysFilledByLighterVees, getSuperHeavyVeeCount());
         tci.updateCapacityIndicators(getHeavyVeeBayCount() + excessSuperHeavyVeeBays - heavyVeeBaysFilledByLights, getHeavyVeeCount());
@@ -528,7 +488,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         tci.updateCapacityIndicators(getSmallCraftBayCount() - smallCraftBaysFilledByFighters, getSmallCraftCount());
         tci.updateCapacityIndicators(getFighterBayCount() + excessSmallCraftBays, getFighterCount());
 
-        //Find the percentage of units that are transported.
+        // Find the percentage of units that are transported.
         if (tci.hasDoubleCapacity()) {
             totalValue += 10;
         } else if (tci.hasExcessCapacity()) {
@@ -550,12 +510,14 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         if (getJumpShipCount() > 0) {
             totalValue += 10;
         }
+
         if (getWarShipCount() > 0) {
             totalValue += 10;
             if (getCampaign().getLocalDate().isAfter(LocalDate.of(2800, 1, 1))) {
                 totalValue += 5;
             }
         }
+
         if ((getDropShipCount() > 0) && (getDockingCollarCount() >= getDropShipCount())) {
             totalValue += 5;
         }
@@ -566,7 +528,6 @@ public class CampaignOpsReputation extends AbstractUnitRating {
     int calcTechSupportValue() {
         int totalValue = 0;
         setTotalTechTeams(0);
-        int astechTeams;
         setMechTechTeams(0);
         setAeroTechTeams(0);
         setMechanicTeams(0);
@@ -574,7 +535,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         setGeneralTechTeams(0);
 
         // How many astech teams do we have?
-        astechTeams = getCampaign().getNumberAstechs() / 6;
+        int astechTeams = (int) Math.floor(getCampaign().getNumberAstechs() / 6d);
 
         for (Person tech : getCampaign().getTechs()) {
             // If we're out of astech teams, the rest of the techs are
@@ -608,31 +569,23 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         boolean techShortage = false;
         if (getMechTechTeamsNeeded() > getMechTechTeams()) {
             techShortage = true;
-        }
-        if (getAeroTechTeamsNeeded() > getAeroTechTeams()) {
+        } else if (getAeroTechTeamsNeeded() > getAeroTechTeams()) {
             techShortage = true;
-        }
-        if (getMechanicTeamsNeeded() > getMechanicTeams()) {
+        } else if (getMechanicTeamsNeeded() > getMechanicTeams()) {
             techShortage = true;
-        }
-        if (getBattleArmorTechTeamsNeeded() > getBaTechTeams()) {
+        } else if (getBattleArmorTechTeamsNeeded() > getBaTechTeams()) {
             techShortage = true;
         }
 
-        setTotalTechTeams(getMechTechTeams() + getAeroTechTeams() +
-                          getMechanicTeams() + getBaTechTeams() +
-                          getGeneralTechTeams());
-        int totalTechTeamsNeeded = getMechTechTeamsNeeded() +
-                                   getAeroTechTeamsNeeded() +
-                                   getMechanicTeamsNeeded() +
-                                   getBattleArmorTechTeamsNeeded();
+        setTotalTechTeams(getMechTechTeams() + getAeroTechTeams() + getMechanicTeams()
+                + getBaTechTeams() + getGeneralTechTeams());
+        int totalTechTeamsNeeded = getMechTechTeamsNeeded() + getAeroTechTeamsNeeded()
+                + getMechanicTeamsNeeded() + getBattleArmorTechTeamsNeeded();
         setSupportPercent(BigDecimal.ZERO);
         if (totalTechTeamsNeeded != 0) {
             setSupportPercent(BigDecimal.valueOf(getTotalTechTeams())
-                                        .divide(BigDecimal.valueOf(totalTechTeamsNeeded),
-                                                5,
-                                                RoundingMode.HALF_UP)
-                                        .multiply(HUNDRED));
+                    .divide(BigDecimal.valueOf(totalTechTeamsNeeded), 5, RoundingMode.HALF_UP)
+                    .multiply(HUNDRED));
         }
 
         if (techShortage) {
@@ -640,11 +593,9 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         } else {
             if (getSupportPercent().compareTo(BigDecimal.valueOf(200)) > 0) {
                 totalValue += 15;
-            } else if (getSupportPercent().compareTo(BigDecimal.valueOf(175)) >
-                       0) {
+            } else if (getSupportPercent().compareTo(BigDecimal.valueOf(175)) > 0) {
                 totalValue += 10;
-            } else if (getSupportPercent().compareTo(BigDecimal.valueOf(149)) >
-                       0) {
+            } else if (getSupportPercent().compareTo(BigDecimal.valueOf(149)) > 0) {
                 totalValue += 5;
             }
         }
@@ -656,21 +607,13 @@ public class CampaignOpsReputation extends AbstractUnitRating {
     private int calcAdminSupportValue() {
         int admins = getCampaign().getAdmins().size();
         int docs = getCampaign().getDoctors().size();
-        if (getAdminsNeeded() > (admins + docs)) {
-            return -5;
-        }
-        return 0;
+        return (getAdminsNeeded() > (admins + docs)) ? -5 : 0;
     }
 
     private int calcLargeCraftSupportValue() {
-        Unit unit = getCampaign().getHangar().findUnit(u -> {
-            if (u.getEntity() instanceof SmallCraft || u.getEntity() instanceof Jumpship) {
-                if (u.getActiveCrew().size() < u.getFullCrewSize()) {
-                    return true;
-                }
-            }
-            return false;
-        });
+        Unit unit = getCampaign().getHangar().findUnit(u ->
+                ((u.getEntity() instanceof SmallCraft) || (u.getEntity() instanceof Jumpship))
+                        && (u.getActiveCrew().size() < u.getFullCrewSize()));
 
         // if we found a unit we have a crew shortage
         // on at least one vessel in our fleet
@@ -679,10 +622,9 @@ public class CampaignOpsReputation extends AbstractUnitRating {
 
     @Override
     public int getSupportValue() {
-        int value = calcTechSupportValue();
-        value += calcAdminSupportValue();
-        value += calcLargeCraftSupportValue();
-        return value;
+        return calcTechSupportValue()
+                + calcAdminSupportValue()
+                + calcLargeCraftSupportValue();
     }
 
     @Override
@@ -708,9 +650,9 @@ public class CampaignOpsReputation extends AbstractUnitRating {
 
     @Override
     public int getModifier() {
-        BigDecimal reputation = new BigDecimal(calculateUnitRatingScore());
-        return reputation.divide(BigDecimal.TEN, 0,
-                                 RoundingMode.DOWN).intValue();
+        return new BigDecimal(calculateUnitRatingScore())
+                .divide(BigDecimal.TEN, 0, RoundingMode.DOWN)
+                .intValue();
     }
 
     private String getExperienceDetails() {
@@ -728,8 +670,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
                 if (!first) {
                     out.append("\n");
                 }
-                out.append(String.format(TEMPLATE, nm + ":",
-                                         skillRatingCounts.get(nm)));
+                out.append(String.format(TEMPLATE, nm + ":", skillRatingCounts.get(nm)));
                 first = false;
             }
         }
@@ -738,21 +679,18 @@ public class CampaignOpsReputation extends AbstractUnitRating {
 
     private String getCommanderDetails() {
         StringBuilder out = new StringBuilder();
-        String commanderName = null == getCommander() ? "" :
-                "(" + getCommander().getFullTitle() + ")";
-        out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s",
-                                 "Commander:", getCommanderValue(),
-                                 commanderName));
+        String commanderName = null == getCommander() ? "" : "(" + getCommander().getFullTitle() + ")";
+        out.append(String.format("%-" + HEADER_LENGTH + "s %3d %s", "Commander:", getCommanderValue(), commanderName));
 
         final String TEMPLATE = "    %-" + SUBHEADER_LENGTH + "s %3d";
         out.append("\n").append(String.format(TEMPLATE, "Leadership:",
-                                                getCommanderSkillLevelWithBonus(SkillType.S_LEADER)));
+                getCommanderSkillLevelWithBonus(SkillType.S_LEADER)));
         out.append("\n").append(String.format(TEMPLATE, "Negotiation:",
-                                                getCommanderSkillLevelWithBonus(SkillType.S_NEG)));
+                getCommanderSkillLevelWithBonus(SkillType.S_NEG)));
         out.append("\n").append(String.format(TEMPLATE, "Strategy:",
-                                                getCommanderSkillLevelWithBonus(SkillType.S_STRATEGY)));
+                getCommanderSkillLevelWithBonus(SkillType.S_STRATEGY)));
         out.append("\n").append(String.format(TEMPLATE, "Tactics:",
-                                                getCommanderSkillLevelWithBonus(SkillType.S_TACTICS)));
+                getCommanderSkillLevelWithBonus(SkillType.S_TACTICS)));
 
         return out.toString();
     }
@@ -760,21 +698,15 @@ public class CampaignOpsReputation extends AbstractUnitRating {
     private String getCombatRecordDetails() {
         final String TEMPLATE = "    %-" + SUBHEADER_LENGTH + "s %3d";
 
-        return String.format("%-" + HEADER_LENGTH + "s %3d", "Combat Record:",
-                             getCombatRecordValue()) +
-               "\n" + String.format(TEMPLATE, "Successful Missions:",
-                                    getSuccessCount()) +
-               "\n" + String.format(TEMPLATE, "Partial Missions:",
-                                    getPartialCount()) +
-               "\n" + String.format(TEMPLATE, "Failed Missions:",
-                                    getFailCount()) +
-               "\n" + String.format(TEMPLATE, "Contract Breaches:",
-                                    getBreachCount());
+        return String.format("%-" + HEADER_LENGTH + "s %3d", "Combat Record:", getCombatRecordValue()) +
+               "\n" + String.format(TEMPLATE, "Successful Missions:", getSuccessCount()) +
+               "\n" + String.format(TEMPLATE, "Partial Missions:", getPartialCount()) +
+               "\n" + String.format(TEMPLATE, "Failed Missions:", getFailCount()) +
+               "\n" + String.format(TEMPLATE, "Contract Breaches:", getBreachCount());
     }
 
     String getTransportationDetails() {
-        final String TEMPLATE = "    %-" + CATEGORY_LENGTH +
-                                "s %3d needed / %3d available";
+        final String TEMPLATE = "    %-" + CATEGORY_LENGTH + "s %3d needed / %3d available";
 
         int superHeavyVeeBayCount = getSuperHeavyVeeBayCount();
         int heavyVeeBayCount = getHeavyVeeBayCount();
@@ -785,19 +717,19 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         int excessSmallCraftBays = Math.max(smallCraftBayCount - getSmallCraftCount(), 0);
 
         String out = String.format("%-" + HEADER_LENGTH + "s %3d", "Transportation:", getTransportValue()) +
-                     "\n" + String.format(TEMPLATE, "BattleMech Bays:", getMechCount(), getMechBayCount()) +
-                     "\n" + String.format(TEMPLATE, "Fighter Bays:", getFighterCount(), getFighterBayCount()) +
-                     " (plus " + excessSmallCraftBays + " excess Small Craft)" +
-                     "\n" + String.format(TEMPLATE, "Small Craft Bays:", getSmallCraftCount(), smallCraftBayCount) +
-                     "\n" + String.format(TEMPLATE, "ProtoMech Bays:", getProtoCount(), getProtoBayCount()) +
-                     "\n" + String.format(TEMPLATE, "Super Heavy Vehicle Bays:", getSuperHeavyVeeCount(), superHeavyVeeBayCount) +
-                     "\n" + String.format(TEMPLATE, "Heavy Vehicle Bays:", getHeavyVeeCount(), heavyVeeBayCount) +
-                     " (plus " + excessSuperHeavyVeeBays + " excess Super Heavy)" +
-                     "\n" + String.format(TEMPLATE, "Light Vehicle Bays:", getLightVeeCount(), getLightVeeBayCount()) +
-                     " (plus " + excessHeavyVeeBays + " excess Heavy and " + excessSuperHeavyVeeBays + " excess Super Heavy)" +
-                     "\n" + String.format(TEMPLATE, "Battle Armor Bays:", getBattleArmorCount() / 5, getBaBayCount()) +
-                     "\n" + String.format(TEMPLATE, "Infantry Bays:", calcInfantryPlatoons(), getInfantryBayCount()) +
-                     "\n" + String.format(TEMPLATE, "Docking Collars:", getDropShipCount(), getDockingCollarCount());
+                "\n" + String.format(TEMPLATE, "BattleMech Bays:", getMechCount(), getMechBayCount()) +
+                "\n" + String.format(TEMPLATE, "Fighter Bays:", getFighterCount(), getFighterBayCount()) +
+                " (plus " + excessSmallCraftBays + " excess Small Craft)" +
+                "\n" + String.format(TEMPLATE, "Small Craft Bays:", getSmallCraftCount(), smallCraftBayCount) +
+                "\n" + String.format(TEMPLATE, "ProtoMech Bays:", getProtoCount(), getProtoBayCount()) +
+                "\n" + String.format(TEMPLATE, "Super Heavy Vehicle Bays:", getSuperHeavyVeeCount(), superHeavyVeeBayCount) +
+                "\n" + String.format(TEMPLATE, "Heavy Vehicle Bays:", getHeavyVeeCount(), heavyVeeBayCount) +
+                " (plus " + excessSuperHeavyVeeBays + " excess Super Heavy)" +
+                "\n" + String.format(TEMPLATE, "Light Vehicle Bays:", getLightVeeCount(), getLightVeeBayCount()) +
+                " (plus " + excessHeavyVeeBays + " excess Heavy and " + excessSuperHeavyVeeBays + " excess Super Heavy)" +
+                "\n" + String.format(TEMPLATE, "Battle Armor Bays:", getBattleArmorCount() / 5, getBaBayCount()) +
+                "\n" + String.format(TEMPLATE, "Infantry Bays:", calcInfantryPlatoons(), getInfantryBayCount()) +
+                "\n" + String.format(TEMPLATE, "Docking Collars:", getDropShipCount(), getDockingCollarCount());
 
         final String TEMPLATE_2 = "    %-" + CATEGORY_LENGTH + "s %3s";
         out += "\n" + String.format(TEMPLATE_2, "Has JumpShips?", getJumpShipCount() > 0 ? "Yes" : "No");
@@ -808,36 +740,24 @@ public class CampaignOpsReputation extends AbstractUnitRating {
 
     private String getSupportDetails() {
         StringBuilder out = new StringBuilder();
-        out.append(String.format("%-" + HEADER_LENGTH + "s %3d",
-                                 "Support:", getSupportValue()));
+        out.append(String.format("%-" + HEADER_LENGTH + "s %3d", "Support:", getSupportValue()));
 
-        final String TEMPLATE_CAT = "        %-" + CATEGORY_LENGTH +
-                                    "s %4d needed / %4d available";
+        final String TEMPLATE_CAT = "        %-" + CATEGORY_LENGTH + "s %4d needed / %4d available";
         out.append("\n    Tech Support:");
-        out.append("\n").append(String.format(TEMPLATE_CAT, "Mech Techs:",
-                                              getMechTechTeamsNeeded(),
-                                              getMechTechTeams()));
+        out.append("\n").append(String.format(TEMPLATE_CAT, "Mech Techs:", getMechTechTeamsNeeded(),
+                getMechTechTeams()));
         out.append("\n            NOTE: ProtoMechs and BattleMechs use same techs.");
-        out.append("\n").append(String.format(TEMPLATE_CAT,
-                                              "Aero Techs:",
-                                              getAeroTechTeamsNeeded(),
-                                              getAeroTechTeams()));
-        out.append("\n").append(String.format(TEMPLATE_CAT, "Mechanics:",
-                                              getMechanicTeamsNeeded(),
-                                              getMechanicTeams()));
-        out.append("\n            NOTE: Vehicles and Infantry use the same" +
-                   " mechanics.");
+        out.append("\n").append(String.format(TEMPLATE_CAT, "Aero Techs:", getAeroTechTeamsNeeded(),
+                getAeroTechTeams()));
+        out.append("\n").append(String.format(TEMPLATE_CAT, "Mechanics:", getMechanicTeamsNeeded(),
+                getMechanicTeams()));
+        out.append("\n            NOTE: Vehicles and Infantry use the same mechanics.");
         out.append("\n").append(String.format(TEMPLATE_CAT, "Battle Armor Techs:",
-                                              getBattleArmorTechTeamsNeeded(),
-                                              getBaTechTeams()));
-        out.append("\n").append(String.format(TEMPLATE_CAT, "Astechs:",
-                                              technicians * 6,
-                                              getCampaign().getNumberAstechs()));
+                getBattleArmorTechTeamsNeeded(), getBaTechTeams()));
+        out.append("\n").append(String.format(TEMPLATE_CAT, "Astechs:", technicians * 6,
+                getCampaign().getNumberAstechs()));
         out.append("\n").append(String.format("    %-" + (CATEGORY_LENGTH + 4) +
-                                              "s %4d needed / %4d available",
-                                              "Admin Support:",
-                                              getAdminsNeeded(),
-                                              getTotalAdmins()));
+                        "s %4d needed / %4d available", "Admin Support:", getAdminsNeeded(), getTotalAdmins()));
         out.append("\n    Large Craft Crew:");
         if (getCraftWithoutCrew().size() < 1) {
             out.append("\n        All fully crewed.");
@@ -851,8 +771,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
     }
 
     private int getTotalAdmins() {
-        return getCampaign().getAdmins().size() + getCampaign().getDoctors()
-                                                               .size();
+        return getCampaign().getAdmins().size() + getCampaign().getDoctors().size();
     }
 
     @Override
@@ -875,20 +794,16 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         sb.append(getSupportDetails()).append("\n\n");
 
         sb.append(String.format(TEMPLATE, "Financial", getFinancialValue()));
-        sb.append("\n").append(String.format("    %-" + SUBHEADER_LENGTH +
-                                             "s %3s",
-                                             "In Debt?",
-                                             getCampaign().getFinances()
-                                                          .isInDebt() ? "Yes" :
-                                             "No"));
+        sb.append("\n").append(String.format("    %-" + SUBHEADER_LENGTH + "s %3s", "In Debt?",
+                getCampaign().getFinances().isInDebt() ? "Yes" : "No"));
 
         sb.append("\n\n")
-          .append(String.format(TEMPLATE, "Criminal Activity:", 0))
-          .append(" (MHQ does not currently track criminal activity.)");
+                .append(String.format(TEMPLATE, "Criminal Activity:", 0))
+                .append(" (MHQ does not currently track criminal activity.)");
 
         sb.append("\n\n")
-          .append(String.format(TEMPLATE, "Inactivity Modifier:", 0))
-          .append(" (MHQ does not track end dates for missions/contracts.)");
+                .append(String.format(TEMPLATE, "Inactivity Modifier:", 0))
+                .append(" (MHQ does not track end dates for missions/contracts.)");
 
         return new String(sb);
     }

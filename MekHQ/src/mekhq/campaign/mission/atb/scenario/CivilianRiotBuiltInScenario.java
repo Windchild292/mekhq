@@ -26,7 +26,7 @@ import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
 import mekhq.campaign.mission.atb.AtBScenarioEnabled;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.parts.equipment.EquipmentPart;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.unit.Unit;
 
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class CivilianRiotBuiltInScenario extends AtBScenario {
         for (int i = 0; i < 3; i++) {
             // 3 mech rebel lance, use employer RAT, enemy skill
             enemyEntities.add(getEntity(getContract(campaign).getEmployerCode(), getContract(campaign).getEnemySkill(),
-                    IUnitRating.DRAGOON_F, UnitType.MEK,
+                    AbstractUnitRating.DRAGOON_F, UnitType.MEK,
                     Compute.d6() < 4 ? EntityWeightClass.WEIGHT_LIGHT : EntityWeightClass.WEIGHT_MEDIUM, campaign));
         }
 

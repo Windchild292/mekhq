@@ -18,16 +18,16 @@
  */
 package mekhq.campaign.market;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import megamek.common.Compute;
 import megamek.common.Entity;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.enums.PersonnelRole;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.module.api.PersonnelMarketMethod;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Generation method for personnel market based on Field Manual: Mercenaries (Revised)
@@ -57,20 +57,20 @@ public class PersonnelMarketFMMr implements PersonnelMarketMethod {
             int roll = Compute.d6(2);
             // TODO: Modifiers for hiring hall, but first needs to track the hiring hall
             switch (c.getUnitRatingMod()) {
-                case IUnitRating.DRAGOON_A:
-                case IUnitRating.DRAGOON_ASTAR:
+                case AbstractUnitRating.DRAGOON_A:
+                case AbstractUnitRating.DRAGOON_ASTAR:
                     roll += 3;
                     break;
-                case IUnitRating.DRAGOON_B:
+                case AbstractUnitRating.DRAGOON_B:
                     roll += 2;
                     break;
-                case IUnitRating.DRAGOON_C:
+                case AbstractUnitRating.DRAGOON_C:
                     roll += 1;
                     break;
-                case IUnitRating.DRAGOON_D:
+                case AbstractUnitRating.DRAGOON_D:
                     roll -= 1;
                     break;
-                case IUnitRating.DRAGOON_F:
+                case AbstractUnitRating.DRAGOON_F:
                     roll -= 2;
                     break;
             }

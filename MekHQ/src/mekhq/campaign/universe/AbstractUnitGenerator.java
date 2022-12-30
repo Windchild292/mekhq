@@ -21,7 +21,7 @@ package mekhq.campaign.universe;
 import megamek.client.generator.RandomUnitGenerator;
 import megamek.common.MechSummary;
 import megamek.common.enums.SkillLevel;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
@@ -41,15 +41,15 @@ public abstract class AbstractUnitGenerator implements IUnitGenerator {
      * and an alphabetic one (such as one used in the RATs)
      */
     private void initializeRatRatingMappings() {
-        // TODO : Switch this with a call to a new IUnitRating array
+        // TODO : Switch this with a call to a new AbstractUnitRating array
         if (ratRatingMappings == null) {
             ratRatingMappings = new HashMap<>();
-            ratRatingMappings.put(IUnitRating.DRAGOON_ASTAR, "A");
-            ratRatingMappings.put(IUnitRating.DRAGOON_A, "A");
-            ratRatingMappings.put(IUnitRating.DRAGOON_B, "B");
-            ratRatingMappings.put(IUnitRating.DRAGOON_C, "C");
-            ratRatingMappings.put(IUnitRating.DRAGOON_D, "D");
-            ratRatingMappings.put(IUnitRating.DRAGOON_F, "F");
+            ratRatingMappings.put(AbstractUnitRating.DRAGOON_ASTAR, "A");
+            ratRatingMappings.put(AbstractUnitRating.DRAGOON_A, "A");
+            ratRatingMappings.put(AbstractUnitRating.DRAGOON_B, "B");
+            ratRatingMappings.put(AbstractUnitRating.DRAGOON_C, "C");
+            ratRatingMappings.put(AbstractUnitRating.DRAGOON_D, "D");
+            ratRatingMappings.put(AbstractUnitRating.DRAGOON_F, "F");
         }
     }
 

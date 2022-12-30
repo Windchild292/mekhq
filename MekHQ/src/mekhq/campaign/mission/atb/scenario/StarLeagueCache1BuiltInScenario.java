@@ -25,7 +25,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.againstTheBot.AtBStaticWeightGenerator;
 import mekhq.campaign.mission.*;
 import mekhq.campaign.mission.atb.AtBScenarioEnabled;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.Factions;
 
@@ -119,7 +119,7 @@ public class StarLeagueCache1BuiltInScenario extends AtBScenario {
             final Faction faction = Factions.getInstance().getFaction("SL");
             ms = campaign.getUnitGenerator().generate(faction.getShortName(), UnitType.MEK,
                     AtBStaticWeightGenerator.getRandomWeight(campaign, UnitType.MEK, faction), 2750,
-                    (roll == 6) ? IUnitRating.DRAGOON_A : IUnitRating.DRAGOON_D);
+                    (roll == 6) ? AbstractUnitRating.DRAGOON_A : AbstractUnitRating.DRAGOON_D);
         }
         Entity en = (ms == null) ? null
                 : AtBDynamicScenarioFactory.createEntityWithCrew(campaign.getFactionCode(),

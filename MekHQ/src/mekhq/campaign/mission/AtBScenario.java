@@ -30,21 +30,20 @@ import megamek.common.icons.Camouflage;
 import megamek.common.options.OptionsConstants;
 import mekhq.MHQConstants;
 import mekhq.MekHQ;
-import mekhq.campaign.againstTheBot.AtBStaticWeightGenerator;
-import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.againstTheBot.AtBConfiguration;
+import mekhq.campaign.againstTheBot.AtBStaticWeightGenerator;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.force.Lance;
-import mekhq.campaign.market.unitMarket.AtBMonthlyUnitMarket;
 import mekhq.campaign.mission.ObjectiveEffect.ObjectiveEffectType;
 import mekhq.campaign.mission.ScenarioObjective.ObjectiveCriterion;
 import mekhq.campaign.mission.atb.IAtBScenario;
 import mekhq.campaign.mission.enums.AtBLanceRole;
 import mekhq.campaign.personnel.SkillType;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.*;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1187,8 +1186,8 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
 
         /* Ensure Novas use Frontline tables to get best chance at Omnis */
         int tmpQuality = quality;
-        if (forceType == FORCE_NOVA && quality < IUnitRating.DRAGOON_B) {
-            tmpQuality = IUnitRating.DRAGOON_B;
+        if (forceType == FORCE_NOVA && quality < AbstractUnitRating.DRAGOON_B) {
+            tmpQuality = AbstractUnitRating.DRAGOON_B;
         }
         for (int point = 0; point < weights.length(); point++) {
             for (int unit = 0; unit < unitsPerPoint; unit++) {

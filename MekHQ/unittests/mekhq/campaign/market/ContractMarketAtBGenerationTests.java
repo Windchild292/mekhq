@@ -23,7 +23,7 @@ import mekhq.campaign.finances.Accountant;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.force.Force;
 import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.rating.UnitRatingMethod;
 import mekhq.campaign.universe.*;
 import org.junit.jupiter.api.AfterAll;
@@ -44,7 +44,7 @@ public class ContractMarketAtBGenerationTests {
     public static List<Arguments> generateData() {
         final List<Arguments> arguments = new ArrayList<>();
         for (final int gameYear : Arrays.asList(2750, 3025, 3055, 3067, 3120)) {
-            for (int rating = IUnitRating.DRAGOON_F; rating <= IUnitRating.DRAGOON_ASTAR; rating++) {
+            for (int rating = AbstractUnitRating.DRAGOON_F; rating <= AbstractUnitRating.DRAGOON_ASTAR; rating++) {
                 arguments.add(Arguments.of(gameYear, rating, false));
                 arguments.add(Arguments.of(gameYear, rating, true));
             }

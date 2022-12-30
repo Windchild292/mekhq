@@ -22,7 +22,7 @@ import megamek.common.MechSummary;
 import megamek.common.annotations.Nullable;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.ranks.Rank;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.companyGeneration.AtBRandomMechParameters;
 import mekhq.campaign.universe.companyGeneration.CompanyGenerationOptions;
@@ -75,17 +75,17 @@ public class AtBCompanyGenerator extends AbstractCompanyGenerator {
         if (parameters.isStarLeague() && !faction.isComStarOrWoB()) {
             if (faction.isClan()) {
                 // Clanners generate from Front Line tables instead of Star League
-                parameters.setQuality(IUnitRating.DRAGOON_B);
+                parameters.setQuality(AbstractUnitRating.DRAGOON_B);
                 return generateMechSummary(campaign, parameters, faction.getShortName(), campaign.getGameYear());
             } else {
                 // Roll on the Star League Royal table if you get a SL mech with A* Rating
-                final String factionCode = (parameters.getQuality() == IUnitRating.DRAGOON_ASTAR) ? "SL.R" : "SL";
+                final String factionCode = (parameters.getQuality() == AbstractUnitRating.DRAGOON_ASTAR) ? "SL.R" : "SL";
                 return generateMechSummary(campaign, parameters, factionCode, getOptions().getStarLeagueYear());
             }
         } else {
             // Clanners Generate from 2nd Line Tables
             if (faction.isClan()) {
-                parameters.setQuality(IUnitRating.DRAGOON_C);
+                parameters.setQuality(AbstractUnitRating.DRAGOON_C);
             }
             return generateMechSummary(campaign, parameters, faction.getShortName(), campaign.getGameYear());
         }

@@ -22,7 +22,7 @@ import megamek.common.MechSummary;
 import megamek.common.annotations.Nullable;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.ranks.Rank;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.Faction;
 import mekhq.campaign.universe.companyGeneration.AtBRandomMechParameters;
 import mekhq.campaign.universe.companyGeneration.CompanyGenerationOptions;
@@ -79,19 +79,19 @@ public class WindchildCompanyGenerator extends AbstractCompanyGenerator {
             if (faction.isClan()) {
                 // Clanners generate using the Keshik Table if they roll A*, otherwise they roll on
                 // the Front Line tables
-                parameters.setQuality((parameters.getQuality() == IUnitRating.DRAGOON_ASTAR)
-                        ? IUnitRating.DRAGOON_ASTAR : IUnitRating.DRAGOON_B);
+                parameters.setQuality((parameters.getQuality() == AbstractUnitRating.DRAGOON_ASTAR)
+                        ? AbstractUnitRating.DRAGOON_ASTAR : AbstractUnitRating.DRAGOON_B);
                 return generateMechSummary(campaign, parameters, faction.getShortName(), campaign.getGameYear());
             } else {
                 // Roll on the Star League Royal table if you get a SL mech with A* Rating
-                final String factionCode = (parameters.getQuality() == IUnitRating.DRAGOON_ASTAR) ? "SL.R" : "SL";
+                final String factionCode = (parameters.getQuality() == AbstractUnitRating.DRAGOON_ASTAR) ? "SL.R" : "SL";
                 return generateMechSummary(campaign, parameters, factionCode, getOptions().getStarLeagueYear());
             }
         } else {
             // Clanners Generate from 2nd Line (or lesser) Tables (core AtB is just 2nd Line,
             // but this is more interesting)
-            if (faction.isClan() && (parameters.getQuality() > IUnitRating.DRAGOON_C)) {
-                parameters.setQuality(IUnitRating.DRAGOON_C);
+            if (faction.isClan() && (parameters.getQuality() > AbstractUnitRating.DRAGOON_C)) {
+                parameters.setQuality(AbstractUnitRating.DRAGOON_C);
             }
             return generateMechSummary(campaign, parameters, faction.getShortName(), campaign.getGameYear());
         }

@@ -18,7 +18,7 @@
  */
 package mekhq.campaign.universe.generators.battleMechQualityGenerators;
 
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.enums.BattleMechQualityGenerationMethod;
 
 /**
@@ -33,6 +33,6 @@ public class DBattleMechQualityGenerator extends AbstractBattleMechQualityGenera
 
     @Override
     public int generate(final int roll) {
-        return IUnitRating.DRAGOON_D;
+        return AbstractUnitRating.DRAGOON_D;
     }
 }

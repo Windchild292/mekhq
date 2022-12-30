@@ -24,14 +24,14 @@ package mekhq.campaign.againstTheBot;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
-import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
-import mekhq.campaign.rating.IUnitRating;
+import mekhq.campaign.rating.AbstractUnitRating;
 import mekhq.campaign.universe.Faction;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -334,7 +334,7 @@ public class AtBConfiguration {
             }
         }
         target.addModifier(SkillType.EXP_REGULAR - adminLogExp, "Admin/Logistics");
-        target.addModifier(IUnitRating.DRAGOON_C - campaign.getUnitRatingMod(),
+        target.addModifier(AbstractUnitRating.DRAGOON_C - campaign.getUnitRatingMod(),
                 "Unit Rating");
         return target;
     }
