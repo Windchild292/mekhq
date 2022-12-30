@@ -402,11 +402,11 @@ public class PersonnelMarket {
         TargetRoll target = new TargetRoll(jumpship ? 12 : 10, "Base");
         Person adminLog = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_LOGISTICS, SkillType.S_ADMIN);
         int adminLogExp = (adminLog == null) ? SkillType.EXP_ULTRA_GREEN
-                : adminLog.getSkill(SkillType.S_ADMIN).getSkillLevel();
+                : adminLog.getSkill(SkillType.S_ADMIN).getLevel();
         for (Person p : campaign.getAdmins()) {
             if ((p.getPrimaryRole().isAdministratorLogistics() || p.getSecondaryRole().isAdministratorLogistics())
-                    && p.getSkill(SkillType.S_ADMIN).getSkillLevel() > adminLogExp) {
-                adminLogExp = p.getSkill(SkillType.S_ADMIN).getSkillLevel();
+                    && p.getSkill(SkillType.S_ADMIN).getLevel() > adminLogExp) {
+                adminLogExp = p.getSkill(SkillType.S_ADMIN).getLevel();
             }
         }
         target.addModifier(SkillType.EXP_REGULAR - adminLogExp, "Admin/Logistics");

@@ -2084,7 +2084,7 @@ public class Campaign implements ITechManager {
                     + " already has 25 patients.");
         }
         TargetRoll target = new TargetRoll(skill.getFinalSkillValue(),
-                SkillType.getExperienceLevelName(skill.getSkillLevel()));
+                SkillType.getExperienceLevelName(skill.getLevel()));
         if (target.getValue() == TargetRoll.IMPOSSIBLE) {
             return target;
         }
@@ -2937,7 +2937,7 @@ public class Campaign implements ITechManager {
             }
         } else {
             int modePenalty = partWork.getMode().expReduction;
-            int effectiveSkillLvl = tech.getSkillForWorkingOn(partWork).getSkillLevel() - modePenalty;
+            int effectiveSkillLvl = tech.getSkillForWorkingOn(partWork).getLevel() - modePenalty;
             if (getCampaignOptions().isDestroyByMargin()) {
                 if (getCampaignOptions().getDestroyMargin() > (target.getValue() - roll)) {
                     // not destroyed - set the effective level as low as
@@ -4800,7 +4800,7 @@ public class Campaign implements ITechManager {
         } else if (skill == null) {
             return new TargetRoll(TargetRoll.IMPOSSIBLE, "Assigned tech does not have the right skills");
         } else if (!getCampaignOptions().isDestroyByMargin()
-                && (partWork.getSkillMin() > (skill.getSkillLevel() - modePenalty))) {
+                && (partWork.getSkillMin() > (skill.getLevel() - modePenalty))) {
             return new TargetRoll(TargetRoll.IMPOSSIBLE, "Task is beyond this tech's skill level");
         } else if (partWork.getSkillMin() > SkillType.EXP_ELITE) {
             return new TargetRoll(TargetRoll.IMPOSSIBLE, "Task is impossible.");
@@ -4838,11 +4838,11 @@ public class Campaign implements ITechManager {
         // levels instead of two
         int value = skill.getFinalSkillValue() + modePenalty;
         if ((modePenalty > 0)
-                && (SkillType.EXP_GREEN == (skill.getSkillLevel() - modePenalty))) {
+                && (SkillType.EXP_GREEN == (skill.getLevel() - modePenalty))) {
             value++;
         }
         final TargetRoll target = new TargetRoll(value,
-                SkillType.getExperienceLevelName(skill.getSkillLevel() - modePenalty));
+                SkillType.getExperienceLevelName(skill.getLevel() - modePenalty));
         if (target.getValue() == TargetRoll.IMPOSSIBLE) {
             return target;
         }
@@ -4897,8 +4897,7 @@ public class Campaign implements ITechManager {
             Skill skill = tech.getSkillForWorkingOn(partWork);
             if (null != skill) {
                 value = skill.getFinalSkillValue();
-                skillLevel = SkillType.getExperienceLevelName(skill
-                        .getSkillLevel());
+                skillLevel = SkillType.getExperienceLevelName(skill.getLevel());
             }
         }
 
@@ -5089,7 +5088,7 @@ public class Campaign implements ITechManager {
             }
         }
         TargetRoll target = new TargetRoll(skill.getFinalSkillValue(),
-                SkillType.getExperienceLevelName(skill.getSkillLevel()));// person.getTarget(Modes.MODE_NORMAL);
+                SkillType.getExperienceLevelName(skill.getLevel()));
         target.append(acquisition.getAllAcquisitionMods());
         return target;
     }
@@ -5178,9 +5177,9 @@ public class Campaign implements ITechManager {
         if (person == null) {
             experienceLevel = SkillType.EXP_ULTRA_GREEN;
         } else if (CampaignOptions.S_TECH.equals(getCampaignOptions().getAcquisitionSkill())) {
-            experienceLevel = person.getBestTechSkill().getSkillLevel();
+            experienceLevel = person.getBestTechSkill().getLevel();
         } else {
-            experienceLevel = person.getSkill(getCampaignOptions().getAcquisitionSkill()).getSkillLevel();
+            experienceLevel = person.getSkill(getCampaignOptions().getAcquisitionSkill()).getLevel();
         }
 
         final int modifier = experienceLevel - SkillType.EXP_REGULAR;

@@ -203,7 +203,7 @@ public class LanceAssignmentView extends JPanel {
             cmdrStrategy = campaign.getFlaggedCommander().getSkill(SkillType.S_STRATEGY).getLevel();
         }
         int maxDeployedLances = campaign.getCampaignOptions().getBaseStrategyDeployment() +
-                campaign.getCampaignOptions().getAdditionalStrategyDeployment() * cmdrStrategy.getAdjustedIndex();
+                campaign.getCampaignOptions().getAdditionalStrategyDeployment() * cmdrStrategy.getAdjustedValue();
         add(new JLabel("Maximum Deployed Units: " + maxDeployedLances));
 
         panAssignments = new JPanel();

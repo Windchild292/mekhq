@@ -686,8 +686,8 @@ public class MassRepairService {
         for (Person tech : techs) {
             Skill skill = tech.getSkillForWorkingOn(partWork);
 
-            if (skill.getSkillLevel() > highestAvailableTechSkill) {
-                highestAvailableTechSkill = skill.getSkillLevel();
+            if (skill.getLevel() > highestAvailableTechSkill) {
+                highestAvailableTechSkill = skill.getLevel();
             }
 
             if (highestAvailableTechSkill == SkillType.EXP_ELITE) {
@@ -982,15 +982,15 @@ public class MassRepairService {
                 continue;
             }
 
-            if (mro.getSkillMin() > skill.getSkillLevel()) {
+            if (mro.getSkillMin() > skill.getLevel()) {
                 continue;
             }
 
-            if (mro.getSkillMax() < skill.getSkillLevel()) {
+            if (mro.getSkillMax() < skill.getLevel()) {
                 continue;
             }
 
-            if (partWork.getSkillMin() > skill.getSkillLevel()) {
+            if (partWork.getSkillMin() > skill.getLevel()) {
                 continue;
             }
 
@@ -1057,7 +1057,7 @@ public class MassRepairService {
             if (!increaseTime) {
                 int modePenalty = partWork.getMode().expReduction;
 
-                if (partWork.getSkillMin() > (skill.getSkillLevel() - modePenalty)) {
+                if (partWork.getSkillMin() > (skill.getLevel() - modePenalty)) {
                     debugLog(
                             "...... ending calculateNewMassRepairWorktime with previousWorkTime due time reduction skill mod now being less that required skill - %s ns", "calculateNewMassRepairWorktime",
                             System.nanoTime() - time);
@@ -1077,7 +1077,7 @@ public class MassRepairService {
 
                 WorkTimeCalculation wtc = new WorkTimeCalculation(null);
 
-                if (skill.getSkillLevel() >= highestAvailableTechSkill) {
+                if (skill.getLevel() >= highestAvailableTechSkill) {
                     wtc.setReachedMaxSkill(true);
                 }
 
@@ -1182,7 +1182,7 @@ public class MassRepairService {
             Skill skill1 = tech1.getSkillForWorkingOn(partWork);
             Skill skill2 = tech2.getSkillForWorkingOn(partWork);
 
-            if (skill1.getSkillLevel() == skill2.getSkillLevel()) {
+            if (skill1.getLevel() == skill2.getLevel()) {
                 if ((tech1.getXP() == tech2.getXP()) || (skill1.getLevel() == SkillType.EXP_ELITE)) {
                     return tech1.getMinutesLeft() - tech2.getMinutesLeft();
                 } else {
@@ -1190,7 +1190,7 @@ public class MassRepairService {
                 }
             }
 
-            return skill1.getSkillLevel() < skill2.getSkillLevel() ? -1 : 1;
+            return skill1.getLevel() < skill2.getLevel() ? -1 : 1;
         }
     }
 

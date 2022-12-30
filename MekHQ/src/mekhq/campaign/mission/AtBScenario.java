@@ -290,7 +290,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
         if (null != getLance(campaign)) {
             getLance(campaign).refreshCommander(campaign);
             if (null != getLance(campaign).getCommander(campaign).getSkill(SkillType.S_TACTICS)) {
-                rerollsRemaining = getLance(campaign).getCommander(campaign).getSkill(SkillType.S_TACTICS).getLevel().getAdjustedIndex();
+                rerollsRemaining = getLance(campaign).getCommander(campaign).getSkill(SkillType.S_TACTICS).getLevel().getAdjustedValue();
             }
         }
     }

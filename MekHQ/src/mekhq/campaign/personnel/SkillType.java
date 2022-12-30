@@ -163,7 +163,7 @@ public class SkillType {
         return countUp;
     }
 
-    public int getLevelFromExperience(int expLvl) {
+    public SkillLevel getLevelFromExperience(int expLvl) {
         switch (expLvl) {
             case EXP_REGULAR:
                 return regularLevel;
@@ -228,7 +228,7 @@ public class SkillType {
         this.legendaryLevel = legendaryLevel;
     }
 
-    public int getCost(int lvl) {
+    public int getCost(SkillLevel lvl) {
         if ((lvl > 10) || (lvl < 0)) {
             return -1;
         } else {

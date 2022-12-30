@@ -20,7 +20,9 @@
  */
 package mekhq.campaign.personnel;
 
+import megamek.Version;
 import megamek.common.Compute;
+import megamek.common.annotations.Nullable;
 import megamek.common.enums.SkillLevel;
 import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
@@ -53,28 +55,57 @@ import java.io.PrintWriter;
  * @author Jay Lawson (jaylawson39 at yahoo.com)
  */
 public class Skill {
+    //region Variable Declarations
     private SkillType type;
     private SkillLevel level;
     private int bonus;
+    //endregion Variable Declarations
 
+    //region Constructors
     protected Skill() {
 
     }
 
-    public Skill(String type) {
-        this.type = SkillType.getType(type);
-        this.level = this.type.getLevelFromExperience(SkillType.EXP_REGULAR);
+    public Skill(final String type) {
+        this(type, SkillLevel.REGULAR, 0);
     }
 
-    public Skill(String type, int level, int bns) {
-        this(SkillType.getType(type), level, bns);
+    public Skill(final String type, final SkillLevel level, final int bonus) {
+        this(SkillType.getType(type), level, bonus);
     }
 
-    public Skill(SkillType type, int level, int bonus) {
-        this.type = type;
+    public Skill(final SkillType type, final SkillLevel level, final int bonus) {
+        setType(type);
+        setLevel(level);
+        setBonus(bonus);
+    }
+    //endregion Constructors
+
+    //region Getters/Setters
+    public SkillLevel getLevel() {
+        return level;
+    }
+
+    public void setLevel(final SkillLevel level) {
         this.level = level;
+    }
+
+    public int getBonus() {
+        return bonus;
+    }
+
+    public void setBonus(final int bonus) {
         this.bonus = bonus;
     }
+
+    public SkillType getType() {
+        return type;
+    }
+
+    public void setType(final SkillType type) {
+        this.type = type;
+    }
+    //endregion Getters/Setters
 
     /**
      * Creates a new {@link Skill} from the given experience level and bonus.
@@ -86,7 +117,7 @@ public class Skill {
      */
     public static Skill createFromExperience(String type, int experienceLevel, int bonus) {
         SkillType skillType = SkillType.getType(type);
-        int level = skillType.getLevelFromExperience(experienceLevel);
+        SkillLevel level = skillType.getLevelFromExperience(experienceLevel);
         return new Skill(skillType, level, bonus);
     }
 
@@ -101,55 +132,35 @@ public class Skill {
      */
     public static Skill randomizeLevel(String type, int experienceLevel, int bonus, int rollModifier) {
         SkillType skillType = SkillType.getType(type);
-        int level = skillType.getLevelFromExperience(experienceLevel);
+        SkillLevel level = skillType.getLevelFromExperience(experienceLevel);
 
         int roll = Compute.d6() + rollModifier;
-        if (roll < 2 && level > 0) {
-            level--;
-        } else if (roll > 5 && level < 10) {
-            level++;
+        if ((roll < 2) && !level.isNone()) {
+            level = Skills.SKILL_LEVELS[level.ordinal() - 1];
+        } else if ((roll > 5) && !level.isLegendary()) {
+            level = Skills.SKILL_LEVELS[level.ordinal() + 1];
         }
 
         return new Skill(skillType, level, bonus);
     }
 
-    public SkillLevel getLevel() {
-        return level;
-    }
-
-    public void setLevel(final SkillLevel level) {
-        this.level = level;
-    }
-
-    public int getBonus() {
-        return bonus;
-    }
-
-    public void setBonus(int b) {
-        this.bonus = b;
-    }
-
-    public SkillType getType() {
-        return type;
-    }
-
     public int getFinalSkillValue() {
         if (type.countUp()) {
-            return type.getTarget() + level + bonus;
+            return type.getTarget() + getLevel().getAdjustedValue() + bonus;
         } else {
-            return type.getTarget() - level - bonus;
+            return type.getTarget() - getLevel().getAdjustedValue() - bonus;
         }
     }
 
     public void improve() {
-        if (level >= SkillType.NUM_LEVELS - 1) {
+        if (getLevel().isLegendary()) {
             // Can't improve past the max
             return;
         }
-        level = level + 1;
-        //if the cost for the next level is zero (or less than zero), then
-        //keep improve until you hit a non-zero cost
-        if (type.getCost(level) <= 0) {
+        setLevel(Skills.SKILL_LEVELS[getLevel().ordinal() + 1]);
+        // if the cost for the next level is zero (or less than zero), then
+        // keep improve until you hit a non-zero cost
+        if (getType().getCost(getLevel()) <= 0) {
             improve();
         }
     }
@@ -157,62 +168,61 @@ public class Skill {
     public int getCostToImprove() {
         int cost = 0;
         int i = 1;
-        while (cost <= 0 && (level+i) < SkillType.NUM_LEVELS) {
-            cost = type.getCost(level+i);
-            ++i;
+        while ((cost <= 0) && (level.ordinal() + i) < Skills.SKILL_LEVELS.length) {
+            cost = type.getCost(Skills.SKILL_LEVELS[level.ordinal() + i]);
+            i++;
         }
         return cost;
     }
 
-    public SkillLevel getSkillLevel() {
-        return type.getSkillLevel(getLevel());
+    public void updateType() {
+        type = SkillType.getType(type.getName());
     }
 
-    @Override
-    public String toString() {
-        if (type.countUp()) {
-            return "+" + getFinalSkillValue();
-        } else {
-            return getFinalSkillValue() + "+";
-        }
-    }
-
+    //region File IO
     public void writeToXML(final PrintWriter pw, int indent) {
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "skill");
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "type", type.getName());
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "level", level);
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "bonus", bonus);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "type", getType().getName());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "level", getLevel().name());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "bonus", getBonus());
         MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "skill");
     }
 
-    public static Skill generateInstanceFromXML(Node wn) {
-        Skill retVal = null;
-
+    public static @Nullable Skill generateInstanceFromXML(final Node wn, final Version version) {
         try {
-            retVal = new Skill();
+            final Skill skill = new Skill();
 
             // Okay, now load Skill-specific fields!
-            NodeList nl = wn.getChildNodes();
+            final NodeList nl = wn.getChildNodes();
 
             for (int x = 0; x < nl.getLength(); x++) {
                 Node wn2 = nl.item(x);
 
                 if (wn2.getNodeName().equalsIgnoreCase("type")) {
-                    retVal.type = SkillType.getType(wn2.getTextContent());
+                    skill.setType(SkillType.getType(wn2.getTextContent()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("level")) {
-                    retVal.level = Integer.parseInt(wn2.getTextContent());
+                    skill.setLevel(version.isLowerThan("0.49.12")
+                            ? Skills.SKILL_LEVELS[Integer.parseInt(wn2.getTextContent().trim()) + 1]
+                            : SkillLevel.valueOf(wn2.getTextContent().trim()));
                 } else if (wn2.getNodeName().equalsIgnoreCase("bonus")) {
-                    retVal.bonus = Integer.parseInt(wn2.getTextContent());
+                    skill.setBonus(Integer.parseInt(wn2.getTextContent().trim()));
                 }
             }
+
+            return skill;
         } catch (Exception ex) {
             LogManager.getLogger().error("", ex);
+            return null;
         }
-
-        return retVal;
     }
+    //endregion File IO
 
-    public void updateType() {
-        type = SkillType.getType(type.getName());
+    @Override
+    public String toString() {
+        if (getType().countUp()) {
+            return "+" + getFinalSkillValue();
+        } else {
+            return getFinalSkillValue() + "+";
+        }
     }
 }

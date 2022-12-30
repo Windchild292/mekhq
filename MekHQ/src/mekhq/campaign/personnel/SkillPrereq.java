@@ -77,7 +77,7 @@ public class SkillPrereq {
     public boolean qualifies(Skills s) {
         return skillSet.keySet().stream()
                 .filter(s::hasSkill)
-                .anyMatch(skillName -> s.getSkill(skillName).getSkillLevel().ordinal() >= skillSet.get(skillName));
+                .anyMatch(skillName -> s.getSkill(skillName).getLevel().ordinal() >= skillSet.get(skillName));
     }
 
     /**

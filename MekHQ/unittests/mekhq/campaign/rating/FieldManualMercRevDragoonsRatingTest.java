@@ -21,6 +21,7 @@
 package mekhq.campaign.rating;
 
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.Hangar;
@@ -81,8 +82,8 @@ public class FieldManualMercRevDragoonsRatingTest {
         mockAstechSkill = mock(Skill.class);
 
         // Set up the doctor.
-        when(mockDoctorSkillRegular.getSkillLevel()).thenReturn(SkillType.EXP_REGULAR);
-        when(mockDoctorSkillGreen.getSkillLevel()).thenReturn(SkillType.EXP_GREEN);
+        when(mockDoctorSkillRegular.getLevel()).thenReturn(SkillLevel.REGULAR);
+        when(mockDoctorSkillGreen.getLevel()).thenReturn(SkillLevel.GREEN);
         when(mockDoctor.getPrimaryRole()).thenReturn(PersonnelRole.DOCTOR);
         when(mockDoctor.isDoctor()).thenReturn(true);
         when(mockDoctor.getPrimaryRole()).thenReturn(PersonnelRole.DOCTOR);
@@ -94,8 +95,8 @@ public class FieldManualMercRevDragoonsRatingTest {
         when(mockDoctor.getRankNumeric()).thenReturn(5);
 
         // Set up the tech.
-        when(mockMechTechSkillVeteran.getSkillLevel()).thenReturn(SkillType.EXP_VETERAN);
-        when(mockMechTechSkillRegular.getSkillLevel()).thenReturn(SkillType.EXP_REGULAR);
+        when(mockMechTechSkillVeteran.getLevel()).thenReturn(SkillLevel.VETERAN);
+        when(mockMechTechSkillRegular.getLevel()).thenReturn(SkillLevel.REGULAR);
         when(mockTech.getPrimaryRole()).thenReturn(PersonnelRole.MECH_TECH);
         when(mockTech.isTech()).thenReturn(true);
         when(mockTech.getPrimaryRole()).thenReturn(PersonnelRole.MECH_TECH);
@@ -106,8 +107,8 @@ public class FieldManualMercRevDragoonsRatingTest {
         when(mockTech.hasSkill(eq(SkillType.S_TECH_MECH))).thenReturn(true);
         when(mockTech.getRankNumeric()).thenReturn(4);
 
-        when(mockMedicSkill.getSkillLevel()).thenReturn(SkillType.EXP_REGULAR);
-        when(mockAstechSkill.getSkillLevel()).thenReturn(SkillType.EXP_REGULAR);
+        when(mockMedicSkill.getLevel()).thenReturn(SkillLevel.REGULAR);
+        when(mockAstechSkill.getLevel()).thenReturn(SkillLevel.REGULAR);
 
         mockPersonnelList.add(mockDoctor);
         mockPersonnelList.add(mockTech);

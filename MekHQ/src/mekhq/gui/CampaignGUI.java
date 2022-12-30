@@ -1759,8 +1759,7 @@ public class CampaignGUI extends JPanel {
                 if (!ignoreMaintenance) {
                     time -= Math.max(0, tech.getMaintenanceTimeUsing());
                 }
-                name = tech.getFullTitle() + ", "
-                        + SkillType.getExperienceLevelName(tech.getSkillForWorkingOn(u).getSkillLevel())
+                name = tech.getFullTitle() + ", " + tech.getSkillForWorkingOn(u).getLevel()
                         + " (" + time + "min)";
                 techHash.put(name, tech);
             }

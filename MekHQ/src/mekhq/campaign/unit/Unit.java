@@ -4071,7 +4071,7 @@ public class Unit implements ITechnology {
                     sumEdge += p.getEdge();
 
                     if (p.hasSkill(SkillType.S_TECH_VESSEL)) {
-                        sumSkill += p.getSkill(SkillType.S_TECH_VESSEL).getLevel().getAdjustedIndex();
+                        sumSkill += p.getSkill(SkillType.S_TECH_VESSEL).getLevel().getAdjustedValue();
                         sumBonus += p.getSkill(SkillType.S_TECH_VESSEL).getBonus();
                         nCrew++;
                     }
