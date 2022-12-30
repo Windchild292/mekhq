@@ -21,6 +21,7 @@
 package mekhq.campaign.rating;
 
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.Hangar;
@@ -30,7 +31,6 @@ import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.PersonnelStatus;
 import mekhq.campaign.unit.Unit;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -82,8 +82,8 @@ public class FieldManualMercRevDragoonsRatingTest {
         mockAstechSkill = mock(Skill.class);
 
         // Set up the doctor.
-        when(mockDoctorSkillRegular.getExperienceLevel()).thenReturn(SkillType.EXP_REGULAR);
-        when(mockDoctorSkillGreen.getExperienceLevel()).thenReturn(SkillType.EXP_GREEN);
+        when(mockDoctorSkillRegular.getLevel()).thenReturn(SkillLevel.REGULAR);
+        when(mockDoctorSkillGreen.getLevel()).thenReturn(SkillLevel.GREEN);
         when(mockDoctor.getPrimaryRole()).thenReturn(PersonnelRole.DOCTOR);
         when(mockDoctor.isDoctor()).thenReturn(true);
         when(mockDoctor.getPrimaryRole()).thenReturn(PersonnelRole.DOCTOR);
@@ -95,8 +95,8 @@ public class FieldManualMercRevDragoonsRatingTest {
         when(mockDoctor.getRankNumeric()).thenReturn(5);
 
         // Set up the tech.
-        when(mockMechTechSkillVeteran.getExperienceLevel()).thenReturn(SkillType.EXP_VETERAN);
-        when(mockMechTechSkillRegular.getExperienceLevel()).thenReturn(SkillType.EXP_REGULAR);
+        when(mockMechTechSkillVeteran.getLevel()).thenReturn(SkillLevel.VETERAN);
+        when(mockMechTechSkillRegular.getLevel()).thenReturn(SkillLevel.REGULAR);
         when(mockTech.getPrimaryRole()).thenReturn(PersonnelRole.MECH_TECH);
         when(mockTech.isTech()).thenReturn(true);
         when(mockTech.getPrimaryRole()).thenReturn(PersonnelRole.MECH_TECH);
@@ -107,8 +107,8 @@ public class FieldManualMercRevDragoonsRatingTest {
         when(mockTech.hasSkill(eq(SkillType.S_TECH_MECH))).thenReturn(true);
         when(mockTech.getRankNumeric()).thenReturn(4);
 
-        when(mockMedicSkill.getExperienceLevel()).thenReturn(SkillType.EXP_REGULAR);
-        when(mockAstechSkill.getExperienceLevel()).thenReturn(SkillType.EXP_REGULAR);
+        when(mockMedicSkill.getLevel()).thenReturn(SkillLevel.REGULAR);
+        when(mockAstechSkill.getLevel()).thenReturn(SkillLevel.REGULAR);
 
         mockPersonnelList.add(mockDoctor);
         mockPersonnelList.add(mockTech);
@@ -433,14 +433,14 @@ public class FieldManualMercRevDragoonsRatingTest {
         doReturn(commandList).when(testRating).getCommanderList();
         assertEquals(expectedCommander, testRating.getCommander());
 
-        // Retire the old commander.  Give one leftennant more experience than the other.
+        // Retire the old commander.  Give one leftenant more experience than the other.
         testRating = spy(new FieldManualMercRevDragoonsRating(mockCampaign));
         when(mockCampaign.getFlaggedCommander()).thenReturn(null);
         doReturn(commandList).when(testRating).getCommanderList();
         doReturn(PersonnelStatus.RETIRED).when(expectedCommander).getStatus();
         mockActivePersonnelList.remove(expectedCommander);
-        when(leftennant.getExperienceLevel(any(), anyBoolean())).thenReturn(SkillType.EXP_VETERAN);
-        when(leftennant2.getExperienceLevel(any(), anyBoolean())).thenReturn(SkillType.EXP_REGULAR);
+        when(leftennant.getSkillLevel(any(), anyBoolean())).thenReturn(SkillLevel.VETERAN);
+        when(leftennant2.getSkillLevel(any(), anyBoolean())).thenReturn(SkillLevel.REGULAR);
         assertEquals(leftennant, testRating.getCommander());
 
         // Test a campaign with no flagged commander and where no ranks have been assigned.

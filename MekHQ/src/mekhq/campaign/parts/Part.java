@@ -24,6 +24,7 @@ package mekhq.campaign.parts;
 import megamek.Version;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.SkillLevel;
 import megamek.common.options.OptionsConstants;
 import mekhq.MekHQ;
 import mekhq.utilities.MHQXMLUtility;
@@ -452,7 +453,7 @@ public abstract class Part implements IPartWork, ITechnology {
             }
             bonus = "(" + bonus + ")";
             toReturn += getTimeLeft() + " minutes" + scheduled;
-            toReturn += ", " + SkillType.getExperienceLevelName(getSkillMin());
+            toReturn += ", " + getSkillMin();
             toReturn += " " + bonus;
             if (getMode() != WorkTime.NORMAL) {
                 toReturn += ", " + getCurrentModeName();
@@ -778,12 +779,12 @@ public abstract class Part implements IPartWork, ITechnology {
     }
 
     @Override
-    public int getSkillMin() {
+    public SkillLevel getSkillMin() {
         return skillMin;
     }
 
-    public void setSkillMin(int i) {
-        this.skillMin = i;
+    public void setSkillMin(SkillLevel skillMin) {
+        this.skillMin = skillMin;
     }
 
     @Override

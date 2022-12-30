@@ -25,6 +25,7 @@ import megamek.codeUtilities.StringUtility;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
 import megamek.common.enums.Gender;
+import megamek.common.enums.SkillLevel;
 import megamek.common.icons.Portrait;
 import megamek.common.options.IOption;
 import megamek.common.options.IOptionGroup;
@@ -76,8 +77,8 @@ import java.util.stream.Stream;
  */
 public class Person {
     //region Variable Declarations
-    private static final Map<Integer, Money> MECHWARRIOR_AERO_RANSOM_VALUES;
-    private static final Map<Integer, Money> OTHER_RANSOM_VALUES;
+    private static final Map<SkillLevel, Money> MECHWARRIOR_AERO_RANSOM_VALUES;
+    private static final Map<SkillLevel, Money> OTHER_RANSOM_VALUES;
 
     private PersonAwardController awardController;
 
@@ -207,20 +208,24 @@ public class Person {
     // initializes the AtB ransom values
     static {
         MECHWARRIOR_AERO_RANSOM_VALUES = new HashMap<>();
-        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillType.EXP_NONE, Money.of(0)); // no official AtB rules for really inexperienced scrubs, but...
-        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillType.EXP_ULTRA_GREEN, Money.of(5000)); // no official AtB rules for really inexperienced scrubs, but...
-        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillType.EXP_GREEN, Money.of(10000));
-        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillType.EXP_REGULAR, Money.of(25000));
-        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillType.EXP_VETERAN, Money.of(75000));
-        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillType.EXP_ELITE, Money.of(150000));
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.NONE, Money.of(0)); // no official AtB rules for really inexperienced scrubs, but...
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.ULTRA_GREEN, Money.of(5000)); // no official AtB rules for really inexperienced scrubs, but...
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.GREEN, Money.of(10000));
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.REGULAR, Money.of(25000));
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.VETERAN, Money.of(75000));
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.ELITE, Money.of(150000));
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.HEROIC, Money.of(300000));
+        MECHWARRIOR_AERO_RANSOM_VALUES.put(SkillLevel.LEGENDARY, Money.of(600000));
 
         OTHER_RANSOM_VALUES = new HashMap<>();
-        OTHER_RANSOM_VALUES.put(SkillType.EXP_NONE, Money.of(0));
-        OTHER_RANSOM_VALUES.put(SkillType.EXP_ULTRA_GREEN, Money.of(2500));
-        OTHER_RANSOM_VALUES.put(SkillType.EXP_GREEN, Money.of(5000));
-        OTHER_RANSOM_VALUES.put(SkillType.EXP_REGULAR, Money.of(10000));
-        OTHER_RANSOM_VALUES.put(SkillType.EXP_VETERAN, Money.of(25000));
-        OTHER_RANSOM_VALUES.put(SkillType.EXP_ELITE, Money.of(50000));
+        OTHER_RANSOM_VALUES.put(SkillLevel.NONE, Money.of(0));
+        OTHER_RANSOM_VALUES.put(SkillLevel.ULTRA_GREEN, Money.of(2500));
+        OTHER_RANSOM_VALUES.put(SkillLevel.GREEN, Money.of(5000));
+        OTHER_RANSOM_VALUES.put(SkillLevel.REGULAR, Money.of(10000));
+        OTHER_RANSOM_VALUES.put(SkillLevel.VETERAN, Money.of(25000));
+        OTHER_RANSOM_VALUES.put(SkillLevel.ELITE, Money.of(50000));
+        OTHER_RANSOM_VALUES.put(SkillLevel.HEROIC, Money.of(100000));
+        OTHER_RANSOM_VALUES.put(SkillLevel.LEGENDARY, Money.of(200000));
     }
     //endregion Variable Declarations
 
@@ -846,7 +851,7 @@ public class Person {
                 return hasSkill(SkillType.S_GUN_VEE);
             case VEHICLE_CREW:
                 return hasSkill(SkillType.S_TECH_MECHANIC)
-                        && (getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN);
+                        && (getSkill(SkillType.S_TECH_MECHANIC).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal());
             case AEROSPACE_PILOT:
                 return hasSkill(SkillType.S_GUN_AERO) && hasSkill(SkillType.S_PILOT_AERO);
             case CONVENTIONAL_AIRCRAFT_PILOT:
@@ -867,21 +872,21 @@ public class Person {
                 return hasSkill(SkillType.S_NAV);
             case MECH_TECH:
                 return hasSkill(SkillType.S_TECH_MECH)
-                        && (getSkill(SkillType.S_TECH_MECH).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN);
+                        && (getSkill(SkillType.S_TECH_MECH).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal());
             case MECHANIC:
                 return hasSkill(SkillType.S_TECH_MECHANIC)
-                        && (getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN);
+                        && (getSkill(SkillType.S_TECH_MECHANIC).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal());
             case AERO_TECH:
                 return hasSkill(SkillType.S_TECH_AERO)
-                        && (getSkill(SkillType.S_TECH_AERO).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN);
+                        && (getSkill(SkillType.S_TECH_AERO).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal());
             case BA_TECH:
                 return hasSkill(SkillType.S_TECH_BA)
-                        && (getSkill(SkillType.S_TECH_BA).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN);
+                        && (getSkill(SkillType.S_TECH_BA).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal());
             case ASTECH:
                 return hasSkill(SkillType.S_ASTECH);
             case DOCTOR:
                 return hasSkill(SkillType.S_DOCTOR)
-                        && (getSkill(SkillType.S_DOCTOR).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN);
+                        && (getSkill(SkillType.S_DOCTOR).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal());
             case MEDIC:
                 return hasSkill(SkillType.S_MEDTECH);
             case ADMINISTRATOR_COMMAND:
@@ -1694,7 +1699,7 @@ public class Person {
                 } else if (wn2.getNodeName().equalsIgnoreCase("pilotHits")) {
                     retVal.hits = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("skill")) {
-                    Skill s = Skill.generateInstanceFromXML(wn2);
+                    Skill s = Skill.generateInstanceFromXML(wn2, version);
                     if ((s != null) && (s.getType() != null)) {
                         retVal.skills.addSkill(s.getType().getName(), s);
                     }
@@ -1921,7 +1926,7 @@ public class Person {
         // TODO : Figure out a way to allow negative salaries... could be used to simulate a Holovid
         // TODO : star paying to be part of the company, for example
         Money primaryBase = campaign.getCampaignOptions().getRoleBaseSalaries()[getPrimaryRole().ordinal()];
-        primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXPMultiplier(getExperienceLevel(campaign, false)));
+        primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXPMultipliers().get(getSkillLevel(campaign, false)));
         if (getPrimaryRole().isSoldierOrBattleArmour()) {
             if (hasSkill(SkillType.S_ANTI_MECH)) {
                 primaryBase = primaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
@@ -1934,7 +1939,7 @@ public class Person {
         }
 
         Money secondaryBase = campaign.getCampaignOptions().getRoleBaseSalaries()[getSecondaryRole().ordinal()].dividedBy(2);
-        secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXPMultiplier(getExperienceLevel(campaign, true)));
+        secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryXPMultipliers().get(getSkillLevel(campaign, true)));
         if (getSecondaryRole().isSoldierOrBattleArmour()) {
             if (hasSkill(SkillType.S_ANTI_MECH)) {
                 secondaryBase = secondaryBase.multipliedBy(campaign.getCampaignOptions().getSalaryAntiMekMultiplier());
@@ -2133,37 +2138,7 @@ public class Person {
     }
     //endregion Ranks
 
-    public String getSkillSummary(final Campaign campaign) {
-        return SkillType.getExperienceLevelName(getExperienceLevel(campaign, false));
-    }
-
-    @Override
-    public String toString() {
-        return getFullName();
-    }
-
-    /**
-     * Two people are determined to be equal if they have the same id
-     * @param object The object to check if it is equal to the person or not
-     * @return True if they have the same id, otherwise false
-     */
-    @Override
-    public boolean equals(final @Nullable Object object) {
-        if (this == object) {
-            return true;
-        } else if (!(object instanceof Person)) {
-            return false;
-        } else {
-            return getId().equals(((Person) object).getId());
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return getId().hashCode();
-    }
-
-    public int getExperienceLevel(final Campaign campaign, final boolean secondary) {
+    public SkillLevel getSkillLevel(final Campaign campaign, final boolean secondary) {
         final PersonnelRole role = secondary ? getSecondaryRole() : getPrimaryRole();
         switch (role) {
             case MECHWARRIOR:
@@ -2175,18 +2150,18 @@ public class Person {
                      */
                     if (campaign.getCampaignOptions().useAlternativeQualityAveraging()) {
                         int rawScore = (int) Math.floor(
-                            (getSkill(SkillType.S_GUN_MECH).getLevel() + getSkill(SkillType.S_PILOT_MECH).getLevel()) / 2.0
+                            (getSkill(SkillType.S_GUN_MECH).getLevel().ordinal() + getSkill(SkillType.S_PILOT_MECH).getLevel().ordinal()) / 2.0
                         );
-                        if (getSkill(SkillType.S_GUN_MECH).getType().getExperienceLevel(rawScore) ==
-                            getSkill(SkillType.S_PILOT_MECH).getType().getExperienceLevel(rawScore)) {
-                            return getSkill(SkillType.S_GUN_MECH).getType().getExperienceLevel(rawScore);
+                        if (getSkill(SkillType.S_GUN_MECH).getType().getSkillLevel(rawScore) ==
+                            getSkill(SkillType.S_PILOT_MECH).getType().getSkillLevel(rawScore)) {
+                            return getSkill(SkillType.S_GUN_MECH).getType().getSkillLevel(rawScore);
                         }
                     }
 
-                    return (int) Math.floor((getSkill(SkillType.S_GUN_MECH).getExperienceLevel()
-                            + getSkill(SkillType.S_PILOT_MECH).getExperienceLevel()) / 2.0);
+                    return Skills.SKILL_LEVELS[(int) Math.floor((getSkill(SkillType.S_GUN_MECH).getLevel().ordinal()
+                            + getSkill(SkillType.S_PILOT_MECH).getLevel().ordinal()) / 2.0)];
                 } else {
-                    return SkillType.EXP_NONE;
+                    return SkillLevel.NONE;
                 }
             case LAM_PILOT:
                 if (Stream.of(SkillType.S_GUN_MECH, SkillType.S_PILOT_MECH,
@@ -2198,120 +2173,120 @@ public class Person {
                      */
                     if (campaign.getCampaignOptions().useAlternativeQualityAveraging()) {
                         int rawScore = (int) Math.floor((Stream.of(SkillType.S_GUN_MECH, SkillType.S_PILOT_MECH,
-                                SkillType.S_GUN_AERO, SkillType.S_PILOT_AERO).mapToInt(s -> getSkill(s).getLevel()).sum())
+                                SkillType.S_GUN_AERO, SkillType.S_PILOT_AERO).mapToInt(s -> getSkill(s).getLevel().ordinal()).sum())
                                 / 4.0);
 
-                        final int mechGunneryExperienceLevel = SkillType.lookupHash.get(SkillType.S_GUN_MECH).getExperienceLevel(rawScore);
-                        if ((mechGunneryExperienceLevel == SkillType.lookupHash.get(SkillType.S_PILOT_MECH).getExperienceLevel(rawScore)
-                                && (mechGunneryExperienceLevel == SkillType.lookupHash.get(SkillType.S_GUN_AERO).getExperienceLevel(rawScore))
-                                && (mechGunneryExperienceLevel == SkillType.lookupHash.get(SkillType.S_PILOT_AERO).getExperienceLevel(rawScore)))) {
-                            return getSkill(SkillType.S_GUN_MECH).getType().getExperienceLevel(rawScore);
+                        final int mechGunneryExperienceLevel = SkillType.lookupHash.get(SkillType.S_GUN_MECH).getSkillLevel(rawScore).ordinal();
+                        if ((mechGunneryExperienceLevel == SkillType.lookupHash.get(SkillType.S_PILOT_MECH).getSkillLevel(rawScore).ordinal())
+                                && (mechGunneryExperienceLevel == SkillType.lookupHash.get(SkillType.S_GUN_AERO).getSkillLevel(rawScore).ordinal())
+                                && (mechGunneryExperienceLevel == SkillType.lookupHash.get(SkillType.S_PILOT_AERO).getSkillLevel(rawScore).ordinal())) {
+                            return getSkill(SkillType.S_GUN_MECH).getType().getSkillLevel(rawScore);
                         }
                     }
 
-                    return (int) Math.floor(
-                            (getSkill(SkillType.S_GUN_MECH).getExperienceLevel() + getSkill(SkillType.S_PILOT_MECH).getExperienceLevel()
-                            + getSkill(SkillType.S_GUN_AERO).getExperienceLevel() + getSkill(SkillType.S_PILOT_AERO).getExperienceLevel())
-                            / 4.0);
+                    return Skills.SKILL_LEVELS[(int) Math.floor(
+                            (getSkill(SkillType.S_GUN_MECH).getLevel().ordinal() + getSkill(SkillType.S_PILOT_MECH).getLevel().ordinal()
+                            + getSkill(SkillType.S_GUN_AERO).getLevel().ordinal() + getSkill(SkillType.S_PILOT_AERO).getLevel().ordinal())
+                            / 4.0)];
                 } else {
-                    return SkillType.EXP_NONE;
+                    return SkillLevel.NONE;
                 }
             case GROUND_VEHICLE_DRIVER:
-                return hasSkill(SkillType.S_PILOT_GVEE) ? getSkill(SkillType.S_PILOT_GVEE).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_PILOT_GVEE) ? getSkill(SkillType.S_PILOT_GVEE).getLevel() : SkillLevel.NONE;
             case NAVAL_VEHICLE_DRIVER:
-                return hasSkill(SkillType.S_PILOT_NVEE) ? getSkill(SkillType.S_PILOT_NVEE).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_PILOT_NVEE) ? getSkill(SkillType.S_PILOT_NVEE).getLevel() : SkillLevel.NONE;
             case VTOL_PILOT:
-                return hasSkill(SkillType.S_PILOT_VTOL) ? getSkill(SkillType.S_PILOT_VTOL).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_PILOT_VTOL) ? getSkill(SkillType.S_PILOT_VTOL).getLevel() : SkillLevel.NONE;
             case VEHICLE_GUNNER:
-                return hasSkill(SkillType.S_GUN_VEE) ? getSkill(SkillType.S_GUN_VEE).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_GUN_VEE) ? getSkill(SkillType.S_GUN_VEE).getLevel() : SkillLevel.NONE;
             case VEHICLE_CREW:
-                return hasSkill(SkillType.S_TECH_MECHANIC) ? getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_TECH_MECHANIC) ? getSkill(SkillType.S_TECH_MECHANIC).getLevel() : SkillLevel.NONE;
             case AEROSPACE_PILOT:
                 if (hasSkill(SkillType.S_GUN_AERO) && hasSkill(SkillType.S_PILOT_AERO)) {
                     if (campaign.getCampaignOptions().useAlternativeQualityAveraging()) {
                         int rawScore = (int) Math.floor(
-                            (getSkill(SkillType.S_GUN_AERO).getLevel() + getSkill(SkillType.S_PILOT_AERO).getLevel()) / 2.0
+                            (getSkill(SkillType.S_GUN_AERO).getLevel().ordinal() + getSkill(SkillType.S_PILOT_AERO).getLevel().ordinal()) / 2.0
                         );
-                        if (getSkill(SkillType.S_GUN_AERO).getType().getExperienceLevel(rawScore) ==
-                            getSkill(SkillType.S_PILOT_AERO).getType().getExperienceLevel(rawScore)) {
-                            return getSkill(SkillType.S_GUN_AERO).getType().getExperienceLevel(rawScore);
+                        if (getSkill(SkillType.S_GUN_AERO).getType().getSkillLevel(rawScore) ==
+                            getSkill(SkillType.S_PILOT_AERO).getType().getSkillLevel(rawScore)) {
+                            return getSkill(SkillType.S_GUN_AERO).getType().getSkillLevel(rawScore);
                         }
                     }
 
-                    return (int) Math.floor((getSkill(SkillType.S_GUN_AERO).getExperienceLevel()
-                            + getSkill(SkillType.S_PILOT_AERO).getExperienceLevel()) / 2.0);
+                    return Skills.SKILL_LEVELS[(int) Math.floor((getSkill(SkillType.S_GUN_AERO).getLevel().ordinal()
+                            + getSkill(SkillType.S_PILOT_AERO).getLevel().ordinal()) / 2.0)];
                 } else {
-                    return SkillType.EXP_NONE;
+                    return SkillLevel.NONE;
                 }
             case CONVENTIONAL_AIRCRAFT_PILOT:
                 if (hasSkill(SkillType.S_GUN_JET) && hasSkill(SkillType.S_PILOT_JET)) {
                     if (campaign.getCampaignOptions().useAlternativeQualityAveraging()) {
                         int rawScore = (int) Math.floor(
-                            (getSkill(SkillType.S_GUN_JET).getLevel() + getSkill(SkillType.S_PILOT_JET).getLevel()) / 2.0
+                            (getSkill(SkillType.S_GUN_JET).getLevel().ordinal() + getSkill(SkillType.S_PILOT_JET).getLevel().ordinal()) / 2.0
                         );
-                        if (getSkill(SkillType.S_GUN_JET).getType().getExperienceLevel(rawScore) ==
-                            getSkill(SkillType.S_PILOT_JET).getType().getExperienceLevel(rawScore)) {
-                            return getSkill(SkillType.S_GUN_JET).getType().getExperienceLevel(rawScore);
+                        if (getSkill(SkillType.S_GUN_JET).getType().getSkillLevel(rawScore) ==
+                            getSkill(SkillType.S_PILOT_JET).getType().getSkillLevel(rawScore)) {
+                            return getSkill(SkillType.S_GUN_JET).getType().getSkillLevel(rawScore);
                         }
                     }
 
-                    return (int) Math.floor((getSkill(SkillType.S_GUN_JET).getExperienceLevel()
-                            + getSkill(SkillType.S_PILOT_JET).getExperienceLevel()) / 2.0);
+                    return Skills.SKILL_LEVELS[(int) Math.floor((getSkill(SkillType.S_GUN_JET).getLevel().ordinal()
+                            + getSkill(SkillType.S_PILOT_JET).getLevel().ordinal()) / 2.0)];
                 } else {
-                    return SkillType.EXP_NONE;
+                    return SkillLevel.NONE;
                 }
             case PROTOMECH_PILOT:
-                return hasSkill(SkillType.S_GUN_PROTO) ? getSkill(SkillType.S_GUN_PROTO).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_GUN_PROTO) ? getSkill(SkillType.S_GUN_PROTO).getLevel() : SkillLevel.NONE;
             case BATTLE_ARMOUR:
                 if (hasSkill(SkillType.S_GUN_BA) && hasSkill(SkillType.S_ANTI_MECH)) {
                     if (campaign.getCampaignOptions().useAlternativeQualityAveraging()) {
                         int rawScore = (int) Math.floor(
-                            (getSkill(SkillType.S_GUN_BA).getLevel() + getSkill(SkillType.S_ANTI_MECH).getLevel()) / 2.0
+                            (getSkill(SkillType.S_GUN_BA).getLevel().ordinal() + getSkill(SkillType.S_ANTI_MECH).getLevel().ordinal()) / 2.0
                         );
-                        if (getSkill(SkillType.S_GUN_BA).getType().getExperienceLevel(rawScore) ==
-                            getSkill(SkillType.S_ANTI_MECH).getType().getExperienceLevel(rawScore)) {
-                            return getSkill(SkillType.S_GUN_BA).getType().getExperienceLevel(rawScore);
+                        if (getSkill(SkillType.S_GUN_BA).getType().getSkillLevel(rawScore) ==
+                            getSkill(SkillType.S_ANTI_MECH).getType().getSkillLevel(rawScore)) {
+                            return getSkill(SkillType.S_GUN_BA).getType().getSkillLevel(rawScore);
                         }
                     }
 
-                    return (int) Math.floor((getSkill(SkillType.S_GUN_BA).getExperienceLevel()
-                            + getSkill(SkillType.S_ANTI_MECH).getExperienceLevel()) / 2.0);
+                    return Skills.SKILL_LEVELS[(int) Math.floor((getSkill(SkillType.S_GUN_BA).getLevel().ordinal()
+                            + getSkill(SkillType.S_ANTI_MECH).getLevel().ordinal()) / 2.0)];
                 } else {
-                    return SkillType.EXP_NONE;
+                    return SkillLevel.NONE;
                 }
             case SOLDIER:
-                return hasSkill(SkillType.S_SMALL_ARMS) ? getSkill(SkillType.S_SMALL_ARMS).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_SMALL_ARMS) ? getSkill(SkillType.S_SMALL_ARMS).getLevel() : SkillLevel.NONE;
             case VESSEL_PILOT:
-                return hasSkill(SkillType.S_PILOT_SPACE) ? getSkill(SkillType.S_PILOT_SPACE).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_PILOT_SPACE) ? getSkill(SkillType.S_PILOT_SPACE).getLevel() : SkillLevel.NONE;
             case VESSEL_GUNNER:
-                return hasSkill(SkillType.S_GUN_SPACE) ? getSkill(SkillType.S_GUN_SPACE).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_GUN_SPACE) ? getSkill(SkillType.S_GUN_SPACE).getLevel() : SkillLevel.NONE;
             case VESSEL_CREW:
-                return hasSkill(SkillType.S_TECH_VESSEL) ? getSkill(SkillType.S_TECH_VESSEL).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_TECH_VESSEL) ? getSkill(SkillType.S_TECH_VESSEL).getLevel() : SkillLevel.NONE;
             case VESSEL_NAVIGATOR:
-                return hasSkill(SkillType.S_NAV) ? getSkill(SkillType.S_NAV).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_NAV) ? getSkill(SkillType.S_NAV).getLevel() : SkillLevel.NONE;
             case MECH_TECH:
-                return hasSkill(SkillType.S_TECH_MECH) ? getSkill(SkillType.S_TECH_MECH).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_TECH_MECH) ? getSkill(SkillType.S_TECH_MECH).getLevel() : SkillLevel.NONE;
             case MECHANIC:
-                return hasSkill(SkillType.S_TECH_MECHANIC) ? getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_TECH_MECHANIC) ? getSkill(SkillType.S_TECH_MECHANIC).getLevel() : SkillLevel.NONE;
             case AERO_TECH:
-                return hasSkill(SkillType.S_TECH_AERO) ? getSkill(SkillType.S_TECH_AERO).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_TECH_AERO) ? getSkill(SkillType.S_TECH_AERO).getLevel() : SkillLevel.NONE;
             case BA_TECH:
-                return hasSkill(SkillType.S_TECH_BA) ? getSkill(SkillType.S_TECH_BA).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_TECH_BA) ? getSkill(SkillType.S_TECH_BA).getLevel() : SkillLevel.NONE;
             case ASTECH:
-                return hasSkill(SkillType.S_ASTECH) ? getSkill(SkillType.S_ASTECH).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_ASTECH) ? getSkill(SkillType.S_ASTECH).getLevel() : SkillLevel.NONE;
             case DOCTOR:
-                return hasSkill(SkillType.S_DOCTOR) ? getSkill(SkillType.S_DOCTOR).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_DOCTOR) ? getSkill(SkillType.S_DOCTOR).getLevel() : SkillLevel.NONE;
             case MEDIC:
-                return hasSkill(SkillType.S_MEDTECH) ? getSkill(SkillType.S_MEDTECH).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_MEDTECH) ? getSkill(SkillType.S_MEDTECH).getLevel() : SkillLevel.NONE;
             case ADMINISTRATOR_COMMAND:
             case ADMINISTRATOR_LOGISTICS:
             case ADMINISTRATOR_TRANSPORT:
             case ADMINISTRATOR_HR:
-                return hasSkill(SkillType.S_ADMIN) ? getSkill(SkillType.S_ADMIN).getExperienceLevel() : SkillType.EXP_NONE;
+                return hasSkill(SkillType.S_ADMIN) ? getSkill(SkillType.S_ADMIN).getLevel() : SkillLevel.NONE;
             case DEPENDENT:
             case NONE:
             default:
-                return SkillType.EXP_NONE;
+                return SkillLevel.NONE;
         }
     }
 
@@ -2321,7 +2296,7 @@ public class Person {
      * personnel table among other places
      */
     public String getFullDesc(final Campaign campaign) {
-        return "<b>" + getFullTitle() + "</b><br/>" + getSkillSummary(campaign) + ' ' + getRoleDesc();
+        return "<b>" + getFullTitle() + "</b><br/>" + getSkillLevel(campaign, false) + ' ' + getRoleDesc();
     }
 
     public String getHTMLTitle() {
@@ -2402,16 +2377,16 @@ public class Person {
         return skills.getSkill(skillName);
     }
 
-    public int getSkillLevel(final String skillName) {
+    public SkillLevel getSkillLevel(final String skillName) {
         final Skill skill = getSkill(skillName);
-        return (skill == null) ? 0 : skill.getExperienceLevel();
+        return (skill == null) ? SkillLevel.NONE : skill.getLevel();
     }
 
     public void addSkill(final String skillName, final Skill skill) {
         skills.addSkill(skillName, skill);
     }
 
-    public void addSkill(final String skillName, final int level, final int bonus) {
+    public void addSkill(final String skillName, final SkillLevel level, final int bonus) {
         skills.addSkill(skillName, new Skill(skillName, level, bonus));
     }
 
@@ -2433,9 +2408,9 @@ public class Person {
     /**
      * Limit skills to the maximum of the given level
      */
-    public void limitSkills(final int maxLevel) {
+    public void limitSkills(final SkillLevel maxLevel) {
         for (final Skill skill : skills.getSkills()) {
-            if (skill.getLevel() > maxLevel) {
+            if (skill.getLevel().ordinal() > maxLevel.ordinal()) {
                 skill.setLevel(maxLevel);
             }
         }
@@ -2445,7 +2420,7 @@ public class Person {
         if (hasSkill(skillName)) {
             getSkill(skillName).improve();
         } else {
-            addSkill(skillName, 0, 0);
+            addSkill(skillName, SkillLevel.ULTRA_GREEN, 0);
         }
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }
@@ -2854,33 +2829,37 @@ public class Person {
 
     public Skill getBestTechSkill() {
         Skill skill = null;
-        int lvl = SkillType.EXP_NONE;
-        if (hasSkill(SkillType.S_TECH_MECH) && getSkill(SkillType.S_TECH_MECH).getExperienceLevel() > lvl) {
+        SkillLevel level = SkillLevel.NONE;
+        if (hasSkill(SkillType.S_TECH_MECH) && getSkill(SkillType.S_TECH_MECH).getLevel().ordinal() > level.ordinal()) {
             skill = getSkill(SkillType.S_TECH_MECH);
-            lvl = getSkill(SkillType.S_TECH_MECH).getExperienceLevel();
+            level = getSkill(SkillType.S_TECH_MECH).getLevel();
         }
-        if (hasSkill(SkillType.S_TECH_AERO) && getSkill(SkillType.S_TECH_AERO).getExperienceLevel() > lvl) {
+
+        if (hasSkill(SkillType.S_TECH_AERO) && getSkill(SkillType.S_TECH_AERO).getLevel().ordinal() > level.ordinal()) {
             skill = getSkill(SkillType.S_TECH_AERO);
-            lvl = getSkill(SkillType.S_TECH_AERO).getExperienceLevel();
+            level = getSkill(SkillType.S_TECH_AERO).getLevel();
         }
-        if (hasSkill(SkillType.S_TECH_MECHANIC) && getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() > lvl) {
+
+        if (hasSkill(SkillType.S_TECH_MECHANIC) && getSkill(SkillType.S_TECH_MECHANIC).getLevel().ordinal() > level.ordinal()) {
             skill = getSkill(SkillType.S_TECH_MECHANIC);
-            lvl = getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel();
+            level = getSkill(SkillType.S_TECH_MECHANIC).getLevel();
         }
-        if (hasSkill(SkillType.S_TECH_BA) && getSkill(SkillType.S_TECH_BA).getExperienceLevel() > lvl) {
+
+        if (hasSkill(SkillType.S_TECH_BA) && getSkill(SkillType.S_TECH_BA).getLevel().ordinal() > level.ordinal()) {
             skill = getSkill(SkillType.S_TECH_BA);
         }
+
         return skill;
     }
 
     public boolean isTech() {
-        //type must be correct and you must be more than ultra-green in the skill
-        boolean isMechTech = hasSkill(SkillType.S_TECH_MECH) && getSkill(SkillType.S_TECH_MECH).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-        boolean isAeroTech = hasSkill(SkillType.S_TECH_AERO) && getSkill(SkillType.S_TECH_AERO).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-        boolean isMechanic = hasSkill(SkillType.S_TECH_MECHANIC) && getSkill(SkillType.S_TECH_MECHANIC).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
-        boolean isBATech = hasSkill(SkillType.S_TECH_BA) && getSkill(SkillType.S_TECH_BA).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN;
+        // type must be correct and you must be more than ultra-green in the skill
+        boolean isMechTech = hasSkill(SkillType.S_TECH_MECH) && getSkill(SkillType.S_TECH_MECH).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal();
+        boolean isAeroTech = hasSkill(SkillType.S_TECH_AERO) && getSkill(SkillType.S_TECH_AERO).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal();
+        boolean isMechanic = hasSkill(SkillType.S_TECH_MECHANIC) && getSkill(SkillType.S_TECH_MECHANIC).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal();
+        boolean isBATech = hasSkill(SkillType.S_TECH_BA) && getSkill(SkillType.S_TECH_BA).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal();
         // At some point we may want to re-write things to include this
-        /*boolean isEngineer = hasSkill(SkillType.S_TECH_VESSEL) && getSkill(SkillType.S_TECH_VESSEL).getExperienceLevel() > SkillType.EXP_ULTRA_GREEN
+        /*boolean isEngineer = hasSkill(SkillType.S_TECH_VESSEL) && getSkill(SkillType.S_TECH_VESSEL).getLevel().ordinal() > SkillLevel.ULTRA_GREEN.ordinal()
                 && campaign.getUnit(getUnitId()).getEngineer() != null
                 && campaign.getUnit(getUnitId()).getEngineer().equals(this);*/
         return (getPrimaryRole().isTech() || getSecondaryRole().isTechSecondary()) && (isMechTech || isAeroTech || isMechanic || isBATech);
@@ -2995,25 +2974,25 @@ public class Person {
         }
     }
 
-    public int getBestTechLevel() {
-        int level = SkillType.EXP_NONE;
+    public SkillLevel getBestTechLevel() {
+        SkillLevel level = SkillLevel.NONE;
         final Skill mechSkill = getSkill(SkillType.S_TECH_MECH);
         final Skill mechanicSkill = getSkill(SkillType.S_TECH_MECHANIC);
         final Skill baSkill = getSkill(SkillType.S_TECH_BA);
         final Skill aeroSkill = getSkill(SkillType.S_TECH_AERO);
-        if ((mechSkill != null) && (mechSkill.getLevel() > level)) {
+        if ((mechSkill != null) && (mechSkill.getLevel().ordinal() > level.ordinal())) {
             level = mechSkill.getLevel();
         }
 
-        if ((mechanicSkill != null) && (mechanicSkill.getLevel() > level)) {
+        if ((mechanicSkill != null) && (mechanicSkill.getLevel().ordinal() > level.ordinal())) {
             level = mechanicSkill.getLevel();
         }
 
-        if ((baSkill != null) && (baSkill.getLevel() > level)) {
+        if ((baSkill != null) && (baSkill.getLevel().ordinal() > level.ordinal())) {
             level = baSkill.getLevel();
         }
 
-        if ((aeroSkill != null) && (aeroSkill.getLevel() > level)) {
+        if ((aeroSkill != null) && (aeroSkill.getLevel().ordinal() > level.ordinal())) {
             level = aeroSkill.getLevel();
         }
 
@@ -3233,7 +3212,7 @@ public class Person {
         if (isFounder()) {
             shares++;
         }
-        shares += Math.max(-1, getExperienceLevel(campaign, false) - 2);
+        shares += Math.max(-1, getSkillLevel(campaign, false).ordinal() - 2);
 
         if (getRank().isOfficer()) {
             final Profession profession = Profession.getProfessionFromPersonnelRole(getPrimaryRole());
@@ -3276,7 +3255,7 @@ public class Person {
         // MechWarriors and aero pilots are worth more than the other types of scrubs
         return (getPrimaryRole().isMechWarriorGrouping() || getPrimaryRole().isAerospacePilot()
                 ? MECHWARRIOR_AERO_RANSOM_VALUES : OTHER_RANSOM_VALUES)
-                .get(getExperienceLevel(campaign, false));
+                .get(getSkillLevel(campaign, false));
     }
 
     public static class PersonUnitRef extends Unit {
@@ -3308,5 +3287,31 @@ public class Person {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return getFullName();
+    }
+
+    /**
+     * Two people are determined to be equal if they have the same id
+     * @param object The object to check if it is equal to the person or not
+     * @return True if they have the same id, otherwise false
+     */
+    @Override
+    public boolean equals(final @Nullable Object object) {
+        if (this == object) {
+            return true;
+        } else if (!(object instanceof Person)) {
+            return false;
+        } else {
+            return getId().equals(((Person) object).getId());
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
     }
 }

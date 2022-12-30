@@ -1089,9 +1089,9 @@ public class CustomizePersonDialog extends JDialog implements DialogOptionListen
         for (int i = 0; i < SkillType.getSkillList().length; i++) {
             final String type = SkillType.getSkillList()[i];
             if (skillChks.get(type).isSelected()) {
-                int lvl = (Integer) skillLvls.get(type).getModel().getValue();
+                int level = (Integer) skillLvls.get(type).getModel().getValue();
                 int b = (Integer) skillBonus.get(type).getModel().getValue();
-                person.addSkill(type, lvl, b);
+                person.addSkill(type, level, b);
             } else {
                 person.removeSkill(type);
             }

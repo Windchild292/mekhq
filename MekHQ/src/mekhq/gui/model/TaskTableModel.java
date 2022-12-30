@@ -31,6 +31,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 import megamek.common.TargetRoll;
+import megamek.common.enums.SkillLevel;
 import mekhq.IconPackage;
 import mekhq.campaign.parts.MissingPart;
 import mekhq.campaign.parts.Part;
@@ -177,7 +178,7 @@ public class TaskTableModel extends DataTableModel {
                             if (null == tech) {
                                 //Create a dummy elite tech with the proper skill and 1 minute and put it in our cache for later use
                                 tech = new Person("Temp", String.format("Tech (%s)", skillName), gui.getCampaign());
-                                tech.addSkill(skillName, partSkill.getType().getEliteLevel(), 1);
+                                tech.addSkill(skillName, SkillLevel.ELITE, 1);
                                 tech.setMinutesLeft(1);
 
                                 techCache.put(skillName, tech);

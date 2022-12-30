@@ -20,6 +20,7 @@ package mekhq.campaign.parts;
 
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.event.PartChangedEvent;
@@ -275,8 +276,8 @@ public class PodSpace implements IPartWork {
     }
 
     @Override
-    public int getSkillMin() {
-        int minSkill = SkillType.EXP_GREEN;
+    public SkillLevel getSkillMin() {
+        SkillLevel minSkill = SkillLevel.GREEN;
         for (int id : childPartIds) {
             final Part part = campaign.getPart(id);
             if (part != null) {
@@ -382,12 +383,12 @@ public class PodSpace implements IPartWork {
         toReturn += ">";
         toReturn += "<b>" + action + getPartName() + " Equipment</b><br/>";
         toReturn += getDetails() + "<br/>";
-        if (getSkillMin() > SkillType.EXP_ELITE) {
+        if (getSkillMin().isHeroicOrGreater()) {
             toReturn += "<font color='red'>Impossible</font>";
         } else {
             toReturn += "" + getTimeLeft() + " minutes" + scheduled;
             if (!campaign.getCampaignOptions().isDestroyByMargin()) {
-                toReturn += ", " + SkillType.getExperienceLevelName(getSkillMin());
+                toReturn += ", " + getSkillMin();
             }
             toReturn += " " + bonus;
         }

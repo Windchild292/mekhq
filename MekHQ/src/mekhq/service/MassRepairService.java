@@ -19,6 +19,7 @@
 package mekhq.service;
 
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.force.Force;
@@ -686,8 +687,8 @@ public class MassRepairService {
         for (Person tech : techs) {
             Skill skill = tech.getSkillForWorkingOn(partWork);
 
-            if (skill.getExperienceLevel() > highestAvailableTechSkill) {
-                highestAvailableTechSkill = skill.getExperienceLevel();
+            if (skill.getLevel() > highestAvailableTechSkill) {
+                highestAvailableTechSkill = skill.getLevel();
             }
 
             if (highestAvailableTechSkill == SkillType.EXP_ELITE) {
@@ -931,7 +932,7 @@ public class MassRepairService {
                 // minute and put it in our cache for later use
 
                 tech = new Person("Temp", String.format("Tech (%s)", skillName), campaign);
-                tech.addSkill(skillName, partSkill.getType().getEliteLevel(), 1);
+                tech.addSkill(skillName, SkillLevel.ELITE, 1);
                 tech.setMinutesLeft(1);
 
                 techCache.put(skillName, tech);
@@ -982,15 +983,15 @@ public class MassRepairService {
                 continue;
             }
 
-            if (mro.getSkillMin() > skill.getExperienceLevel()) {
+            if (mro.getSkillMin() > skill.getLevel()) {
                 continue;
             }
 
-            if (mro.getSkillMax() < skill.getExperienceLevel()) {
+            if (mro.getSkillMax() < skill.getLevel()) {
                 continue;
             }
 
-            if (partWork.getSkillMin() > skill.getExperienceLevel()) {
+            if (partWork.getSkillMin() > skill.getLevel()) {
                 continue;
             }
 
@@ -1057,7 +1058,7 @@ public class MassRepairService {
             if (!increaseTime) {
                 int modePenalty = partWork.getMode().expReduction;
 
-                if (partWork.getSkillMin() > (skill.getExperienceLevel() - modePenalty)) {
+                if (partWork.getSkillMin() > (skill.getLevel() - modePenalty)) {
                     debugLog(
                             "...... ending calculateNewMassRepairWorktime with previousWorkTime due time reduction skill mod now being less that required skill - %s ns", "calculateNewMassRepairWorktime",
                             System.nanoTime() - time);
@@ -1077,7 +1078,7 @@ public class MassRepairService {
 
                 WorkTimeCalculation wtc = new WorkTimeCalculation(null);
 
-                if (skill.getExperienceLevel() >= highestAvailableTechSkill) {
+                if (skill.getLevel() >= highestAvailableTechSkill) {
                     wtc.setReachedMaxSkill(true);
                 }
 
@@ -1182,7 +1183,7 @@ public class MassRepairService {
             Skill skill1 = tech1.getSkillForWorkingOn(partWork);
             Skill skill2 = tech2.getSkillForWorkingOn(partWork);
 
-            if (skill1.getExperienceLevel() == skill2.getExperienceLevel()) {
+            if (skill1.getLevel() == skill2.getLevel()) {
                 if ((tech1.getXP() == tech2.getXP()) || (skill1.getLevel() == SkillType.EXP_ELITE)) {
                     return tech1.getMinutesLeft() - tech2.getMinutesLeft();
                 } else {
@@ -1190,7 +1191,7 @@ public class MassRepairService {
                 }
             }
 
-            return skill1.getExperienceLevel() < skill2.getExperienceLevel() ? -1 : 1;
+            return skill1.getLevel() < skill2.getLevel() ? -1 : 1;
         }
     }
 

@@ -21,6 +21,7 @@ package mekhq.module.atb;
 import megamek.client.ratgenerator.MissionRole;
 import megamek.codeUtilities.ObjectUtility;
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import megamek.common.event.Subscribe;
 import megamek.common.loaders.EntityLoadingException;
 import mekhq.MekHQ;
@@ -100,9 +101,9 @@ public class AtBEventProcessor {
         }
 
         Person adminHR = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_HR, SkillType.S_ADMIN);
-        int adminHRExp = (adminHR == null) ? SkillType.EXP_ULTRA_GREEN
-                : adminHR.getSkill(SkillType.S_ADMIN).getExperienceLevel();
-        mod += adminHRExp - 2;
+        SkillLevel adminHRSkillLevel = (adminHR == null) ? SkillLevel.ULTRA_GREEN
+                : adminHR.getSkill(SkillType.S_ADMIN).getLevel();
+        mod += adminHRSkillLevel.getAdjustedValue() - 2;
         int q = 0;
         int r = Compute.d6(2) + mod;
 
@@ -248,16 +249,17 @@ public class AtBEventProcessor {
     }
 
     private void swapSkills(Person p, String skill1, String skill2) {
-        int s1 = p.hasSkill(skill1)?p.getSkill(skill1).getLevel():0;
-        int b1 = p.hasSkill(skill1)?p.getSkill(skill1).getBonus():0;
-        int s2 = p.hasSkill(skill2)?p.getSkill(skill2).getLevel():0;
-        int b2 = p.hasSkill(skill2)?p.getSkill(skill2).getBonus():0;
+        SkillLevel s1 = p.hasSkill(skill1) ? p.getSkill(skill1).getLevel() : SkillLevel.NONE;
+        int b1 = p.hasSkill(skill1) ? p.getSkill(skill1).getBonus() : 0;
+        SkillLevel s2 = p.hasSkill(skill2) ? p.getSkill(skill2).getLevel() : SkillLevel.NONE;
+        int b2 = p.hasSkill(skill2) ? p.getSkill(skill2).getBonus() : 0;
         p.addSkill(skill1, s2, b2);
         p.addSkill(skill2, s1, b1);
-        if (p.getSkill(skill1).getLevel() == 0) {
+        if (p.getSkill(skill1).getLevel().isNone()) {
             p.removeSkill(skill1);
         }
-        if (p.getSkill(skill2).getLevel() == 0) {
+
+        if (p.getSkill(skill2).getLevel().isNone()) {
             p.removeSkill(skill2);
         }
     }

@@ -245,14 +245,14 @@ public abstract class AbstractCompanyGenerator {
             // Then prioritize either combat or command skills based on the selected option
             if (getOptions().isPrioritizeCompanyCommanderCombatSkills()) {
                 personnelSorter = personnelSorter
-                        .thenComparingInt(t -> t.getPerson().getExperienceLevel(campaign, false))
+                        .thenComparingInt(t -> t.getPerson().getSkillLevel(campaign, false).ordinal())
                         .thenComparingInt(t -> Stream.of(SkillType.S_LEADER, SkillType.S_STRATEGY, SkillType.S_TACTICS)
-                                .mapToInt(s -> t.getPerson().getSkillLevel(s)).sum());
+                                .mapToInt(s -> t.getPerson().getSkillLevel(s).ordinal()).sum());
             } else {
                 personnelSorter = personnelSorter
                         .thenComparingInt(t -> Stream.of(SkillType.S_LEADER, SkillType.S_STRATEGY, SkillType.S_TACTICS)
-                                .mapToInt(s -> t.getPerson().getSkillLevel(s)).sum())
-                        .thenComparingInt(t -> t.getPerson().getExperienceLevel(campaign, false));
+                                .mapToInt(s -> t.getPerson().getSkillLevel(s).ordinal()).sum())
+                        .thenComparingInt(t -> t.getPerson().getSkillLevel(campaign, false).ordinal());
             }
             // Always need to reverse it at the end
             personnelSorter = personnelSorter.reversed();
@@ -274,14 +274,14 @@ public abstract class AbstractCompanyGenerator {
             // Then prioritize either combat or command skills based on the selected option
             if (getOptions().isPrioritizeOfficerCombatSkills()) {
                 personnelSorter = personnelSorter
-                        .thenComparingInt(t -> t.getPerson().getExperienceLevel(campaign, false))
+                        .thenComparingInt(t -> t.getPerson().getSkillLevel(campaign, false).ordinal())
                         .thenComparingInt(t -> Stream.of(SkillType.S_LEADER, SkillType.S_STRATEGY, SkillType.S_TACTICS)
-                                .mapToInt(s -> t.getPerson().getSkillLevel(s)).sum());
+                                .mapToInt(s -> t.getPerson().getSkillLevel(s).ordinal()).sum());
             } else {
                 personnelSorter = personnelSorter
                         .thenComparingInt(t -> Stream.of(SkillType.S_LEADER, SkillType.S_STRATEGY, SkillType.S_TACTICS)
-                                .mapToInt(s -> t.getPerson().getSkillLevel(s)).sum())
-                        .thenComparingInt(t -> t.getPerson().getExperienceLevel(campaign, false));
+                                .mapToInt(s -> t.getPerson().getSkillLevel(s).ordinal()).sum())
+                        .thenComparingInt(t -> t.getPerson().getSkillLevel(campaign, false).ordinal());
             }
             // Always need to reverse it at the end
             personnelSorter = personnelSorter.reversed();
@@ -303,7 +303,7 @@ public abstract class AbstractCompanyGenerator {
         if (getOptions().isAssignMostSkilledToPrimaryLances()) {
             // Unless we are prioritizing the most skilled, then we also care about experience level
             personnelSorter = personnelSorter
-                    .thenComparingInt(t -> t.getPerson().getExperienceLevel(campaign, false));
+                    .thenComparingInt(t -> t.getPerson().getSkillLevel(campaign, false).ordinal());
         }
 
         // Sort whatever is left of the initial trackers before adding them to the initial trackers
@@ -409,7 +409,7 @@ public abstract class AbstractCompanyGenerator {
             tracker.getPerson().improveSkill(SkillType.S_GUN_MECH);
             tracker.getPerson().improveSkill(SkillType.S_PILOT_MECH);
         } else {
-            tracker.getPerson().improveSkill((((gunnery.getLevel() > piloting.getLevel())
+            tracker.getPerson().improveSkill((((gunnery.getLevel().ordinal() > piloting.getLevel().ordinal())
                     && getOptions().isApplyOfficerStatBonusToWorstSkill()) ? piloting : gunnery)
                     .getType().getName());
         }
@@ -447,19 +447,19 @@ public abstract class AbstractCompanyGenerator {
             switch (Utilities.dice(1, 3)) {
                 case 0:
                     tracker.getPerson().improveSkill(SkillType.S_LEADER);
-                    if (tracker.getPerson().getSkillLevel(SkillType.S_LEADER) == 0) {
+                    if (tracker.getPerson().getSkillLevel(SkillType.S_LEADER).isUltraGreen()) {
                         tracker.getPerson().improveSkill(SkillType.S_LEADER);
                     }
                     break;
                 case 1:
                     tracker.getPerson().improveSkill(SkillType.S_STRATEGY);
-                    if (tracker.getPerson().getSkillLevel(SkillType.S_STRATEGY) == 0) {
+                    if (tracker.getPerson().getSkillLevel(SkillType.S_STRATEGY).isUltraGreen()) {
                         tracker.getPerson().improveSkill(SkillType.S_STRATEGY);
                     }
                     break;
                 case 2:
                     tracker.getPerson().improveSkill(SkillType.S_TACTICS);
-                    if (tracker.getPerson().getSkillLevel(SkillType.S_TACTICS) == 0) {
+                    if (tracker.getPerson().getSkillLevel(SkillType.S_TACTICS).isUltraGreen()) {
                         tracker.getPerson().improveSkill(SkillType.S_TACTICS);
                     }
                     break;

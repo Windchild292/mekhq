@@ -482,7 +482,7 @@ public final class WarehouseTab extends CampaignGuiTab implements ITechWorkPanel
                     return false;
                 } else {
                     return getCampaign().getCampaignOptions().isDestroyByMargin()
-                            || (part.getSkillMin() <= (skill.getExperienceLevel() - modePenalty));
+                            || (part.getSkillMin() <= (skill.getLevel().getAdjustedValue() - modePenalty));
                 }
             }
         };

@@ -26,6 +26,7 @@ import megamek.client.ui.swing.tileset.EntityImage;
 import megamek.common.*;
 import megamek.common.InfantryBay.PlatoonType;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.SkillLevel;
 import megamek.common.icons.Camouflage;
 import megamek.common.options.IOption;
 import megamek.common.options.IOptionGroup;
@@ -4033,7 +4034,7 @@ public class Unit implements ITechnology {
                 engineer.setPrimaryRoleDirect(PersonnelRole.MECHANIC);
                 engineer.setRank(getCommander().getRankNumeric());
                 // will only be reloading ammo, so doesn't really matter what skill level we give them - set to regular
-                engineer.addSkill(SkillType.S_TECH_MECHANIC, SkillType.getType(SkillType.S_TECH_MECHANIC).getRegularLevel(), 0);
+                engineer.addSkill(SkillType.S_TECH_MECHANIC, SkillLevel.REGULAR, 0);
             } else {
                 engineer = null;
             }
@@ -4071,22 +4072,26 @@ public class Unit implements ITechnology {
                     sumEdge += p.getEdge();
 
                     if (p.hasSkill(SkillType.S_TECH_VESSEL)) {
-                        sumSkill += p.getSkill(SkillType.S_TECH_VESSEL).getLevel();
+                        sumSkill += p.getSkill(SkillType.S_TECH_VESSEL).getLevel().getAdjustedValue();
                         sumBonus += p.getSkill(SkillType.S_TECH_VESSEL).getBonus();
                         nCrew++;
                     }
+
                     if (!(p.getOptions().booleanOption(PersonnelOptions.EDGE_REPAIR_BREAK_PART))) {
                         breakpartreroll = false;
                     }
+
                     if (!(p.getOptions().booleanOption(PersonnelOptions.EDGE_REPAIR_FAILED_REFIT))) {
                         failrefitreroll = false;
                     }
+
                     if (p.getRankNumeric() > bestRank) {
                         engineerGivenName = p.getGivenName();
                         engineerSurname = p.getSurname();
                         bestRank = p.getRankNumeric();
                     }
                 }
+
                 if (nCrew > 0) {
                     engineer = new Person(engineerGivenName, engineerSurname, getCampaign());
                     engineer.setEngineer(true);
@@ -4112,6 +4117,7 @@ public class Unit implements ITechnology {
                 engineer = null;
             }
         }
+
         if (null != engineer) {
             // change reference for any scheduled tasks
             for (Part p : getParts()) {

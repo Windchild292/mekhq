@@ -22,6 +22,7 @@ package mekhq.gui.dialog;
 
 import megamek.client.ui.preferences.JWindowPreference;
 import megamek.client.ui.preferences.PreferencesNode;
+import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
 import mekhq.campaign.personnel.SkillPrereq;
 import mekhq.campaign.personnel.SkillType;
@@ -71,11 +72,11 @@ public class EditSkillPrereqDialog extends JDialog {
             chkSkill.addItemListener(e -> changeLevelEnabled(type));
 
             skillLvlModel = new DefaultComboBoxModel<>();
-            skillLvlModel.addElement("None");
-            skillLvlModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_GREEN));
-            skillLvlModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_REGULAR));
-            skillLvlModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_VETERAN));
-            skillLvlModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_ELITE));
+            skillLvlModel.addElement(SkillLevel.NONE.toString());
+            skillLvlModel.addElement(SkillLevel.GREEN.toString());
+            skillLvlModel.addElement(SkillLevel.REGULAR.toString());
+            skillLvlModel.addElement(SkillLevel.VETERAN.toString());
+            skillLvlModel.addElement(SkillLevel.ELITE.toString());
             choiceLvl = new JComboBox<>(skillLvlModel);
             choiceLvl.setEnabled(chkSkill.isSelected());
             int lvl = prereq.getSkillLevel(type);

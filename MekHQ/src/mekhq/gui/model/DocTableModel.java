@@ -35,7 +35,7 @@ public class DocTableModel extends DataTableModel {
 
         Skill skill = doc.getSkill(SkillType.S_DOCTOR);
         if (null != skill) {
-            toReturn.append(SkillType.getExperienceLevelName(skill.getExperienceLevel()))
+            toReturn.append(skill.getLevel().toString())
                     .append(" " + SkillType.S_DOCTOR);
         }
 

@@ -43,6 +43,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
@@ -475,14 +476,12 @@ public class CampaignOpsReputationTest {
     @Test
     public void testGetAverageExperience() {
         spyReputation.initValues();
-        assertEquals(SkillType.getExperienceLevelName(SkillType.EXP_REGULAR),
-                     spyReputation.getAverageExperience());
+        assertTrue(spyReputation.getAverageSkillLevel().isRegular());
 
         // Test a brand new campaign.
         buildFreshCampaign();
         spyReputation.initValues();
-        assertEquals(SkillType.getExperienceLevelName(-1),
-                     spyReputation.getAverageExperience());
+        assertTrue(spyReputation.getAverageSkillLevel().isNone());
     }
 
     @Test
@@ -728,6 +727,7 @@ public class CampaignOpsReputationTest {
         mockFighterTechSkillElite = mock(Skill.class);
         mockVeeTechSkill = mock(Skill.class);
 
+        // Welp, this will not work
         when(mockMechGunnery.getLevel()).thenReturn(4);
         when(mockMechPilot.getLevel()).thenReturn(5);
         when(mockTankGunnery.getLevel()).thenReturn(4);

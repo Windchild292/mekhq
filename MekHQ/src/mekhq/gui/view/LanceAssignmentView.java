@@ -20,6 +20,7 @@
  */
 package mekhq.gui.view;
 
+import megamek.common.enums.SkillLevel;
 import megamek.common.util.sorter.NaturalOrderComparator;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
@@ -196,13 +197,13 @@ public class LanceAssignmentView extends JPanel {
         panRequiredLances.add(tblRequiredLances);
         add(panRequiredLances);
 
-        int cmdrStrategy = 0;
+        SkillLevel cmdrStrategy = SkillLevel.NONE;
         if ((campaign.getFlaggedCommander() != null)
                 && (campaign.getFlaggedCommander().getSkill(SkillType.S_STRATEGY) != null)) {
             cmdrStrategy = campaign.getFlaggedCommander().getSkill(SkillType.S_STRATEGY).getLevel();
         }
         int maxDeployedLances = campaign.getCampaignOptions().getBaseStrategyDeployment() +
-                campaign.getCampaignOptions().getAdditionalStrategyDeployment() * cmdrStrategy;
+                campaign.getCampaignOptions().getAdditionalStrategyDeployment() * cmdrStrategy.getAdjustedValue();
         add(new JLabel("Maximum Deployed Units: " + maxDeployedLances));
 
         panAssignments = new JPanel();

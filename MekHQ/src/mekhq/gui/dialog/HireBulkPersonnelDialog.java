@@ -1,5 +1,4 @@
 /*
-/*
  * Copyright (c) 2010-2021 - The MegaMek Team. All Rights Reserved.
  *
  * This file is part of MekHQ.
@@ -21,10 +20,13 @@ package mekhq.gui.dialog;
 
 import megamek.client.ui.preferences.JWindowPreference;
 import megamek.client.ui.preferences.PreferencesNode;
+import megamek.codeUtilities.MathUtility;
 import megamek.common.Compute;
+import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.Skills;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.personnel.enums.Profession;
 import mekhq.gui.CampaignGUI;
@@ -295,9 +297,9 @@ public class HireBulkPersonnelDialog extends JDialog {
             if (age < 12) {
                 p.removeAllSkills();
             } else if (age < 14) {
-                p.limitSkills(0);
+                p.limitSkills(SkillLevel.NONE);
             } else if (age < 18) {
-                p.limitSkills(age - 13);
+                p.limitSkills(Skills.SKILL_LEVELS[MathUtility.clamp(age - 13, 0, Skills.SKILL_LEVELS.length)]);
             }
 
             if (!campaign.recruitPerson(p)) {

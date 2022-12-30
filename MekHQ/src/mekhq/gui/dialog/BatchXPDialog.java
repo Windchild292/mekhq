@@ -378,7 +378,7 @@ public final class BatchXPDialog extends JDialog {
                 } else {
                     cost = SkillType.getType(skillName).getCost(0);
                 }
-                int startingExperienceLevel = p.getExperienceLevel(campaign, false);
+                int startingExperienceLevel = p.getSkillLevel(campaign, false);
 
                 // Improve the skill and deduce the cost
                 p.improveSkill(skillName);
@@ -389,7 +389,7 @@ public final class BatchXPDialog extends JDialog {
                 // The next part is bollocks and doesn't belong here, but as long as we hardcode AtB ...
                 if (campaign.getCampaignOptions().getUseAtB()) {
                     if (p.getPrimaryRole().isCombat() && !p.getPrimaryRole().isVesselCrew()
-                            && (p.getExperienceLevel(campaign, false) > startingExperienceLevel)
+                            && (p.getSkillLevel(campaign, false) > startingExperienceLevel)
                             && (startingExperienceLevel >= SkillType.EXP_REGULAR)) {
                         final SingleSpecialAbilityGenerator spaGenerator = new SingleSpecialAbilityGenerator();
                         final String spa = spaGenerator.rollSPA(campaign, p);
@@ -441,7 +441,7 @@ public final class BatchXPDialog extends JDialog {
                 return false;
             } else if ((null != primaryRole) && (p.getPrimaryRole() != primaryRole)) {
                 return false;
-            } else if ((null != expLevel) && (p.getExperienceLevel(campaign, false) != expLevel)) {
+            } else if ((null != expLevel) && (p.getSkillLevel(campaign, false) != expLevel)) {
                 return false;
             } else if (onlyOfficers && !p.getRank().isOfficer()) {
                 return false;

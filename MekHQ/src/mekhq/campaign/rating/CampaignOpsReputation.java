@@ -34,9 +34,11 @@ import megamek.common.Infantry;
 import megamek.common.Jumpship;
 import megamek.common.SmallCraft;
 import megamek.common.UnitType;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.Skills;
 import mekhq.campaign.unit.Unit;
 import mekhq.campaign.universe.Faction.Tag;
 
@@ -168,10 +170,10 @@ public class CampaignOpsReputation extends AbstractUnitRating {
             antiMek = gunnery + 1;
         }
 
-        BigDecimal skillLevel = BigDecimal.valueOf(gunnery).add(BigDecimal.valueOf(antiMek));
+        BigDecimal experience = BigDecimal.valueOf(gunnery).add(BigDecimal.valueOf(antiMek));
 
-        incrementSkillRatingCounts(getExperienceLevelName(skillLevel));
-        setTotalSkillLevels(getTotalSkillLevels(false).add(skillLevel));
+        incrementSkillRatingCounts(getSkillLevel(experience));
+        setTotalSkillLevels(getTotalSkillLevels(false).add(experience));
     }
 
     private void updateTotalSkill(Crew crew, int unitType) {
@@ -204,16 +206,16 @@ public class CampaignOpsReputation extends AbstractUnitRating {
                 return;
         }
 
-        BigDecimal skillLevel = BigDecimal.valueOf(gunnery);
+        BigDecimal experience = BigDecimal.valueOf(gunnery);
         if (hasPilot) {
-            skillLevel = skillLevel.add(BigDecimal.valueOf(piloting));
+            experience = experience.add(BigDecimal.valueOf(piloting));
         } else {
             // Assume a piloting equal to Gunnery +1.
-            skillLevel = skillLevel.add(BigDecimal.valueOf(gunnery)).add(BigDecimal.ONE);
+            experience = experience.add(BigDecimal.valueOf(gunnery)).add(BigDecimal.ONE);
         }
 
-        incrementSkillRatingCounts(getExperienceLevelName(skillLevel));
-        setTotalSkillLevels(getTotalSkillLevels(false).add(skillLevel));
+        incrementSkillRatingCounts(getSkillLevel(experience));
+        setTotalSkillLevels(getTotalSkillLevels(false).add(experience));
     }
 
     @Override
@@ -291,8 +293,7 @@ public class CampaignOpsReputation extends AbstractUnitRating {
             return BigDecimal.ZERO;
         }
 
-        return getTotalSkillLevels().divide(BigDecimal.valueOf(totalCombatUnits),
-                                            2,RoundingMode.HALF_DOWN);
+        return getTotalSkillLevels().divide(BigDecimal.valueOf(totalCombatUnits), 2, RoundingMode.HALF_DOWN);
     }
 
     private void calcNeededTechs() {
@@ -386,42 +387,24 @@ public class CampaignOpsReputation extends AbstractUnitRating {
     }
 
     @Override
-    public String getAverageExperience() {
+    protected SkillLevel getSkillLevel(BigDecimal experience) {
         if (!hasUnits()) {
-            return SkillType.getExperienceLevelName(-1);
+            return SkillLevel.NONE;
+        } else if (experience.compareTo(new BigDecimal("11.00")) > 0) {
+            return SkillLevel.ULTRA_GREEN;
+        } else if (experience.compareTo(new BigDecimal("9.00")) > 0) {
+            return SkillLevel.GREEN;
+        } else if (experience.compareTo(new BigDecimal("7.00")) > 0) {
+            return SkillLevel.REGULAR;
+        } else if (experience.compareTo(new BigDecimal("5.00")) > 0) {
+            return SkillLevel.VETERAN;
+        } else if (experience.compareTo(new BigDecimal("3.00")) > 0) {
+            return SkillLevel.ELITE;
+        } else if (experience.compareTo(new BigDecimal("1.00")) > 0) {
+            return SkillLevel.HEROIC;
+        } else {
+            return SkillLevel.LEGENDARY;
         }
-        switch (getExperienceValue()) {
-            case 5:
-                return SkillType.getExperienceLevelName(SkillType.EXP_GREEN);
-            case 10:
-                return SkillType.getExperienceLevelName(SkillType.EXP_REGULAR);
-            case 20:
-                return SkillType.getExperienceLevelName(SkillType.EXP_VETERAN);
-            case 40:
-                return SkillType.getExperienceLevelName(SkillType.EXP_ELITE);
-            default:
-                return SkillType.getExperienceLevelName(-1);
-        }
-    }
-
-    @Override
-    protected String getExperienceLevelName(BigDecimal experience) {
-        if (!hasUnits()) {
-            return SkillType.getExperienceLevelName(-1);
-        }
-
-        final BigDecimal eliteThreshold = new BigDecimal("5.00");
-        final BigDecimal vetThreshold = new BigDecimal("7.00");
-        final BigDecimal regThreshold = new BigDecimal("9.00");
-
-        if (experience.compareTo(regThreshold) > 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_GREEN);
-        } else if (experience.compareTo(vetThreshold) > 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_REGULAR);
-        } else if (experience.compareTo(eliteThreshold) > 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_VETERAN);
-        }
-        return SkillType.getExperienceLevelName(SkillType.EXP_ELITE);
     }
 
     @Override
@@ -429,18 +412,18 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         if (!hasUnits()) {
             return 0;
         }
-        BigDecimal averageExp = calcAverageExperience();
-        String level = getExperienceLevelName(averageExp);
-        if (SkillType.getExperienceLevelName(-1).equalsIgnoreCase(level)) {
-            return 0;
-        } else if (SkillType.getExperienceLevelName(SkillType.EXP_GREEN).equalsIgnoreCase(level)) {
-            return 5;
-        } else if (SkillType.getExperienceLevelName(SkillType.EXP_REGULAR).equalsIgnoreCase(level)) {
-            return 10;
-        } else if (SkillType.getExperienceLevelName(SkillType.EXP_VETERAN).equalsIgnoreCase(level)) {
-            return 20;
-        } else {
-            return 40;
+        switch (getSkillLevel(calcAverageExperience())) {
+            case NONE:
+                return 0;
+            case ULTRA_GREEN:
+            case GREEN:
+                return 5;
+            case REGULAR:
+                return 10;
+            case VETERAN:
+                return 20;
+            default:
+                return 40;
         }
     }
 
@@ -717,19 +700,18 @@ public class CampaignOpsReputation extends AbstractUnitRating {
         StringBuilder out = new StringBuilder();
         out.append(String.format("%-" + HEADER_LENGTH + "s %3d", "Experience:", getExperienceValue()))
                 .append("\n")
-                .append(String.format("    %-" + SUBHEADER_LENGTH + "s %3s", "Average Experience:", getAverageExperience()))
+                .append(String.format("    %-" + SUBHEADER_LENGTH + "s %3s", "Average Experience:", getAverageSkillLevel()))
                 .append("\n");
 
         final String TEMPLATE = "        #%-" + CATEGORY_LENGTH + "s %3d";
-        Map<String, Integer> skillRatingCounts = getSkillRatingCounts();
+        Map<SkillLevel, Integer> skillRatingCounts = getSkillRatingCounts();
         boolean first = true;
-        for (String nm : SkillType.SKILL_LEVEL_NAMES) {
-            if (skillRatingCounts.containsKey(nm)) {
+        for (final SkillLevel skillLevel : Skills.SKILL_LEVELS) {
+            if (skillRatingCounts.containsKey(skillLevel)) {
                 if (!first) {
                     out.append("\n");
                 }
-                out.append(String.format(TEMPLATE, nm + ":",
-                                         skillRatingCounts.get(nm)));
+                out.append(String.format(TEMPLATE, skillLevel + ":", skillRatingCounts.get(skillLevel)));
                 first = false;
             }
         }
