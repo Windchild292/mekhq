@@ -23,13 +23,15 @@ package mekhq.gui;
 
 import megamek.Version;
 import megamek.client.generator.RandomUnitGenerator;
-import megamek.client.ui.preferences.*;
+import megamek.client.ui.preferences.JWindowPreference;
+import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.swing.GameOptionsDialog;
 import megamek.client.ui.swing.UnitLoadingDialog;
 import megamek.client.ui.swing.dialog.AbstractUnitSelectorDialog;
 import megamek.client.ui.swing.util.UIUtil;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.SkillLevel;
 import megamek.common.event.Subscribe;
 import megamek.common.loaders.EntityLoadingException;
 import mekhq.*;
@@ -47,7 +49,6 @@ import mekhq.campaign.mission.Scenario;
 import mekhq.campaign.parts.Part;
 import mekhq.campaign.parts.Refit;
 import mekhq.campaign.personnel.Person;
-import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.death.AgeRangeRandomDeath;
 import mekhq.campaign.personnel.death.ExponentialRandomDeath;
 import mekhq.campaign.personnel.death.PercentageRandomDeath;
@@ -1647,7 +1648,6 @@ public class CampaignGUI extends JPanel {
             String name;
             Map<String, Person> techHash = new HashMap<>();
             List<String> techList = new ArrayList<>();
-            String skillLvl;
 
             List<Person> techs = getCampaign().getTechs(false, true);
             int lastRightTech = 0;
@@ -1656,8 +1656,8 @@ public class CampaignGUI extends JPanel {
                 if (getCampaign().isWorkingOnRefit(tech) || tech.isEngineer()) {
                     continue;
                 }
-                skillLvl = SkillType.getExperienceLevelName(tech.getSkillLevel(getCampaign(), false));
-                name = tech.getFullName() + ", " + skillLvl + " " + tech.getPrimaryRoleDesc()
+                final SkillLevel skillLevel = tech.getSkillLevel(getCampaign(), false);
+                name = tech.getFullName() + ", " + skillLevel + " " + tech.getPrimaryRoleDesc()
                         + " (" + getCampaign().getTargetFor(r, tech).getValueAsString() + "+), "
                         + tech.getMinutesLeft() + "/" + tech.getDailyAvailableTechTime() + " minutes";
                 techHash.put(name, tech);

@@ -19,6 +19,7 @@
 package mekhq.service;
 
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.force.Force;
@@ -931,7 +932,7 @@ public class MassRepairService {
                 // minute and put it in our cache for later use
 
                 tech = new Person("Temp", String.format("Tech (%s)", skillName), campaign);
-                tech.addSkill(skillName, partSkill.getType().getEliteLevel(), 1);
+                tech.addSkill(skillName, SkillLevel.ELITE, 1);
                 tech.setMinutesLeft(1);
 
                 techCache.put(skillName, tech);

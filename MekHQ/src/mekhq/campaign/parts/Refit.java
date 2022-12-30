@@ -23,6 +23,7 @@ package mekhq.campaign.parts;
 import megamek.Version;
 import megamek.common.*;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.SkillLevel;
 import megamek.common.loaders.BLKFile;
 import megamek.common.loaders.EntityLoadingException;
 import megamek.common.verifier.EntityVerifier;
@@ -1756,8 +1757,8 @@ public class Refit extends Part implements IAcquisitionWork {
     }
 
     @Override
-    public int getSkillMin() {
-        return SkillType.EXP_GREEN;
+    public SkillLevel getSkillMin() {
+        return SkillLevel.GREEN;
     }
 
     @Override

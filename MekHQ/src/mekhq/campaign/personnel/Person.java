@@ -2386,7 +2386,7 @@ public class Person {
         skills.addSkill(skillName, skill);
     }
 
-    public void addSkill(final String skillName, final int level, final int bonus) {
+    public void addSkill(final String skillName, final SkillLevel level, final int bonus) {
         skills.addSkill(skillName, new Skill(skillName, level, bonus));
     }
 
@@ -2420,7 +2420,7 @@ public class Person {
         if (hasSkill(skillName)) {
             getSkill(skillName).improve();
         } else {
-            addSkill(skillName, 0, 0);
+            addSkill(skillName, SkillLevel.ULTRA_GREEN, 0);
         }
         MekHQ.triggerEvent(new PersonChangedEvent(this));
     }

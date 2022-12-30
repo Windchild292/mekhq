@@ -433,14 +433,14 @@ public class FieldManualMercRevDragoonsRatingTest {
         doReturn(commandList).when(testRating).getCommanderList();
         assertEquals(expectedCommander, testRating.getCommander());
 
-        // Retire the old commander.  Give one leftennant more experience than the other.
+        // Retire the old commander.  Give one leftenant more experience than the other.
         testRating = spy(new FieldManualMercRevDragoonsRating(mockCampaign));
         when(mockCampaign.getFlaggedCommander()).thenReturn(null);
         doReturn(commandList).when(testRating).getCommanderList();
         doReturn(PersonnelStatus.RETIRED).when(expectedCommander).getStatus();
         mockActivePersonnelList.remove(expectedCommander);
-        when(leftennant.getSkillLevel(any(), anyBoolean())).thenReturn(SkillType.EXP_VETERAN);
-        when(leftennant2.getSkillLevel(any(), anyBoolean())).thenReturn(SkillType.EXP_REGULAR);
+        when(leftennant.getSkillLevel(any(), anyBoolean())).thenReturn(SkillLevel.VETERAN);
+        when(leftennant2.getSkillLevel(any(), anyBoolean())).thenReturn(SkillLevel.REGULAR);
         assertEquals(leftennant, testRating.getCommander());
 
         // Test a campaign with no flagged commander and where no ranks have been assigned.

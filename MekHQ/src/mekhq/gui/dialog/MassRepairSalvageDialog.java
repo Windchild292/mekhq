@@ -21,6 +21,7 @@ package mekhq.gui.dialog;
 import megamek.client.ui.models.XTableColumnModel;
 import megamek.client.ui.preferences.JWindowPreference;
 import megamek.client.ui.preferences.PreferencesNode;
+import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.event.OptionsChangedEvent;
@@ -640,15 +641,15 @@ public class MassRepairSalvageDialog extends JDialog {
         return skillBTHSpn;
     }
 
-    private JComboBox<String> createMassRepairSkillCBox(int selectedValue, boolean enabled,
+    private JComboBox<String> createMassRepairSkillCBox(SkillLevel selectedValue, boolean enabled,
                                                         JPanel pnlItems, int rowIdx, int columnIdx) {
         DefaultComboBoxModel<String> skillModel = new DefaultComboBoxModel<>();
-        skillModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_ULTRA_GREEN));
-        skillModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_GREEN));
-        skillModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_REGULAR));
-        skillModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_VETERAN));
-        skillModel.addElement(SkillType.getExperienceLevelName(SkillType.EXP_ELITE));
-        skillModel.setSelectedItem(SkillType.getExperienceLevelName(selectedValue));
+        skillModel.addElement(SkillLevel.ULTRA_GREEN.toString());
+        skillModel.addElement(SkillLevel.GREEN.toString());
+        skillModel.addElement(SkillLevel.REGULAR.toString());
+        skillModel.addElement(SkillLevel.VETERAN.toString());
+        skillModel.addElement(SkillLevel.ELITE.toString());
+        skillModel.setSelectedItem(selectedValue.toString());
         JComboBox<String> skillCBox = new JComboBox<>(skillModel);
         skillCBox.setEnabled(enabled);
 

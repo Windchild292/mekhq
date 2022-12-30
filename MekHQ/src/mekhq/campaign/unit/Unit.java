@@ -26,6 +26,7 @@ import megamek.client.ui.swing.tileset.EntityImage;
 import megamek.common.*;
 import megamek.common.InfantryBay.PlatoonType;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.SkillLevel;
 import megamek.common.icons.Camouflage;
 import megamek.common.options.IOption;
 import megamek.common.options.IOptionGroup;
@@ -4033,7 +4034,7 @@ public class Unit implements ITechnology {
                 engineer.setPrimaryRoleDirect(PersonnelRole.MECHANIC);
                 engineer.setRank(getCommander().getRankNumeric());
                 // will only be reloading ammo, so doesn't really matter what skill level we give them - set to regular
-                engineer.addSkill(SkillType.S_TECH_MECHANIC, SkillType.getType(SkillType.S_TECH_MECHANIC).getRegularLevel(), 0);
+                engineer.addSkill(SkillType.S_TECH_MECHANIC, SkillLevel.REGULAR, 0);
             } else {
                 engineer = null;
             }

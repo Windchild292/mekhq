@@ -25,6 +25,7 @@ import megamek.common.MiscType;
 import megamek.common.TargetRoll;
 import megamek.common.WeaponType;
 import megamek.common.annotations.Nullable;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.parts.MissingPart;
 import mekhq.campaign.parts.enums.PartRepairType;
 import mekhq.campaign.parts.equipment.EquipmentPart;
@@ -36,7 +37,7 @@ public interface IPartWork extends IWork {
 
     String getPartName();
 
-    int getSkillMin();
+    SkillLevel getSkillMin();
 
     int getBaseTime();
     int getActualTime();

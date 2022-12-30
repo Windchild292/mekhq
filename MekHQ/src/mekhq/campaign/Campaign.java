@@ -2083,8 +2083,7 @@ public class Campaign implements ITechManager {
             return new TargetRoll(TargetRoll.IMPOSSIBLE, doctor.getFullName()
                     + " already has 25 patients.");
         }
-        TargetRoll target = new TargetRoll(skill.getFinalSkillValue(),
-                SkillType.getExperienceLevelName(skill.getLevel()));
+        TargetRoll target = new TargetRoll(skill.getFinalSkillValue(), skill.getLevel().toString());
         if (target.getValue() == TargetRoll.IMPOSSIBLE) {
             return target;
         }
@@ -4841,8 +4840,7 @@ public class Campaign implements ITechManager {
                 && (SkillType.EXP_GREEN == (skill.getLevel() - modePenalty))) {
             value++;
         }
-        final TargetRoll target = new TargetRoll(value,
-                SkillType.getExperienceLevelName(skill.getLevel() - modePenalty));
+        final TargetRoll target = new TargetRoll(value, skill.getLevel() - modePenalty);
         if (target.getValue() == TargetRoll.IMPOSSIBLE) {
             return target;
         }
@@ -4897,7 +4895,7 @@ public class Campaign implements ITechManager {
             Skill skill = tech.getSkillForWorkingOn(partWork);
             if (null != skill) {
                 value = skill.getFinalSkillValue();
-                skillLevel = SkillType.getExperienceLevelName(skill.getLevel());
+                skillLevel = skill.getLevel().toString();
             }
         }
 
@@ -5087,8 +5085,7 @@ public class Campaign implements ITechManager {
                 return new TargetRoll(TargetRoll.IMPOSSIBLE, partAvailabilityLog.toString());
             }
         }
-        TargetRoll target = new TargetRoll(skill.getFinalSkillValue(),
-                SkillType.getExperienceLevelName(skill.getLevel()));
+        TargetRoll target = new TargetRoll(skill.getFinalSkillValue(), skill.getLevel().toString());
         target.append(acquisition.getAllAcquisitionMods());
         return target;
     }

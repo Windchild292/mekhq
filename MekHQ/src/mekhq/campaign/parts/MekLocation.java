@@ -832,7 +832,7 @@ public class MekLocation extends Part {
                 }
                 bonus = "(" + bonus + ")";
                 if (!getCampaign().getCampaignOptions().isDestroyByMargin()) {
-                    toReturn += ", " + SkillType.getExperienceLevelName(getSkillMin());
+                    toReturn += ", " + getSkillMin();
                 }
                 toReturn += " " + bonus;
                 if (getMode() != WorkTime.NORMAL) {

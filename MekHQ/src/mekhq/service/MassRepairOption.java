@@ -19,6 +19,7 @@
 package mekhq.service;
 
 import megamek.Version;
+import megamek.common.enums.SkillLevel;
 import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.parts.enums.PartRepairType;
 import mekhq.campaign.personnel.SkillType;
@@ -34,8 +35,8 @@ public class MassRepairOption {
     //region Variable Declarations
     private PartRepairType type;
     private boolean active;
-    private int skillMin;
-    private int skillMax;
+    private SkillLevel skillMin;
+    private SkillLevel skillMax;
     private int bthMin;
     private int bthMax;
 
@@ -74,19 +75,19 @@ public class MassRepairOption {
         this.active = active;
     }
 
-    public int getSkillMin() {
+    public SkillLevel getSkillMin() {
         return skillMin;
     }
 
-    public void setSkillMin(int skillMin) {
+    public void setSkillMin(SkillLevel skillMin) {
         this.skillMin = skillMin;
     }
 
-    public int getSkillMax() {
+    public SkillLevel getSkillMax() {
         return skillMax;
     }
 
-    public void setSkillMax(int skillMax) {
+    public void setSkillMax(SkillLevel skillMax) {
         this.skillMax = skillMax;
     }
 
