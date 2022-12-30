@@ -21,6 +21,7 @@
 package mekhq.campaign.personnel;
 
 import megamek.common.Compute;
+import megamek.common.enums.SkillLevel;
 import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
@@ -53,7 +54,7 @@ import java.io.PrintWriter;
  */
 public class Skill {
     private SkillType type;
-    private int level;
+    private SkillLevel level;
     private int bonus;
 
     protected Skill() {
@@ -112,12 +113,12 @@ public class Skill {
         return new Skill(skillType, level, bonus);
     }
 
-    public int getLevel() {
+    public SkillLevel getLevel() {
         return level;
     }
 
-    public void setLevel(int l) {
-        this.level = l;
+    public void setLevel(final SkillLevel level) {
+        this.level = level;
     }
 
     public int getBonus() {
@@ -163,8 +164,8 @@ public class Skill {
         return cost;
     }
 
-    public int getExperienceLevel() {
-        return type.getExperienceLevel(getLevel());
+    public SkillLevel getSkillLevel() {
+        return type.getSkillLevel(getLevel());
     }
 
     @Override

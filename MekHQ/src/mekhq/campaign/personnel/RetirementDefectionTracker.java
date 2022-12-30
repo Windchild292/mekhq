@@ -173,7 +173,7 @@ public class RetirementDefectionTracker {
             }
 
             TargetRoll target = new TargetRoll(5, "Target");
-            target.addModifier(p.getExperienceLevel(campaign, false) - campaign.getUnitRatingMod(),
+            target.addModifier(p.getSkillLevel(campaign, false) - campaign.getUnitRatingMod(),
                     "Experience");
             /* Retirement rolls are made before the contract status is set */
             if ((contract != null) && (contract.getStatus().isFailed() || contract.getStatus().isBreach())) {
@@ -401,7 +401,7 @@ public class RetirementDefectionTracker {
     public static Money getBonusCost(final Campaign campaign, Person person) {
         final boolean isMechWarriorProfession = Profession.getProfessionFromPersonnelRole(
                 person.getPrimaryRole()).isMechWarrior();
-        switch (person.getExperienceLevel(campaign, false)) {
+        switch (person.getSkillLevel(campaign, false)) {
             case SkillType.EXP_ELITE:
                 return Money.of(isMechWarriorProfession ? 300000 : 150000);
             case SkillType.EXP_VETERAN:
@@ -466,7 +466,7 @@ public class RetirementDefectionTracker {
             if (killed) {
                 roll = Utilities.dice(1, 5);
             } else {
-                roll = Compute.d6() + Math.max(-1, person.getExperienceLevel(campaign, false) - 2);
+                roll = Compute.d6() + Math.max(-1, person.getSkillLevel(campaign, false) - 2);
                 if (person.getRank().isOfficer()) {
                     roll += 1;
                 }

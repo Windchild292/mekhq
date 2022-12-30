@@ -101,7 +101,7 @@ public class AtBEventProcessor {
 
         Person adminHR = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_HR, SkillType.S_ADMIN);
         int adminHRExp = (adminHR == null) ? SkillType.EXP_ULTRA_GREEN
-                : adminHR.getSkill(SkillType.S_ADMIN).getExperienceLevel();
+                : adminHR.getSkill(SkillType.S_ADMIN).getSkillLevel();
         mod += adminHRExp - 2;
         int q = 0;
         int r = Compute.d6(2) + mod;

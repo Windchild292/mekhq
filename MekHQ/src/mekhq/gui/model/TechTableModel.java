@@ -101,7 +101,7 @@ public class TechTableModel extends DataTableModel {
                 toReturn.append("; ");
             }
 
-            toReturn.append(SkillType.getExperienceLevelName(skill.getExperienceLevel()));
+            toReturn.append(SkillType.getExperienceLevelName(skill.getSkillLevel()));
             toReturn.append(" ").append(skillName);
             first = false;
         }

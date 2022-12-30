@@ -26,7 +26,6 @@ import megamek.common.Compute;
 import megamek.common.annotations.Nullable;
 import megamek.common.enums.SkillLevel;
 import mekhq.MekHQ;
-import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.JumpPath;
 import mekhq.campaign.market.enums.ContractMarketMethod;
@@ -40,6 +39,7 @@ import mekhq.campaign.personnel.SkillType;
 import mekhq.campaign.personnel.enums.PersonnelRole;
 import mekhq.campaign.rating.IUnitRating;
 import mekhq.campaign.universe.*;
+import mekhq.utilities.MHQXMLUtility;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -668,9 +668,9 @@ public class ContractMarket {
         Person adminCommand = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_COMMAND, SkillType.S_ADMIN, SkillType.S_NEG);
         Person adminTransport = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_TRANSPORT, SkillType.S_ADMIN, SkillType.S_NEG);
         Person adminLogistics = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_LOGISTICS, SkillType.S_ADMIN, SkillType.S_NEG);
-        int adminCommandExp = (adminCommand == null) ? SkillType.EXP_ULTRA_GREEN : adminCommand.getSkill(SkillType.S_ADMIN).getExperienceLevel();
-        int adminTransportExp = (adminTransport == null) ? SkillType.EXP_ULTRA_GREEN : adminTransport.getSkill(SkillType.S_ADMIN).getExperienceLevel();
-        int adminLogisticsExp = (adminLogistics == null) ? SkillType.EXP_ULTRA_GREEN : adminLogistics.getSkill(SkillType.S_ADMIN).getExperienceLevel();
+        SkillLevel adminCommandExp = (adminCommand == null) ? SkillLevel.ULTRA_GREEN : adminCommand.getSkill(SkillType.S_ADMIN).getSkillLevel();
+        SkillLevel adminTransportExp = (adminTransport == null) ? SkillLevel.ULTRA_GREEN : adminTransport.getSkill(SkillType.S_ADMIN).getSkillLevel();
+        SkillLevel adminLogisticsExp = (adminLogistics == null) ? SkillLevel.ULTRA_GREEN : adminLogistics.getSkill(SkillType.S_ADMIN).getSkillLevel();
 
         /* Treat government units like merc units that have a retainer contract */
         if ((!campaign.getFactionCode().equals("MERC") && !campaign.getFactionCode().equals("PIR"))
@@ -690,10 +690,10 @@ public class ContractMarket {
             }
         }
 
-        mods.mods[CLAUSE_COMMAND] = adminCommandExp - SkillType.EXP_REGULAR;
+        mods.mods[CLAUSE_COMMAND] = adminCommandExp.ordinal() - SkillLevel.REGULAR.ordinal();
         mods.mods[CLAUSE_SALVAGE] = 0;
-        mods.mods[CLAUSE_TRANSPORT] = adminTransportExp - SkillType.EXP_REGULAR;
-        mods.mods[CLAUSE_SUPPORT] = adminLogisticsExp - SkillType.EXP_REGULAR;
+        mods.mods[CLAUSE_TRANSPORT] = adminTransportExp.ordinal() - SkillLevel.REGULAR.ordinal();
+        mods.mods[CLAUSE_SUPPORT] = adminLogisticsExp.ordinal() - SkillLevel.REGULAR.ordinal();
         if (unitRatingMod >= IUnitRating.DRAGOON_A) {
             mods.mods[Compute.randomInt(4)] += 2;
             mods.mods[Compute.randomInt(4)] += 2;

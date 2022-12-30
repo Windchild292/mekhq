@@ -116,7 +116,7 @@ public class PersonnelMarketAtB implements PersonnelMarketMethod {
                 }
 
                 Person adminHR = c.findBestInRole(PersonnelRole.ADMINISTRATOR_HR, SkillType.S_ADMIN);
-                int adminHRExp = (adminHR == null) ? SkillType.EXP_ULTRA_GREEN : adminHR.getSkill(SkillType.S_ADMIN).getExperienceLevel();
+                int adminHRExp = (adminHR == null) ? SkillType.EXP_ULTRA_GREEN : adminHR.getSkill(SkillType.S_ADMIN).getSkillLevel();
                 int gunneryMod = 0;
                 int pilotingMod = 0;
                 switch (adminHRExp) {

@@ -4071,22 +4071,26 @@ public class Unit implements ITechnology {
                     sumEdge += p.getEdge();
 
                     if (p.hasSkill(SkillType.S_TECH_VESSEL)) {
-                        sumSkill += p.getSkill(SkillType.S_TECH_VESSEL).getLevel();
+                        sumSkill += p.getSkill(SkillType.S_TECH_VESSEL).getLevel().getAdjustedIndex();
                         sumBonus += p.getSkill(SkillType.S_TECH_VESSEL).getBonus();
                         nCrew++;
                     }
+
                     if (!(p.getOptions().booleanOption(PersonnelOptions.EDGE_REPAIR_BREAK_PART))) {
                         breakpartreroll = false;
                     }
+
                     if (!(p.getOptions().booleanOption(PersonnelOptions.EDGE_REPAIR_FAILED_REFIT))) {
                         failrefitreroll = false;
                     }
+
                     if (p.getRankNumeric() > bestRank) {
                         engineerGivenName = p.getGivenName();
                         engineerSurname = p.getSurname();
                         bestRank = p.getRankNumeric();
                     }
                 }
+
                 if (nCrew > 0) {
                     engineer = new Person(engineerGivenName, engineerSurname, getCampaign());
                     engineer.setEngineer(true);
@@ -4112,6 +4116,7 @@ public class Unit implements ITechnology {
                 engineer = null;
             }
         }
+
         if (null != engineer) {
             // change reference for any scheduled tasks
             for (Part p : getParts()) {

@@ -22,6 +22,7 @@ package mekhq.campaign.personnel;
 
 import megamek.Version;
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import mekhq.utilities.MHQXMLUtility;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -105,15 +106,17 @@ public class SkillType {
     private String name;
     private int target;
     private boolean countUp;
-    private int greenLvl;
-    private int regLvl;
-    private int vetLvl;
-    private int eliteLvl;
+    private int greenLevel;
+    private int regularLevel;
+    private int veteranLevel;
+    private int eliteLevel;
+    private int heroicLevel;
+    private int legendaryLevel;
     private Integer[] costs;
 
     public static void setSkillTypes(Hashtable<String, SkillType> skills) {
-        //we are going to cycle through all skills in case ones have been added since this hash
-        //was created
+        // we are going to cycle through all skills in case ones have been added since this hash
+        // was created
         for (String name : skillList) {
             if (null != skills.get(name)) {
                 lookupHash.put(name, skills.get(name));
@@ -135,11 +138,13 @@ public class SkillType {
 
     /** Creates new SkillType */
     public SkillType() {
-        greenLvl = 1;
-        regLvl = 3;
-        vetLvl = 4;
-        eliteLvl = 5;
-        costs = new Integer[]{0,0,0,0,0,0,0,0,0,0,0};
+        greenLevel = 1;
+        regularLevel = 3;
+        veteranLevel = 4;
+        eliteLevel = 5;
+        heroicLevel = 6;
+        legendaryLevel = 7;
+        costs = new Integer[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     }
 
     public String getName() {
@@ -161,50 +166,66 @@ public class SkillType {
     public int getLevelFromExperience(int expLvl) {
         switch (expLvl) {
             case EXP_REGULAR:
-                return regLvl;
+                return regularLevel;
             case EXP_VETERAN:
-                return vetLvl;
+                return veteranLevel;
             case EXP_ELITE:
-                return eliteLvl;
+                return eliteLevel;
             case EXP_GREEN:
-                return greenLvl;
+                return greenLevel;
             default:
                 //for ultra-green we take the midpoint between green and 0, rounding down.
                 //If the user has set green as zero, then this will be the same
-                return (int) Math.floor(greenLvl / 2.0);
+                return (int) Math.floor(greenLevel / 2.0);
         }
     }
 
     public int getGreenLevel() {
-        return greenLvl;
+        return greenLevel;
     }
 
     public void setGreenLevel(int l) {
-        greenLvl = l;
+        greenLevel = l;
     }
 
     public int getRegularLevel() {
-        return regLvl;
+        return regularLevel;
     }
 
     public void setRegularLevel(int l) {
-        regLvl = l;
+        regularLevel = l;
     }
 
     public int getVeteranLevel() {
-        return vetLvl;
+        return veteranLevel;
     }
 
     public void setVeteranLevel(int l) {
-        vetLvl = l;
+        veteranLevel = l;
     }
 
     public int getEliteLevel() {
-        return eliteLvl;
+        return eliteLevel;
     }
 
     public void setEliteLevel(int l) {
-        eliteLvl = l;
+        eliteLevel = l;
+    }
+
+    public int getHeroicLevel() {
+        return heroicLevel;
+    }
+
+    public void setHeroicLevel(final int heroicLevel) {
+        this.heroicLevel = heroicLevel;
+    }
+
+    public int getLegendaryLevel() {
+        return legendaryLevel;
+    }
+
+    public void setLegendaryLevel(final int legendaryLevel) {
+        this.legendaryLevel = legendaryLevel;
     }
 
     public int getCost(int lvl) {
@@ -248,17 +269,21 @@ public class SkillType {
                     || name.equals(S_ARTILLERY);
     }
 
-    public int getExperienceLevel(int lvl) {
-        if (lvl >= eliteLvl) {
-            return EXP_ELITE;
-        } else if (lvl >= vetLvl) {
-            return EXP_VETERAN;
-        } else if (lvl >= regLvl) {
-            return EXP_REGULAR;
-        } else if (lvl >= greenLvl) {
-            return EXP_GREEN;
+    public SkillLevel getSkillLevel(final int level) {
+        if (level >= getLegendaryLevel()) {
+            return SkillLevel.LEGENDARY;
+        } else if (level >= getHeroicLevel()) {
+            return SkillLevel.HEROIC;
+        } else if (level >= getEliteLevel()) {
+            return SkillLevel.ELITE;
+        } else if (level >= getVeteranLevel()) {
+            return SkillLevel.VETERAN;
+        } else if (level >= getRegularLevel()) {
+            return SkillLevel.REGULAR;
+        } else if (level >= getGreenLevel()) {
+            return SkillLevel.GREEN;
         } else {
-            return EXP_ULTRA_GREEN;
+            return SkillLevel.ULTRA_GREEN;
         }
     }
 
@@ -375,10 +400,10 @@ public class SkillType {
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "name", name);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "target", target);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "countUp", countUp);
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "greenLvl", greenLvl);
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "regLvl", regLvl);
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "vetLvl", vetLvl);
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "eliteLvl", eliteLvl);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "greenLvl", greenLevel);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "regLvl", regularLevel);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "vetLvl", veteranLevel);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "eliteLvl", eliteLevel);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "costs", StringUtils.join(costs, ','));
         MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "skillType");
     }
@@ -395,13 +420,13 @@ public class SkillType {
                 } else if (wn2.getNodeName().equalsIgnoreCase("target")) {
                     retVal.target = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("greenLvl")) {
-                    retVal.greenLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.greenLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("regLvl")) {
-                    retVal.regLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.regularLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("vetLvl")) {
-                    retVal.vetLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.veteranLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("eliteLvl")) {
-                    retVal.eliteLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.eliteLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("countUp")) {
                     retVal.countUp = Boolean.parseBoolean(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("costs")) {
@@ -430,13 +455,13 @@ public class SkillType {
                 } else if (wn2.getNodeName().equalsIgnoreCase("target")) {
                     retVal.target = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("greenLvl")) {
-                    retVal.greenLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.greenLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("regLvl")) {
-                    retVal.regLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.regularLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("vetLvl")) {
-                    retVal.vetLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.veteranLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("eliteLvl")) {
-                    retVal.eliteLvl = Integer.parseInt(wn2.getTextContent());
+                    retVal.eliteLevel = Integer.parseInt(wn2.getTextContent());
                 } else if (wn2.getNodeName().equalsIgnoreCase("countUp")) {
                     retVal.countUp = Boolean.parseBoolean(wn2.getTextContent().trim());
                 } else if (wn2.getNodeName().equalsIgnoreCase("costs")) {
@@ -457,7 +482,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_PILOT_MECH;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -468,7 +493,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_GUN_MECH;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -479,7 +504,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_PILOT_AERO;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -490,7 +515,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_GUN_AERO;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -501,7 +526,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_PILOT_JET;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -512,7 +537,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_GUN_JET;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -523,7 +548,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_PILOT_SPACE;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -534,7 +559,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_GUN_SPACE;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -545,7 +570,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_PILOT_GVEE;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -556,7 +581,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_PILOT_NVEE;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -567,7 +592,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_PILOT_VTOL;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -578,7 +603,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_GUN_VEE;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -589,7 +614,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_ARTILLERY;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -600,7 +625,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_GUN_BA;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -611,7 +636,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_GUN_PROTO;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{16,8,8,8,8,8,8,8,-1,-1,-1};
 
@@ -622,7 +647,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_SMALL_ARMS;
         skill.target = 7;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{8,4,4,4,4,4,4,4,4,-1,-1};
 
@@ -633,7 +658,7 @@ public class SkillType {
         SkillType skill = new SkillType();
         skill.name = S_ANTI_MECH;
         skill.target = 8;
-        skill.greenLvl = 2;
+        skill.greenLevel = 2;
         skill.countUp = false;
         skill.costs = new Integer[]{12,6,6,6,6,6,6,6,6,-1,-1};
 

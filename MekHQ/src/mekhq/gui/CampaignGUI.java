@@ -1656,7 +1656,7 @@ public class CampaignGUI extends JPanel {
                 if (getCampaign().isWorkingOnRefit(tech) || tech.isEngineer()) {
                     continue;
                 }
-                skillLvl = SkillType.getExperienceLevelName(tech.getExperienceLevel(getCampaign(), false));
+                skillLvl = SkillType.getExperienceLevelName(tech.getSkillLevel(getCampaign(), false));
                 name = tech.getFullName() + ", " + skillLvl + " " + tech.getPrimaryRoleDesc()
                         + " (" + getCampaign().getTargetFor(r, tech).getValueAsString() + "+), "
                         + tech.getMinutesLeft() + "/" + tech.getDailyAvailableTechTime() + " minutes";
@@ -1760,7 +1760,7 @@ public class CampaignGUI extends JPanel {
                     time -= Math.max(0, tech.getMaintenanceTimeUsing());
                 }
                 name = tech.getFullTitle() + ", "
-                        + SkillType.getExperienceLevelName(tech.getSkillForWorkingOn(u).getExperienceLevel())
+                        + SkillType.getExperienceLevelName(tech.getSkillForWorkingOn(u).getSkillLevel())
                         + " (" + time + "min)";
                 techHash.put(name, tech);
             }

@@ -476,13 +476,13 @@ public class CampaignOpsReputationTest {
     public void testGetAverageExperience() {
         spyReputation.initValues();
         assertEquals(SkillType.getExperienceLevelName(SkillType.EXP_REGULAR),
-                     spyReputation.getAverageExperience());
+                     spyReputation.getAverageSkillLevel());
 
         // Test a brand new campaign.
         buildFreshCampaign();
         spyReputation.initValues();
         assertEquals(SkillType.getExperienceLevelName(-1),
-                     spyReputation.getAverageExperience());
+                     spyReputation.getAverageSkillLevel());
     }
 
     @Test

@@ -325,12 +325,12 @@ public class AtBConfiguration {
 
         TargetRoll target = new TargetRoll(baseShipSearchTarget, "Base");
         Person adminLog = campaign.findBestInRole(PersonnelRole.ADMINISTRATOR_LOGISTICS, SkillType.S_ADMIN);
-        int adminLogExp = (adminLog == null) ? SkillType.EXP_ULTRA_GREEN : adminLog.getSkill(SkillType.S_ADMIN).getExperienceLevel();
+        int adminLogExp = (adminLog == null) ? SkillType.EXP_ULTRA_GREEN : adminLog.getSkill(SkillType.S_ADMIN).getSkillLevel();
         for (Person p : campaign.getAdmins()) {
             if (p.getPrimaryRole().isAdministratorLogistics()
                     || p.getSecondaryRole().isAdministratorLogistics()
-                    && (p.getSkill(SkillType.S_ADMIN).getExperienceLevel() > adminLogExp)) {
-                adminLogExp = p.getSkill(SkillType.S_ADMIN).getExperienceLevel();
+                    && (p.getSkill(SkillType.S_ADMIN).getSkillLevel() > adminLogExp)) {
+                adminLogExp = p.getSkill(SkillType.S_ADMIN).getSkillLevel();
             }
         }
         target.addModifier(SkillType.EXP_REGULAR - adminLogExp, "Admin/Logistics");

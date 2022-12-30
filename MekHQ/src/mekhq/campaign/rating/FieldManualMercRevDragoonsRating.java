@@ -21,11 +21,13 @@
 package mekhq.campaign.rating;
 
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import megamek.common.options.OptionsConstants;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.Skill;
 import mekhq.campaign.personnel.SkillType;
+import mekhq.campaign.personnel.Skills;
 import mekhq.campaign.unit.Unit;
 import org.apache.logging.log4j.LogManager;
 
@@ -275,15 +277,15 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
                 .intValue();
     }
 
-    private static int getSupportHours(int skillLevel) {
+    private static int getSupportHours(SkillLevel skillLevel) {
         switch (skillLevel) {
-            case SkillType.EXP_ULTRA_GREEN:
+            case ULTRA_GREEN:
                 return 20;
-            case SkillType.EXP_GREEN:
+            case GREEN:
                 return 30;
-            case SkillType.EXP_REGULAR:
+            case REGULAR:
                 return 40;
-            case SkillType.EXP_VETERAN:
+            case VETERAN:
                 return 45;
             default:
                 return 50;
@@ -295,18 +297,18 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
                 SkillType.S_TECH_BA, SkillType.S_TECH_VESSEL, SkillType.S_TECH_MECHANIC};
 
         // Get the highest tech skill this person has.
-        int highestSkill = SkillType.EXP_ULTRA_GREEN;
+        SkillLevel highestSkillLevel = SkillLevel.NONE;
         for (String s : techSkills) {
             if (p.hasSkill(s)) {
-                int rank = p.getSkill(s).getExperienceLevel();
-                if (rank > highestSkill) {
-                    highestSkill = rank;
+                SkillLevel skill = p.getSkill(s).getSkillLevel();
+                if (skill.ordinal() > highestSkillLevel.ordinal()) {
+                    highestSkillLevel = skill;
                 }
             }
         }
 
         // Get the number of support hours this person contributes.
-        int hours = getSupportHours(highestSkill);
+        int hours = getSupportHours(highestSkillLevel);
         if (p.getSecondaryRole().isTechSecondary()) {
             hours = (int) Math.floor(hours / 2.0);
         }
@@ -320,7 +322,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
         if (doctorSkill == null) {
             return;
         }
-        int hours = getSupportHours(doctorSkill.getExperienceLevel());
+        int hours = getSupportHours(doctorSkill.getSkillLevel());
         if (p.getSecondaryRole().isDoctor()) {
             hours = (int) Math.floor(hours / 2.0);
         }
@@ -334,7 +336,7 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
         if (adminSkill == null) {
             return;
         }
-        int hours = getSupportHours(adminSkill.getExperienceLevel());
+        int hours = getSupportHours(adminSkill.getSkillLevel());
         if (p.getSecondaryRole().isAdministrator()) {
             hours = (int) Math.floor(hours / 2.0);
         }
@@ -365,13 +367,13 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
                     .divide(BigDecimal.valueOf(2), PRECISION, HALF_EVEN);
         }
 
-        String experience = getExperienceLevelName(combatSkillAverage);
+        SkillLevel skillLevel = getSkillLevel(combatSkillAverage);
         LogManager.getLogger().debug("Unit " + u.getName() + " combat skill average = "
-                + combatSkillAverage.toPlainString() + "(" + experience + ")");
+                + combatSkillAverage.toPlainString() + "(" + skillLevel + ")");
 
         // Add to the running total.
         setTotalSkillLevels(getTotalSkillLevels().add(value.multiply(combatSkillAverage)));
-        incrementSkillRatingCounts(experience);
+        incrementSkillRatingCounts(skillLevel);
     }
 
     @Override
@@ -417,11 +419,11 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
             return 0;
         }
         BigDecimal averageExperience = calcAverageExperience();
-        if (averageExperience.compareTo(greenThreshold) >= 0) {
+        if (averageExperience.compareTo(new BigDecimal("5.5")) >= 0) {
             return 5;
-        } else if (averageExperience.compareTo(regularThreshold) >= 0) {
+        } else if (averageExperience.compareTo(new BigDecimal("4.0")) >= 0) {
             return 10;
-        } else if (averageExperience.compareTo(veteranThreshold) >= 0) {
+        } else if (averageExperience.compareTo(new BigDecimal("2.5")) >= 0) {
             return 20;
         } else {
             return 40;
@@ -587,17 +589,17 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
                 getExperienceValue())).append("\n");
         out.append(String.format("    %-" + SUBHEADER_LENGTH + "s %s",
                 "Average Skill Rating:",
-                getAverageExperience())).append("\n");
+                getAverageSkillLevel())).append("\n");
 
         final String TEMPLATE = "        #%-" + CATEGORY_LENGTH + "s %3d";
-        Map<String, Integer> skillRatingCounts = getSkillRatingCounts();
+        Map<SkillLevel, Integer> skillRatingCounts = getSkillRatingCounts();
         boolean first = true;
-        for (String nm : SkillType.SKILL_LEVEL_NAMES) {
-            if (skillRatingCounts.containsKey(nm)) {
+        for (final SkillLevel skillLevel : Skills.SKILL_LEVELS) {
+            if (skillRatingCounts.containsKey(skillLevel)) {
                 if (!first) {
                     out.append("\n");
                 }
-                out.append(String.format(TEMPLATE, nm + ":", skillRatingCounts.get(nm)));
+                out.append(String.format(TEMPLATE, skillLevel + ":", skillRatingCounts.get(skillLevel)));
                 first = false;
             }
         }
@@ -808,17 +810,23 @@ public class FieldManualMercRevDragoonsRating extends AbstractUnitRating {
     }
 
     @Override
-    protected String getExperienceLevelName(BigDecimal experience) {
+    protected SkillLevel getSkillLevel(BigDecimal experience) {
         if (!hasUnits()) {
-            return SkillType.getExperienceLevelName(-1);
-        } else if (experience.compareTo(greenThreshold) >= 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_GREEN);
-        } else if (experience.compareTo(regularThreshold) >= 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_REGULAR);
-        } else if (experience.compareTo(veteranThreshold) >= 0) {
-            return SkillType.getExperienceLevelName(SkillType.EXP_VETERAN);
+            return SkillLevel.NONE;
+        } else if (experience.compareTo(new BigDecimal("7.0")) >= 0) {
+            return SkillLevel.ULTRA_GREEN;
+        } else if (experience.compareTo(new BigDecimal("5.5")) >= 0) {
+            return SkillLevel.GREEN;
+        } else if (experience.compareTo(new BigDecimal("4.0")) >= 0) {
+            return SkillLevel.REGULAR;
+        } else if (experience.compareTo(new BigDecimal("2.5")) >= 0) {
+            return SkillLevel.VETERAN;
+        } else if (experience.compareTo(new BigDecimal("1.5")) >= 0) {
+            return SkillLevel.ELITE;
+        } else if (experience.compareTo(new BigDecimal("1.0")) >= 0) {
+            return SkillLevel.HEROIC;
         } else {
-            return SkillType.getExperienceLevelName(SkillType.EXP_ELITE);
+            return SkillLevel.LEGENDARY;
         }
     }
 

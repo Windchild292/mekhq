@@ -23,6 +23,7 @@ import megamek.client.generator.RandomNameGenerator;
 import megamek.client.ui.dialogs.PortraitChooserDialog;
 import megamek.common.Crew;
 import megamek.common.Mounted;
+import megamek.common.enums.SkillLevel;
 import megamek.common.options.IOption;
 import megamek.common.options.OptionsConstants;
 import megamek.common.util.sorter.NaturalOrderComparator;
@@ -346,7 +347,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
             case CMD_IMPROVE: {
                 String type = data[1];
                 int cost = Integer.parseInt(data[2]);
-                int oldExpLevel = selectedPerson.getExperienceLevel(gui.getCampaign(), false);
+                SkillLevel oldSkillLevel = selectedPerson.getSkillLevel(gui.getCampaign(), false);
                 selectedPerson.improveSkill(type);
                 selectedPerson.spendXP(cost);
 
@@ -359,8 +360,8 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                 if (gui.getCampaign().getCampaignOptions().getUseAtB()
                         && gui.getCampaign().getCampaignOptions().useAbilities()) {
                     if (selectedPerson.getPrimaryRole().isCombat()
-                            && (selectedPerson.getExperienceLevel(gui.getCampaign(), false) > oldExpLevel)
-                            && (oldExpLevel >= SkillType.EXP_REGULAR)) {
+                            && (selectedPerson.getSkillLevel(gui.getCampaign(), false).ordinal() > oldSkillLevel.ordinal())
+                            && (oldSkillLevel.ordinal() > SkillLevel.GREEN.ordinal())) {
                         SingleSpecialAbilityGenerator spaGenerator = new SingleSpecialAbilityGenerator();
                         String spa = spaGenerator.rollSPA(gui.getCampaign(), selectedPerson);
                         if (spa == null) {

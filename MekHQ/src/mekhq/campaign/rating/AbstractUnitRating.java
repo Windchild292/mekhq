@@ -21,6 +21,7 @@
 package mekhq.campaign.rating;
 
 import megamek.common.*;
+import megamek.common.enums.SkillLevel;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.Mission;
 import mekhq.campaign.personnel.Person;
@@ -50,11 +51,7 @@ public abstract class AbstractUnitRating implements IUnitRating {
     static final BigDecimal HUNDRED = new BigDecimal(100);
 
     private Campaign campaign = null;
-
-    static final BigDecimal greenThreshold = new BigDecimal("5.5");
-    static final BigDecimal regularThreshold = new BigDecimal("4.0");
-    static final BigDecimal veteranThreshold = new BigDecimal("2.5");
-    private final Map<String, Integer> skillRatingCounts = new HashMap<>();
+    private final Map<SkillLevel, Integer> skillRatingCounts = new HashMap<>();
 
     private List<Person> commanderList = new ArrayList<>();
     private BigDecimal numberUnits = BigDecimal.ZERO;
@@ -121,8 +118,8 @@ public abstract class AbstractUnitRating implements IUnitRating {
     }
 
     @Override
-    public String getAverageExperience() {
-        return getExperienceLevelName(calcAverageExperience());
+    public SkillLevel getAverageSkillLevel() {
+        return getSkillLevel(calcAverageExperience());
     }
 
     @Override
@@ -214,8 +211,8 @@ public abstract class AbstractUnitRating implements IUnitRating {
                 }
 
                 // Compare experience
-                int p1ExperienceLevel = p1.getExperienceLevel(getCampaign(), false);
-                int p2ExperienceLevel = p2.getExperienceLevel(getCampaign(), false);
+                int p1ExperienceLevel = p1.getSkillLevel(getCampaign(), false);
+                int p2ExperienceLevel = p2.getSkillLevel(getCampaign(), false);
                 if (p1ExperienceLevel > p2ExperienceLevel) {
                     return -1;
                 } else if (p1ExperienceLevel < p2ExperienceLevel) {
@@ -421,7 +418,7 @@ public abstract class AbstractUnitRating implements IUnitRating {
         return getNumberUnits().compareTo(BigDecimal.ZERO) != 0;
     }
 
-    protected abstract String getExperienceLevelName(BigDecimal experience);
+    protected abstract SkillLevel getSkillLevel(BigDecimal experience);
 
     /**
      * Calculates the unit's rating score.
@@ -540,7 +537,7 @@ public abstract class AbstractUnitRating implements IUnitRating {
      *
      * @param rating The skill rating to be incremented.
      */
-    void incrementSkillRatingCounts(final String rating) {
+    void incrementSkillRatingCounts(final SkillLevel rating) {
         int count = 1;
         if (skillRatingCounts.containsKey(rating)) {
             count += skillRatingCounts.get(rating);
@@ -551,7 +548,7 @@ public abstract class AbstractUnitRating implements IUnitRating {
     /**
      * Returns a map of skill ratings and their counts.
      */
-    Map<String, Integer> getSkillRatingCounts() {
+    Map<SkillLevel, Integer> getSkillRatingCounts() {
         // defensive copy
         return new HashMap<>(skillRatingCounts);
     }

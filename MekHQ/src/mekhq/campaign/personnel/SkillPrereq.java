@@ -75,14 +75,9 @@ public class SkillPrereq {
     }
 
     public boolean qualifies(Skills s) {
-        for (String skillName : skillSet.keySet()) {
-            if (s.hasSkill(skillName)) {
-                if (s.getSkill(skillName).getExperienceLevel() >= skillSet.get(skillName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return skillSet.keySet().stream()
+                .filter(s::hasSkill)
+                .anyMatch(skillName -> s.getSkill(skillName).getSkillLevel().ordinal() >= skillSet.get(skillName));
     }
 
     /**
