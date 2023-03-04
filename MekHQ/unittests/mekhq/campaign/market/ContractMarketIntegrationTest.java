@@ -19,6 +19,8 @@
 package mekhq.campaign.market;
 
 import megamek.common.*;
+import megamek.common.randomization.MMRandom;
+import megamek.common.randomization.MMRoll;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.CampaignOptions;
 import mekhq.campaign.force.Force;

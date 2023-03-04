@@ -20,6 +20,8 @@ package mekhq.campaign.parts.equipment;
 
 import megamek.Version;
 import megamek.common.*;
+import megamek.common.randomization.MMRandom;
+import megamek.common.randomization.MMRoll;
 import megamek.common.weapons.bayweapons.BayWeapon;
 import mekhq.utilities.MHQXMLUtility;
 import mekhq.campaign.Campaign;
