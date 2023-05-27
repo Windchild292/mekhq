@@ -59,15 +59,29 @@ public class RandomPortraitGenerator {
         possiblePortraits = getPossibleRandomPortraits(existingPortraits, searchFile);
 
         if (possiblePortraits.isEmpty()) {
-            String searchCat_RoleGroup = "";
-            if (p.getPrimaryRole().isAdministrator()) {
-                searchCat_RoleGroup = "Admin";
-            } else if (p.getPrimaryRole().isVesselCrew()) {
-                searchCat_RoleGroup = "Vessel Crew";
-            } else if (p.getPrimaryRole().isTech()) {
+            final String searchCat_RoleGroup;
+            if (p.getPrimaryRole().isMechWarriorGrouping()) {
+                searchCat_RoleGroup = "Mech";
+            } else if (p.getPrimaryRole().isVehicleCrewmember()) {
+                searchCat_RoleGroup = "Vehicle";
+            } else if (p.getPrimaryRole().isConventionalAirGrouping()) {
+                searchCat_RoleGroup = "Aero";
+            } else if (p.getPrimaryRole().isProtoMechPilot()
+                    || p.getPrimaryRole().isSoldierOrBattleArmour()) {
+                searchCat_RoleGroup = "";
+            } else if (p.getPrimaryRole().isVesselCrewmember()) {
+                searchCat_RoleGroup = "Vessel";
+            } else if (p.getPrimaryRole().isTech() || p.getPrimaryRole().isAstech()) {
                 searchCat_RoleGroup = "Tech";
             } else if (p.getPrimaryRole().isMedicalStaff()) {
                 searchCat_RoleGroup = "Medical";
+            } else if (p.getPrimaryRole().isAdministrator()) {
+                searchCat_RoleGroup = "Admin";
+            } else if (p.getPrimaryRole().isCivilian()) {
+                searchCat_RoleGroup = "Civilian";
+            } else {
+                MekHQ.getLogger().warning("Portrait generator does not parse " + p.getPrimaryRole() + " properly.");
+                searchCat_RoleGroup = "";
             }
 
             if (!searchCat_RoleGroup.isBlank()) {

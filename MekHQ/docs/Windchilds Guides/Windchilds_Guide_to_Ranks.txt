@@ -10,7 +10,6 @@ The campaign file may contain a custom rank system that is not one of the rank s
 If you want to run a campaign with entirely custom ranks, remove all rank systems EXCEPT the SSLDF-coded rank system. That system is used as a default value within the code base and removing it may cause unexpected issues. However, the specific code is all that is required, and thus you may change the system name and all ranks within it.
 
 
-
 Professions:
 Professions are used to determine the type of ranks a person has. They consist of a number of Personnel Roles that are a a part of the profession, and the profession code, which is used during alternate profession specification (explained below). The groupings of Personnel Roles cannot be customized. The professions are as followed:
 MechWarrior:

@@ -280,6 +280,14 @@ public enum PersonnelRole {
         return isVesselPilot() || isVesselGunner() || isVesselCrew() || isVesselNavigator();
     }
 
+    public boolean isAerospaceGrouping() {
+        return isAerospacePilot() || isLAMPilot();
+    }
+
+    public boolean isConventionalAirGrouping() {
+        return isAerospaceGrouping() || isConventionalAircraftPilot();
+    }
+
     public boolean isSupport() {
         return isSupport(false);
     }
