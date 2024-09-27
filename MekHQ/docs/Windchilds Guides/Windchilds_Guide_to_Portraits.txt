@@ -1,0 +1,68 @@
+Windchild's Guide to Portraits
+Written 08-Feb-2020, Updated 05-Aug-2020, 18-Jul-2021
+MekHQ version 0.49.3
+
+
+
+Portrait Generator Setup:
+The basic structure for loading a portrait is that it first determines the gender of the person, then looks for a folder located under the gender for a folder with the exact name of the primary role. If that folder doesn't exist, is empty, or contains only pictures which are already assigned (provided the campaign option is enabled), the system continues with the next round of checking.
+The system then checks for specialist grouping folders, if it applies to the role. If that folder (but not subfolders) doesn't exist, is empty, or contains only pictures which are already assigned, the system continues with the next round of checking.
+Next, the system looks in the general grouping folders. If that folder doesn't exist, is empty, or contains only pictures which are already assigned, the system continues with the next round of checking.
+Finally, it checks the gendered folders.
+
+If the system finds at least one eligible picture in one of the checked folders, it stops searching the folders and picks a random picture from the eligible ones in that folder. Note that this stops the search, so if you put pictures in both /Male/MechWarrior and /Male/Combat, Male MechWarriors will never be assigned one of the pictures in the combat folder unless all the Male MechWarrior-specific pictures are already assigned.
+
+
+Folder Lists:
+To be loaded, the portrait must be located in one of the following folders. To determine the path required, you take your chosen folder and add the Gendered Folder, then the folder beneath it (outside of the Admin subtypes, which will require the creation of the general Admin folder followed by their specification folder). Exact capitalization is required in the file path.
+Example 1: I want to load a group of portraits that are only for Male MechWarriors in a Windows install of version 0.49.3. The folder I would need to have to place these portraits into would therefore be mekhq-windows-0.93.3/data/images/portraits/Male/MechWarrior
+Example 2: I want to load a group of portraits that are only for Male MechWarriors or Male LAM Pilots in a Windows install of version 0.49.3. The folder I would need to have to place these portraits into would therefore be mekhq-windows-0.93.3/data/images/portraits/Male/Mech
+Example 3: I have a portrait that can be used by Female Admin in a Windows install of version 0.49.3. The folder I would need to place this portrait in would be mekhq-windows-0.49.3/data/images/portraits/Female/Admin
+Example 4: I have a portrait that can only be used by Female Admin/HR i a Windows install of version 0.49.3. The folder I would need to have to place this portrait in would be mekhq-windows-0.49.3/data/images/portraits/Female/Admin/HR
+Example 5: I have a portraits that can be used by any male combat personnel in a Windows install of version 0.49.3. The folder I would need to have to place this portrait in would be mekhq-windows-0.93.3/data/images/portraits/Male/Combat
+
+
+Primary Folder: All portraits are located in the portraits folder, just replace the version of mekhq with the current version.
+mekhq-windows-0.49.3/data/images/portraits
+
+Gendered Folders: Note that the following setup MUST be added to one of the two gendered folders or the portraits will not generate.
+Male Portraits:		/Male
+Female Portraits:	/Female
+
+
+Primary Role					Specific Folder					Specialist Folder		General Folder
+MechWarrior:					/MechWarrior					/Mech					/Combat
+LAM Pilot:						/LAM Pilot						/Mech					/Combat
+Vehicle Driver:					/Vehicle Driver					/Vehicle				/Combat
+Naval Driver:					/Naval Driver					/Vehicle				/Combat
+VTOL Pilot:						/VTOL Pilot						/Vehicle				/Combat
+Vehicle Gunner:					/Vehicle Gunner					/Vehicle				/Combat
+Vehicle Crew:					/Vehicle Crewmember				/Vehicle				/Combat
+Aero Pilot:						/Aerospace Pilot				/Aero					/Combat
+Conventional Aircraft Pilot:	/Conventional Aircraft Pilot	/Aero					/Combat
+Proto Pilot:					/ProtoMech Pilot				N/A						/Combat
+Battle Armour:					/Battle Armor Pilot				N/A						/Combat
+Elemental/Battle Armor (Clan):	/Elemental						N/A						/Combat
+Soldier:						/Soldier						N/A						/Combat
+Vessel Pilot:					/Vessel Pilot					/Vessel					/Combat
+Vessel Gunner:					/Vessel Gunner					/Vessel					/Combat
+Vessel Crewmember:				/Vessel Crewmember				/Vessel					/Combat
+Hyperspace Navigator:			/Hyperspace Navigator			/Vessel					/Combat
+Mech Tech:						/Mech Tech						/Tech					/Support
+Mechanic:						/Mechanic						/Tech					/Support
+Aerospace Tech:					/Aerospace Tech					/Tech					/Support
+Battle Armor Tech:				/Battle Armor Tech				/Tech					/Support
+Astech:							/Astech							/Tech					/Support
+Doctor:							/Doctor							/Medical				/Support
+Medic:							/Medic							/Medical				/Support
+Admin/Command:					/Admin/Command					/Admin					/Support
+Admin/Logistical:				/Admin/Logistical				/Admin					/Support
+Admin/Transport:				/Admin/Transport				/Admin					/Support
+Admin/HR:						/Admin/HR						/Admin					/Support
+Dependent: 						/Dependent						/Civilian				/Support
+None: 							/None							/Civilian				/Support
+
+
+
+How Portraits Are Handled Internally:
+RandomPortraitGenerator.java: This is the MekHQ random portrait generator, which generates a random portrait based on the functionality detailed above.
